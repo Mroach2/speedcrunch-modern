@@ -7524,6 +7524,90 @@ void test_value_unit_separator_normalization()
     }
 }
 
+void test_result_display_preserves_standalone_sexagesimal_angles_without_implicit_conversion()
+{
+    Settings* settings = Settings::instance();
+    Session* session = const_cast<Session*>(eval->session());
+    const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+    const bool oldMultipleResultLinesEnabled = settings->multipleResultLinesEnabled;
+    const char oldResultFormat = settings->resultFormat;
+    const int oldResultPrecision = settings->resultPrecision;
+    const char oldAngleUnit = settings->angleUnit;
+
+    settings->simplifyResultExpressions = false;
+    settings->multipleResultLinesEnabled = false;
+    settings->resultPrecision = -1;
+    settings->angleUnit = 'd';
+    Evaluator::instance()->initializeAngleUnits();
+
+    struct Case {
+        char format;
+        const char* label;
+    };
+    const Case cases[] = {
+        {'s', "sexagesimal format preserves standalone sexagesimal angle"},
+        {'g', "automatic decimal format preserves standalone sexagesimal angle"}
+    };
+
+    for (const Case& tc : cases) {
+        settings->resultFormat = tc.format;
+        session->clearHistory();
+        eval->setExpression(QString::fromUtf8("1°2′3″"));
+        const Quantity value = eval->evalUpdateAns();
+
+        ++eval_total_tests;
+        if (!eval->error().isEmpty()) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\t" << tc.label << "\t[NEW]" << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+            continue;
+        }
+
+        session->addHistoryEntry(HistoryEntry(
+            QString::fromUtf8("1°2′3″"),
+            value,
+            eval->interpretedExpression()));
+
+        TestableResultDisplay display;
+        display.resize(800, 600);
+        display.refresh();
+
+        const QString resultLine = display.document()->findBlockByNumber(1).text();
+        const QString expressionLine = display.document()->findBlockByNumber(0).text();
+
+        ++eval_total_tests;
+        if (expressionLine != QString::fromUtf8("1°2′3″")) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\t" << tc.label << " expression line\t[NEW]" << endl
+                 << "\tLine     : " << expressionLine.toUtf8().constData() << endl
+                 << "\tExpected : 1°2′3″" << endl;
+        }
+
+        ++eval_total_tests;
+        if (!resultLine.contains(QString::fromUtf8("°"))
+            || !resultLine.contains(QString::fromUtf8("′"))
+            || !resultLine.contains(QString::fromUtf8("″"))
+            || resultLine.contains(QString::fromUtf8("[″]"))
+            || resultLine.contains(QString::fromUtf8("1.034"))) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\t" << tc.label << " result line\t[NEW]" << endl
+                 << "\tLine     : " << resultLine.toUtf8().constData() << endl
+                 << "\tExpected : sexagesimal angle with no implicit [″] or decimal degrees" << endl;
+        }
+    }
+
+    settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    settings->multipleResultLinesEnabled = oldMultipleResultLinesEnabled;
+    settings->resultFormat = oldResultFormat;
+    settings->resultPrecision = oldResultPrecision;
+    settings->angleUnit = oldAngleUnit;
+    Evaluator::instance()->initializeAngleUnits();
+    session->clearHistory();
+}
+
 void test_trig_symbolic_fraction_half()
 {
     eval->setExpression(QStringLiteral("cos(pi/3)"));
@@ -7954,6 +8038,7 @@ int main(int argc, char* argv[])
     test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input();
     test_result_display_keeps_quantsp_before_degree_celsius_and_fahrenheit();
     test_value_unit_separator_normalization();
+    test_result_display_preserves_standalone_sexagesimal_angles_without_implicit_conversion();
     test_trig_symbolic_fraction_half();
     test_non_informative_numeric_simplified_row_suppression();
 

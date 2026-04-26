@@ -53,6 +53,17 @@ inline bool containsExplicitSexagesimalAngleMarkers(const QString& expression)
     return false;
 }
 
+inline bool isStandaloneSexagesimalAngleLiteral(const QString& expression)
+{
+    if (!RegExpPatterns::standaloneSexagesimalAngleLiteralAllowed().match(expression).hasMatch())
+        return false;
+
+    if (!RegExpPatterns::anyDigit().match(expression).hasMatch())
+        return false;
+
+    return containsExplicitSexagesimalAngleMarkers(expression);
+}
+
 inline QString foldRepeatedAdditiveTermsForDisplay(const QString& text)
 {
     if (text.isEmpty())
@@ -232,6 +243,15 @@ inline QString simplifiedExpressionLineForDisplay(const QString& interpretedExpr
 inline QString formattedExpressionLineForDisplay(const QString& sourceExpression,
                                                  const QString& interpretedExpression)
 {
+    const bool preserveStandaloneSexagesimalAngle =
+        isStandaloneSexagesimalAngleLiteral(sourceExpression)
+        && !sourceExpression.contains(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp)
+        && !sourceExpression.contains(MathDsl::TransOp);
+    if (preserveStandaloneSexagesimalAngle) {
+        return DisplayFormatUtils::applyDigitGroupingForDisplay(
+            UnicodeChars::normalizePiForDisplay(sourceExpression.trimmed()));
+    }
+
     const QString interpretedSource = interpretedExpression.isEmpty()
         ? sourceExpression
         : interpretedExpression;
@@ -291,7 +311,7 @@ inline bool isPureTimeQuantity(const Quantity& value)
 
 inline QString conversionTargetSuffixForDisplay(const QString& expression)
 {
-    const int asciiArrowPos = expression.lastIndexOf(QStringLiteral("->"));
+    const int asciiArrowPos = expression.lastIndexOf(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp);
     const int unicodeArrowPos = expression.lastIndexOf(MathDsl::TransOp);
 
     int arrowPos = -1;
@@ -312,6 +332,17 @@ inline QString conversionTargetSuffixForDisplay(const QString& expression)
         return QString();
 
     return QStringLiteral(" \u2192 ") + target;
+}
+
+inline bool shouldPreserveStandaloneSexagesimalAngle(const QString& sourceExpression,
+                                                      const Quantity& value,
+                                                      const Settings* settings)
+{
+    return value.isDimensionless()
+        && settings->angleUnit == 'd'
+        && isStandaloneSexagesimalAngleLiteral(sourceExpression)
+        && !sourceExpression.contains(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp)
+        && !sourceExpression.contains(MathDsl::TransOp);
 }
 
 inline bool expressionUsesTrigFunction(const QString& sourceExpression,
@@ -402,6 +433,12 @@ inline QString formatNumericResultLine(const Quantity& value,
                                        bool stripUnitBrackets,
                                        const Settings* settings)
 {
+    if (!expressionUsesTrigFunction(sourceExpression, interpretedExpression)
+        && shouldPreserveStandaloneSexagesimalAngle(
+            sourceExpression, value, settings)) {
+        resultFormat = 's';
+    }
+
     Quantity formattedValue = value;
     if (resultFormat == 's' && isPureTimeQuantity(formattedValue))
         formattedValue.stripUnits();

@@ -206,6 +206,23 @@ inline const QRegularExpression& cbrtWord()
     return pattern;
 }
 
+// Matches characters allowed in a standalone sexagesimal angle literal.
+// Example input/output: "1°2′3″" -> full match; "cos(1°)" -> no full match.
+inline const QRegularExpression& standaloneSexagesimalAngleLiteralAllowed()
+{
+    static const QRegularExpression pattern(
+        QStringLiteral("^[\\s\\p{Zs}+\\-−0-9\\.,°º˚'′\"″]+$"));
+    return pattern;
+}
+
+// Matches a decimal digit anywhere in the input.
+// Example input/output: "°′″" -> no match; "1°" -> match.
+inline const QRegularExpression& anyDigit()
+{
+    static const QRegularExpression pattern(QStringLiteral("\\d"));
+    return pattern;
+}
+
 } // namespace RegExpPatterns
 
 #endif
