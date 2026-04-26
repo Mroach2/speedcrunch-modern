@@ -432,7 +432,7 @@ void Settings::load()
     key = KEY + QLatin1String("/Format/");
 
     // Format special case.
-    QString format = settings->value(key + QLatin1String("MainType"), 'f').toString();
+    QString format = settings->value(key + QLatin1String("MainType"), 'g').toString();
     if (format != "g" && format != "f" && format != "e" && format != "n" && format != "r" && format != "h"
         && format != "o" && format != "b" && format != "s")
         resultFormat = 'f';

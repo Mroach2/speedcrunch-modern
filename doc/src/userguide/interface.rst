@@ -213,19 +213,21 @@ The result display supports mouse-driven interactions for navigation and editing
 Notation
 +++++++++++++
 
-This section allows selecting the result notation to use. You can select one
-of the following notations:
+This section allows selecting the result notation to use (for example in
+:menuselection:`Settings --> Results --> Notation & Precision...` or from the
+status-bar notation selector). You can select one of the following options.
+On first launch, the default is :menuselection:`Automatic decimal`.
 
-* :menuselection:`Decimal --> Automatic`
-    Use fixed-point decimal form for most results; for very large (more than six integer places) or very small results (less than 0.0001),
-    scientific notation will be used.
-* :menuselection:`Decimal --> Fixed-Point`
+* :menuselection:`Automatic decimal`
+    Use fixed-point decimal form for most results; values with exponent larger than 5 or smaller than -4 are shown in
+    scientific notation. With a finite precision setting, very small values may switch to scientific notation earlier.
+* :menuselection:`Fixed-point decimal`
     Display results in fixed-point decimal form. For excessively
     large or small numbers, this format may still fall back to scientific notation.
-* :menuselection:`Decimal --> Engineering`
+* :menuselection:`Engineering decimal`
     Display results in engineering notation. This is a variant of :ref:`scientific notation <scientific_notation>` in which
     the exponent is divisible by three.
-* :menuselection:`Decimal --> Scientific`
+* :menuselection:`Scientific decimal`
     Display results in :ref:`normalized scientific notation <scientific_notation>`.
 * :menuselection:`Rational`
     Try to display real results as fractions (for example, ``1/3``) using continued-fraction approximation with bounded denominator. If no close match is found, results are displayed in decimal form.
