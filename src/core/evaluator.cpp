@@ -3659,7 +3659,8 @@ static QString formatInterpretedExpressionForDisplayImpl(const QString& expressi
             if (j >= text.size())
                 break;
             const QString content = text.mid(i + 1, j - i - 1);
-            const QString normalized = normalizeCompoundDegreeUnitsInBracket(content);
+            QString normalized = normalizeCompoundDegreeUnitsInBracket(content);
+            normalized = UnitDisplayFormat::normalizeUnitTextForDisplay(normalized);
             if (normalized != content) {
                 text.replace(i + 1, j - i - 1, normalized);
                 j = i + 1 + normalized.size();
@@ -3892,9 +3893,11 @@ static QString formatInterpretedExpressionForDisplayImpl(const QString& expressi
     }
 
     formatted = normalizeCompoundDegreeUnitsInDisplay(formatted);
-    return renderIntegerPowersAsSuperscriptsForDisplay(
+    formatted = renderIntegerPowersAsSuperscriptsForDisplay(
         formatted,
-        allowAggressiveSimplification) + commentSuffix;
+        allowAggressiveSimplification);
+    formatted = normalizeCompoundDegreeUnitsInDisplay(formatted);
+    return formatted + commentSuffix;
 }
 
 QString Evaluator::simplifyInterpretedExpression(const QString& expression)
@@ -4220,6 +4223,14 @@ static QString superscriptDigitsToAscii(const QString& text)
     QString converted;
     converted.reserve(text.size());
     for (const QChar& ch : text) {
+        if (ch == MathDsl::PowNeg) {
+            converted.append(MathDsl::SubOp);
+            continue;
+        }
+        if (ch == MathDsl::PowPos) {
+            converted.append(MathDsl::AddOp);
+            continue;
+        }
         const QChar asciiDigit = MathDsl::superscriptDigitToAscii(ch);
         converted.append(asciiDigit.isNull() ? ch : asciiDigit);
     }
@@ -4727,11 +4738,15 @@ Tokens Evaluator::scan(const QString& expr) const
         while (identEnd < ex.size() && isIdentifierContinue(ex.at(identEnd)))
             ++identEnd;
 
-        int superscriptEnd = identEnd;
+        int superscriptStart = identEnd;
+        if (superscriptStart < ex.size() && MathDsl::isSuperscriptSign(ex.at(superscriptStart)))
+            ++superscriptStart;
+
+        int superscriptEnd = superscriptStart;
         while (superscriptEnd < ex.size() && MathDsl::isSuperscriptDigit(ex.at(superscriptEnd)))
             ++superscriptEnd;
 
-        if (superscriptEnd == identEnd) {
+        if (superscriptEnd == superscriptStart) {
             p = identEnd;
             continue;
         }

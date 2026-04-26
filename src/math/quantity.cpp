@@ -2066,6 +2066,14 @@ Quantity DMath::raise(const Quantity& n1, int n)
         result.modifyDimension(name, exp * n);
         ++i;
     }
+    if (n1.isDimensionless()
+        && n1.hasUnit()
+        && Units::isExplicitAngleUnitName(n1.unitName())
+        && n != 0)
+    {
+        result.setDisplayUnit(CMath::raise(n1.unit(), n),
+                              formatUnitFactorWithExponent(n1.unitName(), n));
+    }
     return result;
 }
 
@@ -2077,8 +2085,20 @@ Quantity DMath::raise(const Quantity& n1, const Quantity& n2)
     // First get the new numeric value.
     Quantity result(COMPLEX_WRAP_2(raise, n1.m_numericValue, n2.m_numericValue));
 
-    if (n1.isDimensionless())
+    if (n1.isDimensionless()) {
+        Rational exponent(n2.m_numericValue.real);
+        if (n1.hasUnit()
+            && Units::isExplicitAngleUnitName(n1.unitName())
+            && abs(exponent.toHNumber() - n2.m_numericValue.real) < RATIONAL_TOL
+            && exponent.denominator() == 1
+            && exponent.numerator() != 0)
+        {
+            const int integerExponent = exponent.numerator();
+            result.setDisplayUnit(CMath::raise(n1.unit(), integerExponent),
+                                  formatUnitFactorWithExponent(n1.unitName(), integerExponent));
+        }
         return result;
+    }
 
     // We can now assume that n1 has a dimension, but n2 is real.
     // Compute the new dimension: try to convert n2 to a Rational. If n2 is not

@@ -73,11 +73,28 @@ QString compositeAngleAlias(UnitId id)
     return QString();
 }
 
+UnitId unitIdForDisplayTokenBase(const QString& tokenBase)
+{
+    const UnitId id = unitId(normalizeUnitName(tokenBase));
+    if (id != UnitId::Unknown)
+        return id;
+
+    if (tokenBase == unitSymbol(UnitId::Degree))
+        return UnitId::Degree;
+    if (tokenBase == unitSymbol(UnitId::Arcminute))
+        return UnitId::Arcminute;
+    if (tokenBase == unitSymbol(UnitId::Arcsecond))
+        return UnitId::Arcsecond;
+    return UnitId::Unknown;
+}
+
 bool isDisplayUnitTokenChar(QChar ch)
 {
     return UnicodeChars::isUnitIdentifierChar(ch)
         || ch == UnicodeChars::Prime
-        || ch == UnicodeChars::DoublePrime;
+        || ch == UnicodeChars::DoublePrime
+        || UnicodeChars::isSuperscriptDigit(ch)
+        || UnicodeChars::isSuperscriptSign(ch);
 }
 
 } // namespace
@@ -163,20 +180,23 @@ QString normalizeUnitTextForDisplay(const QString& text)
             ++j;
 
         const QString token = displayInput.mid(i, j - i);
+        const int tokenSuffixStart = superscriptSuffixStart(token);
+        const QString tokenBase = token.left(tokenSuffixStart);
+        const bool hasExponentSuffix = tokenSuffixStart < token.size();
         QString displayToken = shortDisplayName(token);
-        const UnitId tokenId = unitId(normalizeUnitName(token));
-        const QString compositeAlias = hasCompositeUnitOperators
-            ? compositeAngleAlias(tokenId)
-            : QString();
-        if (!compositeAlias.isEmpty()) {
+        const UnitId tokenId = unitIdForDisplayTokenBase(tokenBase);
+        const QString preferredAlias = compositeAngleAlias(tokenId);
+        const bool shouldPreferAlias =
+            !preferredAlias.isEmpty() && (hasCompositeUnitOperators || hasExponentSuffix);
+        if (shouldPreferAlias) {
             QString suffix;
             const QString tokenSymbol = unitSymbol(tokenId);
             if (!displayToken.isEmpty() && displayToken.startsWith(tokenSymbol)) {
                 suffix = displayToken.mid(tokenSymbol.size());
-            } else if (displayToken.startsWith(compositeAlias)) {
-                suffix = displayToken.mid(compositeAlias.size());
+            } else if (displayToken.startsWith(preferredAlias)) {
+                suffix = displayToken.mid(preferredAlias.size());
             }
-            displayToken = compositeAlias + suffix;
+            displayToken = preferredAlias + suffix;
         }
         normalized.append(displayToken);
         i = j;

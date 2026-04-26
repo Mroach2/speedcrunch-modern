@@ -3649,6 +3649,45 @@ void test_angle_mode(Settings* settings)
                  << "\tError: " << qPrintable(eval->error()) << endl;
         }
     };
+    const auto checkAngleExponentAliasInInterpretedExpression =
+        [&](const QString& expression,
+            const QString& expectedToken,
+            const QString& forbiddenToken) {
+        ++eval_total_tests;
+        eval->setExpression(expression);
+        eval->evalUpdateAns();
+        const QString interpreted = Evaluator::formatInterpretedExpressionForDisplay(
+            eval->interpretedExpression());
+        if (!eval->error().isEmpty()
+            || !interpreted.contains(expectedToken)
+            || interpreted.contains(forbiddenToken))
+        {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tangle exponent alias preserved in interpreted expression\t[NEW]" << endl
+                 << "\tExpression: " << expression.toUtf8().constData() << endl
+                 << "\tInterpreted: " << interpreted.toUtf8().constData() << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+        }
+    };
+    const auto checkAngleInversePowerUnitDisplay = [&](const QString& expression,
+                                                       const QString& expectedUnitToken) {
+        ++eval_total_tests;
+        eval->setExpression(expression);
+        const QString display = NumberFormatter::format(eval->evalUpdateAns());
+        const QString bracketedExpectedToken =
+            QString(MathDsl::UnitStart) + expectedUnitToken + QString(MathDsl::UnitEnd);
+        if (!eval->error().isEmpty()
+            || !display.contains(bracketedExpectedToken))
+        {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\texplicit angle inverse-power keeps display unit\t[NEW]" << endl
+                 << "\tExpression: " << expression.toUtf8().constData() << endl
+                 << "\tResult: " << display.toUtf8().constData() << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+        }
+    };
 
     settings->angleUnit = 'r';
     Evaluator::instance()->initializeAngleUnits();
@@ -3707,6 +3746,14 @@ void test_angle_mode(Settings* settings)
     checkCompositeAngleAliasDisplay(QString::fromUtf8("1 [rad/m] -> [″/m]"),
                                     Units::arcsecondAliasSymbol(),
                                     QString(UnicodeChars::DoublePrime));
+    checkAngleExponentAliasInInterpretedExpression(
+        QStringLiteral("1 [arcmin²]"),
+        QStringLiteral("arcmin") + MathDsl::Pow2,
+        QString(UnicodeChars::Prime) + MathDsl::Pow2);
+    checkAngleExponentAliasInInterpretedExpression(
+        QStringLiteral("1 [arcmin") + MathDsl::PowNeg + MathDsl::Pow1 + QStringLiteral("]"),
+        QStringLiteral("arcmin") + MathDsl::PowNeg + MathDsl::Pow1,
+        QString(UnicodeChars::Prime) + MathDsl::PowNeg + MathDsl::Pow1);
     checkDivByAngleKeepsAngleDisplay(QStringLiteral("1 [m/arcmin]"), Units::angleModeUnitSymbol('r'));
     checkAngularRateDisplayContains(QStringLiteral("360 [deg second^-1]"), 'r', Units::angleModeUnitSymbol('r'));
     checkAngularRateDisplayContains(QStringLiteral("1 [rev/min]"), 'r', Units::angleModeUnitSymbol('r'));
@@ -3817,6 +3864,9 @@ void test_angle_mode(Settings* settings)
     CHECK_EVAL("[revolution]","400 gon");
     CHECK_EVAL("[rev]","400 gon");
     CHECK_EVAL("1 [tr]", "400 gon");
+    checkAngleInversePowerUnitDisplay(
+        QStringLiteral("1 [arcmin") + MathDsl::PowNeg + MathDsl::Pow2 + QStringLiteral("]"),
+        Units::angleModeUnitSymbol('g') + QString(MathDsl::PowNeg) + QString(MathDsl::Pow2));
     checkAngleCompositeProductDisplayContains(QStringLiteral("360 [deg second]"), 'g', Units::angleModeUnitSymbol('g'));
     checkAngleCompositeProductDisplayContains(QStringLiteral("360 [deg second metre]"), 'g', Units::angleModeUnitSymbol('g'));
     checkAngleCompositeProductDisplayContains(QStringLiteral("360 [deg·s·m]"), 'g', Units::angleModeUnitSymbol('g'));
