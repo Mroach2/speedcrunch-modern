@@ -176,6 +176,16 @@ inline const QRegularExpression& missingQuantSpBeforeUnit()
     return pattern;
 }
 
+// Matches text ending in power-of-ten scientific notation:
+// "*10^n", "× 10^n", or "× 10ⁿ".
+// Example input/output: "1.2 × 10⁻³" -> match; "1.2e-3" -> no match.
+inline const QRegularExpression& trailingPowerOfTenScientificNotation()
+{
+    static const QRegularExpression pattern(
+        QStringLiteral(R"(.*(?:\*|×)\s*10(?:\^[−-]?\d+|[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺]+)$)"));
+    return pattern;
+}
+
 // Matches the standalone word "summation", case-insensitive.
 // Example input/output: "summation(k)" -> match; "presummation" -> no match.
 inline const QRegularExpression& summationWord()

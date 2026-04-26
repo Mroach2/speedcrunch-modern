@@ -7130,6 +7130,7 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
 {
     Settings* settings = Settings::instance();
     const char oldAngleUnit = settings->angleUnit;
+    const char oldResultFormat = settings->resultFormat;
     const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
     Session* session = const_cast<Session*>(eval->session());
     session->clearHistory();
@@ -7222,6 +7223,53 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
                  << "\tLine     : " << resultLine.toUtf8().constData() << endl
                  << "\tExpected : scalar trig result with no angle suffix or []" << endl;
         }
+    };
+    auto checkScientificAngleUnitSpacing = [&](const QString& expr,
+                                               const QString& expectedSuffix,
+                                               const char* label) {
+        const char previousResultFormat = settings->resultFormat;
+        settings->angleUnit = 'd';
+        settings->resultFormat = 'e';
+        settings->simplifyResultExpressions = false;
+        Evaluator::instance()->initializeAngleUnits();
+        session->clearHistory();
+        eval->setExpression(expr);
+        const Quantity value = eval->evalUpdateAns();
+
+        ++eval_total_tests;
+        if (!eval->error().isEmpty()) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\t" << label << "\t[NEW]" << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+            settings->resultFormat = previousResultFormat;
+            return;
+        }
+
+        session->addHistoryEntry(HistoryEntry(
+            expr,
+            value,
+            eval->interpretedExpression()));
+
+        TestableResultDisplay display;
+        display.resize(800, 600);
+        display.refresh();
+
+        ++eval_total_tests;
+        const QString resultLine = display.document()->findBlockByNumber(1).text();
+        const QString expectedEnding = QString(MathDsl::QuantSp) + expectedSuffix;
+        const bool hasScientificPower = resultLine.contains(QString::fromUtf8("× 10"));
+        if (!hasScientificPower
+            || !resultLine.endsWith(expectedEnding)
+            || resultLine.endsWith(QStringLiteral(" ") + expectedSuffix)) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\t" << label << "\t[NEW]" << endl
+                 << "\tLine     : " << resultLine.toUtf8().constData() << endl
+                 << "\tExpected : scientific notation and ending with "
+                 << expectedEnding.toUtf8().constData() << endl;
+        }
+        settings->resultFormat = previousResultFormat;
     };
     auto checkSimplifiedLineForRepeatedTrigWithDegreeSignInResultDisplay = [&]() {
         settings->angleUnit = 'd';
@@ -7350,6 +7398,18 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
                                     "result display trig output has no degree suffix");
     checkSimplifiedLineForRepeatedTrigWithDegreeSignInResultDisplay();
     checkSimplifiedLineForMixedDegreeAliasesInResultDisplay();
+    checkScientificAngleUnitSpacing(
+        QStringLiteral("1e8 [arcsecond]"),
+        QString::fromUtf8("°"),
+        "result display scientific degree suffix keeps QuantSp");
+    checkScientificAngleUnitSpacing(
+        QStringLiteral("1e8 [arcsecond] -> [arcminute]"),
+        QString::fromUtf8("′"),
+        "result display scientific arcminute suffix keeps QuantSp");
+    checkScientificAngleUnitSpacing(
+        QStringLiteral("1e8 [arcsecond] -> [arcsecond]"),
+        QString::fromUtf8("″"),
+        "result display scientific arcsecond suffix keeps QuantSp");
 
     settings->angleUnit = 'r';
     Evaluator::instance()->initializeAngleUnits();
@@ -7490,6 +7550,7 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
     }
 
     settings->angleUnit = oldAngleUnit;
+    settings->resultFormat = oldResultFormat;
     settings->simplifyResultExpressions = oldSimplifyResultExpressions;
     Evaluator::instance()->initializeAngleUnits();
     session->clearHistory();

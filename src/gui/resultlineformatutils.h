@@ -277,15 +277,33 @@ inline QString trimTrailingFractionZeros(QString text)
 inline QString stripDisplayedUnitBrackets(QString text)
 {
     text.replace(RegExpPatterns::unitBrackets(), QStringLiteral("\\1"));
-    auto collapseTrailingCompactSuffix = [&text](const QChar suffix) {
+    auto endsWithPowerOfTenScientificNotation = [](const QString& prefix) {
+        const QString trimmed = prefix.trimmed();
+        return RegExpPatterns::trailingPowerOfTenScientificNotation().match(trimmed).hasMatch();
+    };
+    auto collapseTrailingCompactSuffix = [&text, &endsWithPowerOfTenScientificNotation](const QChar suffix) {
         const QString quantSpVariant = QString(MathDsl::QuantSp) + suffix;
         const QString asciiSpVariant = QStringLiteral(" ") + suffix;
+        const QString compactVariant = QString(suffix);
         if (text.endsWith(quantSpVariant)) {
+            if (endsWithPowerOfTenScientificNotation(
+                    text.left(text.size() - quantSpVariant.size()))) {
+                return;
+            }
             text.chop(quantSpVariant.size());
             text += suffix;
         } else if (text.endsWith(asciiSpVariant)) {
+            if (endsWithPowerOfTenScientificNotation(
+                    text.left(text.size() - asciiSpVariant.size()))) {
+                return;
+            }
             text.chop(asciiSpVariant.size());
             text += suffix;
+        } else if (text.endsWith(compactVariant)) {
+            if (endsWithPowerOfTenScientificNotation(
+                    text.left(text.size() - compactVariant.size()))) {
+                text.insert(text.size() - compactVariant.size(), MathDsl::QuantSp);
+            }
         }
     };
     collapseTrailingCompactSuffix(UnicodeChars::DegreeSign);
@@ -418,7 +436,10 @@ inline QString appendAngleModeSuffixIfNeeded(const QString& formattedText,
     }
 
     const QString symbol = Units::angleModeUnitSymbol(settings->angleUnit);
-    if (settings->angleUnit == 'd')
+    const bool hasPowerOfTenScientificSuffix =
+        RegExpPatterns::trailingPowerOfTenScientificNotation().match(
+            formattedText.trimmed()).hasMatch();
+    if (settings->angleUnit == 'd' && !hasPowerOfTenScientificSuffix)
         return formattedText + symbol;
     return formattedText + QString(MathDsl::QuantSp) + symbol;
 }
