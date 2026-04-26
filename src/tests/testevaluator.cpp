@@ -3631,6 +3631,24 @@ void test_angle_mode(Settings* settings)
                  << "\tError: " << qPrintable(eval->error()) << endl;
         }
     };
+    const auto checkDivByAngleKeepsAngleDisplay = [&](const QString& expression,
+                                                       const QString& expectedAngleToken) {
+        ++eval_total_tests;
+        eval->setExpression(expression);
+        const QString display = NumberFormatter::format(eval->evalUpdateAns());
+        if (!eval->error().isEmpty()
+            || !display.contains(QString(::unitSymbol(UnitId::Metre)))
+            || !display.contains(expectedAngleToken)
+            || display.endsWith(QStringLiteral("[m]")))
+        {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tlength-per-angle keeps angle denominator display unit\t[NEW]" << endl
+                 << "\tExpression: " << expression.toUtf8().constData() << endl
+                 << "\tResult: " << display.toUtf8().constData() << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+        }
+    };
 
     settings->angleUnit = 'r';
     Evaluator::instance()->initializeAngleUnits();
@@ -3689,6 +3707,7 @@ void test_angle_mode(Settings* settings)
     checkCompositeAngleAliasDisplay(QString::fromUtf8("1 [rad/m] -> [″/m]"),
                                     Units::arcsecondAliasSymbol(),
                                     QString(UnicodeChars::DoublePrime));
+    checkDivByAngleKeepsAngleDisplay(QStringLiteral("1 [m/arcmin]"), Units::angleModeUnitSymbol('r'));
     checkAngularRateDisplayContains(QStringLiteral("360 [deg second^-1]"), 'r', Units::angleModeUnitSymbol('r'));
     checkAngularRateDisplayContains(QStringLiteral("1 [rev/min]"), 'r', Units::angleModeUnitSymbol('r'));
     checkAngularRateDisplayContains(QStringLiteral("1 [rev*min^-1]"), 'r', Units::angleModeUnitSymbol('r'));
@@ -3765,6 +3784,7 @@ void test_angle_mode(Settings* settings)
     checkAngularRateDisplayContains(QStringLiteral("1 [rev/min]"), 'd', Units::angleModeUnitSymbol('d'));
     checkAngularRateDisplayContains(QStringLiteral("1 [rev*min^-1]"), 'd', Units::angleModeUnitSymbol('d'));
     checkAngularRateDisplayContains(QStringLiteral("1 [rpm]"), 'd', Units::angleModeUnitSymbol('d'));
+    checkDivByAngleKeepsAngleDisplay(QStringLiteral("1 [m/arcmin]"), Units::degreeAliasSymbol());
     CHECK_EVAL_KNOWN_ISSUE("arcsin(0.25)", "14.47751218592992387877", 781);
 
     settings->angleUnit = 'g';

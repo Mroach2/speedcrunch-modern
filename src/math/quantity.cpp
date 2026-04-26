@@ -1525,7 +1525,26 @@ Quantity Quantity::operator/(const Quantity& other) const
             }
         }
     } else if (this->hasUnit()) {
-        copyDisplayUnit(*this);
+        const bool divisorHasExplicitAngleUnit =
+            other.hasUnit() && Units::isExplicitAngleUnitName(other.unitName());
+        if (divisorHasExplicitAngleUnit) {
+            result.setDisplayUnit(this->unit() / other.unit(),
+                                  composeQuotientUnitName(this->unitName(), other.unitName()));
+        } else {
+            copyDisplayUnit(*this);
+        }
+    } else if (other.hasUnit()
+               && Units::isExplicitAngleUnitName(other.unitName())
+               && !result.isDimensionless())
+    {
+        Quantity canonicalNumerator(*this);
+        canonicalNumerator.cleanDimension();
+        Units::findUnit(canonicalNumerator);
+        if (canonicalNumerator.hasUnit()) {
+            result.setDisplayUnit(canonicalNumerator.unit() / other.unit(),
+                                  composeQuotientUnitName(canonicalNumerator.unitName(),
+                                                          other.unitName()));
+        }
     }
 
     if (result.hasUnit()) {
