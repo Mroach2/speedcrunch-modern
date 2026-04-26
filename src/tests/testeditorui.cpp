@@ -1945,6 +1945,8 @@ void TestEditorUi::matches_micro_units_when_typing_u_in_unit_context()
     const QStringList uChoices = editor.matchFragment(QStringLiteral("u"), true);
     QVERIFY(uChoices.contains(QString::fromUtf8("µm:Unit")));
     QVERIFY(uChoices.contains(QString::fromUtf8("µs:Unit")));
+    QVERIFY(uChoices.contains(QString::fromUtf8("µas:Unit")));
+    QVERIFY(!uChoices.contains(QStringLiteral("uas:Unit")));
 }
 
 void TestEditorUi::unit_context_completion_includes_angle_units_and_long_forms()
@@ -1961,6 +1963,19 @@ void TestEditorUi::unit_context_completion_includes_angle_units_and_long_forms()
     const QStringList arcChoices = editor.matchFragment(QStringLiteral("arc"), true);
     QVERIFY(arcChoices.contains(QStringLiteral("arcminute:Unit")));
     QVERIFY(arcChoices.contains(QStringLiteral("arcsecond:Unit")));
+    QVERIFY(arcChoices.contains(QStringLiteral("arcsec:Unit")));
+
+    const QStringList masChoices = editor.matchFragment(QStringLiteral("mas"), true);
+    QVERIFY(masChoices.contains(QStringLiteral("mas:Unit")));
+
+    const QStringList uasChoices = editor.matchFragment(QStringLiteral("u"), true);
+    QVERIFY(uasChoices.contains(QString::fromUtf8("µas:Unit")));
+
+    const QStringList milliArcChoices = editor.matchFragment(QStringLiteral("milliarc"), true);
+    QVERIFY(milliArcChoices.contains(QStringLiteral("milliarcsecond:Unit")));
+
+    const QStringList microArcChoices = editor.matchFragment(QStringLiteral("microarc"), true);
+    QVERIFY(microArcChoices.contains(QStringLiteral("microarcsecond:Unit")));
 
     const QStringList turnChoices = editor.matchFragment(QStringLiteral("turn"), true);
     QVERIFY(turnChoices.contains(QStringLiteral("turn:Unit")));

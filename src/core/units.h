@@ -120,6 +120,8 @@ enum class UnitId {
     Degree,
     Arcminute,
     Arcsecond,
+    Milliarcsecond,
+    Microarcsecond,
     Hectare,
     Litre,
     Tonne,
@@ -376,6 +378,8 @@ public:
     static const Quantity revolution();
     static const Quantity arcminute();
     static const Quantity arcsecond();
+    static const Quantity milliarcsecond();
+    static const Quantity microarcsecond();
     static const Quantity steradian();
     static const Quantity pascal();
     static const Quantity joule();

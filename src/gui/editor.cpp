@@ -1623,6 +1623,10 @@ QStringList Editor::matchFragment(const QString& id, bool unitContext) const
         for (const QString& unitName : allUnits) {
             if (!unitNameMatchesFragment(unitName))
                 continue;
+            // Keep parsing support for ASCII microarcsecond alias, but avoid
+            // showing it in completion where the preferred symbol is "µas".
+            if (unitName == QStringLiteral("uas"))
+                continue;
             if (seenUnitNames.contains(unitName))
                 continue;
             seenUnitNames.insert(unitName);

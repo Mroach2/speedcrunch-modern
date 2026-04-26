@@ -73,6 +73,8 @@ namespace UnitName {
     inline const QString Angstrom = QStringLiteral("angstrom");
     inline const QString Arcminute = QStringLiteral("arcminute");
     inline const QString Arcsecond = QStringLiteral("arcsecond");
+    inline const QString Milliarcsecond = QStringLiteral("milliarcsecond");
+    inline const QString Microarcsecond = QStringLiteral("microarcsecond");
     inline const QString AstronomicalUnit = QStringLiteral("astronomical_unit");
     inline const QString Atmosphere = QStringLiteral("atmosphere");
     inline const QString AtomicMassUnit = QStringLiteral("atomic_mass_unit");
@@ -210,6 +212,8 @@ namespace UnitSymbol {
     inline const QString Angstrom = QStringLiteral("Å");
     inline const QString Arcminute = QStringLiteral("′");
     inline const QString Arcsecond = QStringLiteral("″");
+    inline const QString Milliarcsecond = QStringLiteral("mas");
+    inline const QString Microarcsecond = QStringLiteral("µas");
     inline const QString AstronomicalUnit = QStringLiteral("au");
     inline const QString Atmosphere = QStringLiteral("atm");
     inline const QString AtomicMassUnit = QStringLiteral("u");
@@ -351,6 +355,7 @@ namespace UnitAltSymbol {
     inline const QString Degree = QStringLiteral("deg");
     inline const QString Arcminute = QStringLiteral("arcmin");
     inline const QString Arcsecond = QStringLiteral("arcsec");
+    inline const QString MicroarcsecondAscii = QStringLiteral("uas");
     inline const QString CubicCentimetre = QStringLiteral("cc");
     inline const QString Litre = QStringLiteral("l");
     inline const QString DegreeFahrenheit1 = QStringLiteral("ºF");
@@ -602,6 +607,8 @@ const QHash<UnitId, UnitSpec>& s_unitSpecs()
         {UnitId::Degree, UnitSpec{UnitName::Degree, UnitSymbol::Degree, {UnitAltSymbol::DegreeRing, UnitAltSymbol::Degree}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::degree}},
         {UnitId::Arcminute, UnitSpec{UnitName::Arcminute, UnitSymbol::Arcminute, {UnitAltSymbol::Arcminute}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::arcminute}},
         {UnitId::Arcsecond, UnitSpec{UnitName::Arcsecond, UnitSymbol::Arcsecond, {UnitAltSymbol::Arcsecond}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::arcsecond}},
+        {UnitId::Milliarcsecond, UnitSpec{UnitName::Milliarcsecond, UnitSymbol::Milliarcsecond, {}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::milliarcsecond}},
+        {UnitId::Microarcsecond, UnitSpec{UnitName::Microarcsecond, UnitSymbol::Microarcsecond, {UnitAltSymbol::MicroarcsecondAscii}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::microarcsecond}},
         {UnitId::Hectare, UnitSpec{UnitName::Hectare, UnitSymbol::Hectare, {}, UnitFamily::SiAccepted, {UnitQuantity::Area}, NoSiPrefixes, &Units::hectare}},
         {UnitId::Litre, UnitSpec{UnitName::Litre, UnitSymbol::Litre, {UnitAltSymbol::Litre}, UnitFamily::SiAccepted, {UnitQuantity::Volume}, AllSiPrefixes, &Units::litre}},
         {UnitId::Tonne, UnitSpec{UnitName::Tonne, UnitSymbol::Tonne, {}, UnitFamily::SiAccepted, {UnitQuantity::Mass}, AllSiPrefixes, &Units::tonne}},
@@ -996,7 +1003,9 @@ enum class AngleUnitKind {
     Gradian,
     Turn,
     Arcminute,
-    Arcsecond
+    Arcsecond,
+    Milliarcsecond,
+    Microarcsecond
 };
 
 // Normalizes explicit angle unit tokens, including masculine ordinal aliasing.
@@ -1031,6 +1040,13 @@ AngleUnitKind angleUnitKindFromName(const QString& name)
     if (normalized == unitName(UnitId::Arcsecond)
         || normalized == UnitAltSymbol::Arcsecond)
         return AngleUnitKind::Arcsecond;
+    if (normalized == unitName(UnitId::Milliarcsecond)
+        || normalized == UnitSymbol::Milliarcsecond)
+        return AngleUnitKind::Milliarcsecond;
+    if (normalized == unitName(UnitId::Microarcsecond)
+        || normalized == UnitSymbol::Microarcsecond
+        || normalized == UnitAltSymbol::MicroarcsecondAscii)
+        return AngleUnitKind::Microarcsecond;
     return AngleUnitKind::None;
 }
 
@@ -1074,6 +1090,16 @@ Quantity angleUnitValueForMode(AngleUnitKind angleUnit, char angleMode)
         Quantity arcsecond = Units::arcsecond() / modeReference;
         arcsecond.setDisplayUnit(Quantity(1).numericValue(), Units::angleModeUnitSymbol(angleMode));
         return arcsecond;
+    }
+    if (angleUnit == AngleUnitKind::Milliarcsecond) {
+        Quantity milliarcsecond = Units::milliarcsecond() / modeReference;
+        milliarcsecond.setDisplayUnit(Quantity(1).numericValue(), Units::angleModeUnitSymbol(angleMode));
+        return milliarcsecond;
+    }
+    if (angleUnit == AngleUnitKind::Microarcsecond) {
+        Quantity microarcsecond = Units::microarcsecond() / modeReference;
+        microarcsecond.setDisplayUnit(Quantity(1).numericValue(), Units::angleModeUnitSymbol(angleMode));
+        return microarcsecond;
     }
     return Quantity(0);
 }
@@ -2080,8 +2106,13 @@ QHash<QString, Quantity> Units::builtInUnitLookup(char angleMode)
     }
     lookup.insert(unitName(UnitId::Arcminute), angleUnitValueForMode(AngleUnitKind::Arcminute, angleMode));
     lookup.insert(unitName(UnitId::Arcsecond), angleUnitValueForMode(AngleUnitKind::Arcsecond, angleMode));
+    lookup.insert(unitName(UnitId::Milliarcsecond), angleUnitValueForMode(AngleUnitKind::Milliarcsecond, angleMode));
+    lookup.insert(unitName(UnitId::Microarcsecond), angleUnitValueForMode(AngleUnitKind::Microarcsecond, angleMode));
     lookup.insert(UnitAltSymbol::Arcminute, angleUnitValueForMode(AngleUnitKind::Arcminute, angleMode));
     lookup.insert(UnitAltSymbol::Arcsecond, angleUnitValueForMode(AngleUnitKind::Arcsecond, angleMode));
+    lookup.insert(UnitSymbol::Milliarcsecond, angleUnitValueForMode(AngleUnitKind::Milliarcsecond, angleMode));
+    lookup.insert(UnitSymbol::Microarcsecond, angleUnitValueForMode(AngleUnitKind::Microarcsecond, angleMode));
+    lookup.insert(UnitAltSymbol::MicroarcsecondAscii, angleUnitValueForMode(AngleUnitKind::Microarcsecond, angleMode));
 
     for (auto it = lookup.begin(); it != lookup.end(); ++it) {
         Quantity prefixedAngleValue;
@@ -2153,6 +2184,10 @@ bool Units::tryConvertExplicitAngleToRadians(Quantity* angle)
         *angle = DMath::deg2rad(*angle / Quantity(60));
     else if (unitKind == AngleUnitKind::Arcsecond)
         *angle = DMath::deg2rad(*angle / Quantity(3600));
+    else if (unitKind == AngleUnitKind::Milliarcsecond)
+        *angle = DMath::deg2rad(*angle / Quantity(3600000));
+    else if (unitKind == AngleUnitKind::Microarcsecond)
+        *angle = DMath::deg2rad(*angle / HNumber("3600000000"));
 
     angle->stripUnits();
     return true;
@@ -2176,6 +2211,8 @@ DEFINE_DERIVED_UNIT(turn, HNumber(2) * HMath::pi() * Units::radian())
 DEFINE_DERIVED_UNIT(revolution, HNumber(2) * HMath::pi() * Units::radian())
 DEFINE_DERIVED_UNIT(arcminute, Units::degree() / HNumber(60))
 DEFINE_DERIVED_UNIT(arcsecond, Units::arcminute() / HNumber(60))
+DEFINE_DERIVED_UNIT(milliarcsecond, Units::milli() * Units::arcsecond())
+DEFINE_DERIVED_UNIT(microarcsecond, Units::micro() * Units::arcsecond())
 DEFINE_DERIVED_UNIT(pascal, Units::newton() / Units::square_metre())
 DEFINE_DERIVED_UNIT(joule, Units::newton() * Units::metre())
 DEFINE_DERIVED_UNIT(watt, Units::joule() / Units::second())
