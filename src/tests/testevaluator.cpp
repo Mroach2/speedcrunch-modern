@@ -7932,6 +7932,64 @@ void test_result_display_shows_pi_multiples_for_radian_angle_results()
     session->clearHistory();
 }
 
+void test_result_display_compacts_bracketed_degree_inside_trig_call()
+{
+    Settings* settings = Settings::instance();
+    Session* session = const_cast<Session*>(eval->session());
+    const char oldAngleUnit = settings->angleUnit;
+
+    settings->angleUnit = 'r';
+    Evaluator::instance()->initializeAngleUnits();
+    session->clearHistory();
+
+    const QString expr = QString::fromUtf8("tan(180°)");
+    eval->setExpression(expr);
+    const Quantity value = eval->evalUpdateAns();
+
+    ++eval_total_tests;
+    if (!eval->error().isEmpty()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tevaluate tan(180°) compact-degree display case\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+        settings->angleUnit = oldAngleUnit;
+        Evaluator::instance()->initializeAngleUnits();
+        session->clearHistory();
+        return;
+    }
+
+    session->addHistoryEntry(HistoryEntry(expr, value, eval->interpretedExpression()));
+
+    TestableResultDisplay display;
+    display.resize(800, 600);
+    display.refresh();
+
+    const QString expressionLine = display.document()->findBlockByNumber(0).text();
+    const QString resultLine = display.document()->findBlockByNumber(1).text();
+
+    ++eval_total_tests;
+    if (expressionLine != expr) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tresult display keeps compact degree suffix in trig expression line\t[NEW]" << endl
+             << "\tLine     : " << expressionLine.toUtf8().constData() << endl
+             << "\tExpected : " << expr.toUtf8().constData() << endl;
+    }
+
+    ++eval_total_tests;
+    if (!resultLine.startsWith(QStringLiteral("= 0"))) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tresult display tan(180°) numeric line\t[NEW]" << endl
+             << "\tLine     : " << resultLine.toUtf8().constData() << endl
+             << "\tExpected : starts with '= 0'" << endl;
+    }
+
+    settings->angleUnit = oldAngleUnit;
+    Evaluator::instance()->initializeAngleUnits();
+    session->clearHistory();
+}
+
 void test_trig_symbolic_fraction_half()
 {
     eval->setExpression(QStringLiteral("cos(pi/3)"));
@@ -8364,6 +8422,7 @@ int main(int argc, char* argv[])
     test_value_unit_separator_normalization();
     test_result_display_preserves_standalone_sexagesimal_angles_without_implicit_conversion();
     test_result_display_shows_pi_multiples_for_radian_angle_results();
+    test_result_display_compacts_bracketed_degree_inside_trig_call();
     test_trig_symbolic_fraction_half();
     test_non_informative_numeric_simplified_row_suppression();
 

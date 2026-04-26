@@ -20,6 +20,7 @@
 #define CORE_REGEXPATTERNS_H
 
 #include <QRegularExpression>
+#include <QStringView>
 
 namespace RegExpPatterns {
 
@@ -86,6 +87,25 @@ inline const QRegularExpression& trigFunctionCall()
         QStringLiteral(R"(\b(?:sin|cos|tan|cot|sec|csc|arcsin|arccos|arctan|arctan2|radians|degrees|gradians)\s*\()"),
         QRegularExpression::CaseInsensitiveOption);
     return pattern;
+}
+
+// Returns true when identifier text names a trigonometric function.
+// Example input/output: "tan" -> true; "round" -> false.
+inline bool isTrigFunctionIdentifier(QStringView identifier)
+{
+    return identifier.compare(QStringLiteral("sin"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("cos"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("tan"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("cot"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("sec"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("csc"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("arcsin"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("arccos"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("arctan"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("arctan2"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("degrees"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("radians"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("gradians"), Qt::CaseInsensitive) == 0;
 }
 
 // Matches a full expression that is one plain function call.
@@ -172,7 +192,7 @@ inline const QRegularExpression& bracketedSimpleUnitIdentifier()
 inline const QRegularExpression& compactAngleTokenInBrackets()
 {
     static const QRegularExpression pattern(
-        QStringLiteral("\\[\\s*([\\x{2032}\\x{2033}]|arcmin(?:ute)?|arcsec(?:ond)?)\\s*\\]"),
+        QStringLiteral("\\[\\s*([\\x{00B0}\\x{00BA}\\x{02DA}\\x{2032}\\x{2033}]|deg(?:ree)?|arcmin(?:ute)?|arcsec(?:ond)?)\\s*\\]"),
         QRegularExpression::CaseInsensitiveOption);
     return pattern;
 }

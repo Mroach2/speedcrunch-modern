@@ -54,6 +54,9 @@ inline QString collapseBracketedCompactAngleSuffixes(QString text)
         const QString normalized = normalizeUnitName(
             UnicodeChars::normalizeUnitSymbolAliases(token.trimmed()));
         const UnitId id = unitId(normalized);
+        if (id == UnitId::Degree) {
+            return UnicodeChars::DegreeSign;
+        }
         if (id == UnitId::Arcminute) {
             return UnicodeChars::Prime;
         }
@@ -73,6 +76,44 @@ inline QString collapseBracketedCompactAngleSuffixes(QString text)
             || ch == UnicodeChars::DegreeSign
             || ch == UnicodeChars::Prime
             || ch == UnicodeChars::DoublePrime;
+    };
+    auto isInsideTrigCallArgument = [&](int index) {
+        QVector<int> parenStack;
+        parenStack.reserve(8);
+        for (int i = 0; i < index && i < text.size(); ++i) {
+            const QChar ch = text.at(i);
+            if (ch == MathDsl::GroupStart) {
+                parenStack.append(i);
+            } else if (ch == MathDsl::GroupEnd) {
+                if (!parenStack.isEmpty())
+                    parenStack.removeLast();
+            }
+        }
+        if (parenStack.isEmpty())
+            return false;
+
+        const int openParenPos = parenStack.last();
+        int nameEnd = openParenPos - 1;
+        while (nameEnd >= 0 && text.at(nameEnd).isSpace())
+            --nameEnd;
+        if (nameEnd < 0)
+            return false;
+
+        int nameStart = nameEnd;
+        while (nameStart >= 0) {
+            const QChar ch = text.at(nameStart);
+            if (ch.isLetterOrNumber() || ch == UnicodeChars::LowLine) {
+                --nameStart;
+                continue;
+            }
+            break;
+        }
+        ++nameStart;
+        if (nameStart > nameEnd)
+            return false;
+
+        return RegExpPatterns::isTrigFunctionIdentifier(
+            QStringView(text).mid(nameStart, nameEnd - nameStart + 1));
     };
 
     QString output;
@@ -95,15 +136,26 @@ inline QString collapseBracketedCompactAngleSuffixes(QString text)
             cursor = tokenEnd;
             continue;
         }
-        if (right < text.size() && text.at(right) == MathDsl::GroupEnd) {
-            output += text.mid(cursor, tokenEnd - cursor);
-            cursor = tokenEnd;
-            continue;
-        }
-
         output += text.mid(cursor, left - cursor + 1);
         const QChar suffix = compactSuffixForToken(match.captured(1));
-        output += suffix.isNull() ? match.captured(0) : QString(suffix);
+        if (suffix.isNull()) {
+            output += match.captured(0);
+        } else {
+            if (suffix == UnicodeChars::DegreeSign
+                && !isInsideTrigCallArgument(tokenStart)) {
+                output += match.captured(0);
+                cursor = tokenEnd;
+                continue;
+            }
+            const QChar leftChar = text.at(left);
+            const bool alreadyHasSameSuffix =
+                leftChar == suffix
+                || (suffix == UnicodeChars::DegreeSign
+                    && (leftChar == UnicodeChars::MasculineOrdinalIndicator
+                        || leftChar == UnicodeChars::RingAbove));
+            if (!alreadyHasSameSuffix)
+                output += suffix;
+        }
         cursor = tokenEnd;
     }
     output += text.mid(cursor);
