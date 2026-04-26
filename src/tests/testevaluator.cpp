@@ -7766,6 +7766,172 @@ void test_result_display_preserves_standalone_sexagesimal_angles_without_implici
     session->clearHistory();
 }
 
+void test_result_display_shows_pi_multiples_for_radian_angle_results()
+{
+    Settings* settings = Settings::instance();
+    Session* session = const_cast<Session*>(eval->session());
+    const char oldAngleUnit = settings->angleUnit;
+    const char oldResultFormat = settings->resultFormat;
+    const bool oldSimplify = settings->simplifyResultExpressions;
+    const bool oldMultipleResultLinesEnabled = settings->multipleResultLinesEnabled;
+
+    settings->resultFormat = 'g';
+    settings->simplifyResultExpressions = false;
+    settings->multipleResultLinesEnabled = false;
+
+    auto normalizeDisplaySpaces = [](QString text) {
+        text.replace(MathDsl::QuantSp, QLatin1Char(' '));
+        text.replace(UnicodeChars::NoBreakSpace, QLatin1Char(' '));
+        return text;
+    };
+
+    auto checkPiLine = [&](char angleUnit,
+                           const QString& expression,
+                           const QString& expectedPiLine,
+                           const char* label) {
+        settings->angleUnit = angleUnit;
+        Evaluator::instance()->initializeAngleUnits();
+        session->clearHistory();
+
+        eval->setExpression(expression);
+        const Quantity value = eval->evalUpdateAns();
+
+        ++eval_total_tests;
+        if (!eval->error().isEmpty()) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\t" << label << "\t[NEW]" << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+            return;
+        }
+
+        session->addHistoryEntry(HistoryEntry(expression, value, eval->interpretedExpression()));
+
+        TestableResultDisplay display;
+        display.resize(800, 600);
+        display.refresh();
+
+        const QString text = display.document()->toPlainText();
+        const QString normalizedText = normalizeDisplaySpaces(text);
+        const QString normalizedExpected = normalizeDisplaySpaces(expectedPiLine);
+        ++eval_total_tests;
+        if (!normalizedText.contains(normalizedExpected)) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\t" << label << "\t[NEW]" << endl
+                 << "\tExpression: " << expression.toUtf8().constData() << endl
+                 << "\tText      : " << text.toUtf8().constData() << endl
+                 << "\tExpected  : contains "
+                 << expectedPiLine.toUtf8().constData() << endl;
+        }
+    };
+
+    const QString radSuffix = QString(MathDsl::QuantSp) + Units::angleModeUnitSymbol('r');
+    const QString multiplication = QString(MathDsl::MulDotWrapSp)
+        + QString(MathDsl::MulDotOp)
+        + QString(MathDsl::MulDotWrapSp);
+    const QString division = QString(MathDsl::DivWrap)
+        + QString(MathDsl::DivOp)
+        + QString(MathDsl::DivWrap);
+
+    checkPiLine(
+        'r',
+        QString::fromUtf8("360°"),
+        QStringLiteral("= 2") + multiplication + QString::fromUtf8("π") + radSuffix,
+        "result display adds 2·pi rad line for 360 degree input in radian mode");
+    checkPiLine(
+        'd',
+        QString::fromUtf8("180° -> [rad]"),
+        QStringLiteral("= ") + QString::fromUtf8("π") + radSuffix,
+        "result display adds pi rad line for explicit degree-to-radian conversion");
+    checkPiLine(
+        'r',
+        QString::fromUtf8("270°"),
+        QStringLiteral("= 3") + division + QStringLiteral("2")
+            + multiplication + QString::fromUtf8("π") + radSuffix,
+        "result display adds 3/2·pi rad line for 270 degree input in radian mode");
+    checkPiLine(
+        'd',
+        QStringLiteral("50 [gon] -> [rad]"),
+        QStringLiteral("= ") + QString::fromUtf8("π") + division + QStringLiteral("4") + radSuffix,
+        "result display adds pi/4 rad line for gradian-to-radian conversion");
+    checkPiLine(
+        'r',
+        QString::fromUtf8("180″"),
+        QStringLiteral("= ") + QString::fromUtf8("π") + division + QStringLiteral("3600") + radSuffix,
+        "result display adds pi/3600 rad line for arcsecond input in radian mode");
+    checkPiLine(
+        'r',
+        QString::fromUtf8("180°"),
+        QStringLiteral("= ") + QString::fromUtf8("π") + radSuffix,
+        "result display adds pi rad line for degree input in radian mode");
+    checkPiLine(
+        'r',
+        QString::fromUtf8("180′"),
+        QStringLiteral("= ") + QString::fromUtf8("π") + division + QStringLiteral("60") + radSuffix,
+        "result display adds pi/60 rad line for arcminute input in radian mode");
+
+    auto checkArctanDedup = [&](const QString& expression,
+                                const QString& expectedPiLine,
+                                const QString& redundantLine,
+                                const char* label) {
+        settings->angleUnit = 'r';
+        Evaluator::instance()->initializeAngleUnits();
+        session->clearHistory();
+        eval->setExpression(expression);
+        const Quantity arctanValue = eval->evalUpdateAns();
+        ++eval_total_tests;
+        if (!eval->error().isEmpty()) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\t" << label << "\t[NEW]" << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+            return;
+        }
+
+        session->addHistoryEntry(HistoryEntry(expression, arctanValue, eval->interpretedExpression()));
+
+        TestableResultDisplay display;
+        display.resize(800, 600);
+        display.refresh();
+
+        const QString text = display.document()->toPlainText();
+        const QStringList lines = normalizeDisplaySpaces(text).split(QLatin1Char('\n'));
+        const bool hasPiLine = lines.contains(normalizeDisplaySpaces(expectedPiLine));
+        const bool hasRedundantLine = lines.contains(normalizeDisplaySpaces(redundantLine));
+
+        ++eval_total_tests;
+        if (!hasPiLine || hasRedundantLine) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\t" << label << "\t[NEW]" << endl
+                 << "\tText     : " << text.toUtf8().constData() << endl
+                 << "\tExpected : contains "
+                 << expectedPiLine.toUtf8().constData()
+                 << " and does not contain "
+                 << redundantLine.toUtf8().constData() << endl;
+        }
+    };
+
+    checkArctanDedup(
+        QStringLiteral("arctan(1)"),
+        QStringLiteral("= ") + QString::fromUtf8("π") + division + QStringLiteral("4") + radSuffix,
+        QStringLiteral("= ") + QString::fromUtf8("π") + division + QStringLiteral("4"),
+        "result display omits redundant trig symbolic line when pi/4 rad line exists");
+    checkArctanDedup(
+        QString::fromUtf8("arctan(−1)"),
+        QStringLiteral("= ") + QString::fromUtf8("−π") + division + QStringLiteral("4") + radSuffix,
+        QStringLiteral("= ") + QString::fromUtf8("-π") + division + QStringLiteral("4"),
+        "result display omits redundant trig symbolic line when -pi/4 rad line exists");
+
+    settings->angleUnit = oldAngleUnit;
+    settings->resultFormat = oldResultFormat;
+    settings->simplifyResultExpressions = oldSimplify;
+    settings->multipleResultLinesEnabled = oldMultipleResultLinesEnabled;
+    Evaluator::instance()->initializeAngleUnits();
+    session->clearHistory();
+}
+
 void test_trig_symbolic_fraction_half()
 {
     eval->setExpression(QStringLiteral("cos(pi/3)"));
@@ -8197,6 +8363,7 @@ int main(int argc, char* argv[])
     test_result_display_keeps_quantsp_before_degree_celsius_and_fahrenheit();
     test_value_unit_separator_normalization();
     test_result_display_preserves_standalone_sexagesimal_angles_without_implicit_conversion();
+    test_result_display_shows_pi_multiples_for_radian_angle_results();
     test_trig_symbolic_fraction_half();
     test_non_informative_numeric_simplified_row_suppression();
 

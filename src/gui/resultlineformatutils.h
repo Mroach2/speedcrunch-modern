@@ -19,6 +19,7 @@
 #include "core/units.h"
 #include "gui/displayformatutils.h"
 #include "gui/simplifiedexpressionutils.h"
+#include "math/rational.h"
 
 #include <QRegularExpression>
 #include <QString>
@@ -499,6 +500,168 @@ inline bool shouldShowAdditionalRationalForTrig(const Settings* settings,
     return !NumberFormatter::formatTrigSymbolic(value).isEmpty();
 }
 
+inline QString conversionTargetText(const QString& expression)
+{
+    const int asciiArrowPos = expression.lastIndexOf(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp);
+    const int unicodeArrowPos = expression.lastIndexOf(MathDsl::TransOp);
+
+    int arrowPos = -1;
+    int arrowWidth = 0;
+    if (asciiArrowPos >= 0 && asciiArrowPos >= unicodeArrowPos) {
+        arrowPos = asciiArrowPos;
+        arrowWidth = 2;
+    } else if (unicodeArrowPos >= 0) {
+        arrowPos = unicodeArrowPos;
+        arrowWidth = 1;
+    }
+
+    if (arrowPos < 0)
+        return QString();
+
+    return expression.mid(arrowPos + arrowWidth).trimmed();
+}
+
+inline bool isRadianUnitText(QString text)
+{
+    text = text.trimmed();
+    if (text.startsWith(MathDsl::UnitStart) && text.endsWith(MathDsl::UnitEnd) && text.size() > 2)
+        text = text.mid(1, text.size() - 2).trimmed();
+    text = normalizeUnitName(UnicodeChars::normalizeUnitSymbolAliases(text));
+    return unitId(text) == UnitId::Radian;
+}
+
+inline bool isRadianResultContext(const Settings* settings,
+                                  const QString& sourceExpression,
+                                  const QString& interpretedExpression)
+{
+    if (settings->angleUnit == 'r')
+        return true;
+
+    const QString sourceTarget = conversionTargetText(sourceExpression);
+    if (!sourceTarget.isEmpty() && isRadianUnitText(sourceTarget))
+        return true;
+
+    const QString interpretedTarget = conversionTargetText(interpretedExpression);
+    return !interpretedTarget.isEmpty() && isRadianUnitText(interpretedTarget);
+}
+
+inline bool expressionUsesTrigOrExplicitAngleInput(const QString& sourceExpression,
+                                                   const QString& interpretedExpression)
+{
+    if (expressionUsesTrigFunction(sourceExpression, interpretedExpression))
+        return true;
+
+    return containsExplicitBracketedAngleUnit(sourceExpression)
+        || containsExplicitBracketedAngleUnit(interpretedExpression)
+        || containsExplicitSexagesimalAngleMarkers(sourceExpression)
+        || containsExplicitSexagesimalAngleMarkers(interpretedExpression);
+}
+
+inline bool tryExtractRealRadiansFromResult(const Quantity& value, HNumber* radiansOut)
+{
+    if (!radiansOut || value.isNan())
+        return false;
+
+    Quantity scalar = value;
+    if (scalar.hasUnit()) {
+        CNumber displayNumber = scalar.numericValue();
+        displayNumber /= scalar.unit();
+        if (!displayNumber.isNearReal())
+            return false;
+
+        Quantity normalized(displayNumber.real);
+        normalized.setDisplayUnit(CNumber(1), scalar.unitName());
+        if (!Units::tryConvertExplicitAngleToRadians(&normalized))
+            return false;
+
+        scalar = normalized;
+    }
+
+    if (!scalar.isDimensionless())
+        return false;
+
+    const CNumber numeric = scalar.numericValue();
+    if (!numeric.isNearReal())
+        return false;
+
+    *radiansOut = numeric.real;
+    return true;
+}
+
+inline QString formatPiMultipleForRadians(const HNumber& radians)
+{
+    static const HNumber tolerance("1e-20");
+    static const int maxDenominator = 3600;
+
+    Rational ratio;
+    if (!Rational::approximate(radians / HMath::pi(), maxDenominator, tolerance, &ratio))
+        return QString();
+
+    const int numerator = ratio.numerator();
+    const int denominator = ratio.denominator();
+    if (numerator == 0 || denominator <= 0)
+        return QString();
+
+    const HNumber expected = HMath::pi() * HNumber(numerator) / HNumber(denominator);
+    const HNumber diff = HMath::abs(radians - expected);
+    const HNumber scale = HMath::max(HMath::max(HMath::abs(radians), HMath::abs(expected)), HNumber(1));
+    if (diff > tolerance * scale)
+        return QString();
+
+    const QString division = QString(MathDsl::DivWrap) + QString(MathDsl::DivOp) + QString(MathDsl::DivWrap);
+    const QString multiplication = QString(MathDsl::MulDotWrapSp) + QString(MathDsl::MulDotOp)
+        + QString(MathDsl::MulDotWrapSp);
+    const QString pi = QString(UnicodeChars::Pi);
+    const QString sign = (numerator < 0) ? QString(MathDsl::SubOp) : QString();
+    const int absNumerator = qAbs(numerator);
+
+    if (denominator == 1) {
+        if (absNumerator == 1)
+            return sign + pi;
+        return sign + QString::number(absNumerator) + multiplication + pi;
+    }
+
+    if (absNumerator == 1)
+        return sign + pi + division + QString::number(denominator);
+
+    return sign
+        + QString::number(absNumerator)
+        + division
+        + QString::number(denominator)
+        + multiplication
+        + pi;
+}
+
+inline QString formatPiRadianResultLineIfNeeded(const Settings* settings,
+                                                const QString& sourceExpression,
+                                                const QString& interpretedExpression,
+                                                const Quantity& value)
+{
+    if (!expressionUsesTrigOrExplicitAngleInput(sourceExpression, interpretedExpression))
+        return QString();
+    if (!isRadianResultContext(settings, sourceExpression, interpretedExpression))
+        return QString();
+
+    HNumber radians;
+    if (!tryExtractRealRadiansFromResult(value, &radians))
+        return QString();
+
+    const QString piMultiple = formatPiMultipleForRadians(radians);
+    if (piMultiple.isEmpty())
+        return QString();
+
+    return DisplayFormatUtils::applyDigitGroupingForDisplay(
+        piMultiple + QString(MathDsl::QuantSp) + Units::angleModeUnitSymbol('r'));
+}
+
+inline QString normalizeResultLineForComparison(QString text)
+{
+    text.replace(MathDsl::QuantSp, QLatin1Char(' '));
+    text.replace(UnicodeChars::NoBreakSpace, QLatin1Char(' '));
+    text.replace(MathDsl::SubOp, MathDsl::SubOpAl1);
+    return text;
+}
+
 inline QString appendAngleModeSuffixIfNeeded(const QString& formattedText,
                                              const QString& sourceExpression,
                                              const QString& interpretedExpression,
@@ -681,10 +844,26 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
             settings));
     }
 
+    const QString piRadianResultLine = formatPiRadianResultLineIfNeeded(
+        settings, sourceExpression, interpretedExpression, value);
+    if (!piRadianResultLine.isEmpty())
+        appendUniqueLine(QStringLiteral("= ") + piRadianResultLine);
+
     if (shouldShowAdditionalRationalForTrig(
             settings, sourceExpression, interpretedExpression, value)) {
-        appendUniqueLine(QStringLiteral("= ") + DisplayFormatUtils::applyDigitGroupingForDisplay(
-            NumberFormatter::formatTrigSymbolic(value)));
+        const QString trigSymbolicLine = DisplayFormatUtils::applyDigitGroupingForDisplay(
+            NumberFormatter::formatTrigSymbolic(value));
+        const QString trigSymbolicNormalizedPi = UnicodeChars::normalizePiForDisplay(trigSymbolicLine);
+        if (trigSymbolicNormalizedPi.contains(UnicodeChars::Pi))
+            return lines;
+        const QString piRadianFromTrigLine = trigSymbolicLine
+            + QString(MathDsl::QuantSp)
+            + Units::angleModeUnitSymbol('r');
+        if (piRadianResultLine.isEmpty()
+            || normalizeResultLineForComparison(piRadianResultLine)
+                != normalizeResultLineForComparison(piRadianFromTrigLine)) {
+            appendUniqueLine(QStringLiteral("= ") + trigSymbolicLine);
+        }
     }
 
     return lines;
