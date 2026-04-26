@@ -148,6 +148,7 @@ namespace UnitName {
     inline const QString SquareMile = QStringLiteral("square_mile");
     inline const QString CubicMile = QStringLiteral("cubic_mile");
     inline const QString MilePerHour = QStringLiteral("mile_per_hour");
+    inline const QString KilometrePerHour = QStringLiteral("kilometre_per_hour");
     inline const QString Minute = QStringLiteral("minute");
     inline const QString Mole = QStringLiteral("mole");
     inline const QString Nat = QStringLiteral("nat");
@@ -284,6 +285,7 @@ namespace UnitSymbol {
     inline const QString SquareMile = QStringLiteral("mi²");
     inline const QString CubicMile = QStringLiteral("mi³");
     inline const QString MilePerHour = QStringLiteral("mph");
+    inline const QString KilometrePerHour = QStringLiteral("kph");
     inline const QString Minute = QStringLiteral("min");
     inline const QString Mole = QStringLiteral("mol");
     inline const QString Nat = QStringLiteral("nat");
@@ -653,6 +655,7 @@ const QHash<UnitId, UnitSpec>& s_unitSpecs()
         {UnitId::SquareMile, UnitSpec{UnitName::SquareMile, UnitSymbol::SquareMile, {}, UnitFamily::Other, {UnitQuantity::Area}, NoSiPrefixes, &Units::square_mile}},
         {UnitId::CubicMile, UnitSpec{UnitName::CubicMile, UnitSymbol::CubicMile, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cubic_mile}},
         {UnitId::MilePerHour, UnitSpec{UnitName::MilePerHour, UnitSymbol::MilePerHour, {}, UnitFamily::Other, {UnitQuantity::Speed, UnitQuantity::Velocity}, NoSiPrefixes, &Units::mile_per_hour}},
+        {UnitId::KilometrePerHour, UnitSpec{UnitName::KilometrePerHour, UnitSymbol::KilometrePerHour, {}, UnitFamily::Other, {UnitQuantity::Speed, UnitQuantity::Velocity}, NoSiPrefixes, &Units::kilometre_per_hour}},
         {UnitId::Nat, UnitSpec{UnitName::Nat, UnitSymbol::Nat, {}, UnitFamily::Other, {UnitQuantity::Information}, NoSiPrefixes, &Units::nat}},
         {UnitId::NauticalMile, UnitSpec{UnitName::NauticalMile, UnitSymbol::NauticalMile, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::nautical_mile}},
         {UnitId::Ounce, UnitSpec{UnitName::Ounce, UnitSymbol::Ounce, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoSiPrefixes, &Units::ounce}},
@@ -2289,6 +2292,7 @@ DEFINE_DERIVED_UNIT(speed_of_light, HNumber(299792458) * Units::metre() / Units:
 DEFINE_DERIVED_UNIT(speed_of_sound_STP, HNumber(331) * Units::metre()/Units::second())
 DEFINE_DERIVED_UNIT(knot, Units::nautical_mile()/Units::hour())
 DEFINE_DERIVED_UNIT(mile_per_hour, HNumber("1609.344") * Units::metre() / Units::hour())
+DEFINE_DERIVED_UNIT(kilometre_per_hour, Units::kilo() * Units::metre() / Units::hour())
 DEFINE_DERIVED_UNIT(revolution_per_minute, Units::revolution() / Units::minute())
 
 DEFINE_DERIVED_UNIT(horsepower, HNumber(550) * Units::foot() * Units::pound() * Units::gravity() / Units::second()) // Imperial horsepower.

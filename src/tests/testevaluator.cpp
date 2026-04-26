@@ -798,6 +798,7 @@ void test_units_short_aliases_and_si_prefixes()
     CHECK_EVAL("[ac] -> [acre]", "1 acre");
     CHECK_EVAL("[rpm] -> [revolution_per_minute]", "1 revolution_per_minute");
     CHECK_EVAL("[mph] -> [mile_per_hour]", "1 mile_per_hour");
+    CHECK_EVAL("[kph] -> [kilometre_per_hour]", "1 kilometre_per_hour");
     CHECK_EVAL("[kWh] -> [kilowatt_hour]", "1 kilowatt_hour");
     CHECK_EVAL("[mmHg] -> [millimetre_of_mercury]", "1 millimetre_of_mercury");
     CHECK_EVAL("[st] -> [stone]", "1 stone");
@@ -959,6 +960,11 @@ void test_units_short_aliases_and_si_prefixes()
     CHECK_EVAL("[floz_imp] -> [floz_us]", "0.96075994040388394374 floz_us");
     CHECK_EVAL("[qt_imp] -> [qt_us]", "1.20094992550485492967 qt_us");
     CHECK_EVAL("[pt_imp] -> [pt_us]", "1.20094992550485492967 pt_us");
+    CHECK_EVAL("[kilometre_per_hour] -> [metre/second]", u8"0.27777777777777777778 metre·second⁻¹");
+    CHECK_EVAL("3.6[kilometre_per_hour] -> [metre/second]", u8"1 metre·second⁻¹");
+    CHECK_EVAL("1[metre/second] -> [kilometre_per_hour]", "3.6 kilometre_per_hour");
+    CHECK_EVAL("[mile_per_hour] -> [kilometre_per_hour]", "1.609344 kilometre_per_hour");
+    CHECK_EVAL("1.609344[kilometre_per_hour] -> [mile_per_hour]", "1 mile_per_hour");
     CHECK_EVAL("1e15[Btu] -> [quad]", "1 quad");
 
     CHECK_EVAL("[mV] -> [volt]", "0.001 volt");
@@ -1100,6 +1106,7 @@ void test_units_derived_si_recognition_and_disambiguation()
     CHECK_EVAL("[watt*second] -> [joule]", "1 joule");
     CHECK_EVAL("[revolution/minute] -> [revolution_per_minute]", "1 revolution_per_minute");
     CHECK_EVAL("[1609.344 metre/hour] -> [mile_per_hour]", "1 mile_per_hour");
+    CHECK_EVAL("[1000 metre/hour] -> [kilometre_per_hour]", "1 kilometre_per_hour");
     CHECK_EVAL("[kilowatt*hour] -> [kilowatt_hour]", "1 kilowatt_hour");
     CHECK_EVAL("[133.322387415*pascal] -> [millimetre_of_mercury]", "1 millimetre_of_mercury");
     CHECK_EVAL("[14*pound] -> [stone]", "1 stone");

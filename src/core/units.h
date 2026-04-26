@@ -173,6 +173,7 @@ enum class UnitId {
     SquareMile,
     CubicMile,
     MilePerHour,
+    KilometrePerHour,
     Nat,
     NauticalMile,
     Ounce,
@@ -502,6 +503,7 @@ public:
     static const Quantity speed_of_sound_STP();
     static const Quantity knot();
     static const Quantity mile_per_hour();
+    static const Quantity kilometre_per_hour();
     static const Quantity revolution_per_minute();
     static const Quantity horsepower();
     static const Quantity kilowatt_hour();
