@@ -52,6 +52,7 @@ private slots:
     void treats_leading_question_comment_as_atomic_navigation_and_edit_token();
     void ignores_space_right_after_spaced_unit_conversion_operator();
     void unit_bracket_context_accepts_div_mul_and_rejects_addition();
+    void unit_bracket_context_blocks_space_and_ops_when_only_spaces();
     void unit_bracket_context_allows_letter_after_middle_dot();
     void unit_bracket_context_disallows_variables_and_constants();
     void unit_bracket_context_allows_digits_and_minus_only_in_exponent_positions();
@@ -994,7 +995,7 @@ void TestEditorUi::ignores_space_right_after_spaced_unit_conversion_operator()
 {
     // State: after conversion to spaced "→ []" token with cursor inside [].
     // Action: type SPACE.
-    // Expected: unit context inserts middle dot.
+    // Expected: ignored because current [] unit context is empty.
     Editor editor;
     editor.show();
     QVERIFY(QTest::qWaitForWindowExposed(&editor));
@@ -1008,10 +1009,7 @@ void TestEditorUi::ignores_space_right_after_spaced_unit_conversion_operator()
 
     const QString beforeSpace = editor.document()->toRawText();
     QTest::keyClick(&editor, Qt::Key_Space, Qt::NoModifier);
-    QCOMPARE(editor.document()->toRawText(),
-             beforeSpace.left(beforeSpace.size() - 1)
-                 + QString(MathDsl::MulDotOp)
-                 + QStringLiteral("]"));
+    QCOMPARE(editor.document()->toRawText(), beforeSpace);
 }
 
 void TestEditorUi::unit_bracket_context_accepts_div_mul_and_rejects_addition()
@@ -1041,6 +1039,51 @@ void TestEditorUi::unit_bracket_context_accepts_div_mul_and_rejects_addition()
     const QString afterMul = editor.document()->toRawText();
     QVERIFY(afterMul.contains(MathDsl::MulCrossOp)
             || afterMul.contains(MathDsl::MulDotOp));
+}
+
+void TestEditorUi::unit_bracket_context_blocks_space_and_ops_when_only_spaces()
+{
+    // State: unmatched "[   " and cursor at end.
+    // Action: type SPACE and operator keys.
+    // Expected: all are ignored while unit context has only whitespace.
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    const QString onlySpaces = QStringLiteral("[   ");
+
+    editor.setText(onlySpaces);
+    editor.setCursorPosition(editor.text().size());
+    QTest::keyClick(&editor, Qt::Key_Space, Qt::NoModifier);
+    QCOMPARE(editor.document()->toRawText(), onlySpaces);
+
+    editor.setText(onlySpaces);
+    editor.setCursorPosition(editor.text().size());
+    QTest::keyClick(&editor, Qt::Key_Asterisk, Qt::NoModifier);
+    QCOMPARE(editor.document()->toRawText(), onlySpaces);
+
+    editor.setText(onlySpaces);
+    editor.setCursorPosition(editor.text().size());
+    QTest::keyClick(&editor, Qt::Key_Slash, Qt::NoModifier);
+    QCOMPARE(editor.document()->toRawText(), onlySpaces);
+
+    editor.setText(onlySpaces);
+    editor.setCursorPosition(editor.text().size());
+    QTest::keyClick(&editor, Qt::Key_Minus, Qt::NoModifier);
+    QCOMPARE(editor.document()->toRawText(), onlySpaces);
+
+    editor.setText(onlySpaces);
+    editor.setCursorPosition(editor.text().size());
+    QKeyEvent shiftSlashByText(QEvent::KeyPress, Qt::Key_unknown, Qt::ShiftModifier, QStringLiteral("/"));
+    QApplication::sendEvent(&editor, &shiftSlashByText);
+    QCOMPARE(editor.document()->toRawText(), onlySpaces);
+
+    editor.setText(onlySpaces);
+    editor.setCursorPosition(editor.text().size());
+    QKeyEvent keypadSlash(QEvent::KeyPress, Qt::Key_division, Qt::KeypadModifier, QStringLiteral("/"));
+    QApplication::sendEvent(&editor, &keypadSlash);
+    QCOMPARE(editor.document()->toRawText(), onlySpaces);
 }
 
 void TestEditorUi::unit_bracket_context_allows_letter_after_middle_dot()

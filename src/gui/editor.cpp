@@ -315,12 +315,40 @@ static bool isRightOfOpeningSquareBracketWithOnlySpaces(const QString& text, int
     return i >= 0 && text.at(i) == QLatin1Char('[');
 }
 
+static bool isCurrentUnitContextEmptyOrOnlySpaces(const QString& text, int cursorPosition)
+{
+    const int safeCursor = qBound(0, cursorPosition, text.size());
+    int depth = 0;
+    int openPos = -1;
+    for (int i = 0; i < safeCursor; ++i) {
+        const QChar ch = text.at(i);
+        if (ch == MathDsl::UnitStart) {
+            ++depth;
+            openPos = i;
+        } else if (ch == MathDsl::UnitEnd && depth > 0) {
+            --depth;
+            if (depth == 0)
+                openPos = -1;
+        }
+    }
+
+    if (depth <= 0 || openPos < 0)
+        return false;
+
+    for (int i = openPos + 1; i < safeCursor; ++i) {
+        if (!text.at(i).isSpace())
+            return false;
+    }
+    return true;
+}
+
 static bool isAnyOperatorKey(int key)
 {
     return key == Qt::Key_Plus
            || key == Qt::Key_Minus
            || key == Qt::Key_Asterisk
            || key == Qt::Key_Slash
+           || key == Qt::Key_division
            || key == Qt::Key_Percent
            || key == Qt::Key_AsciiCircum
            || key == Qt::Key_Ampersand
@@ -2484,6 +2512,8 @@ void Editor::keyPressEvent(QKeyEvent* event)
         cursorPosition);
     const bool rightOfOpeningSquareBracket = squareBracketContext
         && isRightOfOpeningSquareBracketWithOnlySpaces(text(), cursorPosition);
+    const bool emptyOrOnlySpacesUnitContext = squareBracketContext
+        && isCurrentUnitContextEmptyOrOnlySpaces(text(), cursorPosition);
 
     if (squareBracketContext
         && isDeadKey(key)
@@ -2505,6 +2535,27 @@ void Editor::keyPressEvent(QKeyEvent* event)
     };
 
     const QString normalizedEventText = normalizeExpressionTypedInEditor(event->text());
+    const auto isOperatorLikeSingleCharInput = [](const QString& input) {
+        if (input.size() != 1)
+            return false;
+        const QChar ch = input.at(0);
+        return EditorUtils::isAnyOperator(ch)
+               || MathDsl::isAdditionOperatorAlias(ch)
+               || MathDsl::isSubtractionOperatorAlias(ch)
+               || MathDsl::isDivisionOperatorAlias(ch)
+               || MathDsl::isMultiplicationOperatorAlias(ch, true);
+    };
+
+    if (emptyOrOnlySpacesUnitContext
+        && !(event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier))
+        && (key == Qt::Key_Space
+            || isAnyOperatorKey(key)
+            || isOperatorLikeSingleCharInput(event->text())
+            || isOperatorLikeSingleCharInput(normalizedEventText))) {
+        event->accept();
+        return;
+    }
+
     const bool hasPrintableTextPayload =
         !event->text().isEmpty()
         && key < Qt::Key_Escape
