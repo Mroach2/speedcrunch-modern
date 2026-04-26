@@ -3613,6 +3613,24 @@ void test_angle_mode(Settings* settings)
                  << "\tError: " << qPrintable(eval->error()) << endl;
         }
     };
+    const auto checkCompositeAngleAliasDisplay = [&](const QString& expression,
+                                                     const QString& expectedAlias,
+                                                     const QString& forbiddenSymbol) {
+        ++eval_total_tests;
+        eval->setExpression(expression);
+        const QString display = NumberFormatter::format(eval->evalUpdateAns());
+        if (!eval->error().isEmpty()
+            || !display.contains(expectedAlias)
+            || display.contains(forbiddenSymbol))
+        {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tcomposite angle alias display unit\t[NEW]" << endl
+                 << "\tExpression: " << expression.toUtf8().constData() << endl
+                 << "\tResult: " << display.toUtf8().constData() << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+        }
+    };
 
     settings->angleUnit = 'r';
     Evaluator::instance()->initializeAngleUnits();
@@ -3662,6 +3680,15 @@ void test_angle_mode(Settings* settings)
                                                           QString(::unitSymbol(UnitId::Metre)),
                                                           QString(::unitSymbol(UnitId::Second))},
                                               QStringList{QString(::unitSymbol(UnitId::Kilogram))});
+    checkCompositeAngleAliasDisplay(QString::fromUtf8("1 [rad/m] -> [°/m]"),
+                                    Units::degreeAliasSymbol(),
+                                    QString(UnicodeChars::DegreeSign));
+    checkCompositeAngleAliasDisplay(QString::fromUtf8("1 [rad/m] -> [′/m]"),
+                                    Units::arcminuteAliasSymbol(),
+                                    QString(UnicodeChars::Prime));
+    checkCompositeAngleAliasDisplay(QString::fromUtf8("1 [rad/m] -> [″/m]"),
+                                    Units::arcsecondAliasSymbol(),
+                                    QString(UnicodeChars::DoublePrime));
     checkAngularRateDisplayContains(QStringLiteral("360 [deg second^-1]"), 'r', Units::angleModeUnitSymbol('r'));
     checkAngularRateDisplayContains(QStringLiteral("1 [rev/min]"), 'r', Units::angleModeUnitSymbol('r'));
     checkAngularRateDisplayContains(QStringLiteral("1 [rev*min^-1]"), 'r', Units::angleModeUnitSymbol('r'));

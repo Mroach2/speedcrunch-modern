@@ -62,6 +62,24 @@ const QHash<QString, QString>& shortNamesByIdentifier()
     return shortNames;
 }
 
+QString compositeAngleAlias(UnitId id)
+{
+    if (id == UnitId::Degree)
+        return Units::degreeAliasSymbol();
+    if (id == UnitId::Arcminute)
+        return Units::arcminuteAliasSymbol();
+    if (id == UnitId::Arcsecond)
+        return Units::arcsecondAliasSymbol();
+    return QString();
+}
+
+bool isDisplayUnitTokenChar(QChar ch)
+{
+    return UnicodeChars::isUnitIdentifierChar(ch)
+        || ch == UnicodeChars::Prime
+        || ch == UnicodeChars::DoublePrime;
+}
+
 } // namespace
 
 // Collapses a unit token to a compact display form:
@@ -122,37 +140,43 @@ QString normalizeUnitTextForDisplay(const QString& text)
         || text.contains(MathDsl::MulDotOp)
         || text.contains(MathDsl::MulCrossOp)
         || text.contains(MathDsl::DivOp);
-    const QString degreeAlias = Units::degreeAliasSymbol();
+    QString displayInput = text;
+    if (hasCompositeUnitOperators) {
+        displayInput.replace(UnicodeChars::DegreeSign, Units::degreeAliasSymbol());
+        displayInput.replace(UnicodeChars::Prime, Units::arcminuteAliasSymbol());
+        displayInput.replace(UnicodeChars::DoublePrime, Units::arcsecondAliasSymbol());
+    }
 
     QString normalized;
-    normalized.reserve(text.size());
+    normalized.reserve(displayInput.size());
 
-    for (int i = 0; i < text.size();) {
-        const QChar ch = text.at(i);
-        if (!UnicodeChars::isUnitIdentifierChar(ch)) {
+    for (int i = 0; i < displayInput.size();) {
+        const QChar ch = displayInput.at(i);
+        if (!isDisplayUnitTokenChar(ch)) {
             normalized.append(ch);
             ++i;
             continue;
         }
 
         int j = i + 1;
-        while (j < text.size() && UnicodeChars::isUnitIdentifierChar(text.at(j)))
+        while (j < displayInput.size() && isDisplayUnitTokenChar(displayInput.at(j)))
             ++j;
 
-        const QString token = text.mid(i, j - i);
+        const QString token = displayInput.mid(i, j - i);
         QString displayToken = shortDisplayName(token);
-        if (hasCompositeUnitOperators
-            && unitId(normalizeUnitName(token)) == UnitId::Degree)
-        {
+        const UnitId tokenId = unitId(normalizeUnitName(token));
+        const QString compositeAlias = hasCompositeUnitOperators
+            ? compositeAngleAlias(tokenId)
+            : QString();
+        if (!compositeAlias.isEmpty()) {
             QString suffix;
-            if (!displayToken.isEmpty()
-                && displayToken.at(0) == UnicodeChars::DegreeSign)
-            {
-                suffix = displayToken.mid(1);
-            } else if (displayToken.startsWith(degreeAlias)) {
-                suffix = displayToken.mid(degreeAlias.size());
+            const QString tokenSymbol = unitSymbol(tokenId);
+            if (!displayToken.isEmpty() && displayToken.startsWith(tokenSymbol)) {
+                suffix = displayToken.mid(tokenSymbol.size());
+            } else if (displayToken.startsWith(compositeAlias)) {
+                suffix = displayToken.mid(compositeAlias.size());
             }
-            displayToken = degreeAlias + suffix;
+            displayToken = compositeAlias + suffix;
         }
         normalized.append(displayToken);
         i = j;

@@ -1035,10 +1035,12 @@ AngleUnitKind angleUnitKindFromName(const QString& name)
         || normalized == UnitSymbol::Revolution)
         return AngleUnitKind::Turn;
     if (normalized == unitName(UnitId::Arcminute)
-        || normalized == UnitAltSymbol::Arcminute)
+        || normalized == UnitAltSymbol::Arcminute
+        || normalized == UnitSymbol::Arcminute)
         return AngleUnitKind::Arcminute;
     if (normalized == unitName(UnitId::Arcsecond)
-        || normalized == UnitAltSymbol::Arcsecond)
+        || normalized == UnitAltSymbol::Arcsecond
+        || normalized == UnitSymbol::Arcsecond)
         return AngleUnitKind::Arcsecond;
     if (normalized == unitName(UnitId::Milliarcsecond)
         || normalized == UnitSymbol::Milliarcsecond)
@@ -1169,6 +1171,16 @@ QString Units::angleModeUnitSymbol(char angleMode)
 QString Units::degreeAliasSymbol()
 {
     return UnitAltSymbol::Degree;
+}
+
+QString Units::arcminuteAliasSymbol()
+{
+    return UnitAltSymbol::Arcminute;
+}
+
+QString Units::arcsecondAliasSymbol()
+{
+    return UnitAltSymbol::Arcsecond;
 }
 
 QString prefixName(PrefixId id)
@@ -2110,6 +2122,8 @@ QHash<QString, Quantity> Units::builtInUnitLookup(char angleMode)
     lookup.insert(unitName(UnitId::Microarcsecond), angleUnitValueForMode(AngleUnitKind::Microarcsecond, angleMode));
     lookup.insert(UnitAltSymbol::Arcminute, angleUnitValueForMode(AngleUnitKind::Arcminute, angleMode));
     lookup.insert(UnitAltSymbol::Arcsecond, angleUnitValueForMode(AngleUnitKind::Arcsecond, angleMode));
+    lookup.insert(UnitSymbol::Arcminute, angleUnitValueForMode(AngleUnitKind::Arcminute, angleMode));
+    lookup.insert(UnitSymbol::Arcsecond, angleUnitValueForMode(AngleUnitKind::Arcsecond, angleMode));
     lookup.insert(UnitSymbol::Milliarcsecond, angleUnitValueForMode(AngleUnitKind::Milliarcsecond, angleMode));
     lookup.insert(UnitSymbol::Microarcsecond, angleUnitValueForMode(AngleUnitKind::Microarcsecond, angleMode));
     lookup.insert(UnitAltSymbol::MicroarcsecondAscii, angleUnitValueForMode(AngleUnitKind::Microarcsecond, angleMode));

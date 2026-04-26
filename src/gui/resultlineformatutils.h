@@ -14,6 +14,7 @@
 #include "core/numberformatter.h"
 #include "core/regexpatterns.h"
 #include "core/settings.h"
+#include "core/unitdisplayformat.h"
 #include "core/unicodechars.h"
 #include "core/units.h"
 #include "gui/displayformatutils.h"
@@ -24,6 +25,89 @@
 #include <QVector>
 
 namespace ResultLineFormatUtils {
+
+inline QString normalizeBracketedUnitTextForDisplay(const QString& text)
+{
+    QString output;
+    output.reserve(text.size());
+    int cursor = 0;
+    QRegularExpressionMatchIterator matches =
+        RegExpPatterns::unitBrackets().globalMatch(text);
+    while (matches.hasNext()) {
+        const QRegularExpressionMatch match = matches.next();
+        const int start = match.capturedStart();
+        const int end = match.capturedEnd();
+        output += text.mid(cursor, start - cursor);
+        output += MathDsl::UnitStart;
+        output += UnitDisplayFormat::normalizeUnitTextForDisplay(match.captured(1));
+        output += MathDsl::UnitEnd;
+        cursor = end;
+    }
+    output += text.mid(cursor);
+    return output;
+}
+
+inline QString collapseBracketedCompactAngleSuffixes(QString text)
+{
+    auto compactSuffixForToken = [](const QString& token) {
+        const QString normalized = normalizeUnitName(
+            UnicodeChars::normalizeUnitSymbolAliases(token.trimmed()));
+        const UnitId id = unitId(normalized);
+        if (id == UnitId::Arcminute) {
+            return UnicodeChars::Prime;
+        }
+        if (id == UnitId::Arcsecond) {
+            return UnicodeChars::DoublePrime;
+        }
+        return QChar();
+    };
+    auto isCompactionSpace = [](QChar ch) {
+        return ch.isSpace() || ch == MathDsl::QuantSp || ch == UnicodeChars::NoBreakSpace;
+    };
+    auto isCompactionLeftAnchor = [](QChar ch) {
+        return ch.isLetterOrNumber()
+            || ch == MathDsl::GroupEnd
+            || ch == MathDsl::UnitEnd
+            || ch == MathDsl::PercentOp
+            || ch == UnicodeChars::DegreeSign
+            || ch == UnicodeChars::Prime
+            || ch == UnicodeChars::DoublePrime;
+    };
+
+    QString output;
+    output.reserve(text.size());
+    int cursor = 0;
+    QRegularExpressionMatchIterator it =
+        RegExpPatterns::compactAngleTokenInBrackets().globalMatch(text);
+    while (it.hasNext()) {
+        const QRegularExpressionMatch match = it.next();
+        const int tokenStart = match.capturedStart();
+        const int tokenEnd = match.capturedEnd();
+        int left = tokenStart - 1;
+        while (left >= cursor && isCompactionSpace(text.at(left)))
+            --left;
+        int right = tokenEnd;
+        while (right < text.size() && isCompactionSpace(text.at(right)))
+            ++right;
+        if (left < cursor || !isCompactionLeftAnchor(text.at(left))) {
+            output += text.mid(cursor, tokenEnd - cursor);
+            cursor = tokenEnd;
+            continue;
+        }
+        if (right < text.size() && text.at(right) == MathDsl::GroupEnd) {
+            output += text.mid(cursor, tokenEnd - cursor);
+            cursor = tokenEnd;
+            continue;
+        }
+
+        output += text.mid(cursor, left - cursor + 1);
+        const QChar suffix = compactSuffixForToken(match.captured(1));
+        output += suffix.isNull() ? match.captured(0) : QString(suffix);
+        cursor = tokenEnd;
+    }
+    output += text.mid(cursor);
+    return output;
+}
 
 inline bool containsExplicitBracketedAngleUnit(const QString& expression)
 {
@@ -230,6 +314,10 @@ inline QString simplifiedExpressionLineForDisplay(const QString& interpretedExpr
         simplifiedDisplay = DisplayFormatUtils::preserveConversionTargetBracketsForDisplay(
             simplifiedDisplay, sourceExpression);
     }
+    interpretedDisplay = normalizeBracketedUnitTextForDisplay(interpretedDisplay);
+    simplifiedDisplay = normalizeBracketedUnitTextForDisplay(simplifiedDisplay);
+    interpretedDisplay = collapseBracketedCompactAngleSuffixes(interpretedDisplay);
+    simplifiedDisplay = collapseBracketedCompactAngleSuffixes(simplifiedDisplay);
     if (simplifiedDisplay.isEmpty() || simplifiedDisplay == interpretedDisplay)
         return QString();
 
@@ -245,6 +333,8 @@ inline QString formattedExpressionLineForDisplay(const QString& sourceExpression
 {
     const bool preserveStandaloneSexagesimalAngle =
         isStandaloneSexagesimalAngleLiteral(sourceExpression)
+        && !sourceExpression.contains(MathDsl::UnitStart)
+        && !sourceExpression.contains(MathDsl::UnitEnd)
         && !sourceExpression.contains(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp)
         && !sourceExpression.contains(MathDsl::TransOp);
     if (preserveStandaloneSexagesimalAngle) {
@@ -258,8 +348,10 @@ inline QString formattedExpressionLineForDisplay(const QString& sourceExpression
     const QString displayed = DisplayFormatUtils::applyDigitGroupingForDisplay(
         UnicodeChars::normalizePiForDisplay(
             Evaluator::formatInterpretedExpressionForDisplay(interpretedSource)));
-    return DisplayFormatUtils::preserveConversionTargetBracketsForDisplay(
-        displayed, sourceExpression);
+    return collapseBracketedCompactAngleSuffixes(
+        normalizeBracketedUnitTextForDisplay(
+            DisplayFormatUtils::preserveConversionTargetBracketsForDisplay(
+                displayed, sourceExpression)));
 }
 
 inline QString trimTrailingFractionZeros(QString text)
@@ -276,7 +368,18 @@ inline QString trimTrailingFractionZeros(QString text)
 
 inline QString stripDisplayedUnitBrackets(QString text)
 {
-    text.replace(RegExpPatterns::unitBrackets(), QStringLiteral("\\1"));
+    const int openBracket = text.lastIndexOf(MathDsl::UnitStart);
+    const int closeBracket = text.lastIndexOf(MathDsl::UnitEnd);
+    if (openBracket >= 0
+        && closeBracket > openBracket
+        && closeBracket == text.size() - 1)
+    {
+        const QString normalizedUnit = UnitDisplayFormat::normalizeUnitTextForDisplay(
+            text.mid(openBracket + 1, closeBracket - openBracket - 1));
+        text = text.left(openBracket) + normalizedUnit;
+    } else {
+        text.replace(RegExpPatterns::unitBrackets(), QStringLiteral("\\1"));
+    }
     auto endsWithPowerOfTenScientificNotation = [](const QString& prefix) {
         const QString trimmed = prefix.trimmed();
         return RegExpPatterns::trailingPowerOfTenScientificNotation().match(trimmed).hasMatch();

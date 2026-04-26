@@ -53,8 +53,11 @@ private slots:
     void ignores_space_right_after_spaced_unit_conversion_operator();
     void unit_bracket_context_accepts_div_mul_and_rejects_addition();
     void unit_bracket_context_blocks_space_and_ops_when_only_spaces();
+    void unit_bracket_context_accepts_quote_marks_as_arc_units();
+    void unit_bracket_context_accepts_quote_marks_via_ime_commit();
     void unit_bracket_context_allows_letter_after_middle_dot();
     void unit_bracket_context_disallows_variables_and_constants();
+    void evaluator_accepts_compact_arc_symbol_units();
     void unit_bracket_context_allows_digits_and_minus_only_in_exponent_positions();
     void converts_caret_exponents_to_superscripts_globally();
     void keeps_scientific_notation_exponent_minus_unwrapped();
@@ -83,6 +86,8 @@ private slots:
     void completes_arc_units_in_unit_context();
     void tooltip_does_not_duplicate_degree_symbol_for_explicit_angle_conversion();
     void tooltip_does_not_append_angle_mode_symbol_after_explicit_arcsecond_unit();
+    void tooltip_compacts_bracketed_arcminute_and_arcsecond_expression_units();
+    void tooltip_rewrites_composite_canonical_angle_symbols_to_aliases();
     void tooltip_shows_radian_suffix_for_negative_sexagesimal_literal();
     void tooltip_trig_output_does_not_append_angle_mode_suffix();
     void tooltip_shows_interpreted_expression_for_non_trig_sexagesimal_expression();
@@ -1086,6 +1091,52 @@ void TestEditorUi::unit_bracket_context_blocks_space_and_ops_when_only_spaces()
     QCOMPARE(editor.document()->toRawText(), onlySpaces);
 }
 
+void TestEditorUi::unit_bracket_context_accepts_quote_marks_as_arc_units()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral("["));
+    editor.setCursorPosition(editor.text().size());
+    QKeyEvent apostropheByText(
+        QEvent::KeyPress, Qt::Key_unknown, Qt::NoModifier, QStringLiteral("'"));
+    QApplication::sendEvent(&editor, &apostropheByText);
+    QCOMPARE(editor.document()->toRawText(), QStringLiteral("[") + QString(UnicodeChars::Prime));
+
+    editor.setText(QStringLiteral("["));
+    editor.setCursorPosition(editor.text().size());
+    QKeyEvent quoteByText(
+        QEvent::KeyPress, Qt::Key_unknown, Qt::NoModifier, QStringLiteral("\""));
+    QApplication::sendEvent(&editor, &quoteByText);
+    QCOMPARE(editor.document()->toRawText(), QStringLiteral("[") + QString(UnicodeChars::DoublePrime));
+}
+
+void TestEditorUi::unit_bracket_context_accepts_quote_marks_via_ime_commit()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    QList<QInputMethodEvent::Attribute> imeAttributes;
+
+    editor.setText(QStringLiteral("["));
+    editor.setCursorPosition(editor.text().size());
+    QInputMethodEvent apostropheCommit(QString(), imeAttributes);
+    apostropheCommit.setCommitString(QStringLiteral("'"));
+    QApplication::sendEvent(&editor, &apostropheCommit);
+    QCOMPARE(editor.document()->toRawText(), QStringLiteral("[") + QString(UnicodeChars::Prime));
+
+    editor.setText(QStringLiteral("["));
+    editor.setCursorPosition(editor.text().size());
+    QInputMethodEvent quoteCommit(QString(), imeAttributes);
+    quoteCommit.setCommitString(QStringLiteral("\""));
+    QApplication::sendEvent(&editor, &quoteCommit);
+    QCOMPARE(editor.document()->toRawText(), QStringLiteral("[") + QString(UnicodeChars::DoublePrime));
+}
+
 void TestEditorUi::unit_bracket_context_allows_letter_after_middle_dot()
 {
     // State: "2 [m·]" with cursor after '·'.
@@ -1128,6 +1179,35 @@ void TestEditorUi::unit_bracket_context_disallows_variables_and_constants()
     QVERIFY(evaluator->error().contains(QStringLiteral("unknown unit"), Qt::CaseInsensitive));
 
     evaluator->unsetVariable(QStringLiteral("foo"));
+}
+
+void TestEditorUi::evaluator_accepts_compact_arc_symbol_units()
+{
+    Evaluator* evaluator = Evaluator::instance();
+    const auto tokensDebug = [evaluator](const QString& expr) {
+        const Tokens tokens = evaluator->scan(expr);
+        QStringList parts;
+        for (const Token& token : tokens) {
+            parts.append(QStringLiteral("{t=%1,text='%2'}")
+                .arg(static_cast<int>(token.type()))
+                .arg(token.text()));
+        }
+        return QStringLiteral("valid=%1 tokens=%2")
+            .arg(tokens.valid() ? QStringLiteral("true") : QStringLiteral("false"))
+            .arg(parts.join(QStringLiteral(", ")));
+    };
+
+    evaluator->setExpression(QString::fromUtf8("1 [′]"));
+    evaluator->evalUpdateAns();
+    QVERIFY2(evaluator->error().isEmpty(),
+             qPrintable(QStringLiteral("Unexpected error for [′]: %1 (%2)")
+                .arg(evaluator->error(), tokensDebug(QString::fromUtf8("1 [′]")))));
+
+    evaluator->setExpression(QString::fromUtf8("1 [″]"));
+    evaluator->evalUpdateAns();
+    QVERIFY2(evaluator->error().isEmpty(),
+             qPrintable(QStringLiteral("Unexpected error for [″]: %1 (%2)")
+                .arg(evaluator->error(), tokensDebug(QString::fromUtf8("1 [″]")))));
 }
 
 void TestEditorUi::unit_bracket_context_allows_digits_and_minus_only_in_exponent_positions()
@@ -2256,6 +2336,105 @@ void TestEditorUi::tooltip_does_not_append_angle_mode_symbol_after_explicit_arcs
     const QString message = spy.takeLast().at(0).toString();
     QVERIFY(message.contains(QString(UnicodeChars::DoublePrime)));
     QVERIFY(!message.contains(QString(UnicodeChars::DoublePrime) + UnicodeChars::DegreeSign));
+
+    settings->angleUnit = oldAngleUnit;
+    settings->resultFormat = oldResultFormat;
+    Evaluator::instance()->initializeAngleUnits();
+}
+
+void TestEditorUi::tooltip_compacts_bracketed_arcminute_and_arcsecond_expression_units()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    Settings* settings = Settings::instance();
+    const char oldAngleUnit = settings->angleUnit;
+    const char oldResultFormat = settings->resultFormat;
+    settings->angleUnit = 'r';
+    settings->resultFormat = 'f';
+    Evaluator::instance()->initializeAngleUnits();
+
+    QSignalSpy spy(&editor, SIGNAL(autoCalcMessageAvailable(const QString&)));
+
+    editor.setText(QStringLiteral("1 [arcmin]"));
+    editor.setCursorPosition(editor.text().size());
+    editor.refreshAutoCalc();
+    QCoreApplication::processEvents();
+
+    QVERIFY(!spy.isEmpty());
+    const QString arcminuteMessage = spy.takeLast().at(0).toString();
+    QVERIFY2(arcminuteMessage.contains(QString::fromUtf8("1′")),
+             qPrintable(QStringLiteral("Arcminute tooltip: %1").arg(arcminuteMessage)));
+    QVERIFY2(!arcminuteMessage.contains(QString::fromUtf8("1 [′]")),
+             qPrintable(QStringLiteral("Arcminute tooltip: %1").arg(arcminuteMessage)));
+
+    editor.setText(QStringLiteral("1 [arcsec]"));
+    editor.setCursorPosition(editor.text().size());
+    editor.refreshAutoCalc();
+    QCoreApplication::processEvents();
+
+    QVERIFY(!spy.isEmpty());
+    const QString arcsecondMessage = spy.takeLast().at(0).toString();
+    QVERIFY2(arcsecondMessage.contains(QString::fromUtf8("1″")),
+             qPrintable(QStringLiteral("Arcsecond tooltip: %1").arg(arcsecondMessage)));
+    QVERIFY2(!arcsecondMessage.contains(QString::fromUtf8("1 [″]")),
+             qPrintable(QStringLiteral("Arcsecond tooltip: %1").arg(arcsecondMessage)));
+
+    settings->angleUnit = oldAngleUnit;
+    settings->resultFormat = oldResultFormat;
+    Evaluator::instance()->initializeAngleUnits();
+}
+
+void TestEditorUi::tooltip_rewrites_composite_canonical_angle_symbols_to_aliases()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    Settings* settings = Settings::instance();
+    const char oldAngleUnit = settings->angleUnit;
+    const char oldResultFormat = settings->resultFormat;
+    settings->angleUnit = 'r';
+    settings->resultFormat = 'f';
+    Evaluator::instance()->initializeAngleUnits();
+
+    QSignalSpy spy(&editor, SIGNAL(autoCalcMessageAvailable(const QString&)));
+
+    editor.setText(QString::fromUtf8("1 [″/m]"));
+    editor.setCursorPosition(editor.text().size());
+    editor.refreshAutoCalc();
+    QCoreApplication::processEvents();
+    QVERIFY(!spy.isEmpty());
+    const QString arcsecondMessage = spy.takeLast().at(0).toString();
+    QVERIFY2(arcsecondMessage.contains(Units::arcsecondAliasSymbol()),
+             qPrintable(QStringLiteral("Arcsecond composite tooltip: %1").arg(arcsecondMessage)));
+    QVERIFY2(!arcsecondMessage.contains(QString::fromUtf8("″/m")),
+             qPrintable(QStringLiteral("Arcsecond composite tooltip: %1").arg(arcsecondMessage)));
+
+    editor.setText(QString::fromUtf8("1 [′/m]"));
+    editor.setCursorPosition(editor.text().size());
+    editor.refreshAutoCalc();
+    QCoreApplication::processEvents();
+    QVERIFY(!spy.isEmpty());
+    const QString arcminuteMessage = spy.takeLast().at(0).toString();
+    QVERIFY2(arcminuteMessage.contains(Units::arcminuteAliasSymbol()),
+             qPrintable(QStringLiteral("Arcminute composite tooltip: %1").arg(arcminuteMessage)));
+    QVERIFY2(!arcminuteMessage.contains(QString::fromUtf8("′/m")),
+             qPrintable(QStringLiteral("Arcminute composite tooltip: %1").arg(arcminuteMessage)));
+
+    editor.setText(QString::fromUtf8("1 [°/m]"));
+    editor.setCursorPosition(editor.text().size());
+    editor.refreshAutoCalc();
+    QCoreApplication::processEvents();
+    QVERIFY(!spy.isEmpty());
+    const QString degreeMessage = spy.takeLast().at(0).toString();
+    QVERIFY2(degreeMessage.contains(Units::degreeAliasSymbol()),
+             qPrintable(QStringLiteral("Degree composite tooltip: %1").arg(degreeMessage)));
+    QVERIFY2(!degreeMessage.contains(QString::fromUtf8("°/m")),
+             qPrintable(QStringLiteral("Degree composite tooltip: %1").arg(degreeMessage)));
 
     settings->angleUnit = oldAngleUnit;
     settings->resultFormat = oldResultFormat;

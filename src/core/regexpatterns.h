@@ -167,6 +167,16 @@ inline const QRegularExpression& bracketedSimpleUnitIdentifier()
     return pattern;
 }
 
+// Matches bracketed compact-angle unit tokens and captures the inner token.
+// Example input/output: "1 [arcmin]" -> captures "arcmin"; "1 [′]" -> captures "′".
+inline const QRegularExpression& compactAngleTokenInBrackets()
+{
+    static const QRegularExpression pattern(
+        QStringLiteral("\\[\\s*([\\x{2032}\\x{2033}]|arcmin(?:ute)?|arcsec(?:ond)?)\\s*\\]"),
+        QRegularExpression::CaseInsensitiveOption);
+    return pattern;
+}
+
 // Matches a missing quantity-space before unit bracket.
 // Example input/output: "1[kg]" -> match "1[" with group "1".
 inline const QRegularExpression& missingQuantSpBeforeUnit()

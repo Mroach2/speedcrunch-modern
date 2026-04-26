@@ -617,10 +617,21 @@ QString NumberFormatter::format(Quantity q, char resultFormatOverride,
 
         if (!unitNormalized) {
             const int firstSpace = result.indexOf(QLatin1Char(' '));
-            if (firstSpace >= 0 && firstSpace + 1 < result.size()) {
+            const int lastSpace = result.lastIndexOf(QLatin1Char(' '));
+            int splitSpace = firstSpace;
+            if (firstSpace >= 0 && lastSpace > firstSpace) {
+                const QString between = result.mid(firstSpace + 1, lastSpace - firstSpace - 1).trimmed();
+                const bool isScientificMantissaTail =
+                    (between.startsWith(MathDsl::MulCrossOp)
+                     || between.startsWith(MathDsl::MulOpAl1))
+                    && between.contains(QStringLiteral("10"));
+                if (isScientificMantissaTail)
+                    splitSpace = lastSpace;
+            }
+            if (splitSpace >= 0 && splitSpace + 1 < result.size()) {
                 const QString normalizedUnit =
-                    UnitDisplayFormat::normalizeUnitTextForDisplay(result.mid(firstSpace + 1));
-                result = result.left(firstSpace)
+                    UnitDisplayFormat::normalizeUnitTextForDisplay(result.mid(splitSpace + 1));
+                result = result.left(splitSpace)
                     + MathDsl::UnitStart
                     + normalizedUnit
                     + MathDsl::UnitEnd;

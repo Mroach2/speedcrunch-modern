@@ -4697,8 +4697,6 @@ Tokens Evaluator::scan(const QString& expr) const
     state = Init;
     int i = 0;
     QString ex = UnicodeChars::normalizeUnitSymbolAliases(expr);
-    ex.replace(MathDsl::ArcminOp, MathDsl::ArcminOpAl1);
-    ex.replace(MathDsl::ArcsecOp, MathDsl::ArcsecOpAl1);
     // Accept editor-produced spacing in unit conversion aliases:
     // "− >" or "- >" should tokenize as "->".
     ex.replace(
@@ -4760,6 +4758,13 @@ Tokens Evaluator::scan(const QString& expr) const
 #ifdef EVALUATOR_DEBUG
     qDebug() << "Scanning" << ex;
 #endif // EVALUATOR_DEBUG
+
+    const auto isUnitArcSymbol = [](QChar c) {
+        return c == MathDsl::ArcminOp
+            || c == MathDsl::ArcsecOp
+            || c == MathDsl::ArcminOpAl1
+            || c == MathDsl::ArcsecOpAl1;
+    };
 
     // Main loop.
     while (state != Bad && state != Finish && i < ex.length()) {
@@ -4831,13 +4836,18 @@ Tokens Evaluator::scan(const QString& expr) const
                 int tokenSize = ++i - tokenStart;
                 tokens.append(Token(Token::stxOperator, "~", tokenStart, tokenSize));
                 state = Init;
+            } else if (unitBracketDepth > 0 && isUnitArcSymbol(ch)) {
+                // Inside explicit unit brackets, arcminute/arcsecond symbols
+                // are unit identifiers, not sexagesimal separators.
+                state = InIdentifier;
             } else if (isSeparatorChar(ch)) {
                 // Leading separator, probably a number
                 state = InNumberPrefix;
             } else if (ch.isNull()) // Terminator character.
                 state = Finish;
             else if (isIdentifierStart(ch)
-                     || (unitBracketDepth > 0 && isDegreeSign(ch))) // Identifier or alphanumeric operator
+                     || (unitBracketDepth > 0
+                         && (isDegreeSign(ch) || isUnitArcSymbol(ch)))) // Identifier or alphanumeric operator
                 state = InIdentifier;
             else { // Look for operator match.
                 int op;
@@ -4888,7 +4898,8 @@ Tokens Evaluator::scan(const QString& expr) const
         case InIdentifier:
             // Consume as long as alpha, dollar sign, underscore, or digit.
             if (isIdentifierContinue(ch)
-                || (unitBracketDepth > 0 && isDegreeSign(ch)))
+                || (unitBracketDepth > 0
+                    && (isDegreeSign(ch) || isUnitArcSymbol(ch))))
                 tokenText.append(ex.at(i++));
             else { // We're done with identifier.
                 QString identifier = tokenText;

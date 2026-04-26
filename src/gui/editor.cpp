@@ -541,17 +541,6 @@ static bool textContainsOnlyCaretOperators(const QString& text)
     return true;
 }
 
-static bool textContainsOnlyDegreeOperators(const QString& text)
-{
-    if (text.isEmpty())
-        return false;
-    for (const QChar ch : text) {
-        if (ch != UnicodeChars::DegreeSign && ch != UnicodeChars::MasculineOrdinalIndicator)
-            return false;
-    }
-    return true;
-}
-
 static bool textContainsOnlyDivisionAliases(const QString& text)
 {
     if (text.isEmpty())
@@ -725,7 +714,11 @@ static bool isUnitIdentifierCharInEditor(const QChar& ch)
            || ch == UnicodeChars::GreekCapitalOmega
            || ch == UnicodeChars::OhmSign
            || ch == UnicodeChars::DegreeSign
-           || ch == UnicodeChars::MasculineOrdinalIndicator;
+           || ch == UnicodeChars::MasculineOrdinalIndicator
+           || ch == UnicodeChars::Prime
+           || ch == UnicodeChars::DoublePrime
+           || ch == UnicodeChars::Apostrophe
+           || ch == UnicodeChars::QuotationMark;
 }
 
 static bool isAllowedUnitBracketChar(const QChar& ch)
@@ -983,6 +976,10 @@ static QString normalizeTypedTextForSquareBracketContext(const QString& surround
             ch = UnicodeChars::MicroSign;
         else if (ch == UnicodeChars::MasculineOrdinalIndicator)
             ch = UnicodeChars::DegreeSign;
+        else if (ch == UnicodeChars::Apostrophe)
+            ch = UnicodeChars::Prime;
+        else if (ch == UnicodeChars::QuotationMark)
+            ch = UnicodeChars::DoublePrime;
 
         if (MathDsl::isSubtractionOperatorAlias(ch)) {
             const bool afterExponentStart =
@@ -2305,19 +2302,6 @@ void Editor::inputMethodEvent(QInputMethodEvent* event)
         }
     }
 
-    if (squareBracketContext
-        && event->commitString().isEmpty()
-        && !normalizedPreedit.isEmpty()
-        && !textContainsOnlyCaretOperators(normalizedPreedit)
-        && !textContainsOnlyDegreeOperators(normalizedPreedit)) {
-        // Block dead-key/preedit compositions in unit blocks, except caret
-        // (handled for exponent superscripts) and degree signs (unit alias).
-        QInputMethodEvent clearEvent;
-        QPlainTextEdit::inputMethodEvent(&clearEvent);
-        event->accept();
-        return;
-    }
-
     if (event->commitString().isEmpty()
         && textContainsOnlyCaretOperators(normalizedPreedit)) {
         if (isCaretOperatorAlias(prev)) {
@@ -2517,7 +2501,9 @@ void Editor::keyPressEvent(QKeyEvent* event)
 
     if (squareBracketContext
         && isDeadKey(key)
-        && key != Qt::Key_Dead_Circumflex) {
+        && key != Qt::Key_Dead_Circumflex
+        && key != Qt::Key_Dead_Acute
+        && key != Qt::Key_Dead_Diaeresis) {
         event->accept();
         return;
     }
