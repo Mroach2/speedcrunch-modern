@@ -34,6 +34,8 @@ class QMouseEvent;
 class QEvent;
 class QPaintEvent;
 class QRect;
+class QResizeEvent;
+class QToolButton;
 
 class ResultDisplay : public QPlainTextEdit
 {
@@ -91,6 +93,8 @@ protected:
     virtual void mousePressEvent(QMouseEvent*);
     virtual void mouseMoveEvent(QMouseEvent*);
     virtual void paintEvent(QPaintEvent*);
+    virtual void resizeEvent(QResizeEvent*);
+    virtual void scrollContentsBy(int dx, int dy);
     virtual void wheelEvent(QWheelEvent*);
     virtual void timerEvent(QTimerEvent*);
     void fullContentScrollEvent();
@@ -98,6 +102,8 @@ protected:
     void pageScrollEvent();
     void scrollToDirection(int);
     void stopActiveScrollingAnimation();
+    void repositionScrollToBottomButton();
+    void updateScrollToBottomButtonVisibility();
     void updateScrollBarStyleSheet();
     int historyIndexAtPosition(const QPoint& pos) const;
     bool blockRangeForHistoryIndex(int historyIndex, int& startBlock, int& endBlock) const;
@@ -129,6 +135,7 @@ private:
     int m_hoveredHistoryIndex;
     int m_editingHistoryIndex;
     int m_count;
+    QToolButton* m_scrollToBottomButton;
 };
 
 #endif

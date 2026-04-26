@@ -45,6 +45,8 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QScrollBar>
+#include <QStyle>
+#include <QToolButton>
 #include <QToolTip>
 
 namespace {
@@ -138,6 +140,7 @@ ResultDisplay::ResultDisplay(QWidget* parent)
     , m_hoveredHistoryIndex(-1)
     , m_editingHistoryIndex(-1)
     , m_count(0)
+    , m_scrollToBottomButton(new QToolButton(this))
 {
     setViewportMargins(0, 0, 0, 0);
     setBackgroundRole(QPalette::Base);
@@ -152,6 +155,33 @@ ResultDisplay::ResultDisplay(QWidget* parent)
     bar->setAttribute(Qt::WA_Hover, true);
     bar->setMouseTracking(true);
     bar->installEventFilter(this);
+    connect(bar, &QScrollBar::valueChanged, this, [this]() {
+        updateScrollToBottomButtonVisibility();
+    });
+    connect(bar, &QScrollBar::rangeChanged, this, [this]() {
+        repositionScrollToBottomButton();
+        updateScrollToBottomButtonVisibility();
+    });
+
+    m_scrollToBottomButton->setFocusPolicy(Qt::NoFocus);
+    m_scrollToBottomButton->setCursor(Qt::PointingHandCursor);
+    m_scrollToBottomButton->setToolTip(tr("Scroll to bottom"));
+    m_scrollToBottomButton->setIcon(style()->standardIcon(QStyle::SP_ArrowDown));
+    m_scrollToBottomButton->setIconSize(QSize(16, 16));
+    m_scrollToBottomButton->setFixedSize(30, 30);
+    m_scrollToBottomButton->setStyleSheet(
+        "QToolButton {"
+        "  border: 1px solid palette(mid);"
+        "  border-radius: 15px;"
+        "  background: palette(base);"
+        "  color: palette(text);"
+        "}"
+        "QToolButton:hover {"
+        "  background: palette(alternate-base);"
+        "}");
+    connect(m_scrollToBottomButton, &QToolButton::clicked, this, &ResultDisplay::scrollToBottom);
+    m_scrollToBottomButton->hide();
+    repositionScrollToBottomButton();
 }
 
 bool ResultDisplay::eventFilter(QObject* watched, QEvent* event)
@@ -276,6 +306,7 @@ void ResultDisplay::clear()
     setPlainText(QLatin1String(""));
     markHistoryBlockIndexCacheDirty();
     clearHoverFeedback();
+    updateScrollToBottomButtonVisibility();
 }
 
 void ResultDisplay::clearHoverFeedback()
@@ -309,6 +340,7 @@ void ResultDisplay::refresh()
         m_count = historyCount;
         markHistoryBlockIndexCacheDirty();
         updateHoverHighlightSelection();
+        updateScrollToBottomButtonVisibility();
         return;
     }
 
@@ -330,6 +362,7 @@ void ResultDisplay::refresh()
 
     markHistoryBlockIndexCacheDirty();
     updateHoverHighlightSelection();
+    updateScrollToBottomButtonVisibility();
 }
 
 void ResultDisplay::refreshLastHistoryEntry()
@@ -374,6 +407,7 @@ void ResultDisplay::refreshLastHistoryEntry()
     cursor.insertText(updatedLines.join(QLatin1String("\n")));
     markHistoryBlockIndexCacheDirty();
     updateHoverHighlightSelection();
+    updateScrollToBottomButtonVisibility();
 }
 
 void ResultDisplay::scrollLines(int numberOfLines)
@@ -861,11 +895,50 @@ void ResultDisplay::paintEvent(QPaintEvent* event)
                      QPointF(center.x() + half, center.y() - half));
 }
 
+void ResultDisplay::resizeEvent(QResizeEvent* event)
+{
+    QPlainTextEdit::resizeEvent(event);
+    repositionScrollToBottomButton();
+}
+
+void ResultDisplay::scrollContentsBy(int dx, int dy)
+{
+    QPlainTextEdit::scrollContentsBy(dx, dy);
+    updateScrollToBottomButtonVisibility();
+}
+
 void ResultDisplay::stopActiveScrollingAnimation()
 {
     m_scrollTimer.stop();
     m_scrolledLines = 0;
     m_scrollDirection = 0;
+    updateScrollToBottomButtonVisibility();
+}
+
+void ResultDisplay::repositionScrollToBottomButton()
+{
+    if (!m_scrollToBottomButton)
+        return;
+
+    const int margin = 10;
+    const QRect contentRect = contentsRect();
+    const int x = contentRect.left()
+        + qMax(0, (contentRect.width() - m_scrollToBottomButton->width()) / 2);
+    const int y = contentRect.top()
+        + qMax(0, contentRect.height() - m_scrollToBottomButton->height() - margin);
+    m_scrollToBottomButton->move(x, y);
+    m_scrollToBottomButton->raise();
+}
+
+void ResultDisplay::updateScrollToBottomButtonVisibility()
+{
+    if (!m_scrollToBottomButton)
+        return;
+
+    QScrollBar* bar = verticalScrollBar();
+    const bool hasScrollableContent = bar->maximum() > bar->minimum();
+    const bool nearBottom = bar->value() >= bar->maximum();
+    m_scrollToBottomButton->setVisible(hasScrollableContent && !nearBottom);
 }
 
 void ResultDisplay::updateScrollBarStyleSheet()
