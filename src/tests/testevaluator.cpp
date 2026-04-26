@@ -966,6 +966,12 @@ void test_units_short_aliases_and_si_prefixes()
     CHECK_EVAL("[mile_per_hour] -> [kilometre_per_hour]", "1.609344 kilometre_per_hour");
     CHECK_EVAL("1.609344[kilometre_per_hour] -> [mile_per_hour]", "1 mile_per_hour");
     CHECK_EVAL("1e15[Btu] -> [quad]", "1 quad");
+    CHECK_EVAL_FORMAT("1[Btu]", u8"1055.05585262[J]");
+    CHECK_EVAL_FORMAT("1[Btu] -> [J]", u8"1055.05585262[J]");
+    CHECK_EVAL_FORMAT("1[british_thermal_unit]", u8"1055.05585262[J]");
+    CHECK_EVAL("1[Btu] -> [joule]", "1055.05585262 joule");
+    CHECK_EVAL("1[british_thermal_unit] -> [joule]", "1055.05585262 joule");
+    CHECK_EVAL_FORMAT("1[british_thermal_unit] -> [J]", u8"1055.05585262[J]");
 
     CHECK_EVAL("[mV] -> [volt]", "0.001 volt");
     CHECK_EVAL("[MV] -> [volt]", "1000000 volt");

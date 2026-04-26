@@ -1312,7 +1312,14 @@ Quantity s_unitValueFromDefinitions(const QString& canonicalName,
             return spec.linearValue();
         break;
     }
-    return fallbackBuilder();
+    Quantity fallbackValue = fallbackBuilder();
+    // Joule is defined from N*m. Without this explicit override, the fallback
+    // display token propagates as "newton metre", which then leaks into heat
+    // units derived from joule (for example Btu). Keep joule's canonical name
+    // so conversions like Btu -> J and Btu -> joule render as energy units.
+    if (canonicalName == UnitName::Joule)
+        fallbackValue.setDisplayUnit(fallbackValue.numericValue(), canonicalName);
+    return fallbackValue;
 }
 
 #define DEFINE_DERIVED_UNIT(name, value) \
