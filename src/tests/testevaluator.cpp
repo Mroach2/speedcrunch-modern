@@ -6462,6 +6462,27 @@ void test_function_usage_tooltip()
     );
 
     checkTooltip(
+        "lcm",
+        3,
+        "<b>lcm</b>(<b>n<sub>1</sub></b>; n<sub>2</sub>; ...)",
+        "tooltip shows usage when cursor is after typed function name"
+    );
+
+    checkTooltip(
+        "mass()",
+        5,
+        "<b>mass</b>(<b>mol</b>; formula)",
+        "tooltip shows usage when cursor is inside empty function call"
+    );
+
+    checkTooltip(
+        "mass()",
+        6,
+        "<b>mass</b>(<b>mol</b>; formula)",
+        "tooltip shows usage at closing parenthesis boundary of empty function call"
+    );
+
+    checkTooltip(
         "2+3",
         3,
         "",
