@@ -2708,6 +2708,35 @@ void test_function_basic()
     CHECK_EVAL(QString::fromUtf8("molmass(NaCl)"), "58.44 g/mol");
     CHECK_EVAL(QString::fromUtf8("molmass(C₆H₁₂O₆)"), "180.156 g/mol");
     CHECK_EVAL(QString::fromUtf8("molmass(Na₂SO₄)"), "142.036 g/mol");
+    CHECK_EVAL(QStringLiteral("molmass(C6H12O6)*molmass(C6H12O6)"), "32456.184336 g/mol g/mol");
+    {
+        ++eval_total_tests;
+        const QString expr = QStringLiteral("molmass(C6H12O6)*molmass(C6H12O6)");
+        eval->setExpression(expr);
+        const Quantity value = eval->evalNoAssign();
+        if (!eval->error().isEmpty()) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tmolmass product tooltip/result formatting eval\t[NEW]" << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+        } else {
+            const QStringList lines = ResultLineFormatUtils::formatResultLinesForDisplay(
+                expr,
+                eval->interpretedExpression(),
+                value,
+                true,
+                true);
+            if (lines.isEmpty()
+                || !lines.last().contains(QString::fromUtf8("g²/mol²"))
+                || lines.last().contains(QString::fromUtf8("1/mol²"))) {
+                ++eval_failed_tests;
+                ++eval_new_failed_tests;
+                cerr << __FILE__ << "[" << __LINE__ << "]\tmolmass product tooltip/result keeps gram numerator\t[NEW]" << endl
+                     << "\tResult line: "
+                     << (lines.isEmpty() ? "<empty>" : lines.last()).toUtf8().constData() << endl;
+            }
+        }
+    }
     CHECK_EVAL_FAIL("molmass()");
     CHECK_EVAL_FAIL("molmass(C6H12O6;H2O)");
     CHECK_EVAL_FAIL("molmass(c6h12o6)");

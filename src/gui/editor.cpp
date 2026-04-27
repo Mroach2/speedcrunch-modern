@@ -1985,24 +1985,6 @@ void Editor::autoCalc()
         if (!quantity.isNan() && !m_evaluator->isUserFunctionAssign()
             && !Evaluator::isCommentOnlyExpression(str)) {
             simplifiedLine = simplifiedExpressionLineForTooltip(interpretedExpr, text());
-
-            const Settings* settings = Settings::instance();
-            if (settings->simplifyResultExpressions
-                && !simplifiedLine.isEmpty()
-                && !interpretedExpr.isEmpty()
-                && !interpretedExpr.contains(MathDsl::Equals)) {
-                const QString simplifiedInterpretedExpr =
-                    Evaluator::simplifyInterpretedExpression(interpretedExpr);
-                m_evaluator->setExpression(simplifiedInterpretedExpr);
-                const Quantity simplifiedQuantity = m_evaluator->evalNoAssign();
-                if (m_evaluator->error().isEmpty() && !simplifiedQuantity.isNan()) {
-                    quantity = simplifiedQuantity;
-                } else {
-                    m_evaluator->setExpression(str);
-                    quantity = m_evaluator->evalNoAssign();
-                    interpretedExpr = m_evaluator->interpretedExpression();
-                }
-            }
         }
 
         if (quantity.isNan() && (m_evaluator->isUserFunctionAssign()

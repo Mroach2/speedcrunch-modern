@@ -216,8 +216,9 @@ QString simplifyCompositeUnitText(const QString& text)
 
         appendFactor(currentToken.trimmed(), denominatorForNextToken);
         currentToken.clear();
-        if (isDiv)
-            denominatorForNextToken = true;
+        // '/' only affects the immediately following factor; multiplication
+        // separators start a new factor in numerator context.
+        denominatorForNextToken = isDiv;
     }
     appendFactor(currentToken.trimmed(), denominatorForNextToken);
     if (!hasRepeatedBase)
