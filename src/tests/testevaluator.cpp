@@ -5398,10 +5398,7 @@ void test_expression_operator_normalization()
         EditorUtils::adjustedTypedTextForImplicitMultiplicationAfterDigit(
             QStringLiteral("2"), 1, QStringLiteral("a"));
     {
-        const QString expected = QString(MathDsl::MulDotWrapSp)
-            + QString(MathDsl::MulDotOp)
-            + QString(MathDsl::MulDotWrapSp)
-            + QStringLiteral("a");
+        const QString expected = QStringLiteral("a");
         ++eval_total_tests;
         if (implicitMulWithLatinLetter != expected) {
             ++eval_failed_tests;
@@ -5417,10 +5414,7 @@ void test_expression_operator_normalization()
         EditorUtils::adjustedTypedTextForImplicitMultiplicationAfterDigit(
             QString::fromUtf8("2"), 1, QString::fromUtf8("β"));
     {
-        const QString expected = QString(MathDsl::MulDotWrapSp)
-            + QString(MathDsl::MulDotOp)
-            + QString(MathDsl::MulDotWrapSp)
-            + QString::fromUtf8("β");
+        const QString expected = QString::fromUtf8("β");
         ++eval_total_tests;
         if (implicitMulWithNonLatinLetter != expected) {
             ++eval_failed_tests;
@@ -5436,10 +5430,7 @@ void test_expression_operator_normalization()
         EditorUtils::adjustedTypedTextForImplicitMultiplicationAfterDigit(
             QString::fromUtf8("2³"), 2, QStringLiteral("x"));
     {
-        const QString expected = QString(MathDsl::MulDotWrapSp)
-            + QString(MathDsl::MulDotOp)
-            + QString(MathDsl::MulDotWrapSp)
-            + QStringLiteral("x");
+        const QString expected = QStringLiteral("x");
         ++eval_total_tests;
         if (implicitMulWithSuperscriptDigit != expected) {
             ++eval_failed_tests;

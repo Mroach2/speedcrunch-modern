@@ -220,9 +220,7 @@ inline QString adjustedTypedTextForImplicitMultiplicationAfterDigit(
             && isSingleZeroTermToLeft()) {
             return typedText;
         }
-        const QChar prev = text.at(cursorPosition - 1);
-        if (!prev.isDigit() && !MathDsl::isSuperscriptDigit(prev))
-            return typedText;
+        return typedText;
     } else if (typed == MathDsl::GroupStart || typed == MathDsl::UnitStart) {
         int i = cursorPosition - 1;
         while (i >= 0 && text.at(i).isSpace())
