@@ -2748,6 +2748,16 @@ void test_function_basic()
     CHECK_EVAL_FAIL("molmass(H2O1x)");
     CHECK_EVAL_FAIL("molmass(Xx2)");
     CHECK_EVAL_FAIL(QString::fromUtf8("molmass(K4[Fe(CN)6]·3H2O)"));
+
+    CHECK_EVAL("mass(1;C6H12O6)", "180.156 g");
+    CHECK_EVAL("mass(2;H2O)", "36.03 g");
+    CHECK_EVAL(QString::fromUtf8("mass(0.5;H₂O)"), "9.0075 g");
+    CHECK_EVAL("mass(1;C6H12O6)-molmass(C6H12O6)*1[mol]", "0 g");
+    CHECK_EVAL_FAIL("mass()");
+    CHECK_EVAL_FAIL("mass(1)");
+    CHECK_EVAL_FAIL("mass(1;C6H12O6;H2O)");
+    CHECK_EVAL_FAIL("mass(1;c6h12o6)");
+    CHECK_EVAL_FAIL("mass(1;H0)");
 }
 
 void test_function_trig()

@@ -131,6 +131,21 @@ General
         molmass(C6H12O6)
         = 180.156 g/mol
 
+.. function:: mass(mol; formula)
+
+    Compute the mass of a substance amount and return the result with dimension
+    ``g``.
+
+    This function reuses :func:`molmass` internally and is equivalent to:
+    ``mol * molmass(formula)``.
+
+    The ``formula`` argument follows the same parsing rules as :func:`molmass`.
+
+    Example::
+
+        mass(1; C6H12O6)
+        = 180.156 g
+
 
 .. _trigonometric:
 

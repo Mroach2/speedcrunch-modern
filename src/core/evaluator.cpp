@@ -80,6 +80,11 @@ static bool s_isMolmassFunctionIdentifier(const QString& identifier)
     return FunctionRepo::instance()->isIdentifierAliasOf(identifier, QStringLiteral("molmass"));
 }
 
+static bool s_isMassFunctionIdentifier(const QString& identifier)
+{
+    return FunctionRepo::instance()->isIdentifierAliasOf(identifier, QStringLiteral("mass"));
+}
+
 static bool s_isUpperAsciiLetter(QChar ch)
 {
     return ch >= QLatin1Char('A') && ch <= QLatin1Char('Z');
@@ -5449,6 +5454,11 @@ void Evaluator::compile(const Tokens& tokens)
                             functionCall.text = argList.at(2);
                     } else if (s_isMolmassFunctionIdentifier(id.text()) && argCount == 1) {
                         functionCall.text = m_expression.mid(arg.pos(), arg.size());
+                    } else if (s_isMassFunctionIdentifier(id.text()) && argCount == 2) {
+                        const QString argText = m_expression.mid(arg.pos(), arg.size());
+                        const QStringList argList = splitTopLevelFunctionArguments(argText);
+                        if (argList.count() == 2)
+                            functionCall.text = argList.at(1);
                     }
                     m_codes.append(functionCall);
 #ifdef EVALUATOR_DEBUG
@@ -6658,10 +6668,22 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
         }
         return false;
     };
+    auto hasPendingDeferredMassContext = [&refs](int stackSize) {
+        QHash<int, QString>::const_iterator it = refs.constBegin();
+        for (; it != refs.constEnd(); ++it) {
+            if (it.key() <= stackSize
+                && s_isMassFunctionIdentifier(it.value()))
+            {
+                return true;
+            }
+        }
+        return false;
+    };
     auto hasPendingDeferredOperandContext =
-        [&hasPendingDeferredSummationContext, &hasPendingDeferredMolmassContext](int stackSize) {
+        [&hasPendingDeferredSummationContext, &hasPendingDeferredMolmassContext, &hasPendingDeferredMassContext](int stackSize) {
             return hasPendingDeferredSummationContext(stackSize)
-                   || hasPendingDeferredMolmassContext(stackSize);
+                   || hasPendingDeferredMolmassContext(stackSize)
+                   || hasPendingDeferredMassContext(stackSize);
         };
     auto checkOperatorResultWithDeferredNoOperand = [this, &hasPendingDeferredOperandContext, &stack](const Quantity& result) {
         if (result.error() == NoOperand
@@ -6999,7 +7021,8 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
                                && hasPendingDeferredSummationContext(stack.count()))
                     {
                         pushStackValue(CMath::nan());
-                    } else if (hasPendingDeferredMolmassContext(stack.count())) {
+                    } else if (hasPendingDeferredMolmassContext(stack.count())
+                               || hasPendingDeferredMassContext(stack.count())) {
                         pushStackValue(CMath::nan());
                     } else {
                         m_error = "<b>" + fname + "</b>: "
@@ -7091,6 +7114,32 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
                         return CMath::nan();
                     }
                     pushStackValue(molarMass);
+                } else if (s_isMassFunctionIdentifier(fname)) {
+                    if (args.count() != 2) {
+                        m_error = QString::fromLatin1("<b>%1</b>: ").arg(fname)
+                                + tr("wrong number of arguments");
+                        return CMath::nan();
+                    }
+                    Quantity molarMass;
+                    if (opcode.text.isEmpty() || !s_tryParseMolarMassFormula(opcode.text, &molarMass)) {
+                        m_error = QString::fromLatin1("<b>%1</b>: ").arg(fname)
+                                + tr("invalid expression");
+                        return CMath::nan();
+                    }
+                    Quantity amount = args.at(0);
+                    const Quantity oneMole = Units::mole();
+                    if (amount.isDimensionless()) {
+                        amount *= oneMole;
+                    } else if (!amount.sameDimension(oneMole)) {
+                        m_error = QString::fromLatin1("<b>%1</b>: ").arg(fname)
+                                + tr("undefined for argument domain");
+                        return CMath::nan();
+                    }
+                    Quantity massResult = amount * molarMass;
+                    massResult.setDisplayUnit(
+                        Units::gram().numericValue(),
+                        QString(::unitSymbol(UnitId::Gram)));
+                    pushStackValue(massResult);
                 } else if (s_isSummationFunctionIdentifier(fname)) {
                     if (args.count() != 3) {
                         m_error = QString::fromLatin1("<b>%1</b>: ").arg(fname)
