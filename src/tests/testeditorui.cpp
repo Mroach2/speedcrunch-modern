@@ -2066,10 +2066,13 @@ void TestEditorUi::offers_unit_completion_for_degree_symbol_in_unit_context()
     editor.setText(QString::fromUtf8("100 [°"));
     editor.setCursorPosition(editor.text().size());
 
+    const auto localizedChoice = [](const QString& identifier, UnitId id) {
+        return QStringLiteral("%1:%2").arg(identifier, tr(unitLocalizedName(id)));
+    };
     const QStringList degreeChoices = editor.matchFragment(QString::fromUtf8("°"), true);
     QVERIFY(!degreeChoices.isEmpty());
-    QVERIFY(degreeChoices.contains(QString::fromUtf8("°:Unit")));
-    QVERIFY(degreeChoices.contains(QString::fromUtf8("°C:Unit")));
+    QVERIFY(degreeChoices.contains(localizedChoice(QString::fromUtf8("°"), UnitId::Degree)));
+    QVERIFY(degreeChoices.contains(localizedChoice(QString::fromUtf8("°C"), UnitId::DegreeCelsius)));
 
     QVERIFY(QMetaObject::invokeMethod(
         &editor,
@@ -2086,11 +2089,16 @@ void TestEditorUi::matches_micro_units_when_typing_u_in_unit_context()
     QVERIFY(QTest::qWaitForWindowExposed(&editor));
     editor.setFocus();
 
+    const auto localizedChoice = [](const QString& identifier) {
+        return QStringLiteral("%1:%2").arg(
+            identifier,
+            tr(unitLocalizedIdentifierName(identifier).toUtf8().constData()));
+    };
     const QStringList uChoices = editor.matchFragment(QStringLiteral("u"), true);
-    QVERIFY(uChoices.contains(QString::fromUtf8("µm:Unit")));
-    QVERIFY(uChoices.contains(QString::fromUtf8("µs:Unit")));
-    QVERIFY(uChoices.contains(QString::fromUtf8("µas:Unit")));
-    QVERIFY(!uChoices.contains(QStringLiteral("uas:Unit")));
+    QVERIFY(uChoices.contains(localizedChoice(QString::fromUtf8("µm"))));
+    QVERIFY(uChoices.contains(localizedChoice(QString::fromUtf8("µs"))));
+    QVERIFY(uChoices.contains(localizedChoice(QString::fromUtf8("µas"))));
+    QVERIFY(!uChoices.contains(localizedChoice(QStringLiteral("uas"))));
 }
 
 void TestEditorUi::unit_context_completion_includes_angle_units_and_long_forms()
@@ -2100,35 +2108,54 @@ void TestEditorUi::unit_context_completion_includes_angle_units_and_long_forms()
     QVERIFY(QTest::qWaitForWindowExposed(&editor));
     editor.setFocus();
 
+    const auto localizedChoice = [](const QString& identifier, UnitId id) {
+        return QStringLiteral("%1:%2").arg(identifier, tr(unitLocalizedName(id)));
+    };
+    const auto descriptionFor = [](const QStringList& choices, const QString& identifier) {
+        for (const QString& choice : choices) {
+            if (choice.startsWith(identifier + QStringLiteral(":")))
+                return choice.mid(identifier.size() + 1);
+        }
+        return QString();
+    };
     const QStringList radChoices = editor.matchFragment(QStringLiteral("rad"), true);
-    QVERIFY(radChoices.contains(QStringLiteral("rad:Unit")));
-    QVERIFY(radChoices.contains(QStringLiteral("radian:Unit")));
+    QVERIFY(radChoices.contains(localizedChoice(QStringLiteral("rad"), UnitId::Radian)));
+    QVERIFY(radChoices.contains(localizedChoice(QStringLiteral("radian"), UnitId::Radian)));
 
     const QStringList arcChoices = editor.matchFragment(QStringLiteral("arc"), true);
-    QVERIFY(arcChoices.contains(QStringLiteral("arcminute:Unit")));
-    QVERIFY(arcChoices.contains(QStringLiteral("arcsecond:Unit")));
-    QVERIFY(arcChoices.contains(QStringLiteral("arcsec:Unit")));
+    QVERIFY(arcChoices.contains(localizedChoice(QStringLiteral("arcminute"), UnitId::Arcminute)));
+    QVERIFY(arcChoices.contains(localizedChoice(QStringLiteral("arcsecond"), UnitId::Arcsecond)));
+    QVERIFY(arcChoices.contains(localizedChoice(QStringLiteral("arcsec"), UnitId::Arcsecond)));
 
     const QStringList masChoices = editor.matchFragment(QStringLiteral("mas"), true);
-    QVERIFY(masChoices.contains(QStringLiteral("mas:Unit")));
+    QVERIFY(masChoices.contains(localizedChoice(QStringLiteral("mas"), UnitId::Milliarcsecond)));
 
     const QStringList uasChoices = editor.matchFragment(QStringLiteral("u"), true);
-    QVERIFY(uasChoices.contains(QString::fromUtf8("µas:Unit")));
+    QVERIFY(uasChoices.contains(localizedChoice(QString::fromUtf8("µas"), UnitId::Microarcsecond)));
 
     const QStringList milliArcChoices = editor.matchFragment(QStringLiteral("milliarc"), true);
-    QVERIFY(milliArcChoices.contains(QStringLiteral("milliarcsecond:Unit")));
+    QVERIFY(milliArcChoices.contains(localizedChoice(QStringLiteral("milliarcsecond"), UnitId::Milliarcsecond)));
 
     const QStringList microArcChoices = editor.matchFragment(QStringLiteral("microarc"), true);
-    QVERIFY(microArcChoices.contains(QStringLiteral("microarcsecond:Unit")));
+    QVERIFY(microArcChoices.contains(localizedChoice(QStringLiteral("microarcsecond"), UnitId::Microarcsecond)));
 
     const QStringList turnChoices = editor.matchFragment(QStringLiteral("turn"), true);
-    QVERIFY(turnChoices.contains(QStringLiteral("turn:Unit")));
+    QVERIFY(turnChoices.contains(localizedChoice(QStringLiteral("turn"), UnitId::Turn)));
 
     const QStringList gradChoices = editor.matchFragment(QStringLiteral("grad"), true);
-    QVERIFY(gradChoices.contains(QStringLiteral("gradian:Unit")));
+    QVERIFY(gradChoices.contains(localizedChoice(QStringLiteral("gradian"), UnitId::Gradian)));
 
     const QStringList gonChoices = editor.matchFragment(QStringLiteral("gon"), true);
-    QVERIFY(gonChoices.contains(QStringLiteral("gon:Unit")));
+    QVERIFY(gonChoices.contains(localizedChoice(QStringLiteral("gon"), UnitId::Gradian)));
+
+    const QStringList aChoices = editor.matchFragment(QStringLiteral("a"), true);
+    const QString acDescription = descriptionFor(aChoices, QStringLiteral("ac"));
+    const QString aCDescription = descriptionFor(aChoices, QStringLiteral("aC"));
+    QVERIFY(!acDescription.isEmpty());
+    QVERIFY(!aCDescription.isEmpty());
+    QCOMPARE(acDescription, tr("acre"));
+    QVERIFY(aCDescription != tr("acre"));
+    QVERIFY(aCDescription != tr("Unit"));
 }
 
 void TestEditorUi::completes_binary_prefixed_information_unit_to_short_form_in_unit_context()
@@ -2142,7 +2169,10 @@ void TestEditorUi::completes_binary_prefixed_information_unit_to_short_form_in_u
     editor.setCursorPosition(editor.text().size());
 
     const QStringList mebChoices = editor.matchFragment(QStringLiteral("meb"), true);
-    QVERIFY(mebChoices.contains(QStringLiteral("mebibyte:Unit")));
+    const QString mebibyteChoice = QStringLiteral("%1:%2").arg(
+        QStringLiteral("mebibyte"),
+        tr(unitLocalizedIdentifierName(QStringLiteral("mebibyte")).toUtf8().constData()));
+    QVERIFY(mebChoices.contains(mebibyteChoice));
 
     QVERIFY(QMetaObject::invokeMethod(
         &editor,

@@ -270,6 +270,8 @@ bool unitQuantityFromDimensionKey(const QString& key, UnitQuantity* out);
 QString normalizeUnitName(const QString& name);
 UnitId unitId(const QString& normalizedName);
 QString unitName(UnitId id);
+const char* unitLocalizedName(UnitId id);
+QString unitLocalizedIdentifierName(const QString& identifier);
 QString unitSymbol(UnitId id);
 bool isPreferredCanonicalDisplayUnit(UnitId id);
 QStringView unitPhrase(UnitPhraseId key);

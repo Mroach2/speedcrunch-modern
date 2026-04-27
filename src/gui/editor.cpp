@@ -1665,7 +1665,11 @@ QStringList Editor::matchFragment(const QString& id, bool unitContext) const
             if (seenUnitNames.contains(unitName))
                 continue;
             seenUnitNames.insert(unitName);
-            unitChoices.append(unitName + QStringLiteral(":") + tr("Unit"));
+            QString unitDescription = tr("Unit");
+            const QString localizedName = unitLocalizedIdentifierName(unitName);
+            if (!localizedName.isEmpty())
+                unitDescription = tr(localizedName.toUtf8().constData());
+            unitChoices.append(unitName + QStringLiteral(":") + unitDescription);
         }
         unitChoices.sort();
         choices += unitChoices;
