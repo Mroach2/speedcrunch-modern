@@ -1379,6 +1379,39 @@ Quantity function_mass(Function* f, const Function::ArgumentList& args)
     return DMath::nan(OutOfDomain);
 }
 
+Quantity function_molarity(Function* f, const Function::ArgumentList& args)
+{
+    ENSURE_ARGUMENT_COUNT(2);
+
+    Quantity amount = args.at(0);
+    Quantity volume = args.at(1);
+    const Quantity oneMole = Units::mole();
+    const Quantity oneLitre = Units::litre();
+
+    if (amount.isDimensionless()) {
+        amount *= oneMole;
+    } else if (!amount.sameDimension(oneMole)) {
+        f->setError(OutOfDomain);
+        return DMath::nan(OutOfDomain);
+    }
+
+    if (volume.isDimensionless()) {
+        volume *= oneLitre;
+    } else if (!volume.sameDimension(oneLitre)) {
+        f->setError(OutOfDomain);
+        return DMath::nan(OutOfDomain);
+    }
+
+    Quantity concentration = amount / volume;
+    const Quantity molPerLitre = oneMole / oneLitre;
+    const QString molPerLitreSymbol =
+        QString(::unitSymbol(UnitId::Mole))
+        + MathDsl::DivOp
+        + QString(::unitSymbol(UnitId::Litre));
+    concentration.setDisplayUnit(molPerLitre.numericValue(), molPerLitreSymbol);
+    return concentration;
+}
+
 void FunctionRepo::createFunctions()
 {
     // Analysis.
@@ -1400,6 +1433,7 @@ void FunctionRepo::createFunctions()
     FUNCTION_INSERT(int);
     FUNCTION_INSERT(lngamma);
     FUNCTION_INSERT(mass);
+    FUNCTION_INSERT(molarity);
     FUNCTION_INSERT(molmass);
     FUNCTION_INSERT(max);
     FUNCTION_INSERT(min);
@@ -1651,6 +1685,7 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(ln, "x");
     FUNCTION_USAGE(lngamma, "x");
     FUNCTION_USAGE(mass, "mol; formula");
+    FUNCTION_USAGE(molarity, "n; V");
     FUNCTION_USAGE(molmass, "formula");
     FUNCTION_USAGE(max, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(median, "x<sub>1</sub>; x<sub>2</sub>; ...");
@@ -1791,6 +1826,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(ln, tr("Natural Logarithm"));
     FUNCTION_NAME(lngamma, "ln(abs(Gamma))");
     FUNCTION_NAME(mass, tr("Substance Mass"));
+    FUNCTION_NAME(molarity, tr("Molarity"));
     FUNCTION_NAME(molmass, tr("Molar Mass"));
     FUNCTION_NAME(log, tr("Logarithm to Arbitrary Base"));
     FUNCTION_NAME(mask, tr("Mask to a bit size"));

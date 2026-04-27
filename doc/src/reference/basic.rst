@@ -146,6 +146,21 @@ General
         mass(1; C6H12O6)
         = 180.156 g
 
+.. function:: molarity(n; V)
+
+    Compute molarity as amount of substance divided by solution volume and
+    return the result with dimension ``mol/L``.
+
+    This function is equivalent to: ``n / V``.
+
+    If ``n`` or ``V`` is dimensionless, SpeedCrunch interprets them as ``mol``
+    and ``L``, respectively.
+
+    Example::
+
+        molarity(0.50; 1.00)
+        = 0.5 mol/L
+
 
 .. _trigonometric:
 

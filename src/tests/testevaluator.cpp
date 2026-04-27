@@ -2758,6 +2758,21 @@ void test_function_basic()
     CHECK_EVAL_FAIL("mass(1;C6H12O6;H2O)");
     CHECK_EVAL_FAIL("mass(1;c6h12o6)");
     CHECK_EVAL_FAIL("mass(1;H0)");
+
+    CHECK_EVAL("molarity(0.50;1.00)", "0.5 mol/L");
+    CHECK_EVAL("molarity(1[mol];2[L])", "0.5 mol/L");
+    CHECK_EVAL("molarity(1;2[L])", "0.5 mol/L");
+    CHECK_EVAL("molarity(1[mol];2)", "0.5 mol/L");
+    CHECK_EVAL("molarity(3[mmol];2[mL])", "1.5 mol/L");
+    CHECK_EVAL("molarity(250[umol];500[mL])", "0.0005 mol/L");
+    CHECK_EVAL("molarity(0.75[mol];300[mL])", "2.5 mol/L");
+    CHECK_EVAL("molarity(3[mmol];2[mL])-molarity(0.003[mol];0.002[L])", "0 mol/L");
+    CHECK_EVAL("molarity(1[mol];2[L])-0.5[mol/L]", "0 mol/L");
+    CHECK_EVAL_FAIL("molarity()");
+    CHECK_EVAL_FAIL("molarity(1)");
+    CHECK_EVAL_FAIL("molarity(1;2;3)");
+    CHECK_EVAL_FAIL("molarity(1[g];1[L])");
+    CHECK_EVAL_FAIL("molarity(1[mol];1[s])");
 }
 
 void test_function_trig()
