@@ -167,6 +167,13 @@ QString compactCompositeUnitSpacing(QString text)
     return text;
 }
 
+QString collapseValueUnitMultiplicationSpacing(QString text)
+{
+    return text.replace(
+        RegExpPatterns::valueTimesBracketedUnit(),
+        QStringLiteral("\\1") + QString(MathDsl::QuantSp) + QStringLiteral("\\2"));
+}
+
 } // namespace
 
 QString applyOperatorSpacingForDisplay(const QString& input)
@@ -211,6 +218,13 @@ QString applyOperatorSpacingForDisplay(const QString& input)
         const bool hasRightOperand = i + 1 < tokens.size()
             && tokenCanStartOperandForSpacing(tokens.at(i + 1));
         const bool isBinaryOperator = hasLeftOperand && hasRightOperand;
+        int rhsPos = lastPos;
+        while (rhsPos < input.size() && input.at(rhsPos).isSpace())
+            ++rhsPos;
+        const bool isValueUnitAttachment =
+            op == Token::Multiplication
+            && rhsPos < input.size()
+            && input.at(rhsPos) == MathDsl::UnitStart;
         const bool isUnitCompositeOperator =
             (op == Token::Multiplication || op == Token::Division)
             && i > 0
@@ -225,6 +239,12 @@ QString applyOperatorSpacingForDisplay(const QString& input)
 
         while (!output.isEmpty() && output.back().isSpace())
             output.chop(1);
+
+        if (isValueUnitAttachment) {
+            output += MathDsl::QuantSp;
+            lastPos = rhsPos;
+            continue;
+        }
 
         output += (unitBracketDepth > 0 || isUnitCompositeOperator)
             ? signForUnitOperator(token, originalTokenText)
@@ -340,6 +360,7 @@ QString applyDigitGroupingForDisplay(const QString& input)
     output = UnicodeChars::normalizeRootFunctionAliasesForDisplay(output);
     output = applyOperatorSpacingForDisplay(output);
     output = compactCompositeUnitSpacing(output);
+    output = collapseValueUnitMultiplicationSpacing(output);
     return applyValueUnitSpacingForDisplay(output);
 }
 

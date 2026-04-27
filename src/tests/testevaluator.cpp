@@ -26,6 +26,7 @@
 #include "gui/displayformatutils.h"
 #include "gui/functiontooltiputils.h"
 #include "gui/resultdisplay.h"
+#include "gui/resultlineformatutils.h"
 #include "gui/simplifiedexpressionutils.h"
 #include "math/cmath.h"
 #include "core/mathdsl.h"
@@ -4359,6 +4360,45 @@ void test_display_interpreted_spacing()
             cerr << __FILE__ << "[" << __LINE__ << "]\tvalue-unit spacing for function attachment\t[NEW]" << endl
                  << "\tDisplayed: " << interpretedDisplayed.toUtf8().constData() << endl
                  << "\tExpected : " << expected.toUtf8().constData() << endl;
+        }
+    }
+    ++eval_total_tests;
+    const QString valueUnitMulDisplayed =
+        DisplayFormatUtils::applyDigitGroupingForDisplay(QStringLiteral("750 · [h]"));
+    const QString valueUnitMulExpected = QStringLiteral("750")
+        + QString(MathDsl::QuantSp)
+        + QStringLiteral("[h]");
+    if (valueUnitMulDisplayed != valueUnitMulExpected) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tvalue-unit multiplication keeps bracketed unit formatting\t[NEW]" << endl
+             << "\tDisplayed : " << valueUnitMulDisplayed.toUtf8().constData() << endl
+             << "\tExpected  : " << valueUnitMulExpected.toUtf8().constData() << endl;
+    }
+    ++eval_total_tests;
+    eval->setExpression(QStringLiteral("750 · [h]"));
+    const Quantity valueUnitMulResult = eval->evalUpdateAns();
+    if (!eval->error().isEmpty()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tresult lines keep bracketed unit attachment\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+    } else {
+        const QStringList lines = ResultLineFormatUtils::formatResultLinesForDisplay(
+            QStringLiteral("750 · [h]"),
+            eval->interpretedExpression(),
+            valueUnitMulResult,
+            true,
+            true);
+        const QString expectedLine = QStringLiteral("750")
+            + QString(MathDsl::QuantSp)
+            + QStringLiteral("[h]");
+        if (lines.isEmpty() || lines.first() != expectedLine) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tresult lines keep bracketed unit attachment\t[NEW]" << endl
+                 << "\tFirst line: " << (lines.isEmpty() ? "<empty>" : lines.first().toUtf8().constData()) << endl
+                 << "\tExpected  : " << expectedLine.toUtf8().constData() << endl;
         }
     }
     CHECK_DISPLAY_INTERPRETED(

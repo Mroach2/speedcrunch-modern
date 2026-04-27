@@ -22,6 +22,7 @@
 #include "math/rational.h"
 
 #include <QRegularExpression>
+#include <QSet>
 #include <QString>
 #include <QVector>
 
@@ -46,6 +47,42 @@ inline QString normalizeBracketedUnitTextForDisplay(const QString& text)
     }
     output += text.mid(cursor);
     return output;
+}
+
+inline QString collapseValueUnitMultiplicationForDisplay(QString text)
+{
+    return text.replace(
+        RegExpPatterns::valueTimesBracketedUnit(),
+        QStringLiteral("\\1") + QString(MathDsl::QuantSp) + QStringLiteral("\\2"));
+}
+
+inline QString preserveExplicitBracketedSimpleUnitsFromSource(QString displayed,
+                                                              const QString& sourceExpression)
+{
+    QRegularExpressionMatchIterator it =
+        RegExpPatterns::bracketedSimpleUnitIdentifier().globalMatch(sourceExpression);
+    QSet<QString> sourceSimpleUnits;
+    while (it.hasNext()) {
+        const QRegularExpressionMatch match = it.next();
+        sourceSimpleUnits.insert(match.captured(1));
+    }
+    if (sourceSimpleUnits.isEmpty())
+        return displayed;
+
+    for (const QString& unitToken : sourceSimpleUnits) {
+        const QString escapedToken = QRegularExpression::escape(unitToken);
+        const QRegularExpression valueTimesUnit(
+            QStringLiteral(R"((\d(?:[\d\.,]*)?)\s*[*·×]\s*(%1)(?![\p{L}\p{N}_]))")
+                .arg(escapedToken));
+        displayed.replace(
+            valueTimesUnit,
+            QStringLiteral("\\1")
+                + QString(MathDsl::QuantSp)
+                + QStringLiteral("[")
+                + unitToken
+                + QStringLiteral("]"));
+    }
+    return displayed;
 }
 
 inline QString collapseBracketedCompactAngleSuffixes(QString text)
@@ -369,6 +406,8 @@ inline QString simplifiedExpressionLineForDisplay(const QString& interpretedExpr
     }
     interpretedDisplay = normalizeBracketedUnitTextForDisplay(interpretedDisplay);
     simplifiedDisplay = normalizeBracketedUnitTextForDisplay(simplifiedDisplay);
+    interpretedDisplay = collapseValueUnitMultiplicationForDisplay(interpretedDisplay);
+    simplifiedDisplay = collapseValueUnitMultiplicationForDisplay(simplifiedDisplay);
     interpretedDisplay = collapseBracketedCompactAngleSuffixes(interpretedDisplay);
     simplifiedDisplay = collapseBracketedCompactAngleSuffixes(simplifiedDisplay);
     if (simplifiedDisplay.isEmpty() || simplifiedDisplay == interpretedDisplay)
@@ -402,9 +441,12 @@ inline QString formattedExpressionLineForDisplay(const QString& sourceExpression
         UnicodeChars::normalizePiForDisplay(
             Evaluator::formatInterpretedExpressionForDisplay(interpretedSource)));
     return collapseBracketedCompactAngleSuffixes(
-        normalizeBracketedUnitTextForDisplay(
-            DisplayFormatUtils::preserveConversionTargetBracketsForDisplay(
-                displayed, sourceExpression)));
+        collapseValueUnitMultiplicationForDisplay(
+            preserveExplicitBracketedSimpleUnitsFromSource(
+                normalizeBracketedUnitTextForDisplay(
+                    DisplayFormatUtils::preserveConversionTargetBracketsForDisplay(
+                        displayed, sourceExpression)),
+                sourceExpression)));
 }
 
 inline QString trimTrailingFractionZeros(QString text)
