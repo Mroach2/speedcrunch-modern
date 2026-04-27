@@ -24,6 +24,7 @@
 #include "core/opcode.h"
 #include "core/variable.h"
 #include "core/userfunction.h"
+#include "core/userunit.h"
 
 #include "math/hmath.h"
 #include "math/cmath.h"
@@ -155,6 +156,7 @@ public:
     void setExpression(const QString&);
     Tokens tokens() const;
     bool isUserFunctionAssign() const;
+    bool isUserUnitAssign() const;
 
     Variable getVariable(const QString&) const;
     QList<Variable> getVariables() const;
@@ -176,6 +178,15 @@ public:
     void unsetAllUserFunctions();
     bool hasUserFunction(const QString&) const;
 
+    QList<UserUnit> getUserUnits() const;
+    QStringList userUnitIdentifiers() const;
+    QStringList allUnitIdentifiers() const;
+    void setUserUnit(const UserUnit&);
+    void unsetUserUnit(const QString&);
+    void unsetAllUserUnits();
+    bool hasUserUnit(const QString&) const;
+    const UserUnit* getUserUnit(const QString&) const;
+
 protected:
     void compile(const Tokens&);
 
@@ -192,8 +203,11 @@ private:
     bool m_assignFunc;
     QStringList m_assignArg;
     QString m_assignVarDescription;
+    QString m_assignUnitDescription;
     QString m_assignFuncExpr;
+    QString m_assignUnitExpr;
     QString m_assignFuncDescription;
+    bool m_assignUnit;
     QVector<Opcode> m_codes;
     QVector<Quantity> m_constants;
     QStringList m_constantTexts;
@@ -212,6 +226,7 @@ private:
     Quantity execUserFunction(const UserFunction* function,
                               QVector<Quantity>& arguments);
     const UserFunction* getUserFunction(const QString&) const;
+    bool tryGetAnyUnitQuantity(const QString& identifier, Quantity* valueOut) const;
 
     bool isFunction(Token token) {
         return token.isIdentifier()

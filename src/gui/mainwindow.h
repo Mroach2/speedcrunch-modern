@@ -46,6 +46,7 @@ class ResultDisplay;
 class Session;
 class Settings;
 class UserFunctionListWidget;
+class UserUnitListWidget;
 class Variable;
 class VariableListWidget;
 class VersionCheck;
@@ -80,6 +81,7 @@ signals:
     void historyChanged();
     void variablesChanged();
     void functionsChanged();
+    void unitsChanged();
 
 public slots:
     void copy();
@@ -119,6 +121,7 @@ private slots:
     void insertTextIntoEditor(const QString&);
     void insertVariableIntoEditor(const QString&);
     void insertUserFunctionIntoEditor(const QString&);
+    void insertUserUnitIntoEditor(const QString&);
     void checkForUpdates();
     void openFeedbackURL();
     void openCommunityURL();
@@ -198,6 +201,7 @@ private slots:
     void setHoverHighlightResultsEnabled(bool);
     void setVariablesDockVisible(bool, bool takeFocus = true);
     void setUserFunctionsDockVisible(bool, bool takeFocus = true);
+    void setUserUnitsDockVisible(bool, bool takeFocus = true);
     void setWindowPositionSaveEnabled(bool);
     void setSingleInstanceEnabled(bool);
     void setWidgetsDirection();
@@ -249,6 +253,7 @@ private:
     void createHistoryDock(bool takeFocus = true);
     void createVariablesDock(bool takeFocus = true);
     void createUserFunctionsDock(bool takeFocus = true);
+    void createUserUnitsDock(bool takeFocus = true);
     void createFixedConnections();
     void applySettings();
     void checkInitialResultFormat();
@@ -267,6 +272,7 @@ private:
     void deleteHistoryDock();
     void deleteVariablesDock();
     void deleteUserFunctionsDock();
+    void deleteUserUnitsDock();
     void saveSettings();
     void saveSessionToDefaultPath(bool saveHistory = true);
     void saveSession(QString &fname, bool saveHistory = true);
@@ -325,6 +331,7 @@ private:
         QAction* viewFunctions;
         QAction* viewVariables;
         QAction* viewUserFunctions;
+        QAction* viewUserUnits;
         QAction* viewHistory;
         QAction* viewStatusBar;
         QAction* viewMenuBar;
@@ -486,6 +493,7 @@ private:
         GenericDock<HistoryWidget>* history;
         GenericDock<VariableListWidget>* variables;
         GenericDock<UserFunctionListWidget>* userFunctions;
+        GenericDock<UserUnitListWidget>* userUnits;
     } m_docks;
     QList<QDockWidget*> m_allDocks;
 

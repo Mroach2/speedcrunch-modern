@@ -198,6 +198,7 @@ public:
     bool menuBarVisible;
     bool variablesDockVisible;
     bool userFunctionsDockVisible;
+    bool userUnitsDockVisible;
     bool windowOnfullScreen;
     bool bitfieldVisible;
 

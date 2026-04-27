@@ -358,13 +358,13 @@ static QString s_applySuperscriptStyleToExplicitUnitText(QString unitText)
 static bool s_isOpeningUnitBracketToken(const Token& token)
 {
     return token.asOperator() == Token::AssociationStart
-           && token.text() == QLatin1String("[");
+           && token.text() == QString(MathDsl::UnitStart);
 }
 
 static bool s_isClosingUnitBracketToken(const Token& token)
 {
     return token.asOperator() == Token::AssociationEnd
-           && token.text() == QLatin1String("]");
+           && token.text() == QString(MathDsl::UnitEnd);
 }
 
 static bool s_tokenSourceContainsExplicitUnitAttachment(const Token& token,
@@ -414,6 +414,17 @@ static bool s_tryGetBuiltInUnitQuantity(const QString& identifier, Quantity* val
 static bool s_isBuiltInUnitIdentifier(const QString& identifier)
 {
     return s_builtInUnitLookup().contains(identifier);
+}
+
+static bool s_isUserUnitLhsTokens(const Tokens& tokens)
+{
+    return tokens.count() > 4
+        && tokens.at(0).asOperator() == Token::AssociationStart
+        && tokens.at(0).text() == QString(MathDsl::UnitStart)
+        && tokens.at(1).isUnitIdentifier()
+        && tokens.at(2).asOperator() == Token::AssociationEnd
+        && tokens.at(2).text() == QString(MathDsl::UnitEnd)
+        && tokens.at(3).asOperator() == Token::Assignment;
 }
 
 static bool splitUserFunctionDescription(const QString& expression,
@@ -3358,17 +3369,9 @@ static QString formatInterpretedExpressionForDisplayImpl(const QString& expressi
     if (!scannedTokens.valid() || scannedTokens.isEmpty())
         return expressionPrefix + commentSuffix;
     auto isKnownUnitIdentifier = [](const QString& tokenText) {
-        static char cachedAngleMode = '\0';
-        static QSet<QString> knownUnits;
-        const char angleMode = Settings::instance()->angleUnit;
-        if (knownUnits.isEmpty() || cachedAngleMode != angleMode) {
-            knownUnits = QSet<QString>();
-            const auto lookup = Units::builtInUnitLookup(angleMode);
-            for (auto it = lookup.constBegin(); it != lookup.constEnd(); ++it)
-                knownUnits.insert(it.key());
-            cachedAngleMode = angleMode;
-        }
-        return knownUnits.contains(tokenText);
+        Evaluator* evaluator = Evaluator::instance();
+        return s_isBuiltInUnitIdentifier(tokenText)
+            || (evaluator && evaluator->hasUserUnit(tokenText));
     };
     bool hasUnitIdentifierToken = false;
     for (const Token& token : scannedTokens) {
@@ -3879,7 +3882,11 @@ static QString formatInterpretedExpressionForDisplayImpl(const QString& expressi
             }
             displayTokenText = QStringLiteral("[%1]").arg(symbol);
         }
-        if (isDisplayUnitToken && unitOnlyAddSubExpression) {
+        const bool isInsideExplicitUnitBlock =
+            i > 0
+            && tokens.at(i - 1).text().size() == 1
+            && tokens.at(i - 1).text().at(0) == MathDsl::UnitStart;
+        if (isDisplayUnitToken && unitOnlyAddSubExpression && !isInsideExplicitUnitBlock) {
             displayTokenText = QStringLiteral("1")
                 + QString(MathDsl::QuantSp)
                 + QStringLiteral("[%1]").arg(displayTokenText);
@@ -3896,18 +3903,6 @@ static QString formatInterpretedExpressionForDisplayImpl(const QString& expressi
                     || previousToken.isIdentifier()
                     || previousToken.isUnitIdentifier()
                     || isFunctionCallGroupEnd(i - 1));
-            const bool shouldInsertImplicitUnitOne =
-                (!hasPreviousToken
-                    || previousToken.asOperator() == Token::Addition
-                    || previousToken.asOperator() == Token::Subtraction
-                    || previousToken.asOperator() == Token::Assignment
-                    || previousToken.asOperator() == Token::ListSeparator
-                    || previousToken.asOperator() == Token::AssociationStart)
-                &&
-                !followsConversionArrow
-                && !shouldAddValueUnitSpace
-                && i + 1 < tokens.size()
-                && tokens.at(i + 1).isUnitIdentifier();
 
             UnitBracketDisplayContext unitContext;
             int depth = 1;
@@ -3930,6 +3925,24 @@ static QString formatInterpretedExpressionForDisplayImpl(const QString& expressi
                 if (depth == 1 && tokens.at(j).asOperator() == Token::Division)
                     hasDivisionInside = true;
             }
+            const bool isAssignmentLeftSideUnitBlock =
+                !hasPreviousToken
+                && closeIndex >= 0
+                && closeIndex + 1 < tokens.size()
+                && tokens.at(closeIndex + 1).asOperator() == Token::Assignment;
+            const bool shouldInsertImplicitUnitOne =
+                (!hasPreviousToken
+                    || previousToken.asOperator() == Token::Addition
+                    || previousToken.asOperator() == Token::Subtraction
+                    || previousToken.asOperator() == Token::Assignment
+                    || previousToken.asOperator() == Token::ListSeparator
+                    || previousToken.asOperator() == Token::AssociationStart)
+                &&
+                !followsConversionArrow
+                && !shouldAddValueUnitSpace
+                && !isAssignmentLeftSideUnitBlock
+                && i + 1 < tokens.size()
+                && tokens.at(i + 1).isUnitIdentifier();
             const bool isSimpleDegreeUnit =
                 closeIndex == i + 2
                 && (tokens.at(i + 1).isUnitIdentifier()
@@ -4776,8 +4789,11 @@ void Evaluator::reset()
     m_assignFunc = false;
     m_assignArg.clear();
     m_assignVarDescription = QString();
+    m_assignUnitDescription = QString();
     m_assignFuncExpr = QString();
+    m_assignUnitExpr = QString();
     m_assignFuncDescription = QString();
+    m_assignUnit = false;
     m_session = nullptr;
     m_functionsInUse.clear();
     m_hasImplicitMultiplication = false;
@@ -5044,9 +5060,9 @@ Tokens Evaluator::scan(const QString& expr) const
                     int tokenSize = i - tokenStart;
                     const QString opText = s.left(len);
                     tokens.append(Token(type, opText, tokenStart, tokenSize));
-                    if (opText == QLatin1String("[")) {
+                    if (opText == QString(MathDsl::UnitStart)) {
                         ++unitBracketDepth;
-                    } else if (opText == QLatin1String("]")) {
+                    } else if (opText == QString(MathDsl::UnitEnd)) {
                         if (unitBracketDepth == 0) {
                             state = Bad;
                             break;
@@ -6475,8 +6491,11 @@ Quantity Evaluator::evalNoAssign()
         m_assignFunc = false;
         m_assignArg.clear();
         m_assignVarDescription = QString();
+        m_assignUnitDescription = QString();
         m_assignFuncExpr = QString();
+        m_assignUnitExpr = QString();
         m_assignFuncDescription = QString();
+        m_assignUnit = false;
         m_interpretedExpression = QString();
         m_hasImplicitMultiplication = false;
         QString expressionToParse = m_expression;
@@ -6521,8 +6540,17 @@ Quantity Evaluator::evalNoAssign()
             return CMath::nan();
         }
 
+        // User unit assignment?
+        if (s_isUserUnitLhsTokens(tokens)) {
+            m_assignId = tokens.at(1).text();
+            m_assignUnit = true;
+            m_assignUnitExpr = expressionToParse.section("=", 1, 1).trimmed();
+            m_assignUnitDescription = m_assignVarDescription;
+            for (int i = 0; i < 4; ++i)
+                tokens.erase(tokens.begin());
+        }
         // Variable assignment?
-        if (tokens.count() > 2
+        else if (tokens.count() > 2
             && tokens.at(0).isIdentifier()
             && tokens.at(1).asOperator() == Token::Assignment)
         {
@@ -6605,6 +6633,9 @@ Quantity Evaluator::evalNoAssign()
                 );
                 m_interpretedExpression =
                     leftSide + QStringLiteral("=") + m_interpretedExpression;
+            } else if (m_assignUnit) {
+                m_interpretedExpression =
+                    QStringLiteral("[%1]=%2").arg(m_assignId, m_interpretedExpression);
             } else {
                 m_interpretedExpression =
                     m_assignId + QStringLiteral("=") + m_interpretedExpression;
@@ -7038,7 +7069,7 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
                     pushStackValue(CMath::nan());
                     break;
                 }
-                if (s_tryGetBuiltInUnitQuantity(fname, &val1)) {
+                if (tryGetAnyUnitQuantity(fname, &val1)) {
                     pushStackValue(val1);
                     break;
                 }
@@ -7298,6 +7329,11 @@ bool Evaluator::isUserFunctionAssign() const
     return m_assignFunc;
 }
 
+bool Evaluator::isUserUnitAssign() const
+{
+    return m_assignUnit;
+}
+
 bool Evaluator::isBuiltInVariable(const QString& id) const
 {
     // Defining variables with the same name as existing functions
@@ -7318,7 +7354,7 @@ Quantity Evaluator::eval()
     if (!m_error.isEmpty())
         return result;
 
-    if (isBuiltInVariable(m_assignId)) {
+    if (!m_assignUnit && isBuiltInVariable(m_assignId)) {
         m_error = tr("%1 is a reserved name, "
                      "please choose another").arg(m_assignId);
         return CMath::nan();
@@ -7377,6 +7413,19 @@ Quantity Evaluator::eval()
 
             setUserFunction(userFunction);
 
+        } else if (m_assignUnit) {
+            if (s_isBuiltInUnitIdentifier(m_assignId)) {
+                m_error = tr("%1 is a built-in unit name, please choose another")
+                    .arg(m_assignId);
+                return CMath::nan();
+            }
+            if (result.isZero()) {
+                m_error = tr("unit must not be zero");
+                return CMath::nan();
+            }
+            UserUnit userUnit(m_assignId, result, m_assignUnitExpr,
+                              m_interpretedExpression, m_assignUnitDescription);
+            setUserUnit(userUnit);
         } else {
             if (hasUserFunction(m_assignId)) {
                 m_error = tr("%1 is a user function name, please choose "
@@ -7395,7 +7444,7 @@ Quantity Evaluator::eval()
 Quantity Evaluator::evalUpdateAns()
 {
     auto result = eval();
-    if (m_error.isEmpty() && !m_assignFunc
+    if (m_error.isEmpty() && !m_assignFunc && !m_assignUnit
         && !isCommentOnlyExpression(m_expression))
         setVariable(QLatin1String("ans"), result, Variable::BuiltIn);
     return result;
@@ -7703,6 +7752,11 @@ QList<UserFunction> Evaluator::getUserFunctions() const
                          : QList<UserFunction>();
 }
 
+QList<UserUnit> Evaluator::getUserUnits() const
+{
+    return m_session ? m_session->userUnitsToList() : QList<UserUnit>();
+}
+
 void Evaluator::setUserFunction(const UserFunction& f)
 {
     if (!m_session)
@@ -7732,6 +7786,76 @@ const UserFunction* Evaluator::getUserFunction(const QString& fname) const
         return m_session->getUserFunction(fname);
     else
         return nullptr;
+}
+
+QStringList Evaluator::userUnitIdentifiers() const
+{
+    QStringList identifiers;
+    if (!m_session)
+        return identifiers;
+    const auto units = m_session->userUnitsToList();
+    for (const UserUnit& unit : units)
+        identifiers.append(unit.name());
+    identifiers.sort();
+    return identifiers;
+}
+
+QStringList Evaluator::allUnitIdentifiers() const
+{
+    QStringList identifiers = builtInUnitIdentifiers();
+    const QStringList userUnits = userUnitIdentifiers();
+    for (const QString& unit : userUnits) {
+        if (!identifiers.contains(unit))
+            identifiers.append(unit);
+    }
+    identifiers.sort();
+    return identifiers;
+}
+
+void Evaluator::setUserUnit(const UserUnit& unit)
+{
+    if (!m_session)
+        m_session = new Session;
+    m_session->addUserUnit(unit);
+}
+
+void Evaluator::unsetUserUnit(const QString& name)
+{
+    if (!m_session)
+        return;
+    m_session->removeUserUnit(name);
+}
+
+void Evaluator::unsetAllUserUnits()
+{
+    if (!m_session)
+        return;
+    m_session->clearUserUnits();
+}
+
+bool Evaluator::hasUserUnit(const QString& name) const
+{
+    bool invalid = name.isEmpty() || !m_session;
+    return invalid ? false : m_session->hasUserUnit(name);
+}
+
+const UserUnit* Evaluator::getUserUnit(const QString& name) const
+{
+    if (hasUserUnit(name))
+        return m_session->getUserUnit(name);
+    return nullptr;
+}
+
+bool Evaluator::tryGetAnyUnitQuantity(const QString& identifier, Quantity* valueOut) const
+{
+    if (s_tryGetBuiltInUnitQuantity(identifier, valueOut))
+        return true;
+    const UserUnit* unit = getUserUnit(identifier);
+    if (!unit)
+        return false;
+    if (valueOut)
+        *valueOut = unit->value();
+    return true;
 }
 
 QString Evaluator::autoFix(const QString& expr)
@@ -8125,7 +8249,7 @@ QString Evaluator::autoFix(const QString& expr)
             if (tokens.at(i).asOperator() == Token::AssociationStart) {
                 if (tokens.at(i).text() == QLatin1String("("))
                     closingStack.append(MathDsl::GroupEnd);
-                else if (tokens.at(i).text() == QLatin1String("["))
+                else if (tokens.at(i).text() == QString(MathDsl::UnitStart))
                     closingStack.append(MathDsl::UnitEnd);
                 continue;
             }

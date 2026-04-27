@@ -37,6 +37,10 @@ They can be enabled and disabled via the :menuselection:`View` menu.
 * Functions and User Functions
     Similar to the variables widget, these show built-in and :ref:`user-defined functions <user_functions>` respectively.
 
+* User Units
+    Similar to the user functions widget, this lists :ref:`user-defined units <user_units>`.
+    Double-click inserts ``[name]`` in the editor, and the context menu supports edit/delete operations.
+
 * Bit Field
     The bit field widget is designed to make working with binary numbers easier. It shows a field of 64 squares,
     each representing a bit in the current result. Any bit can be toggled by clicking its square; the resulting
@@ -155,7 +159,7 @@ Startup Definitions
 
 .. versionadded:: 1.0
 
-To define user variables and user functions that are loaded automatically at startup, use
+To define user variables, user functions and user units that are loaded automatically at startup, use
 :menuselection:`Session --> Startup Definitions...`.
 
 This dialog provides:
@@ -548,6 +552,8 @@ Widgets and Docks
     Show/hide bit field widget.
 * :kbd:`Control+7`
     Show/hide history widget.
+* :kbd:`Control+8`
+    Show/hide user units widget.
 * :kbd:`Control+B`
     Show/hide the status bar.
     The status bar provides quick selectors for :menuselection:`Angle Mode`

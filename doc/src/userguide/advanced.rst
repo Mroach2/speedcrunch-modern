@@ -100,6 +100,24 @@ When complex numbers are disabled, the imaginary-unit constants :const:`i` and :
 In that case, the imaginary part of these numbers is discarded when passing them as an argument to a built-in function.
 
 
+.. _user_units:
+
+User Units
+----------
+
+You can define your own unit identifiers using square brackets on the left-hand side::
+
+    [two_cubic_metres] = 2[m^3]
+    [ten_metres] = 10[m]
+    [cm_s] = [cm/s]
+
+User unit definitions can also include a trailing comment::
+
+    [cm_s] = [cm/s] ? centimeters per second
+
+Like user variables and functions, comments are shown in the corresponding dock widget and in autocomplete suggestions.
+
+
 .. _units:
 
 Units
@@ -209,9 +227,9 @@ Temperature conversions also support the affine scales ``degree_celsius`` (short
     77 [degree_fahrenheit] -> [degree_celsius]
     = 25 [degree_celsius]
 
-Defining a custom unit works exactly like defining a variable::
+Defining a custom unit uses bracketed unit assignment::
 
-    earth_radius = 6730[kilo meter]
+    [earth_radius] = 6730[kilo meter]
 
     3.5[astronomical_unit] in [earth_radius]
     = 77799.78416790490341753343 [earth_radius]
@@ -223,11 +241,11 @@ Any variable or expression can be used as the right-hand side of a conversion ex
 
 Although full built-in unit names are always accepted, many units also support short
 forms (for example ``m``, ``s``, ``B``, ``b``). If you frequently use a particular
-set of units, consider defining additional aliases::
+set of units, consider defining aliases with non-reserved names::
 
-    m = [meter]
-    cm = [centi meter]
-    ft = [foot]
+    [metre_alias] = [metre]
+    [centimetre_alias] = [centimetre]
+    [foot_alias] = [foot]
 
 Built-in short forms include:
 

@@ -146,6 +146,10 @@ add_executable(testeditorui ${testeditorui_SOURCES})
 target_link_libraries(testeditorui ${QT_LIBRARIES} Qt6::Test)
 add_test(NAME testeditorui COMMAND testeditorui)
 
+add_executable(testdockswidgetsui ${testdockswidgetsui_SOURCES})
+target_link_libraries(testdockswidgetsui ${QT_LIBRARIES} Qt6::Test)
+add_test(NAME testdockswidgetsui COMMAND testdockswidgetsui)
+
 set_property(TARGET ${APPLICATION_NAME} APPEND PROPERTY COMPILE_DEFINITIONS $<$<CONFIG:Debug>:EVALUATOR_DEBUG>)
 
 include_directories(${CMAKE_BINARY_DIR} thirdparty core gui math)

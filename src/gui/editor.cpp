@@ -1654,7 +1654,7 @@ QStringList Editor::matchFragment(const QString& id, bool unitContext) const
 
         QStringList unitChoices;
         QSet<QString> seenUnitNames;
-        const QStringList allUnits = Evaluator::builtInUnitIdentifiers();
+        const QStringList allUnits = m_evaluator->allUnitIdentifiers();
         for (const QString& unitName : allUnits) {
             if (!unitNameMatchesFragment(unitName))
                 continue;
@@ -1666,9 +1666,16 @@ QStringList Editor::matchFragment(const QString& id, bool unitContext) const
                 continue;
             seenUnitNames.insert(unitName);
             QString unitDescription = tr("Unit");
-            const QString localizedName = unitLocalizedIdentifierName(unitName);
-            if (!localizedName.isEmpty())
-                unitDescription = tr(localizedName.toUtf8().constData());
+            if (const UserUnit* userUnit = m_evaluator->getUserUnit(unitName)) {
+                const QString userDescription = userUnit->description().trimmed();
+                unitDescription = userDescription.isEmpty()
+                    ? tr("User unit")
+                    : userDescription;
+            } else {
+                const QString localizedName = unitLocalizedIdentifierName(unitName);
+                if (!localizedName.isEmpty())
+                    unitDescription = tr(localizedName.toUtf8().constData());
+            }
             unitChoices.append(unitName + QStringLiteral(":") + unitDescription);
         }
         unitChoices.sort();

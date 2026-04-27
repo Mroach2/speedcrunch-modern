@@ -77,6 +77,7 @@ HEADERS += core/book.h \
            core/sessionhistory.h \
            core/variable.h \
            core/userfunction.h \
+           core/userunit.h \
            gui/aboutbox.h \
            gui/bitfieldwidget.h \
            gui/bookdock.h \
@@ -92,6 +93,7 @@ HEADERS += core/book.h \
            gui/keypad.h \
            gui/variablelistwidget.h \
            gui/userfunctionlistwidget.h \
+           gui/userunitlistwidget.h \
            gui/versioncheck.h \
            gui/manualwindow.h \
            gui/notationandprecisiondialog.h \
@@ -139,6 +141,7 @@ SOURCES += main.cpp \
            core/sessionhistory.cpp \
            core/variable.cpp \
            core/userfunction.cpp \
+           core/userunit.cpp \
            core/opcode.cpp \
            gui/aboutbox.cpp \
            gui/bitfieldwidget.cpp \
@@ -156,6 +159,7 @@ SOURCES += main.cpp \
            gui/syntaxhighlighter.cpp \
            gui/variablelistwidget.cpp \
            gui/userfunctionlistwidget.cpp \
+           gui/userunitlistwidget.cpp \
            gui/versioncheck.cpp \
            gui/mainwindow.cpp \
            gui/manualwindow.cpp \

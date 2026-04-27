@@ -42,6 +42,7 @@
 #include "gui/functionswidget.h"
 #include "gui/historywidget.h"
 #include "gui/userfunctionlistwidget.h"
+#include "gui/userunitlistwidget.h"
 #include "gui/variablelistwidget.h"
 #include "gui/versioncheck.h"
 #include "gui/editor.h"
@@ -183,6 +184,7 @@ namespace {
 struct AssignmentTarget {
     QString identifier;
     bool isFunction = false;
+    bool isUnit = false;
     bool valid = false;
 };
 
@@ -232,6 +234,20 @@ AssignmentTarget assignmentTargetFromExpression(Evaluator* evaluator, const QStr
         && tokens.at(1).asOperator() == Token::Assignment)
     {
         target.identifier = tokens.at(0).text();
+        target.valid = true;
+        return target;
+    }
+
+    if (tokens.count() > 4
+        && tokens.at(0).asOperator() == Token::AssociationStart
+        && tokens.at(0).text() == QString(MathDsl::UnitStart)
+        && tokens.at(1).isUnitIdentifier()
+        && tokens.at(2).asOperator() == Token::AssociationEnd
+        && tokens.at(2).text() == QString(MathDsl::UnitEnd)
+        && tokens.at(3).asOperator() == Token::Assignment)
+    {
+        target.identifier = tokens.at(1).text();
+        target.isUnit = true;
         target.valid = true;
         return target;
     }
@@ -375,6 +391,7 @@ void MainWindow::createActions()
     m_actions.viewVariables = new QAction(this);
     m_actions.viewBitfield = new QAction(this);
     m_actions.viewUserFunctions = new QAction(this);
+    m_actions.viewUserUnits = new QAction(this);
     m_actions.settingsAngleUnitDegree = new QAction(this);
     m_actions.settingsAngleUnitRadian = new QAction(this);
     m_actions.settingsAngleUnitGradian = new QAction(this);
@@ -568,6 +585,7 @@ void MainWindow::createActions()
     m_actions.viewVariables->setCheckable(true);
     m_actions.viewBitfield->setCheckable(true);
     m_actions.viewUserFunctions->setCheckable(true);
+    m_actions.viewUserUnits->setCheckable(true);
 
     const auto schemes = ColorScheme::enumerate(); // TODO: use qAsConst().
     for (auto& colorScheme : schemes) {
@@ -729,6 +747,7 @@ void MainWindow::setActionsText()
     m_actions.viewVariables->setText(MainWindow::tr("User &Variables"));
     m_actions.viewBitfield->setText(MainWindow::tr("Bitfield"));
     m_actions.viewUserFunctions->setText(MainWindow::tr("Use&r Functions"));
+    m_actions.viewUserUnits->setText(MainWindow::tr("User &Units"));
 
     m_actions.settingsAngleUnitDegree->setText(MainWindow::tr("&Degree"));
     m_actions.settingsAngleUnitRadian->setText(MainWindow::tr("&Radian"));
@@ -942,6 +961,7 @@ void MainWindow::createActionShortcuts()
     m_actions.viewStatusBar->setShortcut(Qt::CTRL | Qt::Key_B);
     m_actions.viewVariables->setShortcut(Qt::CTRL | Qt::Key_4);
     m_actions.viewUserFunctions->setShortcut(Qt::CTRL | Qt::Key_5);
+    m_actions.viewUserUnits->setShortcut(Qt::CTRL | Qt::Key_8);
     m_actions.settingsResultFormatGeneral->setShortcut(Qt::Key_F2);
     m_actions.settingsResultFormatFixed->setShortcut(Qt::Key_F3);
     m_actions.settingsResultFormatEngineering->setShortcut(Qt::Key_F4);
@@ -997,6 +1017,7 @@ void MainWindow::createMenus()
     m_menus.view->addAction(m_actions.viewFunctions);
     m_menus.view->addAction(m_actions.viewVariables);
     m_menus.view->addAction(m_actions.viewUserFunctions);
+    m_menus.view->addAction(m_actions.viewUserUnits);
     m_menus.view->addAction(m_actions.viewBitfield);
     m_menus.view->addAction(m_actions.viewHistory);
     m_menus.view->addSeparator();
@@ -1469,6 +1490,26 @@ void MainWindow::createUserFunctionsDock(bool takeFocus)
     m_settings->userFunctionsDockVisible = true;
 }
 
+void MainWindow::createUserUnitsDock(bool takeFocus)
+{
+    m_docks.userUnits = new GenericDock<UserUnitListWidget>("MainWindow", QT_TR_NOOP("User Units"), this);
+    m_docks.userUnits->setObjectName("UserUnitsDock");
+    m_docks.userUnits->installEventFilter(this);
+    m_docks.userUnits->setAllowedAreas(Qt::AllDockWidgetAreas);
+
+    connect(m_docks.userUnits->widget(), &UserUnitListWidget::userUnitSelected,
+            this, &MainWindow::insertUserUnitIntoEditor);
+    connect(m_docks.userUnits->widget(), &UserUnitListWidget::userUnitEdited,
+            this, &MainWindow::insertTextIntoEditor);
+    connect(this, &MainWindow::radixCharacterChanged,
+            m_docks.userUnits->widget(), &UserUnitListWidget::updateList);
+    connect(this, &MainWindow::unitsChanged,
+            m_docks.userUnits->widget(), &UserUnitListWidget::updateList);
+
+    addTabifiedDock(m_docks.userUnits, takeFocus);
+    m_settings->userUnitsDockVisible = true;
+}
+
 void MainWindow::addTabifiedDock(QDockWidget* newDock, bool takeFocus, Qt::DockWidgetArea area)
 {
     connect(newDock, &QDockWidget::visibilityChanged, this, &MainWindow::handleDockWidgetVisibilityChanged);
@@ -1531,6 +1572,7 @@ void MainWindow::createFixedConnections()
     connect(m_actions.viewFormulaBook, SIGNAL(triggered(bool)), SLOT(setFormulaBookDockVisible(bool)));
     connect(m_actions.viewVariables, SIGNAL(triggered(bool)), SLOT(setVariablesDockVisible(bool)));
     connect(m_actions.viewUserFunctions, SIGNAL(triggered(bool)), SLOT(setUserFunctionsDockVisible(bool)));
+    connect(m_actions.viewUserUnits, SIGNAL(triggered(bool)), SLOT(setUserUnitsDockVisible(bool)));
 
     connect(m_actions.settingsAngleUnitDegree, SIGNAL(triggered()), SLOT(setAngleModeDegree()));
     connect(m_actions.settingsAngleUnitRadian, SIGNAL(triggered()), SLOT(setAngleModeRadian()));
@@ -1695,6 +1737,9 @@ void MainWindow::applySettings()
 
     setUserFunctionsDockVisible(m_settings->userFunctionsDockVisible, false);
     m_actions.viewUserFunctions->setChecked(m_settings->userFunctionsDockVisible);
+
+    setUserUnitsDockVisible(m_settings->userUnitsDockVisible, false);
+    m_actions.viewUserUnits->setChecked(m_settings->userUnitsDockVisible);
 
     m_actions.viewBitfield->setChecked(m_settings->bitfieldVisible);
     switch (m_settings->keypadMode) {
@@ -2036,6 +2081,7 @@ MainWindow::MainWindow()
     m_docks.functions = 0;
     m_docks.variables = 0;
     m_docks.userFunctions = 0;
+    m_docks.userUnits = 0;
 
     m_status.angleUnit = 0;
     m_status.angleUnitSection = 0;
@@ -2078,6 +2124,8 @@ MainWindow::~MainWindow()
         deleteVariablesDock();
     if (m_docks.userFunctions)
         deleteUserFunctionsDock();
+    if (m_docks.userUnits)
+        deleteUserUnitsDock();
     if (m_docks.functions)
         deleteFunctionsDock();
     if (m_docks.history)
@@ -2297,6 +2345,7 @@ void MainWindow::showSessionLoadDialog()
     emit historyChanged();
     emit variablesChanged();
     emit functionsChanged();
+    emit unitsChanged();
 
 }
 
@@ -2375,6 +2424,7 @@ void MainWindow::showSessionImportDialog()
         m_session->clearHistory();
         m_session->clearVariables();
         m_session->clearUserFunctions();
+        m_session->clearUserUnits();
         m_evaluator->initializeBuiltInVariables();
     }
 
@@ -2421,6 +2471,7 @@ void MainWindow::showSessionImportDialog()
     emit historyChanged();
     emit variablesChanged();
     emit functionsChanged();
+    emit unitsChanged();
 
     if (!isActiveWindow())
         activateWindow();
@@ -2471,8 +2522,10 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
             hasExistingVariable && !m_evaluator->isBuiltInVariable(target.identifier);
         const bool hasExistingUserFunction =
             m_evaluator->hasUserFunction(target.identifier);
+        const bool hasExistingUserUnit =
+            m_evaluator->hasUserUnit(target.identifier);
 
-        if (!overwriteExisting && (hasExistingVariable || hasExistingUserFunction)) {
+        if (!overwriteExisting && (hasExistingVariable || hasExistingUserFunction || hasExistingUserUnit)) {
             ++localIgnoredLines;
             localIgnoredLineNumbers.append(lineNumber);
             continue;
@@ -2480,6 +2533,7 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
 
         Variable previousVariable;
         UserFunction previousFunction;
+        UserUnit previousUnit;
         bool hasPreviousUserFunction = false;
         if (hasExistingUserVariable)
             previousVariable = m_evaluator->getVariable(target.identifier);
@@ -2488,12 +2542,21 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
                 m_evaluator->getUserFunctions(),
                 target.identifier,
                 &previousFunction);
+        if (hasExistingUserUnit && m_evaluator->getUserUnit(target.identifier))
+            previousUnit = *m_evaluator->getUserUnit(target.identifier);
 
         if (overwriteExisting) {
             if (target.isFunction && hasExistingUserVariable) {
                 m_evaluator->unsetVariable(target.identifier);
-            } else if (!target.isFunction && hasExistingUserFunction) {
+            } else if (!target.isFunction && !target.isUnit && hasExistingUserFunction) {
                 m_evaluator->unsetUserFunction(target.identifier);
+            } else if (target.isUnit) {
+                if (hasExistingUserVariable)
+                    m_evaluator->unsetVariable(target.identifier);
+                if (hasExistingUserFunction)
+                    m_evaluator->unsetUserFunction(target.identifier);
+                if (hasExistingUserUnit)
+                    m_evaluator->unsetUserUnit(target.identifier);
             }
         }
 
@@ -2504,6 +2567,8 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
         if (m_evaluator->error().isEmpty()) {
             if (target.isFunction) {
                 importSucceeded = m_evaluator->hasUserFunction(target.identifier);
+            } else if (target.isUnit) {
+                importSucceeded = m_evaluator->hasUserUnit(target.identifier);
             } else if (m_evaluator->hasVariable(target.identifier)
                        && !m_evaluator->isBuiltInVariable(target.identifier))
             {
@@ -2516,6 +2581,9 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
             if (target.isFunction) {
                 if (m_evaluator->hasUserFunction(target.identifier))
                     m_evaluator->unsetUserFunction(target.identifier);
+            } else if (target.isUnit) {
+                if (m_evaluator->hasUserUnit(target.identifier))
+                    m_evaluator->unsetUserUnit(target.identifier);
             } else if (m_evaluator->hasVariable(target.identifier)
                        && !m_evaluator->isBuiltInVariable(target.identifier))
             {
@@ -2531,6 +2599,8 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
             }
             if (hasPreviousUserFunction)
                 m_evaluator->setUserFunction(previousFunction);
+            if (hasExistingUserUnit)
+                m_evaluator->setUserUnit(previousUnit);
 
             ++localIgnoredLines;
             localIgnoredLineNumbers.append(lineNumber);
@@ -2546,6 +2616,7 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
     if (!dryRun && (localImportedVariables > 0 || localImportedFunctions > 0)) {
         emit variablesChanged();
         emit functionsChanged();
+        emit unitsChanged();
     }
 
     if (dryRun && m_session) {
@@ -2583,20 +2654,20 @@ void MainWindow::showUserDefinitionsImportDialog()
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
 
     QLabel* info = new QLabel(
-        tr("Define user variables and functions to load automatically on startup.\n"
+        tr("Define user variables, functions and units to load automatically on startup.\n"
            "Enter one definition per line."),
         &dialog);
     info->setWordWrap(true);
     layout->addWidget(info);
 
     QComboBox* strategy = new QComboBox(&dialog);
-    strategy->addItem(tr("Merge with existing user functions and variables"), false);
-    strategy->addItem(tr("Overwrite existing user functions and variables if applicable"), true);
+    strategy->addItem(tr("Merge with existing user functions, units and variables"), false);
+    strategy->addItem(tr("Overwrite existing user functions, units and variables if applicable"), true);
     strategy->setCurrentIndex(m_settings->startupUserDefinitionsOverwrite ? 1 : 0);
     layout->addWidget(strategy);
 
     QLabel* overwriteWarning = new QLabel(
-        tr("Warning: Overwrite mode replaces existing user variables/functions "
+        tr("Warning: Overwrite mode replaces existing user variables/functions/units "
            "when imported names collide."),
         &dialog);
     overwriteWarning->setWordWrap(true);
@@ -2609,7 +2680,8 @@ void MainWindow::showUserDefinitionsImportDialog()
     textEdit->setPlainText(m_settings->startupUserDefinitions);
     textEdit->setPlaceholderText(tr("Examples:\n"
                                     "my_rate=1.25\n"
-                                    "f(x)=x^2+1"));
+                                    "f(x)=x^2+1\n"
+                                    "[cm_s]=[centimetre/second]"));
     SyntaxHighlighter* startupDefinitionsHighlighter = new SyntaxHighlighter(textEdit);
     connect(this, &MainWindow::colorSchemeChanged, &dialog, [startupDefinitionsHighlighter]() {
         startupDefinitionsHighlighter->update();
@@ -3238,6 +3310,14 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
         return false;
     }
 
+    if (o == m_docks.userUnits) {
+        if (e->type() == QEvent::Close) {
+            deleteUserUnitsDock();
+            return true;
+        }
+        return false;
+    }
+
     return QMainWindow::eventFilter(o, e);
 }
 
@@ -3353,6 +3433,17 @@ void MainWindow::deleteUserFunctionsDock()
     m_settings->userFunctionsDockVisible = false;
 }
 
+void MainWindow::deleteUserUnitsDock()
+{
+    if (!m_docks.userUnits)
+        return;
+
+    deleteDock(m_docks.userUnits);
+    m_docks.userUnits = nullptr;
+    m_actions.viewUserUnits->setChecked(false);
+    m_settings->userUnitsDockVisible = false;
+}
+
 void MainWindow::setFunctionsDockVisible(bool b, bool takeFocus)
 {
     if (b)
@@ -3399,6 +3490,14 @@ void MainWindow::setUserFunctionsDockVisible(bool b, bool takeFocus)
         createUserFunctionsDock(takeFocus);
     else
         deleteUserFunctionsDock();
+}
+
+void MainWindow::setUserUnitsDockVisible(bool b, bool takeFocus)
+{
+    if (b)
+        createUserUnitsDock(takeFocus);
+    else
+        deleteUserUnitsDock();
 }
 
 void MainWindow::setKeypadVisible(bool b)
@@ -3863,6 +3962,7 @@ void MainWindow::restoreSession(bool restoreHistory) {
     emit historyChanged();
     emit variablesChanged();
     emit functionsChanged();
+    emit unitsChanged();
 
     m_conditions.autoAns = restoreHistory && !m_session->historyIsEmpty();
 }
@@ -3919,6 +4019,7 @@ void MainWindow::evaluateEditorExpression()
             emit historyChanged();
             emit variablesChanged();
             emit functionsChanged();
+            emit unitsChanged();
             restoreDisplayScroll();
             m_widgets.editor->clear();
 
@@ -3939,6 +4040,9 @@ void MainWindow::evaluateEditorExpression()
     if (m_evaluator->isUserFunctionAssign()) {
         result = CMath::nan();
         emit functionsChanged();
+    } else if (m_evaluator->isUserUnitAssign()) {
+        result = CMath::nan();
+        emit unitsChanged();
     } else if (result.isNan() && !isCommentOnly)
         return;
 
@@ -3950,6 +4054,8 @@ void MainWindow::evaluateEditorExpression()
     if (!startedFromHistoryEdit)
         m_widgets.display->verticalScrollBar()->setValue(m_widgets.display->verticalScrollBar()->maximum());
     emit variablesChanged();
+    if (m_evaluator->isUserUnitAssign())
+        emit unitsChanged();
 
     if (m_settings->bitfieldVisible)
         m_widgets.bitField->updateBits(result);
@@ -4228,6 +4334,11 @@ void MainWindow::insertVariableIntoEditor(const QString& v)
 }
 
 void MainWindow::insertUserFunctionIntoEditor(const QString& v)
+{
+    insertTextIntoEditor(v);
+}
+
+void MainWindow::insertUserUnitIntoEditor(const QString& v)
 {
     insertTextIntoEditor(v);
 }

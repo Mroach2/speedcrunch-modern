@@ -621,6 +621,7 @@ void Settings::load()
     functionsDockVisible = settings->value(key + QLatin1String("FunctionsDockVisible"), false).toBool();
     variablesDockVisible = settings->value(key + QLatin1String("VariablesDockVisible"), false).toBool();
     userFunctionsDockVisible = settings->value(key + QLatin1String("UserFunctionsDockVisible"), false).toBool();
+    userUnitsDockVisible = settings->value(key + QLatin1String("UserUnitsDockVisible"), false).toBool();
     formulaBookDockVisible = settings->value(key + QLatin1String("FormulaBookDockVisible"), false).toBool();
     constantsDockVisible = settings->value(key + QLatin1String("ConstantsDockVisible"), false).toBool();
     windowAlwaysOnTop = settings->value(key + QLatin1String("WindowAlwaysOnTop"), false).toBool();
@@ -734,6 +735,7 @@ void Settings::save()
     settings->setValue(key + QLatin1String("MenuBarVisible"), menuBarVisible);
     settings->setValue(key + QLatin1String("VariablesDockVisible"), variablesDockVisible);
     settings->setValue(key + QLatin1String("UserFunctionsDockVisible"), userFunctionsDockVisible);
+    settings->setValue(key + QLatin1String("UserUnitsDockVisible"), userUnitsDockVisible);
     settings->setValue(key + QLatin1String("WindowAlwaysOnTop"), windowAlwaysOnTop);
     settings->setValue(key + QLatin1String("State"), windowState);
     settings->setValue(key + QLatin1String("WindowGeometry"), windowGeometry);

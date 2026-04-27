@@ -100,6 +100,16 @@ void Session::serialize(QJsonObject &json) const
         func_entries.append(curr_entry_obj);
     }
     json["functions"] = func_entries;
+
+    QJsonArray unit_entries;
+    QHashIterator<QString, UserUnit> k(m_userUnits);
+    while (k.hasNext()) {
+        k.next();
+        QJsonObject curr_entry_obj;
+        k.value().serialize(curr_entry_obj);
+        unit_entries.append(curr_entry_obj);
+    }
+    json["units"] = unit_entries;
 }
 
 int Session::deSerialize(const QJsonObject &json, bool merge=false)
@@ -109,6 +119,8 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
         m_history.clear();
         m_historyHead = 0;
         m_variables.clear();
+        m_userFunctions.clear();
+        m_userUnits.clear();
     }
 
     Evaluator::instance()->initializeBuiltInVariables();
@@ -135,6 +147,15 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
         for(int i=0; i<n; ++i) {
             UserFunction func(func_obj[i].toObject());
             addUserFunction(func);
+        }
+    }
+
+    if (json.contains("units")) {
+        QJsonArray unit_obj = json["units"].toArray();
+        const int n = unit_obj.size();
+        for (int i = 0; i < n; ++i) {
+            UserUnit unit(unit_obj[i].toObject());
+            addUserUnit(unit);
         }
     }
 
@@ -298,4 +319,37 @@ QList<UserFunction> Session::UserFunctionsToList() const
 const UserFunction * Session::getUserFunction(const QString &fname) const
 {
     return &*m_userFunctions.find(fname);
+}
+
+void Session::addUserUnit(const UserUnit& unit)
+{
+    const QString name = unit.name();
+    if (name.isEmpty())
+        return;
+    m_userUnits[name] = unit;
+}
+
+void Session::removeUserUnit(const QString& name)
+{
+    m_userUnits.remove(name);
+}
+
+void Session::clearUserUnits()
+{
+    m_userUnits.clear();
+}
+
+bool Session::hasUserUnit(const QString& name) const
+{
+    return m_userUnits.contains(name);
+}
+
+QList<UserUnit> Session::userUnitsToList() const
+{
+    return m_userUnits.values();
+}
+
+const UserUnit* Session::getUserUnit(const QString& name) const
+{
+    return &*m_userUnits.find(name);
 }

@@ -73,6 +73,7 @@ static const QString slash = space + QString(MathDsl::DivOp) + space;
 #define CHECK_USERFUNC_DESC(n,d) checkUserFunctionDescription(__FILE__,__LINE__,#n,n,d)
 #define CHECK_USERFUNC_INTERPRETED(n,e) checkUserFunctionInterpreted(__FILE__,__LINE__,#n,n,e)
 #define CHECK_USERVAR_DESC(n,d) checkUserVariableDescription(__FILE__,__LINE__,#n,n,d)
+#define CHECK_USERUNIT_DESC(n,d) checkUserUnitDescription(__FILE__,__LINE__,#n,n,d)
 
 static void checkAutoFix(const char* file, int line, const char* msg, const char* expr, const char* fixed)
 {
@@ -567,6 +568,30 @@ static void checkUserVariableDescription(const char* file, int line, const char*
         ++eval_new_failed_tests;
         cerr << file << "[" << line << "]\t" << msg << "\t[NEW]" << endl;
         cerr << "\tDescription: " << variable.description().toLatin1().constData() << endl
+             << "\tExpected   : " << expectedDescription.toLatin1().constData() << endl;
+    }
+}
+
+static void checkUserUnitDescription(const char* file, int line, const char* msg,
+                                     const QString& unitName,
+                                     const QString& expectedDescription)
+{
+    ++eval_total_tests;
+
+    const UserUnit* unit = eval->getUserUnit(unitName);
+    if (!unit) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << file << "[" << line << "]\t" << msg << "\t[NEW]" << endl;
+        cerr << "\tError: user unit not found: " << unitName.toLatin1().constData() << endl;
+        return;
+    }
+
+    if (unit->description() != expectedDescription) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << file << "[" << line << "]\t" << msg << "\t[NEW]" << endl;
+        cerr << "\tDescription: " << unit->description().toLatin1().constData() << endl
              << "\tExpected   : " << expectedDescription.toLatin1().constData() << endl;
     }
 }
@@ -3608,6 +3633,21 @@ void test_user_functions()
     // Check redefining a variable without description clears it.
     CHECK_EVAL("vardesc = 8", "8");
     CHECK_USERVAR_DESC("vardesc", "");
+}
+
+void test_user_units()
+{
+    CHECK_EVAL("[two_cubic_metres] = 2[m^3]", "2 cubic_metre");
+    CHECK_EVAL("1[two_cubic_metres] -> [m^3]", "2 m³");
+
+    CHECK_EVAL("[ten_metres] = 10[m]", "10 metre");
+    CHECK_EVAL("3[ten_metres] -> [m]", "30 m");
+
+    CHECK_EVAL("[cm_s] = [cm/s]", "0.01 metre·second⁻¹");
+    CHECK_EVAL("100[cm_s] -> [m/s]", "1 m·s⁻¹");
+
+    CHECK_EVAL("[unit_desc] = [m/s] ? speed alias", "1 metre·second⁻¹");
+    CHECK_USERUNIT_DESC("unit_desc", "speed alias");
 }
 
 void test_complex()
@@ -8658,6 +8698,7 @@ int main(int argc, char* argv[])
     test_result_display_history_mapping_after_multiple_lines_toggle_with_comment_only_entry();
 
     test_user_functions();
+    test_user_units();
 
     test_implicit_multiplication();
     test_display_interpreted_spacing();
