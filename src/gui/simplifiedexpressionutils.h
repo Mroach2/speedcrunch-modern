@@ -36,7 +36,7 @@ inline bool isNumericSimplifiedExpression(const QString& expression)
 inline bool isPlainNumericArithmeticExpression(const QString& expression)
 {
     static const QRegularExpression pattern(
-        QStringLiteral("^[\\s\\p{Zs}]*[0-9\\.,\\s\\p{Zs}+\\-−*/%()]+[\\s\\p{Zs}]*$"));
+        QStringLiteral("^[\\s\\p{Zs}]*[0-9\\.,\\s\\p{Zs}+\\-−*/%()×÷·]+[\\s\\p{Zs}]*$"));
     return pattern.match(expression).hasMatch();
 }
 

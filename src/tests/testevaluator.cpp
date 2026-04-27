@@ -8182,6 +8182,9 @@ void test_non_informative_numeric_simplified_row_suppression()
         __FILE__, __LINE__, "suppress simplified line for 1+.5-1.5+3",
         QStringLiteral("1+.5-1.5+3"), true);
     checkSuppressSimplifiedExpressionLine(
+        __FILE__, __LINE__, "suppress simplified line for unicode multiply/divide arithmetic",
+        QString::fromUtf8("2/3×4"), true);
+    checkSuppressSimplifiedExpressionLine(
         __FILE__, __LINE__, "do not suppress symbolic simplification",
         QStringLiteral("2*e*e-1"), false);
     checkSuppressSimplifiedExpressionLine(
