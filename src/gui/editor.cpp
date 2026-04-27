@@ -342,6 +342,16 @@ static bool isCurrentUnitContextEmptyOrOnlySpaces(const QString& text, int curso
     return true;
 }
 
+static bool hasOnlySpacesToRight(const QString& text, int cursorPosition)
+{
+    const int safeCursor = qBound(0, cursorPosition, text.size());
+    for (int i = safeCursor; i < text.size(); ++i) {
+        if (!text.at(i).isSpace())
+            return false;
+    }
+    return true;
+}
+
 static bool isAnyOperatorKey(int key)
 {
     return key == Qt::Key_Plus
@@ -2664,7 +2674,13 @@ void Editor::keyPressEvent(QKeyEvent* event)
             }
         }
 
-        cursor.insertText(implicitMulPrefix + QStringLiteral("()"));
+        const bool shouldAutoInsertGroupEnd = hasOnlySpacesToRight(text(), position);
+        const QString insertedGroupStart = QString(MathDsl::GroupStart);
+        const QString insertedGroupPair =
+            QString(MathDsl::GroupStart) + QString(MathDsl::GroupEnd);
+        cursor.insertText(implicitMulPrefix + (shouldAutoInsertGroupEnd
+                                               ? insertedGroupPair
+                                               : insertedGroupStart));
         cursor.setPosition(position + implicitMulPrefix.size() + 1);
         setTextCursor(cursor);
         event->accept();

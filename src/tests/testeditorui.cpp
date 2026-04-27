@@ -543,18 +543,21 @@ void TestEditorUi::inserts_parenthesis_pair_and_places_cursor_inside()
 {
     // State: multiple states (empty, numbers, before operator, function name).
     // Action: type '(' (text path and keycode path).
-    // Expected: auto-insert "()", cursor lands between.
+    // Expected: auto-insert "()" only when right side is empty/spaces-only.
     Editor editor;
     editor.show();
     QVERIFY(QTest::qWaitForWindowExposed(&editor));
     editor.setFocus();
+    const QString groupStart = QString(MathDsl::GroupStart);
+    const QString groupEnd = QString(MathDsl::GroupEnd);
+    const QString groupPair = groupStart + groupEnd;
 
     const auto verifyParenInsertionAt = [&editor](const QString& initialText, int cursorPos) {
         editor.setText(initialText);
         editor.setCursorPosition(cursorPos);
 
         QKeyEvent openParenByText(
-            QEvent::KeyPress, Qt::Key_unknown, Qt::NoModifier, QStringLiteral("("));
+            QEvent::KeyPress, Qt::Key_unknown, Qt::NoModifier, QString(MathDsl::GroupStart));
         QApplication::sendEvent(&editor, &openParenByText);
 
         const QString after = editor.document()->toRawText();
@@ -568,27 +571,45 @@ void TestEditorUi::inserts_parenthesis_pair_and_places_cursor_inside()
 
     verifyParenInsertionAt(QString(), 0);
     verifyParenInsertionAt(QStringLiteral("2"), 1);
-    verifyParenInsertionAt(QStringLiteral("1+2"), 1);   // right before '+'
-    verifyParenInsertionAt(QStringLiteral("1)"), 1);    // right before ')'
+    verifyParenInsertionAt(QStringLiteral("1   "), 1);  // only spaces to the right
+
+    const QString mulCrossSequence =
+        QString(MathDsl::MulCrossWrapSp)
+        + QString(MathDsl::MulCrossOp)
+        + QString(MathDsl::MulCrossWrapSp);
+
+    editor.setText(QStringLiteral("1+2"));
+    editor.setCursorPosition(1);
+    QKeyEvent openParenByText(
+        QEvent::KeyPress, Qt::Key_unknown, Qt::NoModifier, QString(MathDsl::GroupStart));
+    QApplication::sendEvent(&editor, &openParenByText);
+    QCOMPARE(editor.document()->toRawText(), QStringLiteral("1") + mulCrossSequence + groupStart + QStringLiteral("+2"));
+    QCOMPARE(editor.textCursor().position(), QStringLiteral("1").size() + mulCrossSequence.size() + 1);
+
+    editor.setText(QStringLiteral("1)"));
+    editor.setCursorPosition(1);
+    QApplication::sendEvent(&editor, &openParenByText);
+    QCOMPARE(editor.document()->toRawText(), QStringLiteral("1") + mulCrossSequence + groupPair);
+    QCOMPARE(editor.textCursor().position(), QStringLiteral("1").size() + mulCrossSequence.size() + 1);
 
     editor.setText(QStringLiteral("cos"));
     editor.setCursorPosition(editor.text().size());
     QKeyEvent openParenByTextForFunction(
-        QEvent::KeyPress, Qt::Key_unknown, Qt::NoModifier, QStringLiteral("("));
+        QEvent::KeyPress, Qt::Key_unknown, Qt::NoModifier, QString(MathDsl::GroupStart));
     QApplication::sendEvent(&editor, &openParenByTextForFunction);
-    QCOMPARE(editor.document()->toRawText(), QStringLiteral("cos()"));
+    QCOMPARE(editor.document()->toRawText(), QStringLiteral("cos") + groupPair);
     QCOMPARE(editor.textCursor().position(), 4);
 
     editor.setText(QString::fromUtf8("cos³"));
     editor.setCursorPosition(editor.text().size());
     QApplication::sendEvent(&editor, &openParenByTextForFunction);
-    QCOMPARE(editor.document()->toRawText(), QString::fromUtf8("cos³()"));
+    QCOMPARE(editor.document()->toRawText(), QString::fromUtf8("cos³") + groupPair);
     QCOMPARE(editor.textCursor().position(), 5);
 
     editor.setText(QString::fromUtf8("2 pi⁻²³ · cos"));
     editor.setCursorPosition(editor.text().size());
     QApplication::sendEvent(&editor, &openParenByTextForFunction);
-    QCOMPARE(editor.document()->toRawText(), QString::fromUtf8("2 pi⁻²³ · cos()"));
+    QCOMPARE(editor.document()->toRawText(), QString::fromUtf8("2 pi⁻²³ · cos") + groupPair);
     QCOMPARE(editor.textCursor().position(),
              QString::fromUtf8("2 pi⁻²³ · cos(").size());
 
