@@ -362,6 +362,20 @@ static bool s_isClosingUnitBracketToken(const Token& token)
            && token.text() == QLatin1String("]");
 }
 
+static bool s_tokenSourceContainsExplicitUnitAttachment(const Token& token,
+                                                        const QString& expression)
+{
+    if (!token.isOperand())
+        return false;
+    if (token.pos() < 0 || token.size() <= 0)
+        return false;
+    if (token.pos() + token.size() > expression.size())
+        return false;
+
+    const QString source = expression.mid(token.pos(), token.size());
+    return source.contains(MathDsl::UnitStart) && source.contains(MathDsl::UnitEnd);
+}
+
 static QHash<QString, Quantity> s_buildBuiltInUnitLookup(char angleMode)
 {
     return Units::builtInUnitLookup(angleMode);
@@ -5724,6 +5738,21 @@ void Evaluator::compile(const Tokens& tokens)
                Token b = syntaxStack.top();
                Token op = syntaxStack.top(1);
                Token a = syntaxStack.top(2);
+               const bool disallowPowerWithExplicitUnitAttachment =
+                   op.asOperator() == Token::Exponentiation
+                   && s_tokenSourceContainsExplicitUnitAttachment(a, m_expression);
+               if (disallowPowerWithExplicitUnitAttachment) {
+                   m_error = tr("syntax error");
+                   m_valid = false;
+                   m_constants.clear();
+                   m_constantTexts.clear();
+                   m_codes.clear();
+                   m_identifiers.clear();
+                   m_implicitMultiplicationOpcodeIndices.clear();
+                   m_interpretedExpression = QString();
+                   m_hasImplicitMultiplication = false;
+                   return;
+               }
                const bool openingUnitBracketToken =
                    token.isOperator() && s_isOpeningUnitBracketToken(token);
                const bool forceReduceCompletedConversionBeforeAddSub =

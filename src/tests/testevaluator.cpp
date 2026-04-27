@@ -1370,6 +1370,10 @@ void test_units()
         cerr << __FILE__ << "[" << __LINE__ << "]\tmultiply scalar by explicit angle unit\t[NEW]" << endl
              << "\tError: " << qPrintable(eval->error()) << endl;
     }
+
+    // Exponentiation over explicit value+unit attachment is ambiguous.
+    CHECK_EVAL_FAIL("2[kg]^2");
+    CHECK_EVAL_FAIL(QString::fromUtf8("2[kg]²"));
 }
 
 void test_percent_operator()
