@@ -75,6 +75,138 @@ static bool s_isSummationFunctionIdentifier(const QString& identifier)
     return FunctionRepo::instance()->isIdentifierAliasOf(identifier, QStringLiteral("summation"));
 }
 
+static bool s_isMolmassFunctionIdentifier(const QString& identifier)
+{
+    return FunctionRepo::instance()->isIdentifierAliasOf(identifier, QStringLiteral("molmass"));
+}
+
+static bool s_isUpperAsciiLetter(QChar ch)
+{
+    return ch >= QLatin1Char('A') && ch <= QLatin1Char('Z');
+}
+
+static bool s_isLowerAsciiLetter(QChar ch)
+{
+    return ch >= QLatin1Char('a') && ch <= QLatin1Char('z');
+}
+
+static bool s_isAsciiDigit(QChar ch)
+{
+    return ch >= QLatin1Char('0') && ch <= QLatin1Char('9');
+}
+
+static const QHash<QString, HNumber>& s_molmassElementWeights()
+{
+    static const QHash<QString, HNumber> weights = [] {
+        struct Entry {
+            const char* symbol;
+            const char* mass;
+        };
+        static const Entry entries[] = {
+            {"H", "1.008"}, {"He", "4.0026"}, {"Li", "6.94"}, {"Be", "9.0122"}, {"B", "10.81"},
+            {"C", "12.011"}, {"N", "14.007"}, {"O", "15.999"}, {"F", "18.998"}, {"Ne", "20.180"},
+            {"Na", "22.990"}, {"Mg", "24.305"}, {"Al", "26.982"}, {"Si", "28.085"}, {"P", "30.974"},
+            {"S", "32.06"}, {"Cl", "35.45"}, {"Ar", "39.948"}, {"K", "39.098"}, {"Ca", "40.078"},
+            {"Sc", "44.956"}, {"Ti", "47.867"}, {"V", "50.942"}, {"Cr", "51.996"}, {"Mn", "54.938"},
+            {"Fe", "55.845"}, {"Co", "58.933"}, {"Ni", "58.693"}, {"Cu", "63.546"}, {"Zn", "65.38"},
+            {"Ga", "69.723"}, {"Ge", "72.630"}, {"As", "74.922"}, {"Se", "78.971"}, {"Br", "79.904"},
+            {"Kr", "83.798"}, {"Rb", "85.468"}, {"Sr", "87.62"}, {"Y", "88.906"}, {"Zr", "91.224"},
+            {"Nb", "92.906"}, {"Mo", "95.95"}, {"Tc", "98"}, {"Ru", "101.07"}, {"Rh", "102.91"},
+            {"Pd", "106.42"}, {"Ag", "107.87"}, {"Cd", "112.41"}, {"In", "114.82"}, {"Sn", "118.71"},
+            {"Sb", "121.76"}, {"Te", "127.60"}, {"I", "126.90"}, {"Xe", "131.29"}, {"Cs", "132.91"},
+            {"Ba", "137.33"}, {"La", "138.91"}, {"Ce", "140.12"}, {"Pr", "140.91"}, {"Nd", "144.24"},
+            {"Pm", "145"}, {"Sm", "150.36"}, {"Eu", "151.96"}, {"Gd", "157.25"}, {"Tb", "158.93"},
+            {"Dy", "162.50"}, {"Ho", "164.93"}, {"Er", "167.26"}, {"Tm", "168.93"}, {"Yb", "173.05"},
+            {"Lu", "174.97"}, {"Hf", "178.49"}, {"Ta", "180.95"}, {"W", "183.84"}, {"Re", "186.21"},
+            {"Os", "190.23"}, {"Ir", "192.22"}, {"Pt", "195.08"}, {"Au", "196.97"}, {"Hg", "200.59"},
+            {"Tl", "204.38"}, {"Pb", "207.2"}, {"Bi", "208.98"}, {"Po", "209"}, {"At", "210"},
+            {"Rn", "222"}, {"Fr", "223"}, {"Ra", "226"}, {"Ac", "227"}, {"Th", "232.04"},
+            {"Pa", "231.04"}, {"U", "238.03"}, {"Np", "237"}, {"Pu", "244"}, {"Am", "243"},
+            {"Cm", "247"}, {"Bk", "247"}, {"Cf", "251"}, {"Es", "252"}, {"Fm", "257"},
+            {"Md", "258"}, {"No", "259"}, {"Lr", "266"}, {"Rf", "267"}, {"Db", "268"},
+            {"Sg", "269"}, {"Bh", "270"}, {"Hs", "277"}, {"Mt", "278"}, {"Ds", "281"},
+            {"Rg", "282"}, {"Cn", "285"}, {"Nh", "286"}, {"Fl", "289"}, {"Mc", "290"},
+            {"Lv", "293"}, {"Ts", "294"}, {"Og", "294"}
+        };
+
+        QHash<QString, HNumber> table;
+        table.reserve(static_cast<int>(sizeof(entries) / sizeof(entries[0])));
+        for (const Entry& entry : entries)
+            table.insert(QString::fromLatin1(entry.symbol), HNumber(entry.mass));
+        return table;
+    }();
+    return weights;
+}
+
+static bool s_tryParseMolarMassFormula(const QString& formulaText, Quantity* outMass)
+{
+    if (!outMass)
+        return false;
+
+    QString formula = formulaText.trimmed();
+    if (formula.isEmpty())
+        return false;
+
+    for (int i = 0; i < formula.size(); ++i) {
+        const QChar ch = formula.at(i);
+        if (s_isUpperAsciiLetter(ch)
+            || s_isLowerAsciiLetter(ch)
+            || s_isAsciiDigit(ch)) {
+            continue;
+        }
+        if (isSubscriptDigit(ch)) {
+            formula[i] = QChar(MathDsl::Dig0.unicode()
+                               + (ch.unicode() - UnicodeChars::SubscriptZero.unicode()));
+            continue;
+        }
+        return false;
+    }
+
+    const auto& weights = s_molmassElementWeights();
+    HNumber totalMass(0);
+
+    int pos = 0;
+    while (pos < formula.size()) {
+        if (!s_isUpperAsciiLetter(formula.at(pos)))
+            return false;
+
+        QString symbol;
+        symbol += formula.at(pos);
+        ++pos;
+        if (pos < formula.size() && s_isLowerAsciiLetter(formula.at(pos))) {
+            symbol += formula.at(pos);
+            ++pos;
+        }
+
+        const auto symbolIt = weights.constFind(symbol);
+        if (symbolIt == weights.constEnd())
+            return false;
+
+        QString countDigits;
+        while (pos < formula.size() && s_isAsciiDigit(formula.at(pos))) {
+            countDigits += formula.at(pos);
+            ++pos;
+        }
+        if (!countDigits.isEmpty() && countDigits.startsWith(QLatin1Char('0')))
+            return false;
+
+        const HNumber count = countDigits.isEmpty()
+                              ? HNumber(1)
+                              : HNumber(countDigits.toLatin1().constData());
+        totalMass += symbolIt.value() * count;
+    }
+
+    const Quantity gramsPerMole = Units::gram() / Units::mole();
+    Quantity mass = Quantity(totalMass) * gramsPerMole;
+    const QString gramsPerMoleSymbol =
+        QString(::unitSymbol(UnitId::Gram))
+        + MathDsl::DivOp
+        + QString(::unitSymbol(UnitId::Mole));
+    mass.setDisplayUnit(gramsPerMole.numericValue(), gramsPerMoleSymbol);
+    *outMass = mass;
+    return true;
+}
+
 static QString s_toSuperscriptExponent(int exponent)
 {
     QString result;
@@ -5301,6 +5433,8 @@ void Evaluator::compile(const Tokens& tokens)
                         const QStringList argList = splitTopLevelFunctionArguments(argText);
                         if (argList.count() == 3)
                             functionCall.text = argList.at(2);
+                    } else if (s_isMolmassFunctionIdentifier(id.text()) && argCount == 1) {
+                        functionCall.text = m_expression.mid(arg.pos(), arg.size());
                     }
                     m_codes.append(functionCall);
 #ifdef EVALUATOR_DEBUG
@@ -6473,7 +6607,7 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
         if (isPercentValue)
             *isPercentValue = entry.isPercentValue;
     };
-    auto hasPendingDeferredOperandContext = [&refs](int stackSize) {
+    auto hasPendingDeferredSummationContext = [&refs](int stackSize) {
         QHash<int, QString>::const_iterator it = refs.constBegin();
         for (; it != refs.constEnd(); ++it) {
             if (it.key() <= stackSize
@@ -6484,6 +6618,22 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
         }
         return false;
     };
+    auto hasPendingDeferredMolmassContext = [&refs](int stackSize) {
+        QHash<int, QString>::const_iterator it = refs.constBegin();
+        for (; it != refs.constEnd(); ++it) {
+            if (it.key() <= stackSize
+                && s_isMolmassFunctionIdentifier(it.value()))
+            {
+                return true;
+            }
+        }
+        return false;
+    };
+    auto hasPendingDeferredOperandContext =
+        [&hasPendingDeferredSummationContext, &hasPendingDeferredMolmassContext](int stackSize) {
+            return hasPendingDeferredSummationContext(stackSize)
+                   || hasPendingDeferredMolmassContext(stackSize);
+        };
     auto checkOperatorResultWithDeferredNoOperand = [this, &hasPendingDeferredOperandContext, &stack](const Quantity& result) {
         if (result.error() == NoOperand
             && hasPendingDeferredOperandContext(stack.count()))
@@ -6817,8 +6967,10 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
                         pushStackValue(CMath::nan());
                         refs.insert(stack.count(), fname);
                     } else if (fname.compare("n", Qt::CaseInsensitive) == 0
-                               && hasPendingDeferredOperandContext(stack.count()))
+                               && hasPendingDeferredSummationContext(stack.count()))
                     {
+                        pushStackValue(CMath::nan());
+                    } else if (hasPendingDeferredMolmassContext(stack.count())) {
                         pushStackValue(CMath::nan());
                     } else {
                         m_error = "<b>" + fname + "</b>: "
@@ -6897,6 +7049,19 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
                     pushStackValue(execUserFunction(userFunction, args));
                     if (!m_error.isEmpty())
                         return CMath::nan();
+                } else if (s_isMolmassFunctionIdentifier(fname)) {
+                    if (args.count() != 1) {
+                        m_error = QString::fromLatin1("<b>%1</b>: ").arg(fname)
+                                + tr("wrong number of arguments");
+                        return CMath::nan();
+                    }
+                    Quantity molarMass;
+                    if (opcode.text.isEmpty() || !s_tryParseMolarMassFormula(opcode.text, &molarMass)) {
+                        m_error = QString::fromLatin1("<b>%1</b>: ").arg(fname)
+                                + tr("invalid expression");
+                        return CMath::nan();
+                    }
+                    pushStackValue(molarMass);
                 } else if (s_isSummationFunctionIdentifier(fname)) {
                     if (args.count() != 3) {
                         m_error = QString::fromLatin1("<b>%1</b>: ").arg(fname)

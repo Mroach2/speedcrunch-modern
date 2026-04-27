@@ -1365,6 +1365,13 @@ Quantity function_epoch(Function* f, const Function::ArgumentList& args)
     return Quantity(HNumber(epochText.constData()));
 }
 
+Quantity function_molmass(Function* f, const Function::ArgumentList& args)
+{
+    ENSURE_ARGUMENT_COUNT(1);
+    f->setError(OutOfDomain);
+    return DMath::nan(OutOfDomain);
+}
+
 void FunctionRepo::createFunctions()
 {
     // Analysis.
@@ -1385,6 +1392,7 @@ void FunctionRepo::createFunctions()
     FUNCTION_INSERT(hexpad);
     FUNCTION_INSERT(int);
     FUNCTION_INSERT(lngamma);
+    FUNCTION_INSERT(molmass);
     FUNCTION_INSERT(max);
     FUNCTION_INSERT(min);
     FUNCTION_INSERT(oct);
@@ -1634,6 +1642,7 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(log10, "x");
     FUNCTION_USAGE(ln, "x");
     FUNCTION_USAGE(lngamma, "x");
+    FUNCTION_USAGE(molmass, "formula");
     FUNCTION_USAGE(max, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(median, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(min, "x<sub>1</sub>; x<sub>2</sub>; ...");
@@ -1772,6 +1781,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(log10, tr("Common Logarithm"));
     FUNCTION_NAME(ln, tr("Natural Logarithm"));
     FUNCTION_NAME(lngamma, "ln(abs(Gamma))");
+    FUNCTION_NAME(molmass, tr("Molar Mass"));
     FUNCTION_NAME(log, tr("Logarithm to Arbitrary Base"));
     FUNCTION_NAME(mask, tr("Mask to a bit size"));
     FUNCTION_NAME(max, tr("Maximum"));

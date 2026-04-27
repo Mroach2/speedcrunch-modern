@@ -2700,6 +2700,21 @@ void test_function_basic()
     CHECK_EVAL_PRECISE("ieee754_double_residual(pi/2)", "0.00000000000000006123233995736765886130329661375005");
     CHECK_EVAL_PRECISE("ieee754_double_residual(ieee754_double_residual(pi/2))", "-0.00000000000000000000000000000000149738490485916978");
     CHECK_EVAL_PRECISE("ieee754_double_residual(ieee754_double_residual(ieee754_double_residual(pi/2)))", "0.00000000000000000000000000000000000000000000000006");
+
+    CHECK_EVAL("molmass(H)", "1.008 g/mol");
+    CHECK_EVAL("molmass(He)", "4.0026 g/mol");
+    CHECK_EVAL("molmass(C6H12O6)", "180.156 g/mol");
+    CHECK_EVAL(QString::fromUtf8("molmass(H₂O)"), "18.015 g/mol");
+    CHECK_EVAL(QString::fromUtf8("molmass(NaCl)"), "58.44 g/mol");
+    CHECK_EVAL(QString::fromUtf8("molmass(C₆H₁₂O₆)"), "180.156 g/mol");
+    CHECK_EVAL(QString::fromUtf8("molmass(Na₂SO₄)"), "142.036 g/mol");
+    CHECK_EVAL_FAIL("molmass()");
+    CHECK_EVAL_FAIL("molmass(C6H12O6;H2O)");
+    CHECK_EVAL_FAIL("molmass(c6h12o6)");
+    CHECK_EVAL_FAIL("molmass(H0)");
+    CHECK_EVAL_FAIL("molmass(H2O1x)");
+    CHECK_EVAL_FAIL("molmass(Xx2)");
+    CHECK_EVAL_FAIL(QString::fromUtf8("molmass(K4[Fe(CN)6]·3H2O)"));
 }
 
 void test_function_trig()

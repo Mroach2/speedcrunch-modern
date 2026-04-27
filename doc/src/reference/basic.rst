@@ -111,6 +111,26 @@ General
         epoch(20190301.145455; -3.5)
         = 1551464695
 
+.. function:: molmass(formula)
+
+    Compute the molar mass of a chemical formula and return the result with
+    dimension ``g/mol``.
+
+    The ``formula`` argument is case-sensitive and supports either plain digits
+    (for example ``C6H12O6``) or subscript digits (for example ``C₆H₁₂O₆``).
+    Parsing fails for invalid formulas.
+
+    Advanced chemical notation is not supported yet. For example, grouped or
+    hydrated formulas such as ``K4[Fe(CN)6]·3H2O`` currently fail to parse.
+
+    The element table follows the official IUPAC CIAAW 2021 abridged standard
+    atomic weights.
+
+    Example::
+
+        molmass(C6H12O6)
+        = 180.156 g/mol
+
 
 .. _trigonometric:
 
