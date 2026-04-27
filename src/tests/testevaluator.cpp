@@ -6574,11 +6574,45 @@ void test_pasted_standalone_numeric_literal_reformatting()
     const Settings::NumberFormatStyle oldStyle = settings->numberFormatStyle;
     const bool oldIntegerOnly = settings->digitGroupingIntegerPartOnly;
 
-    settings->numberFormatStyle = Settings::NumberFormatThreeDigitDotComma;
+    settings->numberFormatStyle = Settings::NumberFormatNoGroupingDot;
     settings->applyNumberFormatStyle();
     settings->digitGroupingIntegerPartOnly = true;
 
     QString formatted;
+
+    ++eval_total_tests;
+    const bool okFlatDotDecimal =
+        NumberFormatter::tryFormatStandaloneNumericLiteralForDisplay(
+            QStringLiteral("15.999"), &formatted);
+    if (!okFlatDotDecimal || formatted != QStringLiteral("15.999")) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__
+             << "]\tpreserve decimal dot in no-grouping dot style paste\t[NEW]" << endl
+             << "\tResult   : " << (okFlatDotDecimal ? formatted : QString("<invalid>")).toUtf8().constData() << endl
+             << "\tExpected : 15.999" << endl;
+    }
+
+    settings->numberFormatStyle = Settings::NumberFormatNoGroupingComma;
+    settings->applyNumberFormatStyle();
+    settings->digitGroupingIntegerPartOnly = true;
+
+    ++eval_total_tests;
+    const bool okFlatCommaDecimal =
+        NumberFormatter::tryFormatStandaloneNumericLiteralForDisplay(
+            QStringLiteral("15,999"), &formatted);
+    if (!okFlatCommaDecimal || formatted != QStringLiteral("15,999")) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__
+             << "]\tpreserve decimal comma in no-grouping comma style paste\t[NEW]" << endl
+             << "\tResult   : " << (okFlatCommaDecimal ? formatted : QString("<invalid>")).toUtf8().constData() << endl
+             << "\tExpected : 15,999" << endl;
+    }
+
+    settings->numberFormatStyle = Settings::NumberFormatThreeDigitDotComma;
+    settings->applyNumberFormatStyle();
+    settings->digitGroupingIntegerPartOnly = true;
 
     ++eval_total_tests;
     const bool okUsGrouped =

@@ -287,7 +287,11 @@ bool canonicalizeLiteralMantissa(const QString& input, int base, int groupingSiz
             const int sepPos = input.indexOf(sep);
             const QString left = input.left(sepPos);
             const QString right = input.mid(sepPos + 1);
+            const Settings* settings = Settings::instance();
+            const QChar configuredDecimalSep(settings->decimalSeparator());
+            const bool separatorIsConfiguredDecimal = sep == configuredDecimalSep;
             const bool looksGroupedInteger = allowGroupingHeuristic
+                && !separatorIsConfiguredDecimal
                 && !left.isEmpty()
                 && right.size() == groupingSize
                 && std::all_of(left.cbegin(), left.cend(),
