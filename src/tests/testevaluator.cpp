@@ -4458,6 +4458,62 @@ void test_display_interpreted_spacing()
                  << "\tExpected : " << expected.toUtf8().constData() << endl;
         }
     }
+    ++eval_total_tests;
+    eval->setExpression(QString::fromUtf8("4[s·s]/(2[s])"));
+    eval->evalUpdateAns();
+    if (!eval->error().isEmpty()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tcombine repeated unit factors in interpreted display\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+    } else {
+        const QString interpretedDisplayed =
+            ResultLineFormatUtils::formattedExpressionLineForDisplay(
+                QString::fromUtf8("4[s·s]/(2[s])"),
+                eval->interpretedExpression());
+        const QString expected = QStringLiteral("4")
+            + QString(MathDsl::QuantSp)
+            + QString::fromUtf8("[s²]")
+            + divide
+            + QStringLiteral("(2")
+            + QString(MathDsl::QuantSp)
+            + QStringLiteral("[s])");
+        if (interpretedDisplayed != expected) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tcombine repeated unit factors in interpreted display\t[NEW]" << endl
+                 << "\tDisplayed: " << interpretedDisplayed.toUtf8().constData() << endl
+                 << "\tExpected : " << expected.toUtf8().constData() << endl;
+        }
+    }
+    ++eval_total_tests;
+    eval->setExpression(QString::fromUtf8("4[s·s/s]/(2[s])"));
+    eval->evalUpdateAns();
+    if (!eval->error().isEmpty()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tcancel unit factors in interpreted display\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+    } else {
+        const QString interpretedDisplayed =
+            ResultLineFormatUtils::formattedExpressionLineForDisplay(
+                QString::fromUtf8("4[s·s/s]/(2[s])"),
+                eval->interpretedExpression());
+        const QString expected = QStringLiteral("4")
+            + QString(MathDsl::QuantSp)
+            + QStringLiteral("[s]")
+            + divide
+            + QStringLiteral("(2")
+            + QString(MathDsl::QuantSp)
+            + QStringLiteral("[s])");
+        if (interpretedDisplayed != expected) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tcancel unit factors in interpreted display\t[NEW]" << endl
+                 << "\tDisplayed: " << interpretedDisplayed.toUtf8().constData() << endl
+                 << "\tExpected : " << expected.toUtf8().constData() << endl;
+        }
+    }
     CHECK_DISPLAY_INTERPRETED(
         QStringLiteral("cos(pi)^2"),
         QStringLiteral("cos")
