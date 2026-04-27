@@ -85,6 +85,185 @@ inline QString preserveExplicitBracketedSimpleUnitsFromSource(QString displayed,
     return displayed;
 }
 
+inline QString preserveExplicitParenthesizedUnitDenominatorFromSource(
+    QString displayed,
+    const QString& sourceExpression)
+{
+    auto countExplicitGroupedUnitDenominators = [](const QString& text) {
+        int count = 0;
+        for (int i = 0; i < text.size(); ++i) {
+            if (text.at(i) != MathDsl::DivOp)
+                continue;
+            int pos = i + 1;
+            while (pos < text.size() && text.at(pos).isSpace())
+                ++pos;
+            if (pos >= text.size() || text.at(pos) != MathDsl::GroupStart)
+                continue;
+
+            int depth = 0;
+            int closePos = -1;
+            for (int j = pos; j < text.size(); ++j) {
+                const QChar ch = text.at(j);
+                if (ch == MathDsl::GroupStart) {
+                    ++depth;
+                } else if (ch == MathDsl::GroupEnd) {
+                    --depth;
+                    if (depth == 0) {
+                        closePos = j;
+                        break;
+                    }
+                    if (depth < 0)
+                        break;
+                }
+            }
+            if (closePos < 0)
+                continue;
+            const QString grouped = text.mid(pos + 1, closePos - pos - 1);
+            if (grouped.contains(MathDsl::UnitStart) && grouped.contains(MathDsl::UnitEnd))
+                ++count;
+            i = closePos;
+        }
+        return count;
+    };
+
+    int sourceParenthesizedDenominatorCount =
+        countExplicitGroupedUnitDenominators(sourceExpression);
+    if (sourceParenthesizedDenominatorCount == 0)
+        return displayed;
+
+    int preservedCount = 0;
+    for (int i = 0; i < displayed.size() && preservedCount < sourceParenthesizedDenominatorCount; ++i) {
+        if (displayed.at(i) != MathDsl::DivOp)
+            continue;
+        int numStart = i + 1;
+        while (numStart < displayed.size() && displayed.at(numStart).isSpace())
+            ++numStart;
+        if (numStart >= displayed.size())
+            continue;
+        if (displayed.at(numStart) == MathDsl::GroupStart)
+            continue;
+
+        int unitOpen = displayed.indexOf(MathDsl::UnitStart, numStart);
+        int unitClose = (unitOpen >= 0) ? displayed.indexOf(MathDsl::UnitEnd, unitOpen + 1) : -1;
+        if (unitOpen < 0 || unitClose < 0)
+            continue;
+
+        bool hasInnerDivOrAddSub = false;
+        for (int j = numStart; j < unitOpen; ++j) {
+            const QChar ch = displayed.at(j);
+            if (ch == MathDsl::DivOp
+                || MathDsl::isAdditionOperator(ch)
+                || MathDsl::isSubtractionOperator(ch))
+            {
+                hasInnerDivOrAddSub = true;
+                break;
+            }
+        }
+        if (hasInnerDivOrAddSub)
+            continue;
+
+        displayed.insert(unitClose + 1, MathDsl::GroupEnd);
+        displayed.insert(numStart, MathDsl::GroupStart);
+        ++preservedCount;
+    }
+    return displayed;
+}
+
+inline QString preserveExplicitParenthesizedQuotientBeforeUnitFromSource(
+    QString displayed,
+    const QString& sourceExpression)
+{
+    auto countSourceGroupedQuotientsWithUnit = [](const QString& text) {
+        int count = 0;
+        for (int i = 0; i < text.size(); ++i) {
+            if (text.at(i) != MathDsl::GroupStart)
+                continue;
+            int depth = 0;
+            int close = -1;
+            for (int j = i; j < text.size(); ++j) {
+                const QChar ch = text.at(j);
+                if (ch == MathDsl::GroupStart) {
+                    ++depth;
+                } else if (ch == MathDsl::GroupEnd) {
+                    --depth;
+                    if (depth == 0) {
+                        close = j;
+                        break;
+                    }
+                }
+            }
+            if (close < 0)
+                continue;
+            int next = close + 1;
+            while (next < text.size() && text.at(next).isSpace())
+                ++next;
+            if (next < text.size()
+                && text.at(next) == MathDsl::UnitStart
+                && text.mid(i + 1, close - i - 1).contains(MathDsl::DivOp))
+            {
+                ++count;
+            }
+            i = close;
+        }
+        return count;
+    };
+
+    auto isNumericChar = [](QChar ch) {
+        return ch.isDigit() || ch == MathDsl::DotSep || ch == MathDsl::CommaSep;
+    };
+
+    int preserveCount = countSourceGroupedQuotientsWithUnit(sourceExpression);
+    if (preserveCount == 0)
+        return displayed;
+
+    for (int i = 0; i < displayed.size() && preserveCount > 0; ++i) {
+        if (displayed.at(i) != MathDsl::UnitStart)
+            continue;
+
+        int rightEnd = i - 1;
+        while (rightEnd >= 0 && displayed.at(rightEnd).isSpace())
+            --rightEnd;
+        if (rightEnd < 0)
+            continue;
+        if (!isNumericChar(displayed.at(rightEnd)))
+            continue;
+
+        int rightStart = rightEnd;
+        while (rightStart >= 0 && isNumericChar(displayed.at(rightStart)))
+            --rightStart;
+        ++rightStart;
+
+        int slashPos = rightStart - 1;
+        while (slashPos >= 0 && displayed.at(slashPos).isSpace())
+            --slashPos;
+        if (slashPos < 0 || displayed.at(slashPos) != MathDsl::DivOp)
+            continue;
+
+        int leftEnd = slashPos - 1;
+        while (leftEnd >= 0 && displayed.at(leftEnd).isSpace())
+            --leftEnd;
+        if (leftEnd < 0 || !isNumericChar(displayed.at(leftEnd)))
+            continue;
+
+        int leftStart = leftEnd;
+        while (leftStart >= 0 && isNumericChar(displayed.at(leftStart)))
+            --leftStart;
+        ++leftStart;
+
+        int beforeLeft = leftStart - 1;
+        while (beforeLeft >= 0 && displayed.at(beforeLeft).isSpace())
+            --beforeLeft;
+        if (beforeLeft >= 0 && displayed.at(beforeLeft) == MathDsl::GroupStart)
+            continue;
+
+        displayed.insert(i, MathDsl::GroupEnd);
+        displayed.insert(leftStart, MathDsl::GroupStart);
+        ++i;
+        --preserveCount;
+    }
+    return displayed;
+}
+
 inline QString collapseBracketedCompactAngleSuffixes(QString text)
 {
     auto compactSuffixForToken = [](const QString& token) {
@@ -442,10 +621,14 @@ inline QString formattedExpressionLineForDisplay(const QString& sourceExpression
             Evaluator::formatInterpretedExpressionForDisplay(interpretedSource)));
     return collapseBracketedCompactAngleSuffixes(
         collapseValueUnitMultiplicationForDisplay(
-            preserveExplicitBracketedSimpleUnitsFromSource(
-                normalizeBracketedUnitTextForDisplay(
-                    DisplayFormatUtils::preserveConversionTargetBracketsForDisplay(
-                        displayed, sourceExpression)),
+            preserveExplicitParenthesizedUnitDenominatorFromSource(
+                preserveExplicitParenthesizedQuotientBeforeUnitFromSource(
+                preserveExplicitBracketedSimpleUnitsFromSource(
+                    normalizeBracketedUnitTextForDisplay(
+                        DisplayFormatUtils::preserveConversionTargetBracketsForDisplay(
+                            displayed, sourceExpression)),
+                    sourceExpression),
+                sourceExpression),
                 sourceExpression)));
 }
 

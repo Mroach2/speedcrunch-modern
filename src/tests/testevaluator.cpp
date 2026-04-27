@@ -3217,12 +3217,32 @@ void test_auto_fix_powers()
                   "2·sin(33×3·sin(23)·cos(−pi))·sin(23234)·23⧸2−sin(−12) − 12−12");
     CHECK_AUTOFIX("2          ×pi×  pi + 2^12.000−2",
                   "2·pi·pi + 2^12.000−2");
+    CHECK_AUTOFIX("4/2[s]", "4/2·[s]");
     CHECK_AUTOFIX("1[metre] in [metre]", "1[metre] in [metre]");
     CHECK_AUTOFIX("1[metre] IN [metre]", "1[metre] IN [metre]");
     CHECK_AUTOFIX("sqrt(16)+cbrt(27)", "√(16)+∛(27)");
     CHECK_AUTOFIX("asqrt(16)+cbrtfoo(27)", "asqrt(16)+cbrtfoo(27)");
     CHECK_AUTOFIX("2 + 3^() + 4", "2 + 3 + 4");
     CHECK_AUTOFIX("2 + 3 ^ (   ) + 4", "2 + 3  + 4");
+
+    ++eval_total_tests;
+    eval->setExpression(eval->autoFix(QStringLiteral("4/2[s]")));
+    const Quantity autoFixedValueUnitDivisionResult = eval->evalUpdateAns();
+    if (!eval->error().isEmpty()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tautofix value-unit denominator grouping eval\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+    } else {
+        const QString formatted = DMath::format(autoFixedValueUnitDivisionResult, Format::Fixed());
+        if (formatted != QStringLiteral("2 second")) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tautofix value-unit denominator grouping eval\t[NEW]" << endl
+                 << "\tResult   : " << formatted.toUtf8().constData() << endl
+                 << "\tExpected : 2 second" << endl;
+        }
+    }
 
     ++eval_total_tests;
     const QString fixedNoOpPower = eval->autoFix(QString::fromUtf8("2 + 3^() + 4"));
@@ -4067,6 +4087,7 @@ void test_implicit_multiplication()
     CHECK_INTERPRETED("6/2(2+1)", "(6/2)·(2+1)");
     CHECK_INTERPRETED("1/2 sqrt(3)", "(1/2)·√(3)");
     CHECK_INTERPRETED("1/2(2+3)", "(1/2)·(2+3)");
+    CHECK_INTERPRETED("4/2[s]", "4/2[s]");
     CHECK_INTERPRETED("2/3(4/5)", "(2/3)·((4/5))");
     CHECK_INTERPRETED("10\\3(2)", "(10\\3)·2");
     CHECK_INTERPRETED("-2(3+4)", "-(2·(3+4))");
@@ -4393,12 +4414,48 @@ void test_display_interpreted_spacing()
         const QString expectedLine = QStringLiteral("750")
             + QString(MathDsl::QuantSp)
             + QStringLiteral("[h]");
-        if (lines.isEmpty() || lines.first() != expectedLine) {
+    if (lines.isEmpty() || lines.first() != expectedLine) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tresult lines keep bracketed unit attachment\t[NEW]" << endl
+             << "\tFirst line: " << (lines.isEmpty() ? "<empty>" : lines.first().toUtf8().constData()) << endl
+             << "\tExpected  : " << expectedLine.toUtf8().constData() << endl;
+        }
+    }
+    ++eval_total_tests;
+    {
+        const QString explicitGrouped = ResultLineFormatUtils::formattedExpressionLineForDisplay(
+            QStringLiteral("4/(2[s])"),
+            QStringLiteral("4/2[s]"));
+        const QString expected = QStringLiteral("4")
+            + divide
+            + QStringLiteral("(2")
+            + QString(MathDsl::QuantSp)
+            + QStringLiteral("[s])");
+        if (explicitGrouped != expected) {
             ++eval_failed_tests;
             ++eval_new_failed_tests;
-            cerr << __FILE__ << "[" << __LINE__ << "]\tresult lines keep bracketed unit attachment\t[NEW]" << endl
-                 << "\tFirst line: " << (lines.isEmpty() ? "<empty>" : lines.first().toUtf8().constData()) << endl
-                 << "\tExpected  : " << expectedLine.toUtf8().constData() << endl;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tpreserve explicit denominator grouping for unit attachment\t[NEW]" << endl
+                 << "\tDisplayed: " << explicitGrouped.toUtf8().constData() << endl
+                 << "\tExpected : " << expected.toUtf8().constData() << endl;
+        }
+    }
+    ++eval_total_tests;
+    {
+        const QString implicitGrouped = ResultLineFormatUtils::formattedExpressionLineForDisplay(
+            QStringLiteral("4/2[s]"),
+            QStringLiteral("4/2[s]"));
+        const QString expected = QStringLiteral("4")
+            + divide
+            + QStringLiteral("2")
+            + QString(MathDsl::QuantSp)
+            + QStringLiteral("[s]");
+        if (implicitGrouped != expected) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tkeep implicit denominator unit attachment ungrouped\t[NEW]" << endl
+                 << "\tDisplayed: " << implicitGrouped.toUtf8().constData() << endl
+                 << "\tExpected : " << expected.toUtf8().constData() << endl;
         }
     }
     CHECK_DISPLAY_INTERPRETED(

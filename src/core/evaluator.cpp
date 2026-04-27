@@ -5590,6 +5590,8 @@ void Evaluator::compile(const Tokens& tokens)
                Token b = syntaxStack.top();
                Token op = syntaxStack.top(1);
                Token a = syntaxStack.top(2);
+               const bool openingUnitBracketToken =
+                   token.isOperator() && s_isOpeningUnitBracketToken(token);
                const bool forceReduceCompletedConversionBeforeAddSub =
                    op.asOperator() == Token::UnitConversion
                    && token.isOperator()
@@ -5598,7 +5600,7 @@ void Evaluator::compile(const Tokens& tokens)
                if (a.isOperand() && b.isOperand() && op.isOperator()
                    && ( // Normal operator.
                        (token.isOperator()
-                           && !s_isOpeningUnitBracketToken(token)
+                           && !openingUnitBracketToken
                            && (forceReduceCompletedConversionBeforeAddSub
                                || opPrecedence(op.asOperator()) >=
                                    opPrecedence(token.asOperator()))
@@ -5926,7 +5928,6 @@ QString Evaluator::buildInterpretedExpressionFromOpcodes() const
         {
             rightText = wrapInParentheses(rightText);
         }
-
         // In contextual percent expressions, make the additive base explicit:
         // render "1+99+10%" as "(1+99)+10%".
         if ((opcodeType == Opcode::Add || opcodeType == Opcode::Sub)
@@ -7632,6 +7633,99 @@ QString Evaluator::autoFix(const QString& expr)
         }
     };
     normalizeParenthesizedUnitAttachment();
+
+    // Normalize "X / N[U]" into "X / N·[U]" when X is not already a
+    // unit-attached term in source text. This aligns editor-entered
+    // "4/2[s]" with implicit-multiplication grouping while preserving
+    // "6[W]/2[s]" as unit-division.
+    auto normalizeDivisionByValueUnitAttachment = [&]() {
+        QString rewritten;
+        rewritten.reserve(result.size() + 8);
+        int cursor = 0;
+        while (cursor < result.size()) {
+            if (result.at(cursor) != MathDsl::DivOp) {
+                rewritten += result.at(cursor);
+                ++cursor;
+                continue;
+            }
+
+            int left = cursor - 1;
+            while (left >= 0 && result.at(left).isSpace())
+                --left;
+            if (left >= 0 && result.at(left) == MathDsl::UnitEnd) {
+                rewritten += result.at(cursor);
+                ++cursor;
+                continue;
+            }
+
+            int rhs = cursor + 1;
+            while (rhs < result.size() && result.at(rhs).isSpace())
+                ++rhs;
+            if (rhs < result.size()
+                && (MathDsl::isAdditionOperator(result.at(rhs))
+                    || MathDsl::isSubtractionOperator(result.at(rhs)))) {
+                ++rhs;
+            }
+
+            bool hasDigits = false;
+            while (rhs < result.size() && result.at(rhs).isDigit()) {
+                ++rhs;
+                hasDigits = true;
+            }
+            if (rhs < result.size()
+                && (result.at(rhs) == MathDsl::DotSep
+                    || result.at(rhs) == MathDsl::CommaSep)) {
+                ++rhs;
+                while (rhs < result.size() && result.at(rhs).isDigit()) {
+                    ++rhs;
+                    hasDigits = true;
+                }
+            }
+            if (!hasDigits) {
+                rewritten += result.at(cursor);
+                ++cursor;
+                continue;
+            }
+
+            int unitStart = rhs;
+            while (unitStart < result.size() && result.at(unitStart).isSpace())
+                ++unitStart;
+            if (unitStart >= result.size() || result.at(unitStart) != MathDsl::UnitStart) {
+                rewritten += result.at(cursor);
+                ++cursor;
+                continue;
+            }
+
+            int depth = 0;
+            int unitEnd = -1;
+            for (int i = unitStart; i < result.size(); ++i) {
+                const QChar ch = result.at(i);
+                if (ch == MathDsl::UnitStart) {
+                    ++depth;
+                } else if (ch == MathDsl::UnitEnd) {
+                    --depth;
+                    if (depth == 0) {
+                        unitEnd = i;
+                        break;
+                    }
+                    if (depth < 0)
+                        break;
+                }
+            }
+            if (unitEnd < 0) {
+                rewritten += result.at(cursor);
+                ++cursor;
+                continue;
+            }
+
+            rewritten += result.mid(cursor, unitStart - cursor);
+            rewritten += MathDsl::MulDotOp;
+            rewritten += result.mid(unitStart, unitEnd - unitStart + 1);
+            cursor = unitEnd + 1;
+        }
+        result = rewritten;
+    };
+    normalizeDivisionByValueUnitAttachment();
 
     // Normalize symbolic multiplication to a compact "·" form.
     // Examples:
