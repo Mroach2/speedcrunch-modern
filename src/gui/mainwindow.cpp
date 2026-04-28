@@ -1503,6 +1503,8 @@ void MainWindow::createVariablesDock(bool takeFocus)
 
     connect(m_docks.variables->widget(), &VariableListWidget::variableSelected,
             this, &MainWindow::insertVariableIntoEditor);
+    connect(m_docks.variables->widget(), &VariableListWidget::variableEdited,
+            this, &MainWindow::insertTextIntoEditor);
     connect(this, &MainWindow::radixCharacterChanged,
             m_docks.variables->widget(), &VariableListWidget::updateList);
     connect(this, &MainWindow::variablesChanged,

@@ -46,6 +46,7 @@ public:
 
 signals:
     void variableSelected(const QString&);
+    void variableEdited(const QString&);
 
 public slots:
     void updateList();
@@ -53,6 +54,7 @@ public slots:
 
 protected slots:
     void activateItem();
+    void editItem();
     void deleteItem();
     void deleteAllItems();
     void triggerFilter();
@@ -67,6 +69,7 @@ private:
     QTimer* m_filterTimer;
     QTreeWidget* m_variables;
     QAction* m_insertAction;
+    QAction* m_editAction;
     QAction* m_deleteAction;
     QAction* m_deleteAllAction;
     QLabel* m_noMatchLabel;

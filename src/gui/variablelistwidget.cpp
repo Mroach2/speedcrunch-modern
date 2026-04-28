@@ -79,10 +79,12 @@ VariableListWidget::VariableListWidget(QWidget* parent)
 
     QMenu* contextMenu = new QMenu(m_variables);
     m_insertAction = new QAction("", contextMenu);
+    m_editAction = new QAction("", contextMenu);
     m_deleteAction = new QAction("", contextMenu);
     m_deleteAllAction = new QAction("", contextMenu);
     m_variables->setContextMenuPolicy(Qt::ActionsContextMenu);
     m_variables->addAction(m_insertAction);
+    m_variables->addAction(m_editAction);
     m_variables->addAction(m_deleteAction);
     m_variables->addAction(m_deleteAllAction);
 
@@ -95,6 +97,7 @@ VariableListWidget::VariableListWidget(QWidget* parent)
     connect(m_searchFilter, SIGNAL(textChanged(const QString&)), SLOT(triggerFilter()));
     connect(m_variables, SIGNAL(itemActivated(QTreeWidgetItem*, int)), SLOT(activateItem()));
     connect(m_insertAction, SIGNAL(triggered()), SLOT(activateItem()));
+    connect(m_editAction, SIGNAL(triggered()), SLOT(editItem()));
     connect(m_deleteAction, SIGNAL(triggered()), SLOT(deleteItem()));
     connect(m_deleteAllAction, SIGNAL(triggered()), SLOT(deleteAllItems()));
     QShortcut* returnShortcut = new QShortcut(QKeySequence(Qt::Key_Return), this);
@@ -166,6 +169,7 @@ void VariableListWidget::retranslateText()
     m_noMatchLabel->setText(tr("No match found"));
 
     m_insertAction->setText(tr("Insert"));
+    m_editAction->setText(tr("Edit"));
     m_deleteAction->setText(tr("Delete"));
     m_deleteAllAction->setText(tr("Delete All"));
 
@@ -195,6 +199,17 @@ void VariableListWidget::deleteItem()
     updateList();
 }
 
+void VariableListWidget::editItem()
+{
+    if (!currentItem() || m_variables->selectedItems().isEmpty())
+        return;
+    QString editedExpression = currentItem()->text(0) + " = " + currentItem()->text(1);
+    const QString description = currentItem()->text(2).trimmed();
+    if (!description.isEmpty())
+        editedExpression += " ? " + description;
+    emit variableEdited(editedExpression);
+}
+
 void VariableListWidget::deleteAllItems()
 {
     Evaluator::instance()->unsetAllUserDefinedVariables();
@@ -221,6 +236,10 @@ void VariableListWidget::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Delete) {
         deleteItem();
+        event->accept();
+        return;
+    } else if (event->key() == Qt::Key_E) {
+        editItem();
         event->accept();
         return;
     }
