@@ -187,7 +187,11 @@ Rounding
 
 .. function:: round(x [; n])
 
-    Round ``x`` to the nearest number with ``n`` fractional digits; ``n`` may be omitted, in which case ``x`` is rounded to the closest integer. Ties are broken by rounding to the nearest *even* integer. This rounding strategy, commonly known as *Banker's rounding*, serves to avoid a bias (for instance when averaging or summing).
+    Round ``x`` to the nearest number with ``n`` fractional digits; ``n`` may be omitted, in which case ``x`` is rounded to the closest integer.
+
+    Tie handling and directional behavior follow the global
+    :menuselection:`Settings --> Results --> Rounding Mode` option (for
+    example *Half Even (Banker's)*, *Half Away from Zero*, or directed modes).
 
     Example::
 
@@ -203,7 +207,7 @@ Rounding
         round(12345; -2)
         = 12300
 
-    Only real, dimensionless arguments are allowed.
+    ``x`` must be real. ``n`` must be a real, dimensionless integer.
 
 .. function:: trunc(x [; n])
 

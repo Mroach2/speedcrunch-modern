@@ -5317,12 +5317,16 @@ void test_result_rounding_mode_formatting()
     setRuntimeResultRoundingMode(settings->resultRoundingMode);
     checkFixed0("half-away +2.5", "2.5", "3");
     checkFixed0("half-away -2.5", "-2.5", "-3");
+    CHECK_EVAL("round(2.5)", "3");
+    CHECK_EVAL("round(2.5[m])", "3 metre");
 
     settings->resultRoundingMode = Settings::ResultRoundingHalfEven;
     setRuntimeResultRoundingMode(settings->resultRoundingMode);
     checkFixed0("half-even +2.5", "2.5", "2");
     checkFixed0("half-even +3.5", "3.5", "4");
     checkFixed0("half-even -2.5", "-2.5", "-2");
+    CHECK_EVAL("round(2.5)", "2");
+    CHECK_EVAL("round(2.5[m])", "2 metre");
 
     settings->resultRoundingMode = Settings::ResultRoundingTowardZero;
     setRuntimeResultRoundingMode(settings->resultRoundingMode);

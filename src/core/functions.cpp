@@ -375,23 +375,58 @@ Quantity function_round(Function* f, const Function::ArgumentList& args)
     /* TODO : complex mode switch for this function */
     ENSURE_EITHER_ARGUMENT_COUNT(1, 2);
     Quantity num = args.at(0);
+    int prec = 0;
     if (args.count() == 2) {
-        Quantity argPrecision = args.at(1);
-        if (argPrecision != 0) {
-            if (!argPrecision.isInteger()) {
+        Quantity argprec = args.at(1);
+        if (argprec != 0) {
+            if (!argprec.isInteger()) {
                 f->setError(OutOfDomain);
                 return DMath::nan();
             }
-            int prec = argPrecision.numericValue().toInt();
-            if (prec)
-                return DMath::round(num, prec);
+            prec = argprec.numericValue().toInt();
+            if (prec == 0)
+                return num;
             // The second parameter exceeds the integer limits.
-            if (argPrecision < 0)
+            if (argprec < 0)
                 return Quantity(0);
-            return num;
         }
     }
-    return DMath::round(num);
+
+    if (!num.isReal()) {
+        f->setError(OutOfDomain);
+        return DMath::nan();
+    }
+
+    const HNumber scale = HMath::raise(HNumber(10), prec);
+    const HNumber scaled = num.numericValue().real * scale;
+    HNumber rounded;
+    switch (runtimeResultRoundingMode()) {
+    case Settings::ResultRoundingHalfAwayFromZero: {
+        const HNumber absRounded = HMath::floor(HMath::abs(scaled) + HNumber("0.5"));
+        rounded = scaled.isNegative() ? -absRounded : absRounded;
+        break;
+    }
+    case Settings::ResultRoundingTowardZero:
+        rounded = HMath::trunc(scaled);
+        break;
+    case Settings::ResultRoundingTowardPositiveInfinity:
+        rounded = HMath::ceil(scaled);
+        break;
+    case Settings::ResultRoundingTowardNegativeInfinity:
+        rounded = HMath::floor(scaled);
+        break;
+    case Settings::ResultRoundingHalfEven:
+    default:
+        rounded = HMath::round(scaled);
+        break;
+    }
+
+    Quantity result(num);
+    result = Quantity(CNumber(rounded / scale));
+    result.copyDimension(num);
+    if (num.hasUnit())
+        result.setDisplayUnit(num.unit(), num.unitName());
+    return result;
 }
 
 Quantity function_sqrt(Function* f, const Function::ArgumentList& args)
