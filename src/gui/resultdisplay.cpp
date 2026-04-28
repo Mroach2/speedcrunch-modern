@@ -103,12 +103,114 @@ QString formatResultForClipboard(const Quantity& value)
 
 QStringList formatResultLines(const HistoryEntry& entry)
 {
-    return ResultLineFormatUtils::formatResultLinesForDisplay(
+    Settings* settings = Settings::instance();
+    const bool oldComplexNumbers = settings->complexNumbers;
+    const char oldImaginaryUnit = settings->imaginaryUnit;
+    const char oldAngleUnit = settings->angleUnit;
+    const char oldResultFormat = settings->resultFormat;
+    const int oldResultPrecision = settings->resultPrecision;
+    const char oldResultFormatComplex = settings->resultFormatComplex;
+    const char oldUnitExp = settings->unitNegativeExponentStyle;
+    const char oldRound = settings->resultRoundingMode;
+    const bool oldMultiple = settings->multipleResultLinesEnabled;
+    const bool oldSecondaryEnabled = settings->secondaryResultEnabled;
+    const bool oldTertiaryEnabled = settings->tertiaryResultEnabled;
+    const bool oldQuaternaryEnabled = settings->quaternaryResultEnabled;
+    const bool oldQuinaryEnabled = settings->quinaryResultEnabled;
+    const char oldSecondaryFormat = settings->alternativeResultFormat;
+    const char oldTertiaryFormat = settings->tertiaryResultFormat;
+    const char oldQuaternaryFormat = settings->quaternaryResultFormat;
+    const char oldQuinaryFormat = settings->quinaryResultFormat;
+    const int oldSecondaryPrecision = settings->secondaryResultPrecision;
+    const int oldTertiaryPrecision = settings->tertiaryResultPrecision;
+    const int oldQuaternaryPrecision = settings->quaternaryResultPrecision;
+    const int oldQuinaryPrecision = settings->quinaryResultPrecision;
+    const char oldSecondaryComplex = settings->secondaryResultFormatComplex;
+    const char oldTertiaryComplex = settings->tertiaryResultFormatComplex;
+    const char oldQuaternaryComplex = settings->quaternaryResultFormatComplex;
+    const char oldQuinaryComplex = settings->quinaryResultFormatComplex;
+
+    const EvaluationContext& ctx = entry.contextRef();
+    settings->complexNumbers = ctx.complexOn;
+    settings->imaginaryUnit = (ctx.unit == 'j') ? 'j' : 'i';
+    settings->angleUnit = ctx.angle;
+    settings->resultFormat = ctx.main.fmt;
+    settings->resultPrecision = ctx.main.prec;
+    settings->resultFormatComplex = ctx.main.cplx;
+    settings->unitNegativeExponentStyle = isValidUnitNegativeExponentStyle(ctx.unitExp)
+        ? ctx.unitExp
+        : Settings::UnitNegativeExponentSuperscript;
+    settings->resultRoundingMode = isValidResultRoundingMode(ctx.round)
+        ? ctx.round
+        : Settings::ResultRoundingHalfAwayFromZero;
+    setRuntimeUnitNegativeExponentStyle(settings->unitNegativeExponentStyle);
+    setRuntimeResultRoundingMode(settings->resultRoundingMode);
+
+    settings->multipleResultLinesEnabled = !ctx.extras.isEmpty();
+    settings->secondaryResultEnabled = false;
+    settings->tertiaryResultEnabled = false;
+    settings->quaternaryResultEnabled = false;
+    settings->quinaryResultEnabled = false;
+    if (ctx.extras.size() > 0) {
+        settings->secondaryResultEnabled = true;
+        settings->alternativeResultFormat = ctx.extras.at(0).fmt;
+        settings->secondaryResultPrecision = ctx.extras.at(0).prec;
+        settings->secondaryResultFormatComplex = ctx.extras.at(0).cplx;
+    }
+    if (ctx.extras.size() > 1) {
+        settings->tertiaryResultEnabled = true;
+        settings->tertiaryResultFormat = ctx.extras.at(1).fmt;
+        settings->tertiaryResultPrecision = ctx.extras.at(1).prec;
+        settings->tertiaryResultFormatComplex = ctx.extras.at(1).cplx;
+    }
+    if (ctx.extras.size() > 2) {
+        settings->quaternaryResultEnabled = true;
+        settings->quaternaryResultFormat = ctx.extras.at(2).fmt;
+        settings->quaternaryResultPrecision = ctx.extras.at(2).prec;
+        settings->quaternaryResultFormatComplex = ctx.extras.at(2).cplx;
+    }
+    if (ctx.extras.size() > 3) {
+        settings->quinaryResultEnabled = true;
+        settings->quinaryResultFormat = ctx.extras.at(3).fmt;
+        settings->quinaryResultPrecision = ctx.extras.at(3).prec;
+        settings->quinaryResultFormatComplex = ctx.extras.at(3).cplx;
+    }
+
+    const QStringList lines = ResultLineFormatUtils::formatResultLinesForDisplay(
         entry.expr(),
         entry.interpretedExpr(),
         entry.result(),
         false,
         true);
+
+    settings->complexNumbers = oldComplexNumbers;
+    settings->imaginaryUnit = oldImaginaryUnit;
+    settings->angleUnit = oldAngleUnit;
+    settings->resultFormat = oldResultFormat;
+    settings->resultPrecision = oldResultPrecision;
+    settings->resultFormatComplex = oldResultFormatComplex;
+    settings->unitNegativeExponentStyle = oldUnitExp;
+    settings->resultRoundingMode = oldRound;
+    settings->multipleResultLinesEnabled = oldMultiple;
+    settings->secondaryResultEnabled = oldSecondaryEnabled;
+    settings->tertiaryResultEnabled = oldTertiaryEnabled;
+    settings->quaternaryResultEnabled = oldQuaternaryEnabled;
+    settings->quinaryResultEnabled = oldQuinaryEnabled;
+    settings->alternativeResultFormat = oldSecondaryFormat;
+    settings->tertiaryResultFormat = oldTertiaryFormat;
+    settings->quaternaryResultFormat = oldQuaternaryFormat;
+    settings->quinaryResultFormat = oldQuinaryFormat;
+    settings->secondaryResultPrecision = oldSecondaryPrecision;
+    settings->tertiaryResultPrecision = oldTertiaryPrecision;
+    settings->quaternaryResultPrecision = oldQuaternaryPrecision;
+    settings->quinaryResultPrecision = oldQuinaryPrecision;
+    settings->secondaryResultFormatComplex = oldSecondaryComplex;
+    settings->tertiaryResultFormatComplex = oldTertiaryComplex;
+    settings->quaternaryResultFormatComplex = oldQuaternaryComplex;
+    settings->quinaryResultFormatComplex = oldQuinaryComplex;
+    setRuntimeUnitNegativeExponentStyle(settings->unitNegativeExponentStyle);
+    setRuntimeResultRoundingMode(settings->resultRoundingMode);
+    return lines;
 }
 
 QString formattedExpressionForDisplay(const HistoryEntry& entry)
@@ -246,7 +348,17 @@ void ResultDisplay::append(const QString& expression, Quantity& value,
 
     appendPlainText(formattedExpressionForDisplay(expression, interpretedExpression));
     if (!value.isNan()) {
-        const HistoryEntry entry(expression, value, interpretedExpression);
+        const Settings* settings = Settings::instance();
+        EvaluationContext ctx;
+        ctx.main.fmt = settings->resultFormat;
+        ctx.main.prec = settings->resultPrecision;
+        ctx.main.cplx = settings->resultFormatComplex;
+        ctx.complexOn = settings->complexNumbers;
+        ctx.unit = settings->imaginaryUnit;
+        ctx.angle = settings->angleUnit;
+        ctx.unitExp = settings->unitNegativeExponentStyle;
+        ctx.round = settings->resultRoundingMode;
+        const HistoryEntry entry(expression, value, interpretedExpression, ctx);
         const QStringList resultLines = formatResultLines(entry);
         for (const QString& line : resultLines)
             appendPlainText(line);
@@ -584,6 +696,13 @@ void ResultDisplay::mousePressEvent(QMouseEvent* event)
             return;
         }
 
+        const QRect settingsRect = settingsGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
+        if (settingsRect.contains(event->pos())) {
+            emit editHistoryEntryContextRequested(m_hoveredHistoryIndex);
+            event->accept();
+            return;
+        }
+
         const QRect removeRect = removeGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
         if (removeRect.contains(event->pos())) {
             emit removeHistoryEntryRequested(m_hoveredHistoryIndex);
@@ -625,11 +744,15 @@ void ResultDisplay::contextMenuEvent(QContextMenuEvent* event)
             QApplication::clipboard()->setText(formatResultForClipboard(value), QClipboard::Clipboard);
         });
         menu->addSeparator();
-        QAction* editAction = menu->addAction(tr("Edit This Calculation"));
+        QAction* editAction = menu->addAction(tr("Edit Expression"));
         connect(editAction, &QAction::triggered, this, [this, historyIndex]() {
             emit editHistoryEntryRequested(historyIndex);
         });
-        QAction* removeAction = menu->addAction(tr("Remove This Calculation"));
+        QAction* editSettingsAction = menu->addAction(tr("Change Settings"));
+        connect(editSettingsAction, &QAction::triggered, this, [this, historyIndex]() {
+            emit editHistoryEntryContextRequested(historyIndex);
+        });
+        QAction* removeAction = menu->addAction(tr("Remove Calculation"));
         connect(removeAction, &QAction::triggered, this, [this, historyIndex]() {
             emit removeHistoryEntryRequested(historyIndex);
         });
@@ -793,28 +916,33 @@ void ResultDisplay::mouseMoveEvent(QMouseEvent* event)
 
     QRect copyRect;
     QRect editRect;
+    QRect settingsRect;
     QRect removeRect;
     if (m_hoveredHistoryIndex >= 0) {
         copyRect = copyGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
         editRect = editGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
+        settingsRect = settingsGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
         removeRect = removeGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
     }
 
     const bool overCopyGlyph = copyRect.contains(event->pos());
     const bool overEditGlyph = editRect.contains(event->pos());
+    const bool overSettingsGlyph = settingsRect.contains(event->pos());
     const bool overRemoveGlyph = removeRect.contains(event->pos());
-    const bool overActionGlyph = overCopyGlyph || overEditGlyph || overRemoveGlyph;
+    const bool overActionGlyph = overCopyGlyph || overEditGlyph || overSettingsGlyph || overRemoveGlyph;
     if (overActionGlyph)
         viewport()->setCursor(Qt::PointingHandCursor);
     else
         viewport()->unsetCursor();
 
     if (overCopyGlyph) {
-        QToolTip::showText(QCursor::pos(), tr("Copy this result"), this);
+        QToolTip::showText(QCursor::pos(), tr("Copy result"), this);
     } else if (overEditGlyph) {
-        QToolTip::showText(QCursor::pos(), tr("Edit this expression"), this);
+        QToolTip::showText(QCursor::pos(), tr("Edit expression"), this);
+    } else if (overSettingsGlyph) {
+        QToolTip::showText(QCursor::pos(), tr("Change settings"), this);
     } else if (overRemoveGlyph) {
-        QToolTip::showText(QCursor::pos(), tr("Remove this calculation"), this);
+        QToolTip::showText(QCursor::pos(), tr("Remove calculation"), this);
     } else {
         QToolTip::hideText();
     }
@@ -848,7 +976,8 @@ void ResultDisplay::paintEvent(QPaintEvent* event)
     const QRect copyRect = copyGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
     const QRect removeRect = removeGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
     const QRect editRect = editGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
-    if (!copyRect.isValid() || !removeRect.isValid() || !editRect.isValid())
+    const QRect settingsRect = settingsGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
+    if (!copyRect.isValid() || !removeRect.isValid() || !editRect.isValid() || !settingsRect.isValid())
         return;
 
     painter.setRenderHint(QPainter::Antialiasing, true);
@@ -882,6 +1011,22 @@ void ResultDisplay::paintEvent(QPaintEvent* event)
     painter.setPen(QPen(QColor(40, 90, 180, 255), 1.1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.drawLine(QPointF(editCenter.x() + editHalf * 0.62, editCenter.y() - editHalf * 0.62),
                      QPointF(editCenter.x() + editHalf * 1.08, editCenter.y() - editHalf * 1.08));
+
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(Qt::white);
+    painter.drawEllipse(settingsRect);
+    painter.setPen(QPen(QColor(20, 120, 120, 255), 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    const QPointF settingsCenter = badgeCenter(settingsRect);
+    const qreal gear = settingsRect.width() * 0.16;
+    painter.drawEllipse(QRectF(settingsCenter.x() - gear, settingsCenter.y() - gear, gear * 2.0, gear * 2.0));
+    painter.drawLine(QPointF(settingsCenter.x() - gear * 1.9, settingsCenter.y()),
+                     QPointF(settingsCenter.x() - gear * 1.2, settingsCenter.y()));
+    painter.drawLine(QPointF(settingsCenter.x() + gear * 1.2, settingsCenter.y()),
+                     QPointF(settingsCenter.x() + gear * 1.9, settingsCenter.y()));
+    painter.drawLine(QPointF(settingsCenter.x(), settingsCenter.y() - gear * 1.9),
+                     QPointF(settingsCenter.x(), settingsCenter.y() - gear * 1.2));
+    painter.drawLine(QPointF(settingsCenter.x(), settingsCenter.y() + gear * 1.2),
+                     QPointF(settingsCenter.x(), settingsCenter.y() + gear * 1.9));
 
     painter.setPen(Qt::NoPen);
     painter.setBrush(Qt::white);
@@ -1087,16 +1232,16 @@ QRect ResultDisplay::editGlyphBadgeRectForHistoryIndex(int historyIndex) const
 
 QRect ResultDisplay::copyGlyphRectForHistoryIndex(int historyIndex) const
 {
-    const QRect editRect = editGlyphRectForHistoryIndex(historyIndex);
-    if (!editRect.isValid())
+    const QRect settingsRect = settingsGlyphRectForHistoryIndex(historyIndex);
+    if (!settingsRect.isValid())
         return QRect();
 
     const int spacing = 4;
-    const int left = editRect.left() - editRect.width() - spacing;
+    const int left = settingsRect.left() - settingsRect.width() - spacing;
     if (left < 0)
         return QRect();
 
-    return QRect(left, editRect.top(), editRect.width(), editRect.height());
+    return QRect(left, settingsRect.top(), settingsRect.width(), settingsRect.height());
 }
 
 QRect ResultDisplay::copyGlyphBadgeRectForHistoryIndex(int historyIndex) const
@@ -1111,9 +1256,36 @@ QRect ResultDisplay::copyGlyphBadgeRectForHistoryIndex(int historyIndex) const
     return QRect(left, top, diameter, diameter);
 }
 
+QRect ResultDisplay::settingsGlyphRectForHistoryIndex(int historyIndex) const
+{
+    const QRect editRect = editGlyphRectForHistoryIndex(historyIndex);
+    if (!editRect.isValid())
+        return QRect();
+
+    const int spacing = 4;
+    const int left = editRect.left() - editRect.width() - spacing;
+    if (left < 0)
+        return QRect();
+
+    return QRect(left, editRect.top(), editRect.width(), editRect.height());
+}
+
+QRect ResultDisplay::settingsGlyphBadgeRectForHistoryIndex(int historyIndex) const
+{
+    const QRect settingsLaneRect = settingsGlyphRectForHistoryIndex(historyIndex);
+    if (!settingsLaneRect.isValid())
+        return QRect();
+
+    const int diameter = qMin(settingsLaneRect.width(), qMax(12, fontMetrics().height() - 2));
+    const int left = settingsLaneRect.left() + (settingsLaneRect.width() - diameter) / 2;
+    const int top = settingsLaneRect.top() + (settingsLaneRect.height() - diameter) / 2;
+    return QRect(left, top, diameter, diameter);
+}
+
 QRect ResultDisplay::hoverActionRectForHistoryIndex(int historyIndex) const
 {
     return copyGlyphRectForHistoryIndex(historyIndex)
+        .united(settingsGlyphRectForHistoryIndex(historyIndex))
         .united(editGlyphRectForHistoryIndex(historyIndex))
         .united(removeGlyphRectForHistoryIndex(historyIndex));
 }

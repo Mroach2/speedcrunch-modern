@@ -510,36 +510,32 @@ void Settings::load()
         resultPrecision = settings->value(key + QLatin1String("Precision"), -1).toInt();
     }
     const QString roundingModeKey = key + QLatin1String("ResultRoundingMode");
-    const QString roundingPolicyLegacyKey = key + QLatin1String("ResultRoundingPolicy");
     if (settings->contains(roundingModeKey)) {
-        resultRoundingMode = static_cast<ResultRoundingMode>(
-            settings->value(roundingModeKey).toInt());
-    } else if (settings->contains(roundingPolicyLegacyKey)) {
-        const int legacy = settings->value(roundingPolicyLegacyKey).toInt();
-        if (legacy == static_cast<int>(ResultRoundingHalfEven))
-            resultRoundingMode = ResultRoundingHalfEven;
-        else if (legacy == 2)
-            resultRoundingMode = ResultRoundingTowardZero;
-        else
+        const QVariant value = settings->value(roundingModeKey);
+        const QString text = value.toString();
+        if (text.size() == 1 && isValidResultRoundingMode(text.at(0).toLatin1())) {
+            resultRoundingMode = text.at(0).toLatin1();
+        } else {
             resultRoundingMode = ResultRoundingHalfAwayFromZero;
+        }
     } else {
         resultRoundingMode = ResultRoundingHalfAwayFromZero;
     }
-    if (resultRoundingMode != ResultRoundingHalfAwayFromZero
-            && resultRoundingMode != ResultRoundingHalfEven
-            && resultRoundingMode != ResultRoundingTowardZero
-            && resultRoundingMode != ResultRoundingTowardPositiveInfinity
-            && resultRoundingMode != ResultRoundingTowardNegativeInfinity) {
+    if (!isValidResultRoundingMode(resultRoundingMode)) {
         resultRoundingMode = ResultRoundingHalfAwayFromZero;
     }
     setRuntimeResultRoundingMode(resultRoundingMode);
 
     secondaryResultPrecision = settings->value(key + QLatin1String("SecondaryPrecision"), -1).toInt();
-    unitNegativeExponentStyle = static_cast<UnitNegativeExponentStyle>(
-        settings->value(key + QLatin1String("UnitNegativeExponentStyle"),
-                        static_cast<int>(UnitNegativeExponentSuperscript)).toInt());
-    if (unitNegativeExponentStyle != UnitNegativeExponentSuperscript
-            && unitNegativeExponentStyle != UnitNegativeExponentFraction) {
+    const QVariant unitExpValue = settings->value(key + QLatin1String("UnitNegativeExponentStyle"),
+                                                  QString(QChar(static_cast<char>(UnitNegativeExponentSuperscript))));
+    const QString unitExpText = unitExpValue.toString();
+    if (unitExpText.size() == 1 && isValidUnitNegativeExponentStyle(unitExpText.at(0).toLatin1())) {
+        unitNegativeExponentStyle = unitExpText.at(0).toLatin1();
+    } else {
+        unitNegativeExponentStyle = UnitNegativeExponentSuperscript;
+    }
+    if (!isValidUnitNegativeExponentStyle(unitNegativeExponentStyle)) {
         unitNegativeExponentStyle = UnitNegativeExponentSuperscript;
     }
     setRuntimeUnitNegativeExponentStyle(unitNegativeExponentStyle);
@@ -709,9 +705,9 @@ void Settings::save()
     settings->setValue(key + QLatin1String("MainComplexForm"), QString(QChar(resultFormatComplex)));
     settings->setValue(key + QLatin1String("MainPrecision"), resultPrecision);
     settings->setValue(key + QLatin1String("ResultRoundingMode"),
-        static_cast<int>(resultRoundingMode));
+        QString(QChar(resultRoundingMode)));
     settings->setValue(key + QLatin1String("UnitNegativeExponentStyle"),
-        static_cast<int>(unitNegativeExponentStyle));
+        QString(QChar(unitNegativeExponentStyle)));
     settings->setValue(key + QLatin1String("SecondaryPrecision"), secondaryResultPrecision);
     settings->setValue(key + QLatin1String("TertiaryPrecision"), tertiaryResultPrecision);
     settings->setValue(key + QLatin1String("QuaternaryPrecision"), quaternaryResultPrecision);

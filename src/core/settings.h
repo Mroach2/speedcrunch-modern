@@ -78,17 +78,17 @@ public:
         NumberFormatIndianCommaDot = 15
     };
 
-    enum UnitNegativeExponentStyle {
-        UnitNegativeExponentSuperscript = 0,
-        UnitNegativeExponentFraction = 1
+    enum UnitNegativeExponentStyle : char {
+        UnitNegativeExponentSuperscript = 's',
+        UnitNegativeExponentFraction = 'f'
     };
 
-    enum ResultRoundingMode {
-        ResultRoundingHalfAwayFromZero = 0,
-        ResultRoundingHalfEven = 1,
-        ResultRoundingTowardZero = 2,
-        ResultRoundingTowardPositiveInfinity = 3,
-        ResultRoundingTowardNegativeInfinity = 4
+    enum ResultRoundingMode : char {
+        ResultRoundingHalfAwayFromZero = 'a',
+        ResultRoundingHalfEven = 'e',
+        ResultRoundingTowardZero = 'z',
+        ResultRoundingTowardPositiveInfinity = 'p',
+        ResultRoundingTowardNegativeInfinity = 'm'
     };
 
     struct CustomKeypadButton {
@@ -142,8 +142,8 @@ public:
     bool quinaryResultEnabled;
     bool multipleResultLinesEnabled; // UI toggle: show/use extra result lines.
     int resultPrecision; // Main precision. See HMath documentation.
-    ResultRoundingMode resultRoundingMode;
-    UnitNegativeExponentStyle unitNegativeExponentStyle;
+    char resultRoundingMode;
+    char unitNegativeExponentStyle;
     int secondaryResultPrecision; // Secondary precision.
     int tertiaryResultPrecision; // Tertiary precision.
     int quaternaryResultPrecision; // Extra line #3 precision.
@@ -226,35 +226,48 @@ private:
     Q_DISABLE_COPY(Settings)
 };
 
-inline Settings::UnitNegativeExponentStyle g_runtimeUnitNegativeExponentStyle =
+inline char g_runtimeUnitNegativeExponentStyle =
     Settings::UnitNegativeExponentSuperscript;
-inline Settings::ResultRoundingMode g_runtimeResultRoundingMode =
+inline char g_runtimeResultRoundingMode =
     Settings::ResultRoundingHalfAwayFromZero;
 
-inline void setRuntimeUnitNegativeExponentStyle(Settings::UnitNegativeExponentStyle style)
+inline bool isValidUnitNegativeExponentStyle(char style)
 {
     if (style != Settings::UnitNegativeExponentSuperscript
         && style != Settings::UnitNegativeExponentFraction) {
-        return;
+        return false;
     }
+    return true;
+}
+
+inline void setRuntimeUnitNegativeExponentStyle(char style)
+{
+    if (!isValidUnitNegativeExponentStyle(style))
+        return;
     g_runtimeUnitNegativeExponentStyle = style;
 }
 
-inline Settings::UnitNegativeExponentStyle runtimeUnitNegativeExponentStyle()
+inline char runtimeUnitNegativeExponentStyle()
 {
     return g_runtimeUnitNegativeExponentStyle;
 }
 
-inline void setRuntimeResultRoundingMode(Settings::ResultRoundingMode mode)
+inline bool isValidResultRoundingMode(char mode)
 {
     if (mode != Settings::ResultRoundingHalfAwayFromZero
         && mode != Settings::ResultRoundingHalfEven
         && mode != Settings::ResultRoundingTowardZero
         && mode != Settings::ResultRoundingTowardPositiveInfinity
         && mode != Settings::ResultRoundingTowardNegativeInfinity) {
-        return;
+        return false;
     }
+    return true;
+}
 
+inline void setRuntimeResultRoundingMode(char mode)
+{
+    if (!isValidResultRoundingMode(mode))
+        return;
     g_runtimeResultRoundingMode = mode;
 
     io_rounding_mode ioMode = IO_ROUND_HALF_AWAY_FROM_ZERO;
@@ -269,7 +282,7 @@ inline void setRuntimeResultRoundingMode(Settings::ResultRoundingMode mode)
     float_set_output_rounding_mode(ioMode);
 }
 
-inline Settings::ResultRoundingMode runtimeResultRoundingMode()
+inline char runtimeResultRoundingMode()
 {
     return g_runtimeResultRoundingMode;
 }

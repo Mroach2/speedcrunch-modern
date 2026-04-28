@@ -64,6 +64,7 @@ signals:
     void controlWheelUp();
     void expressionSelected(const QString&);
     void editHistoryEntryRequested(int index);
+    void editHistoryEntryContextRequested(int index);
     void cancelHistoryEditRequested();
     void removeHistoryEntryRequested(int index);
     void removeHistoryEntriesAboveRequested(int index);
@@ -111,6 +112,8 @@ protected:
     QRect removeGlyphBadgeRectForHistoryIndex(int historyIndex) const;
     QRect editGlyphRectForHistoryIndex(int historyIndex) const;
     QRect editGlyphBadgeRectForHistoryIndex(int historyIndex) const;
+    QRect settingsGlyphRectForHistoryIndex(int historyIndex) const;
+    QRect settingsGlyphBadgeRectForHistoryIndex(int historyIndex) const;
     QRect copyGlyphRectForHistoryIndex(int historyIndex) const;
     QRect copyGlyphBadgeRectForHistoryIndex(int historyIndex) const;
     QRect hoverActionRectForHistoryIndex(int historyIndex) const;

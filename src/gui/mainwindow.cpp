@@ -78,9 +78,11 @@
 #include <QComboBox>
 #include <QColorDialog>
 #include <QFileDialog>
+#include <QFormLayout>
 #include <QFont>
 #include <QFontDialog>
 #include <QGridLayout>
+#include <QGroupBox>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
@@ -108,6 +110,86 @@
 #include "windows.h"
 #include <shlobj.h>
 #endif // Q_OS_WIN32
+
+namespace {
+EvaluationContext currentEvaluationContext(const Settings* settings)
+{
+    EvaluationContext ctx;
+    ctx.main.fmt = settings->resultFormat;
+    ctx.main.prec = settings->resultPrecision;
+    ctx.main.cplx = settings->resultFormatComplex;
+    if (settings->multipleResultLinesEnabled) {
+        if (settings->secondaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->alternativeResultFormat, settings->secondaryResultPrecision, settings->secondaryResultFormatComplex});
+        if (settings->tertiaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->tertiaryResultFormat, settings->tertiaryResultPrecision, settings->tertiaryResultFormatComplex});
+        if (settings->quaternaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->quaternaryResultFormat, settings->quaternaryResultPrecision, settings->quaternaryResultFormatComplex});
+        if (settings->quinaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->quinaryResultFormat, settings->quinaryResultPrecision, settings->quinaryResultFormatComplex});
+    }
+    ctx.complexOn = settings->complexNumbers;
+    ctx.unit = settings->imaginaryUnit;
+    ctx.angle = settings->angleUnit;
+    ctx.unitExp = settings->unitNegativeExponentStyle;
+    ctx.round = settings->resultRoundingMode;
+    return ctx;
+}
+
+void applyEvaluationContext(Settings* settings, const EvaluationContext& ctx)
+{
+    settings->resultFormat = ctx.main.fmt;
+    settings->resultPrecision = ctx.main.prec;
+    settings->resultFormatComplex = ctx.main.cplx;
+
+    settings->multipleResultLinesEnabled = !ctx.extras.isEmpty();
+    settings->secondaryResultEnabled = false;
+    settings->tertiaryResultEnabled = false;
+    settings->quaternaryResultEnabled = false;
+    settings->quinaryResultEnabled = false;
+
+    auto applyExtra = [settings](int index, const ResultLineContext& line) {
+        if (index == 0) {
+            settings->secondaryResultEnabled = true;
+            settings->alternativeResultFormat = line.fmt;
+            settings->secondaryResultPrecision = line.prec;
+            settings->secondaryResultFormatComplex = line.cplx;
+        } else if (index == 1) {
+            settings->tertiaryResultEnabled = true;
+            settings->tertiaryResultFormat = line.fmt;
+            settings->tertiaryResultPrecision = line.prec;
+            settings->tertiaryResultFormatComplex = line.cplx;
+        } else if (index == 2) {
+            settings->quaternaryResultEnabled = true;
+            settings->quaternaryResultFormat = line.fmt;
+            settings->quaternaryResultPrecision = line.prec;
+            settings->quaternaryResultFormatComplex = line.cplx;
+        } else if (index == 3) {
+            settings->quinaryResultEnabled = true;
+            settings->quinaryResultFormat = line.fmt;
+            settings->quinaryResultPrecision = line.prec;
+            settings->quinaryResultFormatComplex = line.cplx;
+        }
+    };
+    for (int i = 0; i < ctx.extras.size() && i < 4; ++i)
+        applyExtra(i, ctx.extras.at(i));
+
+    settings->complexNumbers = ctx.complexOn;
+    settings->imaginaryUnit = (ctx.unit == 'j') ? 'j' : 'i';
+    settings->angleUnit = ctx.angle;
+    settings->unitNegativeExponentStyle = isValidUnitNegativeExponentStyle(ctx.unitExp)
+        ? ctx.unitExp
+        : Settings::UnitNegativeExponentSuperscript;
+    settings->resultRoundingMode = isValidResultRoundingMode(ctx.round)
+        ? ctx.round
+        : Settings::ResultRoundingHalfAwayFromZero;
+
+    DMath::complexMode = settings->complexNumbers;
+    CMath::setImaginaryUnitSymbol(settings->imaginaryUnit);
+    setRuntimeUnitNegativeExponentStyle(settings->unitNegativeExponentStyle);
+    setRuntimeResultRoundingMode(settings->resultRoundingMode);
+}
+}
 
 QTranslator* MainWindow::createTranslator(const QString& langCode)
 {
@@ -1762,6 +1844,7 @@ void MainWindow::createFixedConnections()
     connect(m_widgets.display, SIGNAL(copyAvailable(bool)), SLOT(handleCopyAvailable(bool)));
     connect(m_widgets.display, SIGNAL(expressionSelected(const QString&)), SLOT(insertTextIntoEditor(const QString&)));
     connect(m_widgets.display, SIGNAL(editHistoryEntryRequested(int)), SLOT(startHistoryEntryEdit(int)));
+    connect(m_widgets.display, SIGNAL(editHistoryEntryContextRequested(int)), SLOT(editHistoryEntryContext(int)));
     connect(m_widgets.display, SIGNAL(cancelHistoryEditRequested()), SLOT(cancelHistoryEntryEdit()));
     connect(m_widgets.display, SIGNAL(removeHistoryEntryRequested(int)), SLOT(removeHistoryEntryAt(int)));
     connect(m_widgets.display, SIGNAL(removeHistoryEntriesAboveRequested(int)), SLOT(removeHistoryEntriesAbove(int)));
@@ -2160,7 +2243,7 @@ void MainWindow::saveSession(QString & fname, bool saveHistory)
     if (!saveHistory)
         json.remove(QLatin1String("history"));
     QJsonDocument doc(json);
-    file.write(doc.toJson());
+    file.write(doc.toJson(QJsonDocument::Compact));
 
     file.close();
 }
@@ -4236,6 +4319,15 @@ void MainWindow::restoreSession(bool restoreHistory) {
         json.remove(QLatin1String("history"));
     m_session->deSerialize(json, true);
 
+    if (restoreHistory && !m_session->historyIsEmpty()) {
+        const QList<HistoryEntry> entries = historyEntries();
+        int errorIndex = -1;
+        QString errorText;
+        if (!rebuildSessionFromEntries(entries, &errorIndex, &errorText)) {
+            showStateLabel(tr("Could not recalculate from calculation %1: %2").arg(errorIndex + 1).arg(errorText));
+        }
+    }
+
     file.close();
     emit historyChanged();
     emit variablesChanged();
@@ -4277,14 +4369,16 @@ void MainWindow::evaluateEditorExpression()
             m_widgets.editor->clear();
             restoreDisplayScroll();
         } else {
-            const QStringList previousExpressions = historyExpressions();
-            QStringList updatedExpressions = previousExpressions;
-            updatedExpressions[m_pendingHistoryEditIndex] = enteredExpr;
+            const QList<HistoryEntry> previousEntries = historyEntries();
+            QList<HistoryEntry> updatedEntries = previousEntries;
+            HistoryEntry updatedEntry = updatedEntries.at(m_pendingHistoryEditIndex);
+            updatedEntry.setExpr(enteredExpr);
+            updatedEntries[m_pendingHistoryEditIndex] = updatedEntry;
 
             int errorIndex = -1;
             QString errorText;
-            if (!rebuildSessionFromExpressions(updatedExpressions, &errorIndex, &errorText)) {
-                rebuildSessionFromExpressions(previousExpressions);
+            if (!rebuildSessionFromEntries(updatedEntries, &errorIndex, &errorText)) {
+                rebuildSessionFromEntries(previousEntries);
                 m_widgets.display->setEditingHistoryIndex(m_pendingHistoryEditIndex);
                 restoreDisplayScroll();
                 showStateLabel(tr("Could not recalculate from calculation %1: %2").arg(errorIndex + 1).arg(errorText));
@@ -4307,6 +4401,7 @@ void MainWindow::evaluateEditorExpression()
         }
     }
 
+    const EvaluationContext evalContext = currentEvaluationContext(m_settings);
     m_evaluator->setExpression(expr);
     Quantity result = m_evaluator->evalUpdateAns();
 
@@ -4325,7 +4420,7 @@ void MainWindow::evaluateEditorExpression()
         return;
 
     const QString interpretedExpr = m_evaluator->interpretedExpression();
-    m_session->addHistoryEntry(HistoryEntry(enteredExpr, result, interpretedExpr));
+    m_session->addHistoryEntry(HistoryEntry(enteredExpr, result, interpretedExpr, evalContext));
     if (m_settings->historySaving == Settings::HistorySavingContinuously)
         saveSessionToDefaultPath();
     emit historyChanged();
@@ -4367,6 +4462,254 @@ void MainWindow::startHistoryEntryEdit(int index)
     showStateLabel(tr("Editing calculation. Press Esc twice to cancel."));
 }
 
+void MainWindow::editHistoryEntryContext(int index)
+{
+    const int historySize = m_session->historySize();
+    if (index < 0 || index >= historySize)
+        return;
+
+    HistoryEntry entry = m_session->historyEntryAt(index);
+    EvaluationContext ctx = entry.context();
+
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("Calculation Settings"));
+    QVBoxLayout* root = new QVBoxLayout(&dialog);
+    QGroupBox* commonGroup = new QGroupBox(tr("Common Settings"), &dialog);
+    QFormLayout* globalForm = new QFormLayout(commonGroup);
+    root->addWidget(commonGroup);
+
+    auto addNotationItems = [](QComboBox* combo) {
+        combo->addItem(QObject::tr("Automatic decimal"), QStringLiteral("g"));
+        combo->addItem(QObject::tr("Fixed-point decimal"), QStringLiteral("f"));
+        combo->addItem(QObject::tr("Engineering decimal"), QStringLiteral("n"));
+        combo->addItem(QObject::tr("Scientific decimal"), QStringLiteral("e"));
+        combo->addItem(QObject::tr("Rational"), QStringLiteral("r"));
+        combo->addItem(QObject::tr("Binary"), QStringLiteral("b"));
+        combo->addItem(QObject::tr("Octal"), QStringLiteral("o"));
+        combo->addItem(QObject::tr("Hexadecimal"), QStringLiteral("h"));
+        combo->addItem(QObject::tr("Sexagesimal"), QStringLiteral("s"));
+    };
+
+    auto addComplexFormItems = [](QComboBox* combo) {
+        combo->addItem(QObject::tr("Rectangular (Cartesian)"), QStringLiteral("c"));
+        combo->addItem(QObject::tr("Polar (Exponential)"), QStringLiteral("p"));
+        combo->addItem(QObject::tr("Polar (Angle)"), QStringLiteral("a"));
+    };
+
+    QComboBox* angle = new QComboBox(&dialog);
+    angle->addItem(tr("Radian"), QStringLiteral("r"));
+    angle->addItem(tr("Degree"), QStringLiteral("d"));
+    angle->addItem(tr("Gradian"), QStringLiteral("g"));
+    angle->addItem(tr("Turn"), QStringLiteral("t"));
+    angle->addItem(tr("Revolution"), QStringLiteral("v"));
+    angle->setCurrentIndex(qMax(0, angle->findData(QString(QChar(ctx.angle)))));
+    globalForm->addRow(tr("Angle mode:"), angle);
+
+    QComboBox* unitExp = new QComboBox(&dialog);
+    unitExp->addItem(tr("Superscript"), QStringLiteral("s"));
+    unitExp->addItem(tr("Fraction"), QStringLiteral("f"));
+    unitExp->setCurrentIndex((ctx.unitExp == 'f') ? 1 : 0);
+    globalForm->addRow(tr("Unit exponent style:"), unitExp);
+
+    QComboBox* round = new QComboBox(&dialog);
+    round->addItem(tr("Half away from zero"), QStringLiteral("a"));
+    round->addItem(tr("Half to even"), QStringLiteral("e"));
+    round->addItem(tr("Toward zero"), QStringLiteral("z"));
+    round->addItem(tr("Toward +infinity"), QStringLiteral("p"));
+    round->addItem(tr("Toward -infinity"), QStringLiteral("m"));
+    round->setCurrentIndex(qMax(0, round->findData(QString(QChar(ctx.round)))));
+    globalForm->addRow(tr("Rounding mode:"), round);
+
+    QComboBox* imagUnit = new QComboBox(&dialog);
+    imagUnit->addItem(QStringLiteral("i"), QStringLiteral("i"));
+    imagUnit->addItem(QStringLiteral("j"), QStringLiteral("j"));
+    imagUnit->setCurrentIndex(ctx.unit == 'j' ? 1 : 0);
+    globalForm->addRow(tr("Complex unit:"), imagUnit);
+
+    QCheckBox* complexOn = new QCheckBox(tr("Enable complex numbers"), &dialog);
+    complexOn->setChecked(ctx.complexOn);
+    globalForm->addRow(QString(), complexOn);
+
+    struct LineUiState {
+        bool enabled = true;
+        char fmt = 'g';
+        int prec = -1;
+        char cplx = 'c';
+    };
+    std::array<LineUiState, 5> lines;
+    lines[0].enabled = true;
+    lines[0].fmt = ctx.main.fmt;
+    lines[0].prec = ctx.main.prec;
+    lines[0].cplx = ctx.main.cplx;
+    for (int i = 1; i < 5; ++i) {
+        lines[i].enabled = (i - 1) < ctx.extras.size();
+        if (lines[i].enabled) {
+            lines[i].fmt = ctx.extras.at(i - 1).fmt;
+            lines[i].prec = ctx.extras.at(i - 1).prec;
+            lines[i].cplx = ctx.extras.at(i - 1).cplx;
+        }
+    }
+
+    QComboBox* lineSelector = new QComboBox(&dialog);
+    lineSelector->addItem(tr("Main Line"));
+    lineSelector->addItem(tr("Extra Line #1"));
+    lineSelector->addItem(tr("Extra Line #2"));
+    lineSelector->addItem(tr("Extra Line #3"));
+    lineSelector->addItem(tr("Extra Line #4"));
+
+    QGroupBox* selectorGroup = new QGroupBox(tr("Result Line"), &dialog);
+    QFormLayout* selectorForm = new QFormLayout(selectorGroup);
+    selectorForm->addRow(tr("Configure:"), lineSelector);
+    root->addWidget(selectorGroup);
+
+    QGroupBox* lineGroup = new QGroupBox(tr("Result Configuration"), &dialog);
+    QFormLayout* lineForm = new QFormLayout(lineGroup);
+    QCheckBox* lineEnabled = new QCheckBox(tr("Enable this result line"), lineGroup);
+    QComboBox* lineFmt = new QComboBox(lineGroup);
+    addNotationItems(lineFmt);
+    QCheckBox* lineAutoPrecision = new QCheckBox(tr("Automatic"), lineGroup);
+    QSpinBox* linePrecision = new QSpinBox(lineGroup);
+    linePrecision->setRange(0, 50);
+    QComboBox* lineCplx = new QComboBox(lineGroup);
+    addComplexFormItems(lineCplx);
+
+    QWidget* precisionRow = new QWidget(lineGroup);
+    QHBoxLayout* precisionLayout = new QHBoxLayout(precisionRow);
+    precisionLayout->setContentsMargins(0, 0, 0, 0);
+    precisionLayout->addWidget(lineAutoPrecision);
+    precisionLayout->addWidget(linePrecision);
+    lineForm->addRow(QString(), lineEnabled);
+    lineForm->addRow(tr("Notation:"), lineFmt);
+    lineForm->addRow(tr("Decimal places:"), precisionRow);
+    lineForm->addRow(tr("Complex form:"), lineCplx);
+    root->addWidget(lineGroup);
+
+    int activeLineIndex = 0;
+    auto loadLineUi = [&](int i) {
+        const LineUiState& st = lines.at(i);
+        const bool isMain = (i == 0);
+        const bool allow = isMain || st.enabled;
+
+        lineEnabled->blockSignals(true);
+        lineFmt->blockSignals(true);
+        lineAutoPrecision->blockSignals(true);
+        linePrecision->blockSignals(true);
+        lineCplx->blockSignals(true);
+
+        lineEnabled->setVisible(!isMain);
+        lineEnabled->setChecked(isMain ? true : st.enabled);
+        lineFmt->setCurrentIndex(qMax(0, lineFmt->findData(QString(QChar(st.fmt)))));
+        lineAutoPrecision->setChecked(st.prec < 0);
+        linePrecision->setValue(st.prec < 0 ? 8 : st.prec);
+        lineFmt->setEnabled(allow);
+        lineAutoPrecision->setEnabled(allow);
+        linePrecision->setEnabled(allow && st.prec >= 0);
+        lineCplx->setCurrentIndex(qMax(0, lineCplx->findData(QString(QChar(st.cplx)))));
+        lineCplx->setEnabled(allow && complexOn->isChecked());
+
+        lineEnabled->blockSignals(false);
+        lineFmt->blockSignals(false);
+        lineAutoPrecision->blockSignals(false);
+        linePrecision->blockSignals(false);
+        lineCplx->blockSignals(false);
+    };
+
+    auto saveLineUi = [&](int i) {
+        LineUiState& st = lines[i];
+        st.enabled = (i == 0) ? true : lineEnabled->isChecked();
+        st.fmt = lineFmt->currentData().toString().at(0).toLatin1();
+        st.prec = lineAutoPrecision->isChecked() ? -1 : linePrecision->value();
+        st.cplx = lineCplx->currentData().toString().at(0).toLatin1();
+    };
+
+    connect(lineAutoPrecision, &QCheckBox::toggled, linePrecision, [linePrecision](bool checked) {
+        linePrecision->setEnabled(!checked);
+    });
+    connect(lineSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), &dialog, [&](int newIndex) {
+        saveLineUi(activeLineIndex);
+        activeLineIndex = qBound(0, newIndex, 4);
+        loadLineUi(activeLineIndex);
+    });
+    connect(lineEnabled, &QCheckBox::toggled, &dialog, [&](bool enabled) {
+        const bool allow = (activeLineIndex == 0) || enabled;
+        lineFmt->setEnabled(allow);
+        lineAutoPrecision->setEnabled(allow);
+        linePrecision->setEnabled(allow && !lineAutoPrecision->isChecked());
+        lineCplx->setEnabled(allow && complexOn->isChecked());
+    });
+    connect(complexOn, &QCheckBox::toggled, &dialog, [&](bool enabled) {
+        imagUnit->setEnabled(enabled);
+        const bool allow = (activeLineIndex == 0) || lineEnabled->isChecked();
+        lineCplx->setEnabled(allow && enabled);
+    });
+    lineSelector->setCurrentIndex(0);
+    activeLineIndex = 0;
+    loadLineUi(0);
+    imagUnit->setEnabled(complexOn->isChecked());
+
+    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    root->addWidget(buttons);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    saveLineUi(activeLineIndex);
+    ctx.main.fmt = lines[0].fmt;
+    ctx.main.prec = lines[0].prec;
+    ctx.main.cplx = lines[0].cplx;
+    ctx.complexOn = complexOn->isChecked();
+    ctx.unit = imagUnit->currentData().toString().at(0).toLatin1();
+    ctx.angle = angle->currentData().toString().at(0).toLatin1();
+    ctx.unitExp = unitExp->currentData().toString().at(0).toLatin1();
+    ctx.round = round->currentData().toString().at(0).toLatin1();
+    ctx.extras.clear();
+    for (int i = 1; i < 5; ++i) {
+        if (!lines[i].enabled)
+            continue;
+        ResultLineContext line;
+        line.fmt = lines[i].fmt;
+        line.prec = lines[i].prec;
+        line.cplx = lines[i].cplx;
+        ctx.extras.append(line);
+    }
+
+    const int previousDisplayScrollValue = m_widgets.display->verticalScrollBar()->value();
+    const QList<HistoryEntry> previousEntries = historyEntries();
+    QList<HistoryEntry> updatedEntries = previousEntries;
+    HistoryEntry updatedEntry = updatedEntries.at(index);
+    updatedEntry.setContext(ctx);
+    updatedEntries[index] = updatedEntry;
+
+    int errorIndex = -1;
+    QString errorText;
+    if (!rebuildSessionFromEntries(updatedEntries, &errorIndex, &errorText)) {
+        rebuildSessionFromEntries(previousEntries);
+        QScrollBar* bar = m_widgets.display->verticalScrollBar();
+        bar->setValue(qBound(bar->minimum(), previousDisplayScrollValue, bar->maximum()));
+        showStateLabel(tr("Could not recalculate from calculation %1: %2").arg(errorIndex + 1).arg(errorText));
+        return;
+    }
+
+    emit historyChanged();
+    emit variablesChanged();
+    emit functionsChanged();
+    emit unitsChanged();
+    QScrollBar* bar = m_widgets.display->verticalScrollBar();
+    const int clamped = qBound(bar->minimum(), previousDisplayScrollValue, bar->maximum());
+    bar->setValue(clamped);
+    QTimer::singleShot(0, this, [this, previousDisplayScrollValue]() {
+        QScrollBar* deferredBar = m_widgets.display->verticalScrollBar();
+        const int deferredClamped = qBound(deferredBar->minimum(),
+                                           previousDisplayScrollValue,
+                                           deferredBar->maximum());
+        deferredBar->setValue(deferredClamped);
+    });
+    if (m_settings->historySaving == Settings::HistorySavingContinuously)
+        saveSessionToDefaultPath();
+}
+
 void MainWindow::cancelHistoryEntryEdit()
 {
     if (m_pendingHistoryEditIndex < 0)
@@ -4381,17 +4724,17 @@ void MainWindow::cancelHistoryEntryEdit()
     showReadyMessage();
 }
 
-QStringList MainWindow::historyExpressions() const
+QList<HistoryEntry> MainWindow::historyEntries() const
 {
-    QStringList expressions;
+    QList<HistoryEntry> entries;
     const int historySize = m_session->historySize();
-    expressions.reserve(historySize);
+    entries.reserve(historySize);
     for (int i = 0; i < historySize; ++i)
-        expressions.append(m_session->historyEntryAtRef(i).expr());
-    return expressions;
+        entries.append(m_session->historyEntryAtRef(i));
+    return entries;
 }
 
-bool MainWindow::rebuildSessionFromExpressions(const QStringList& expressions, int* errorIndex, QString* errorText)
+bool MainWindow::rebuildSessionFromEntries(const QList<HistoryEntry>& entries, int* errorIndex, QString* errorText)
 {
     if (errorIndex)
         *errorIndex = -1;
@@ -4403,9 +4746,12 @@ bool MainWindow::rebuildSessionFromExpressions(const QStringList& expressions, i
     m_session->clearUserFunctions();
     m_evaluator->initializeBuiltInVariables();
     m_conditions.autoAns = false;
+    const EvaluationContext originalContext = currentEvaluationContext(m_settings);
 
-    for (int i = 0; i < expressions.size(); ++i) {
-        const QString currentExpr = expressions.at(i);
+    for (int i = 0; i < entries.size(); ++i) {
+        const HistoryEntry entry = entries.at(i);
+        const QString currentExpr = entry.expr();
+        applyEvaluationContext(m_settings, entry.contextRef());
         const QString evalExpr = m_evaluator->autoFix(currentExpr);
         const bool isCommentOnly = Evaluator::isCommentOnlyExpression(evalExpr);
 
@@ -4416,6 +4762,7 @@ bool MainWindow::rebuildSessionFromExpressions(const QStringList& expressions, i
                 *errorIndex = i;
             if (errorText)
                 *errorText = m_evaluator->error();
+            applyEvaluationContext(m_settings, originalContext);
             return false;
         }
 
@@ -4425,11 +4772,12 @@ bool MainWindow::rebuildSessionFromExpressions(const QStringList& expressions, i
             continue;
 
         const QString interpretedExpr = m_evaluator->interpretedExpression();
-        m_session->addHistoryEntry(HistoryEntry(currentExpr, result, interpretedExpr));
+        m_session->addHistoryEntry(HistoryEntry(currentExpr, result, interpretedExpr, entry.contextRef()));
         if (!result.isNan())
             m_conditions.autoAns = true;
     }
 
+    applyEvaluationContext(m_settings, originalContext);
     return true;
 }
 

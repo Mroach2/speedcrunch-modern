@@ -1264,7 +1264,7 @@ void test_units_temperature_affine_conversions()
 void test_units_grouping_and_inverse_presentation()
 {
     Settings* settings = Settings::instance();
-    const Settings::UnitNegativeExponentStyle oldStyle = settings->unitNegativeExponentStyle;
+    const char oldStyle = settings->unitNegativeExponentStyle;
 
     settings->unitNegativeExponentStyle = Settings::UnitNegativeExponentSuperscript;
     setRuntimeUnitNegativeExponentStyle(Settings::UnitNegativeExponentSuperscript);
@@ -3674,7 +3674,7 @@ void test_complex()
 
 void test_angle_mode(Settings* settings)
 {
-    const Settings::UnitNegativeExponentStyle savedExponentStyle =
+    const char savedExponentStyle =
         settings->unitNegativeExponentStyle;
     settings->unitNegativeExponentStyle = Settings::UnitNegativeExponentSuperscript;
     setRuntimeUnitNegativeExponentStyle(Settings::UnitNegativeExponentSuperscript);
@@ -5297,7 +5297,7 @@ void test_format()
 void test_result_rounding_mode_formatting()
 {
     Settings* settings = Settings::instance();
-    const Settings::ResultRoundingMode savedMode = settings->resultRoundingMode;
+    const char savedMode = settings->resultRoundingMode;
 
     auto checkFixed0 = [&](const char* label, const char* value, const char* expected) {
         ++eval_total_tests;

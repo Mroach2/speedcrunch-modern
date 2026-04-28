@@ -27,6 +27,61 @@
 #include <functions.h>
 #include <algorithm>
 
+namespace {
+void applyEvaluationContextToSettings(const EvaluationContext& ctx)
+{
+    Settings* settings = Settings::instance();
+    settings->resultFormat = ctx.main.fmt;
+    settings->resultPrecision = ctx.main.prec;
+    settings->resultFormatComplex = ctx.main.cplx;
+
+    settings->multipleResultLinesEnabled = !ctx.extras.isEmpty();
+    settings->secondaryResultEnabled = false;
+    settings->tertiaryResultEnabled = false;
+    settings->quaternaryResultEnabled = false;
+    settings->quinaryResultEnabled = false;
+
+    if (ctx.extras.size() > 0) {
+        settings->secondaryResultEnabled = true;
+        settings->alternativeResultFormat = ctx.extras.at(0).fmt;
+        settings->secondaryResultPrecision = ctx.extras.at(0).prec;
+        settings->secondaryResultFormatComplex = ctx.extras.at(0).cplx;
+    }
+    if (ctx.extras.size() > 1) {
+        settings->tertiaryResultEnabled = true;
+        settings->tertiaryResultFormat = ctx.extras.at(1).fmt;
+        settings->tertiaryResultPrecision = ctx.extras.at(1).prec;
+        settings->tertiaryResultFormatComplex = ctx.extras.at(1).cplx;
+    }
+    if (ctx.extras.size() > 2) {
+        settings->quaternaryResultEnabled = true;
+        settings->quaternaryResultFormat = ctx.extras.at(2).fmt;
+        settings->quaternaryResultPrecision = ctx.extras.at(2).prec;
+        settings->quaternaryResultFormatComplex = ctx.extras.at(2).cplx;
+    }
+    if (ctx.extras.size() > 3) {
+        settings->quinaryResultEnabled = true;
+        settings->quinaryResultFormat = ctx.extras.at(3).fmt;
+        settings->quinaryResultPrecision = ctx.extras.at(3).prec;
+        settings->quinaryResultFormatComplex = ctx.extras.at(3).cplx;
+    }
+
+    settings->complexNumbers = ctx.complexOn;
+    settings->imaginaryUnit = (ctx.unit == 'j') ? 'j' : 'i';
+    settings->angleUnit = ctx.angle;
+    settings->unitNegativeExponentStyle = isValidUnitNegativeExponentStyle(ctx.unitExp)
+        ? ctx.unitExp
+        : Settings::UnitNegativeExponentSuperscript;
+    settings->resultRoundingMode = isValidResultRoundingMode(ctx.round)
+        ? ctx.round
+        : Settings::ResultRoundingHalfAwayFromZero;
+    DMath::complexMode = settings->complexNumbers;
+    CMath::setImaginaryUnitSymbol(settings->imaginaryUnit);
+    setRuntimeUnitNegativeExponentStyle(settings->unitNegativeExponentStyle);
+    setRuntimeResultRoundingMode(settings->resultRoundingMode);
+}
+}
+
 static int historyLimit()
 {
     return std::max(0, Settings::instance()->maxHistoryEntries);
@@ -162,14 +217,34 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
     // Recover ans from history when missing or NaN, e.g. older sessions where
     // comment-only lines could overwrite ans with NaN.
     const bool hasAns = hasVariable("ans");
-    const bool needsAnsRecovery = !hasAns || getVariable("ans").value().isNan();
+    const bool hasContextHistory = !m_history.isEmpty() && m_history.first().hasContext();
+    const bool needsAnsRecovery = hasContextHistory || !hasAns || getVariable("ans").value().isNan();
     if (needsAnsRecovery) {
+        Quantity recoveredValue = CMath::nan();
         for (int i = m_history.size() - 1; i >= 0; --i) {
             const Quantity value = historyEntryAtRef(i).result();
             if (!value.isNan()) {
-                addVariable(Variable("ans", value, Variable::BuiltIn));
+                recoveredValue = value;
                 break;
             }
+        }
+
+        if (recoveredValue.isNan() && hasContextHistory) {
+            const EvaluationContext savedCtx = m_history.last().contextRef();
+            Evaluator* evaluator = Evaluator::instance();
+            for (int i = 0; i < m_history.size(); ++i) {
+                const HistoryEntry entry = historyEntryAtRef(i);
+                applyEvaluationContextToSettings(entry.contextRef());
+                evaluator->setExpression(evaluator->autoFix(entry.expr()));
+                const Quantity value = evaluator->evalUpdateAns();
+                if (evaluator->error().isEmpty() && !value.isNan())
+                    recoveredValue = value;
+            }
+            applyEvaluationContextToSettings(savedCtx);
+        }
+
+        if (!recoveredValue.isNan()) {
+            addVariable(Variable("ans", recoveredValue, Variable::BuiltIn));
         }
     }
 

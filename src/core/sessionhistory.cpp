@@ -17,11 +17,141 @@
 // Boston, MA 02110-1301, USA.
 
 #include "sessionhistory.h"
+#include "core/settings.h"
+#include "math/cmath.h"
+
+namespace {
+EvaluationContext contextFromCurrentSettings()
+{
+    Settings* settings = Settings::instance();
+    EvaluationContext ctx;
+    ctx.main.fmt = settings->resultFormat;
+    ctx.main.prec = settings->resultPrecision;
+    ctx.main.cplx = settings->resultFormatComplex;
+    if (settings->multipleResultLinesEnabled) {
+        if (settings->secondaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->alternativeResultFormat, settings->secondaryResultPrecision, settings->secondaryResultFormatComplex});
+        if (settings->tertiaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->tertiaryResultFormat, settings->tertiaryResultPrecision, settings->tertiaryResultFormatComplex});
+        if (settings->quaternaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->quaternaryResultFormat, settings->quaternaryResultPrecision, settings->quaternaryResultFormatComplex});
+        if (settings->quinaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->quinaryResultFormat, settings->quinaryResultPrecision, settings->quinaryResultFormatComplex});
+    }
+    ctx.complexOn = settings->complexNumbers;
+    ctx.unit = settings->imaginaryUnit;
+    ctx.angle = settings->angleUnit;
+    ctx.unitExp = settings->unitNegativeExponentStyle;
+    ctx.round = settings->resultRoundingMode;
+    return ctx;
+}
+
+QJsonObject serializeResultLineContext(const ResultLineContext& line)
+{
+    QJsonObject json;
+    json["fmt"] = QString(QChar(line.fmt));
+    json["prec"] = line.prec;
+    json["cplx"] = QString(QChar(line.cplx));
+    return json;
+}
+
+ResultLineContext deserializeResultLineContext(const QJsonObject& json)
+{
+    ResultLineContext line;
+    const QString fmt = json["fmt"].toString();
+    if (fmt.size() == 1)
+        line.fmt = fmt.at(0).toLatin1();
+    line.prec = json["prec"].toInt(-1);
+    const QString cplx = json["cplx"].toString();
+    if (cplx.size() == 1)
+        line.cplx = cplx.at(0).toLatin1();
+    return line;
+}
+}
+
+void EvaluationContext::serialize(QJsonObject& json) const
+{
+    QJsonObject lines;
+    lines["main"] = serializeResultLineContext(main);
+    QJsonArray extrasArray;
+    for (const ResultLineContext& line : extras)
+        extrasArray.append(serializeResultLineContext(line));
+    lines["extras"] = extrasArray;
+    json["lines"] = lines;
+
+    QJsonObject complex;
+    complex["on"] = complexOn;
+    complex["unit"] = QString(QChar(unit));
+    json["complex"] = complex;
+    json["angle"] = QString(QChar(angle));
+    json["unitExp"] = QString(QChar(unitExp));
+    json["round"] = QString(QChar(round));
+}
+
+void EvaluationContext::deSerialize(const QJsonObject& json)
+{
+    *this = EvaluationContext();
+
+    const QJsonObject lines = json["lines"].toObject();
+    if (lines.contains("main"))
+        main = deserializeResultLineContext(lines["main"].toObject());
+    const QJsonArray extrasArray = lines["extras"].toArray();
+    for (const QJsonValue& value : extrasArray) {
+        if (value.isObject())
+            extras.append(deserializeResultLineContext(value.toObject()));
+    }
+    while (extras.size() > 4)
+        extras.removeLast();
+
+    const QJsonObject complex = json["complex"].toObject();
+    complexOn = complex["on"].toBool(false);
+    const QString unitText = complex["unit"].toString();
+    if (unitText.size() == 1)
+        unit = unitText.at(0).toLatin1();
+
+    const QString angleText = json["angle"].toString();
+    if (angleText.size() == 1)
+        angle = angleText.at(0).toLatin1();
+
+    const QString unitExpText = json["unitExp"].toString();
+    if (unitExpText.size() == 1)
+        unitExp = unitExpText.at(0).toLatin1();
+    if (!isValidUnitNegativeExponentStyle(unitExp))
+        unitExp = Settings::UnitNegativeExponentSuperscript;
+
+    const QString roundText = json["round"].toString();
+    if (roundText.size() == 1)
+        round = roundText.at(0).toLatin1();
+    if (!isValidResultRoundingMode(round))
+        round = Settings::ResultRoundingHalfAwayFromZero;
+}
 
 
 HistoryEntry::HistoryEntry(const QJsonObject & json)
 {
     deSerialize(json);
+}
+
+HistoryEntry::HistoryEntry(const QString & expr, const Quantity & num)
+    : m_expr(expr), m_result(num), m_ctx(contextFromCurrentSettings()), m_hasCtx(true)
+{
+}
+
+HistoryEntry::HistoryEntry(const QString & expr, const Quantity & num, const QString& interpretedExpr)
+    : m_expr(expr), m_interpretedExpr(interpretedExpr), m_result(num),
+      m_ctx(contextFromCurrentSettings()), m_hasCtx(true)
+{
+}
+
+HistoryEntry::HistoryEntry(const QString & expr, const EvaluationContext& ctx)
+    : m_expr(expr), m_result(0), m_ctx(ctx), m_hasCtx(true)
+{
+}
+
+HistoryEntry::HistoryEntry(const QString & expr, const Quantity & num, const QString& interpretedExpr,
+                           const EvaluationContext& ctx)
+    : m_expr(expr), m_interpretedExpr(interpretedExpr), m_result(num), m_ctx(ctx), m_hasCtx(true)
+{
 }
 
 QString HistoryEntry::expr() const
@@ -54,28 +184,44 @@ void HistoryEntry::setResult(const Quantity & n)
     m_result = n;
 }
 
+void HistoryEntry::setContext(const EvaluationContext& ctx)
+{
+    m_ctx = ctx;
+}
+
 void HistoryEntry::serialize(QJsonObject & json) const
 {
-    json["expression"] = m_expr;
-    if (!m_interpretedExpr.isEmpty())
-        json["interpretedExpression"] = m_interpretedExpr;
-    QJsonObject result;
-    m_result.serialize(result);
-    json["result"] = result;
-    return;
+    json["expr"] = m_expr;
+    QJsonObject ctx;
+    m_ctx.serialize(ctx);
+    json["ctx"] = ctx;
 }
 
 void HistoryEntry::deSerialize(const QJsonObject & json)
 {
     *this = HistoryEntry();
+    m_result = CMath::nan();
 
-    if (json.contains("expression"))
-        m_expr = json["expression"].toString();
+    if (json.contains("expr"))
+        m_expr = json["expr"].toString();
 
-    if (json.contains("interpretedExpression"))
-        m_interpretedExpr = json["interpretedExpression"].toString();
+    if (json.contains("ctx")) {
+        m_ctx.deSerialize(json["ctx"].toObject());
+        m_hasCtx = true;
+    }
+}
 
-    if (json.contains("result"))
-        m_result = Quantity(json["result"].toObject());
-    return;
+EvaluationContext HistoryEntry::context() const
+{
+    return m_ctx;
+}
+
+const EvaluationContext& HistoryEntry::contextRef() const
+{
+    return m_ctx;
+}
+
+bool HistoryEntry::hasContext() const
+{
+    return m_hasCtx;
 }

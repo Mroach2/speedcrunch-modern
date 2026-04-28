@@ -225,6 +225,7 @@ private slots:
     void showSessionLoadDialog();
     void wrapSelection();
     void startHistoryEntryEdit(int index);
+    void editHistoryEntryContext(int index);
     void removeHistoryEntryAt(int index);
     void removeHistoryEntriesAbove(int index);
     void removeHistoryEntriesBelow(int index);
@@ -296,8 +297,8 @@ private:
                                        int* ignoredLines = nullptr,
                                        QList<int>* ignoredLineNumbers = nullptr,
                                        bool dryRun = false);
-    bool rebuildSessionFromExpressions(const QStringList& expressions, int* errorIndex = nullptr, QString* errorText = nullptr);
-    QStringList historyExpressions() const;
+    bool rebuildSessionFromEntries(const QList<HistoryEntry>& entries, int* errorIndex = nullptr, QString* errorText = nullptr);
+    QList<HistoryEntry> historyEntries() const;
 
     static QTranslator* createTranslator(const QString& langCode);
 
