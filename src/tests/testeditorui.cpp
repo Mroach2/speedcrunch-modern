@@ -686,6 +686,19 @@ void TestEditorUi::inserts_parenthesis_pair_and_places_cursor_inside()
     QCOMPARE(editor.textCursor().position(),
              QString::fromUtf8("2 pi⁻²³ · cos(").size());
 
+    Evaluator* evaluator = Evaluator::instance();
+    evaluator->unsetAllUserFunctions();
+    evaluator->setUserFunction(UserFunction(
+        QStringLiteral("user_fun"),
+        QStringList() << QStringLiteral("x"),
+        QStringLiteral("x")));
+    editor.setText(QStringLiteral("user_fun"));
+    editor.setCursorPosition(editor.text().size());
+    QApplication::sendEvent(&editor, &openParenByTextForFunction);
+    QCOMPARE(editor.document()->toRawText(), QStringLiteral("user_fun") + groupPair);
+    QCOMPARE(editor.textCursor().position(), QStringLiteral("user_fun(").size());
+    evaluator->unsetAllUserFunctions();
+
     editor.setText(QStringLiteral("3"));
     editor.setCursorPosition(editor.text().size());
     QTest::keyClick(&editor, Qt::Key_ParenLeft, Qt::NoModifier);

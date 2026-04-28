@@ -641,10 +641,24 @@ static bool isAfterFunctionIdentifierWithOnlySpaces(Evaluator* evaluator,
     int identifierEnd = i + 1;
     while (i >= 0 && MathDsl::isSuperscriptPowerChar(text.at(i)))
         --i;
-    if (i + 1 != identifierEnd) {
-        // Accept function-call notation with trailing superscript powers:
-        // cos³( -> cos³(), but keep non-functions (e.g. pi³) in implicit-mul mode.
+    if (i + 1 != identifierEnd)
         identifierEnd = i + 1;
+
+    int identifierStart = identifierEnd - 1;
+    const auto isIdentifierChar = [](QChar ch) {
+        return ch.isLetterOrNumber() || ch == QLatin1Char('_');
+    };
+    while (identifierStart >= 0 && isIdentifierChar(text.at(identifierStart)))
+        --identifierStart;
+    ++identifierStart;
+    if (identifierStart >= identifierEnd)
+        return false;
+
+    // Fast path: direct trailing identifier lookup at cursor boundary.
+    const QString trailingIdentifier = text.mid(identifierStart, identifierEnd - identifierStart);
+    if (FunctionRepo::instance()->find(trailingIdentifier)
+        || evaluator->hasUserFunction(trailingIdentifier)) {
+        return true;
     }
 
     const QString leftText = text.left(identifierEnd);
@@ -661,21 +675,7 @@ static bool isAfterFunctionIdentifierWithOnlySpaces(Evaluator* evaluator,
         }
     }
 
-    // Fallback for valid trailing identifier even when the full left side
-    // does not tokenize cleanly (e.g. complex superscript tails earlier).
-    int identifierStart = identifierEnd - 1;
-    const auto isIdentifierChar = [](QChar ch) {
-        return ch.isLetterOrNumber() || ch == QLatin1Char('_');
-    };
-    while (identifierStart >= 0 && isIdentifierChar(text.at(identifierStart)))
-        --identifierStart;
-    ++identifierStart;
-    if (identifierStart >= identifierEnd)
-        return false;
-
-    const QString trailingIdentifier = text.mid(identifierStart, identifierEnd - identifierStart);
-    return FunctionRepo::instance()->find(trailingIdentifier)
-           || evaluator->hasUserFunction(trailingIdentifier);
+    return false;
 }
 
 static bool isInsideCommentFromQuestionMark(const QString& text, int cursorPosition)
