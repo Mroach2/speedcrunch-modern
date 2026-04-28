@@ -90,12 +90,14 @@
 #include <QPushButton>
 #include <QScreen>
 #include <QGuiApplication>
+#include <QSpinBox>
 #include <QStandardPaths>
 #include <QScrollBar>
 #include <QStatusBar>
 #include <QStyle>
 #include <QToolTip>
 #include <QVBoxLayout>
+#include <QWidgetAction>
 #include <QJsonDocument>
 
 #include <algorithm>
@@ -625,13 +627,16 @@ void MainWindow::setStatusBarText()
     if (m_status.angleUnit) {
         m_status.angleUnitLabel->setText(MainWindow::tr("Angle Mode:"));
         m_status.resultFormatLabel->setText(MainWindow::tr("Notation:"));
+        m_status.resultPrecisionLabel->setText(MainWindow::tr("Precision:"));
         m_status.complexFormLabel->setText(MainWindow::tr("Complex Form:"));
         m_status.angleUnit->setText(statusBarAngleUnitValue());
         m_status.resultFormat->setText(statusBarResultFormatValue());
+        m_status.resultPrecision->setText(statusBarResultPrecisionValue());
         m_status.complexForm->setText(statusBarComplexFormValue());
 
         m_status.angleUnit->setToolTip(MainWindow::tr("Angle unit"));
         m_status.resultFormat->setToolTip(MainWindow::tr("Result notation"));
+        m_status.resultPrecision->setToolTip(MainWindow::tr("Result precision"));
         m_status.complexForm->setToolTip(MainWindow::tr("Complex form"));
         updateStatusBarSectionVisibility();
     }
@@ -653,6 +658,7 @@ void MainWindow::updateStatusBarSectionVisibility()
 
     const Section sections[] = {
         { m_status.resultFormatSection, true },
+        { m_status.resultPrecisionSection, true },
         { m_status.angleUnitSection, true },
         { m_status.complexFormSection, m_settings->complexNumbers }
     };
@@ -700,6 +706,13 @@ QString MainWindow::statusBarResultFormatValue() const
         case 'g': return MainWindow::tr("Automatic decimal");
         default : return QString();
     }
+}
+
+QString MainWindow::statusBarResultPrecisionValue() const
+{
+    if (m_settings->resultPrecision < 0)
+        return MainWindow::tr("Automatic");
+    return QString::number(m_settings->resultPrecision);
 }
 
 QString MainWindow::statusBarComplexFormValue() const
@@ -1201,33 +1214,42 @@ void MainWindow::createStatusBar()
 
     m_status.angleUnitSection = new QWidget(bar);
     m_status.resultFormatSection = new QWidget(bar);
+    m_status.resultPrecisionSection = new QWidget(bar);
     m_status.complexFormSection = new QWidget(bar);
 
     m_status.angleUnitLabel = new QLabel(m_status.angleUnitSection);
     m_status.resultFormatLabel = new QLabel(m_status.resultFormatSection);
+    m_status.resultPrecisionLabel = new QLabel(m_status.resultPrecisionSection);
     m_status.complexFormLabel = new QLabel(m_status.complexFormSection);
 
     m_status.angleUnit = new QPushButton(bar);
     m_status.resultFormat = new QPushButton(bar);
+    m_status.resultPrecision = new QPushButton(bar);
     m_status.complexForm = new QPushButton(bar);
 
     m_status.angleUnit->setParent(m_status.angleUnitSection);
     m_status.resultFormat->setParent(m_status.resultFormatSection);
+    m_status.resultPrecision->setParent(m_status.resultPrecisionSection);
     m_status.complexForm->setParent(m_status.complexFormSection);
 
     QHBoxLayout* angleLayout = new QHBoxLayout(m_status.angleUnitSection);
     QHBoxLayout* formatLayout = new QHBoxLayout(m_status.resultFormatSection);
+    QHBoxLayout* precisionLayout = new QHBoxLayout(m_status.resultPrecisionSection);
     QHBoxLayout* complexFormLayout = new QHBoxLayout(m_status.complexFormSection);
     angleLayout->setContentsMargins(0, 0, 0, 0);
     formatLayout->setContentsMargins(0, 0, 0, 0);
+    precisionLayout->setContentsMargins(0, 0, 0, 0);
     complexFormLayout->setContentsMargins(0, 0, 0, 0);
     angleLayout->setSpacing(2);
     formatLayout->setSpacing(2);
+    precisionLayout->setSpacing(2);
     complexFormLayout->setSpacing(2);
     angleLayout->addWidget(m_status.angleUnitLabel);
     angleLayout->addWidget(m_status.angleUnit);
     formatLayout->addWidget(m_status.resultFormatLabel);
     formatLayout->addWidget(m_status.resultFormat);
+    precisionLayout->addWidget(m_status.resultPrecisionLabel);
+    precisionLayout->addWidget(m_status.resultPrecision);
     complexFormLayout->addWidget(m_status.complexFormLabel);
     complexFormLayout->addWidget(m_status.complexForm);
 
@@ -1235,20 +1257,25 @@ void MainWindow::createStatusBar()
     boldFont.setBold(true);
     m_status.angleUnitLabel->setFont(boldFont);
     m_status.resultFormatLabel->setFont(boldFont);
+    m_status.resultPrecisionLabel->setFont(boldFont);
     m_status.complexFormLabel->setFont(boldFont);
     m_status.angleUnitLabel->setCursor(Qt::PointingHandCursor);
     m_status.resultFormatLabel->setCursor(Qt::PointingHandCursor);
+    m_status.resultPrecisionLabel->setCursor(Qt::PointingHandCursor);
     m_status.complexFormLabel->setCursor(Qt::PointingHandCursor);
     m_status.angleUnitLabel->installEventFilter(this);
     m_status.resultFormatLabel->installEventFilter(this);
+    m_status.resultPrecisionLabel->installEventFilter(this);
     m_status.complexFormLabel->installEventFilter(this);
 
     m_status.angleUnit->setFocusPolicy(Qt::NoFocus);
     m_status.resultFormat->setFocusPolicy(Qt::NoFocus);
+    m_status.resultPrecision->setFocusPolicy(Qt::NoFocus);
     m_status.complexForm->setFocusPolicy(Qt::NoFocus);
 
     m_status.angleUnit->setFlat(true);
     m_status.resultFormat->setFlat(true);
+    m_status.resultPrecision->setFlat(true);
     m_status.complexForm->setFlat(true);
 
     m_status.angleUnit->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -1258,6 +1285,9 @@ void MainWindow::createStatusBar()
     m_status.resultFormat->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_status.resultFormat, SIGNAL(customContextMenuRequested(const QPoint&)),
         SLOT(showResultFormatContextMenu(const QPoint&)));
+    m_status.resultPrecision->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_status.resultPrecision, SIGNAL(customContextMenuRequested(const QPoint&)),
+        SLOT(showPrecisionContextMenu(const QPoint&)));
     m_status.complexForm->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_status.complexForm, SIGNAL(customContextMenuRequested(const QPoint&)),
         SLOT(showComplexFormContextMenu(const QPoint&)));
@@ -1268,11 +1298,15 @@ void MainWindow::createStatusBar()
     connect(m_status.resultFormat, &QPushButton::clicked, this, [this]() {
         showResultFormatContextMenu(QPoint(0, m_status.resultFormat->height()));
     });
+    connect(m_status.resultPrecision, &QPushButton::clicked, this, [this]() {
+        showPrecisionContextMenu(QPoint(0, m_status.resultPrecision->height()));
+    });
     connect(m_status.complexForm, &QPushButton::clicked, this, [this]() {
         showComplexFormContextMenu(QPoint(0, m_status.complexForm->height()));
     });
 
     bar->addWidget(m_status.resultFormatSection);
+    bar->addWidget(m_status.resultPrecisionSection);
     bar->addWidget(m_status.angleUnitSection);
     bar->addWidget(m_status.complexFormSection);
 
@@ -2089,6 +2123,9 @@ MainWindow::MainWindow()
     m_status.resultFormat = 0;
     m_status.resultFormatSection = 0;
     m_status.resultFormatLabel = 0;
+    m_status.resultPrecision = 0;
+    m_status.resultPrecisionSection = 0;
+    m_status.resultPrecisionLabel = 0;
     m_status.complexForm = 0;
     m_status.complexFormSection = 0;
     m_status.complexFormLabel = 0;
@@ -3225,7 +3262,8 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
         }
     }
 
-    if (o == m_status.angleUnitLabel || o == m_status.resultFormatLabel || o == m_status.complexFormLabel) {
+    if (o == m_status.angleUnitLabel || o == m_status.resultFormatLabel
+            || o == m_status.resultPrecisionLabel || o == m_status.complexFormLabel) {
         if (e->type() == QEvent::MouseButtonPress) {
             QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(e);
             if (mouseEvent->button() == Qt::LeftButton) {
@@ -3234,6 +3272,8 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
                     showAngleModeContextMenu(m_status.angleUnit->mapFromGlobal(static_cast<QWidget*>(o)->mapToGlobal(popupPoint)));
                 else if (o == m_status.complexFormLabel)
                     showComplexFormContextMenu(m_status.complexForm->mapFromGlobal(static_cast<QWidget*>(o)->mapToGlobal(popupPoint)));
+                else if (o == m_status.resultPrecisionLabel)
+                    showPrecisionContextMenu(m_status.resultPrecision->mapFromGlobal(static_cast<QWidget*>(o)->mapToGlobal(popupPoint)));
                 else
                     showResultFormatContextMenu(m_status.resultFormat->mapFromGlobal(static_cast<QWidget*>(o)->mapToGlobal(popupPoint)));
                 return true;
@@ -3244,6 +3284,8 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
                     showAngleModeContextMenu(m_status.angleUnit->mapFromGlobal(globalPoint));
                 else if (o == m_status.complexFormLabel)
                     showComplexFormContextMenu(m_status.complexForm->mapFromGlobal(globalPoint));
+                else if (o == m_status.resultPrecisionLabel)
+                    showPrecisionContextMenu(m_status.resultPrecision->mapFromGlobal(globalPoint));
                 else
                     showResultFormatContextMenu(m_status.resultFormat->mapFromGlobal(globalPoint));
                 return true;
@@ -3256,6 +3298,8 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
                 showAngleModeContextMenu(m_status.angleUnit->mapFromGlobal(globalPoint));
             else if (o == m_status.complexFormLabel)
                 showComplexFormContextMenu(m_status.complexForm->mapFromGlobal(globalPoint));
+            else if (o == m_status.resultPrecisionLabel)
+                showPrecisionContextMenu(m_status.resultPrecision->mapFromGlobal(globalPoint));
             else
                 showResultFormatContextMenu(m_status.resultFormat->mapFromGlobal(globalPoint));
             return true;
@@ -3349,6 +3393,10 @@ void MainWindow::deleteStatusBar()
     m_status.resultFormat = 0;
     m_status.resultFormatSection = 0;
     m_status.resultFormatLabel = 0;
+    m_status.resultPrecisionSection->deleteLater();
+    m_status.resultPrecision = 0;
+    m_status.resultPrecisionSection = 0;
+    m_status.resultPrecisionLabel = 0;
     m_status.complexFormSection->deleteLater();
     m_status.complexForm = 0;
     m_status.complexFormSection = 0;
@@ -4406,6 +4454,7 @@ void MainWindow::setResultPrecision(int p)
         return;
 
     m_settings->resultPrecision = p;
+    setStatusBarText();
     emit resultPrecisionChanged();
 }
 
@@ -4557,6 +4606,61 @@ void MainWindow::showLanguageChooserDialog()
 void MainWindow::showResultFormatContextMenu(const QPoint& point)
 {
     m_menus.resultFormat->popup(m_status.resultFormat->mapToGlobal(point));
+}
+
+void MainWindow::showPrecisionContextMenu(const QPoint& point)
+{
+    QMenu menu(this);
+    QActionGroup modeGroup(&menu);
+    modeGroup.setExclusive(true);
+
+    QAction* automaticAction = menu.addAction(MainWindow::tr("Automatic"));
+    automaticAction->setCheckable(true);
+    automaticAction->setChecked(m_settings->resultPrecision < 0);
+    modeGroup.addAction(automaticAction);
+    connect(automaticAction, &QAction::triggered, this, [this]() {
+        setResultPrecision(-1);
+    });
+
+    QAction* customAction = menu.addAction(MainWindow::tr("Custom"));
+    customAction->setCheckable(true);
+    customAction->setChecked(m_settings->resultPrecision >= 0);
+    modeGroup.addAction(customAction);
+
+    menu.addSeparator();
+
+    QWidget* precisionEditor = new QWidget(&menu);
+    QHBoxLayout* precisionLayout = new QHBoxLayout(precisionEditor);
+    precisionLayout->setContentsMargins(8, 4, 8, 4);
+    precisionLayout->setSpacing(6);
+
+    QLabel* precisionLabel = new QLabel(MainWindow::tr("Decimal places:"), precisionEditor);
+    QSpinBox* precisionSpin = new QSpinBox(precisionEditor);
+    precisionSpin->setRange(0, 50);
+    precisionSpin->setValue(m_settings->resultPrecision < 0 ? 8 : m_settings->resultPrecision);
+    precisionSpin->setEnabled(m_settings->resultPrecision >= 0);
+
+    connect(precisionSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int value) {
+        setResultPrecision(value);
+    });
+    connect(precisionSpin, QOverload<int>::of(&QSpinBox::valueChanged), customAction, [customAction](int) {
+        customAction->setChecked(true);
+    });
+    connect(customAction, &QAction::triggered, this, [this, precisionSpin]() {
+        setResultPrecision(precisionSpin->value());
+    });
+    connect(automaticAction, &QAction::toggled, precisionSpin, [precisionSpin](bool automatic) {
+        precisionSpin->setEnabled(!automatic);
+    });
+
+    precisionLayout->addWidget(precisionLabel);
+    precisionLayout->addWidget(precisionSpin);
+
+    QWidgetAction* editorAction = new QWidgetAction(&menu);
+    editorAction->setDefaultWidget(precisionEditor);
+    menu.addAction(editorAction);
+
+    menu.exec(m_status.resultPrecision->mapToGlobal(point));
 }
 
 void MainWindow::showComplexFormContextMenu(const QPoint& point)
