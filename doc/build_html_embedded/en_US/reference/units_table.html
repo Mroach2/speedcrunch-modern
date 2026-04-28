@@ -6,12 +6,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Units and Canonicalization</title>
+    <title>Built-in Units by Quantity</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/quark.css" />
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="next" title="Advanced Topics" href="../advanced/index.html" />
-    <link rel="prev" title="Constants" href="constants.html" />
     <link rel="stylesheet" href="../" type="text/css" />
 
   </head><body>
@@ -20,28 +18,16 @@
   <tr>
     <td width="50%">
       <a class="nav-item nav-item-0"
-         href="../contents.html">SpeedCrunch 1.0 documentation</a> &#187; <a class="nav-item nav-item-1"
-             href="index.html">Reference</a>
-          
+         href="../contents.html">SpeedCrunch 1.0 documentation</a>
     </td>
 
     <td align="right" width="50%">
       <a class="rel-item rel-item-1"
-           href="constants.html"
-           title="Constants"
-           accesskey="P">previous</a>
-         | 
-      <a class="rel-item rel-item-2"
-           href="../advanced/index.html"
-           title="Advanced Topics"
-           accesskey="N">next</a>
-         | 
-      <a class="rel-item rel-item-3"
            href="../sc-functionindex.html"
            title="Function Index"
            >functions</a>
          | 
-      <a class="rel-item rel-item-4"
+      <a class="rel-item rel-item-2"
            href="../genindex.html"
            title="General Index"
            accesskey="I">index</a>
@@ -58,88 +44,8 @@
       <div class="documentwrapper">
           <div class="body" role="main">
             
-  <section id="units-and-canonicalization">
-<h1>Units and Canonicalization</h1>
-<p>SpeedCrunch supports unit-aware arithmetic and conversions. Results are
-dimensionally consistent and then formatted with readability-oriented
-canonicalization rules.</p>
-<section id="display-policy">
-<h2>Display Policy</h2>
-<p>The formatter prefers meaningful derived units over full SI base expansion when
-that improves readability. For example:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">[kg*m*s^(-2)]</span></code> displays as <code class="docutils literal notranslate"><span class="pre">[N]</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">[kg*m^2*s^(-2)]</span></code> displays as <code class="docutils literal notranslate"><span class="pre">[J]</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">[kg*m^(-1)*s^(-2)]</span></code> displays as <code class="docutils literal notranslate"><span class="pre">[Pa]</span></code></p></li>
-</ul>
-<p>When a result is already expressed in a useful derived form, it is preserved:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">12[J]</span></code> stays <code class="docutils literal notranslate"><span class="pre">12[J]</span></code> (not <code class="docutils literal notranslate"><span class="pre">12[N⋅m]</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">2[J]</span> <span class="pre">+</span> <span class="pre">3[J]</span></code> displays as <code class="docutils literal notranslate"><span class="pre">5[J]</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">2[W*h]</span></code> stays in <code class="docutils literal notranslate"><span class="pre">W⋅h</span></code> context instead of being expanded unnecessarily</p></li>
-</ul>
-<p>SpeedCrunch also avoids forcing a semantic choice when dimensions are
-equivalent but context differs. A common example is <code class="docutils literal notranslate"><span class="pre">N⋅m</span></code>: it can represent
-torque, while <code class="docutils literal notranslate"><span class="pre">J</span></code> typically represents energy. Without an explicit conversion
-request, SpeedCrunch preserves authored intent rather than silently replacing one
-with the other.</p>
-<p>When negative exponents appear together with positive ones, SpeedCrunch may
-render denominator form for readability:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">C⁴⋅m⁴⋅J⁻³</span></code> may display as <code class="docutils literal notranslate"><span class="pre">C⁴⋅m⁴</span> <span class="pre">/</span> <span class="pre">J³</span></code></p></li>
-</ul>
-</section>
-<section id="unit-exponent-style">
-<h2>Unit Exponent Style</h2>
-<p>In <span class="menuselection">Settings ‣ Results</span>, SpeedCrunch provides a
-<code class="docutils literal notranslate"><span class="pre">Unit</span> <span class="pre">Exponent</span> <span class="pre">Style</span></code> submenu with two display styles:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Superscript</span> <span class="pre">Exponents</span></code> (default): keeps products with signed exponents,
-such as <code class="docutils literal notranslate"><span class="pre">kg⋅m²⋅s⁻³</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Fraction</span> <span class="pre">Form</span></code>: moves negative exponents to the denominator when there is
-at least one positive exponent, such as <code class="docutils literal notranslate"><span class="pre">kg⋅m²</span> <span class="pre">/</span> <span class="pre">s³</span></code>.</p></li>
-</ul>
-<p>This is a display preference only; numeric values and dimensions are unchanged.</p>
-</section>
-<section id="composed-units">
-<h2>Composed Units</h2>
-<p>For products and quotients, SpeedCrunch keeps authored composite structure where
-possible, unless a clear canonical derived target is recognized.</p>
-<p>Examples that canonicalize:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">V*A</span> <span class="pre">-&gt;</span> <span class="pre">W</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">F*V</span> <span class="pre">-&gt;</span> <span class="pre">C</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">V*s</span> <span class="pre">-&gt;</span> <span class="pre">Wb</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T*m^2</span> <span class="pre">-&gt;</span> <span class="pre">Wb</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Pa*m^2</span> <span class="pre">-&gt;</span> <span class="pre">N</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">J/s</span> <span class="pre">-&gt;</span> <span class="pre">W</span></code></p></li>
-</ul>
-<p>Examples that preserve composite intent:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">J*Pa</span></code> remains a composed derived expression, because there is no single
-broadly expected named SI derived unit for this product and preserving the
-authored structure is more readable than base expansion.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">N*W</span></code> remains a composed derived expression for the same reason: no common
-canonical named unit is generally expected by users for this product.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">W*h</span></code> remains in <code class="docutils literal notranslate"><span class="pre">W⋅h</span></code> form because it is a common domain unit for energy
-usage; preserving <code class="docutils literal notranslate"><span class="pre">h</span></code> keeps the practical meaning users typically intend.</p></li>
-</ul>
-</section>
-<section id="conversions">
-<h2>Conversions</h2>
-<p>Use explicit conversion to request a specific target unit expression:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">[N*m]</span> <span class="pre">-&gt;</span> <span class="pre">[J]</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">[J/s]</span> <span class="pre">-&gt;</span> <span class="pre">[W]</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">[V]</span> <span class="pre">-&gt;</span> <span class="pre">[J/C]</span></code></p></li>
-</ul>
-<p>If no explicit conversion target is requested, SpeedCrunch applies the
-canonicalization/display policy above.</p>
-</section>
-<section id="built-in-units-table">
-<h2>Built-in Units Table</h2>
-<section id="built-in-units-by-quantity">
-<h3>Built-in Units by Quantity</h3>
+  <section id="built-in-units-by-quantity">
+<h1>Built-in Units by Quantity</h1>
 <p>Column meanings:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Canonical</span> <span class="pre">name</span></code>: long built-in unit name.</p></li>
@@ -147,7 +53,7 @@ canonicalization/display policy above.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">Symbol</span> <span class="pre">aliases</span></code>: accepted alternate symbols/aliases.</p></li>
 </ul>
 <section id="absorbed-dose">
-<h4>Absorbed Dose</h4>
+<h2>Absorbed Dose</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -164,7 +70,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="activity-referred-to-a-radionuclide">
-<h4>Activity Referred To A Radionuclide</h4>
+<h2>Activity Referred To A Radionuclide</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -181,7 +87,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="amount-of-heat">
-<h4>Amount Of Heat</h4>
+<h2>Amount Of Heat</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -214,7 +120,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="amount-of-substance">
-<h4>Amount Of Substance</h4>
+<h2>Amount Of Substance</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -231,7 +137,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="area">
-<h4>Area</h4>
+<h2>Area</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -280,7 +186,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="capacitance">
-<h4>Capacitance</h4>
+<h2>Capacitance</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -297,7 +203,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="catalytic-activity">
-<h4>Catalytic Activity</h4>
+<h2>Catalytic Activity</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -314,7 +220,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="dose-equivalent">
-<h4>Dose Equivalent</h4>
+<h2>Dose Equivalent</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -331,7 +237,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="electric">
-<h4>Electric</h4>
+<h2>Electric</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -364,7 +270,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="energy">
-<h4>Energy</h4>
+<h2>Energy</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -393,7 +299,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="force">
-<h4>Force</h4>
+<h2>Force</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -410,7 +316,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="frequency">
-<h4>Frequency</h4>
+<h2>Frequency</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -431,7 +337,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="illuminance">
-<h4>Illuminance</h4>
+<h2>Illuminance</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -448,7 +354,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="inductance">
-<h4>Inductance</h4>
+<h2>Inductance</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -465,7 +371,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="information">
-<h4>Information</h4>
+<h2>Information</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -494,7 +400,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="kerma">
-<h4>Kerma</h4>
+<h2>Kerma</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -511,7 +417,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="length">
-<h4>Length</h4>
+<h2>Length</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -584,7 +490,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="luminous-flux">
-<h4>Luminous Flux</h4>
+<h2>Luminous Flux</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -601,7 +507,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="luminous-intensity">
-<h4>Luminous Intensity</h4>
+<h2>Luminous Intensity</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -618,7 +524,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="magnetic-flux">
-<h4>Magnetic Flux</h4>
+<h2>Magnetic Flux</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -635,7 +541,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="magnetic-flux-density">
-<h4>Magnetic Flux Density</h4>
+<h2>Magnetic Flux Density</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -652,7 +558,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="mass">
-<h4>Mass</h4>
+<h2>Mass</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -717,7 +623,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="plane-angle">
-<h4>Plane Angle</h4>
+<h2>Plane Angle</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -766,7 +672,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="power">
-<h4>Power</h4>
+<h2>Power</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -787,7 +693,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="pressure">
-<h4>Pressure</h4>
+<h2>Pressure</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -824,7 +730,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="radiant-flux">
-<h4>Radiant Flux</h4>
+<h2>Radiant Flux</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -841,7 +747,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="solid-angle">
-<h4>Solid Angle</h4>
+<h2>Solid Angle</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -858,7 +764,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="speed">
-<h4>Speed</h4>
+<h2>Speed</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -883,7 +789,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="stress">
-<h4>Stress</h4>
+<h2>Stress</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -900,7 +806,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="temperature">
-<h4>Temperature</h4>
+<h2>Temperature</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -925,7 +831,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="time">
-<h4>Time</h4>
+<h2>Time</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -970,7 +876,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="velocity">
-<h4>Velocity</h4>
+<h2>Velocity</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -995,7 +901,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="volume">
-<h4>Volume</h4>
+<h2>Volume</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -1152,7 +1058,7 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 <section id="work">
-<h4>Work</h4>
+<h2>Work</h2>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Canonical name</p></th>
@@ -1173,8 +1079,6 @@ canonicalization/display policy above.</p>
 </table>
 </section>
 </section>
-</section>
-</section>
 
 
             <div class="clearer"></div>
@@ -1187,28 +1091,16 @@ canonicalization/display policy above.</p>
   <tr>
     <td width="50%">
       <a class="nav-item nav-item-0"
-         href="../contents.html">SpeedCrunch 1.0 documentation</a> &#187; <a class="nav-item nav-item-1"
-             href="index.html">Reference</a>
-          
+         href="../contents.html">SpeedCrunch 1.0 documentation</a>
     </td>
 
     <td align="right" width="50%">
       <a class="rel-item rel-item-1"
-           href="constants.html"
-           title="Constants"
-           >previous</a>
-         | 
-      <a class="rel-item rel-item-2"
-           href="../advanced/index.html"
-           title="Advanced Topics"
-           >next</a>
-         | 
-      <a class="rel-item rel-item-3"
            href="../sc-functionindex.html"
            title="Function Index"
            >functions</a>
          | 
-      <a class="rel-item rel-item-4"
+      <a class="rel-item rel-item-2"
            href="../genindex.html"
            title="General Index"
            >index</a>

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>User-Defined Variables and Functions</title>
+    <title>User-Defined Variables, Functions and Units</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/quark.css" />
     <link rel="index" title="Index" href="../genindex.html" />
@@ -58,8 +58,8 @@
       <div class="documentwrapper">
           <div class="body" role="main">
             
-  <section id="user-defined-variables-and-functions">
-<h1>User-Defined Variables and Functions</h1>
+  <section id="user-defined-variables-functions-and-units">
+<h1>User-Defined Variables, Functions and Units</h1>
 <section id="variables">
 <span id="id1"></span><h2>Variables</h2>
 <p>When working on more sophisticated problems, you will likely find that you frequently need to access
@@ -120,9 +120,169 @@ your own functions can be very useful when you find yourself repeating a similar
 </pre></div>
 </div>
 </td></tr></tbody></table></section>
+<section id="units">
+<span id="id3"></span><h2>Units</h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 0.12.</span></p>
+</div>
+<p>SpeedCrunch includes a powerful system for units and unit conversions. It provides an extensive list of built-in units and easily allows you to define your own.</p>
+<p>Units are attached to the term on their left using square brackets:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">5</span> <span class="p">[</span><span class="n">ft</span><span class="p">]</span>
+<span class="ge">= 1.524 [m]</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><p>If the left-hand side is parenthesized, the bracket applies to the whole parenthesized expression:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">5</span><span class="o">+</span><span class="mi">6</span><span class="p">)[</span><span class="n">ly</span><span class="p">]</span>
+<span class="ge">= 11 [ly]</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><p>By default SpeedCrunch converts the quantity into SI units:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">60</span><span class="p">[</span><span class="n">mi</span><span class="o">/</span><span class="n">h</span><span class="p">]</span>
+<span class="ge">= 26.8224 [m⋅s⁻¹]</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><p>This alone would not be terribly useful. However, it is possible to convert the value to a different unit using the conversion operator <code class="docutils literal notranslate"><span class="pre">-&gt;</span></code>
+(<code class="docutils literal notranslate"><span class="pre">in</span></code> can be used as an alias):</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">50</span><span class="p">[</span><span class="n">yd</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">[</span><span class="n">ft</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="n">cm</span><span class="p">]</span>
+<span class="ge">= 4632.96 [cm]</span>
+
+<span class="mi">10</span><span class="p">[</span><span class="n">kn</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">km</span><span class="o">/</span><span class="n">h</span><span class="p">]</span>
+<span class="ge">= 18.52 [km/h]</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><p>Displayed value-unit formatting uses a narrow no-break space (U+202F) between
+the numeric value and the unit block, for example <code class="docutils literal notranslate"><span class="pre">1.23 [m]</span></code>. Input
+accepts unit attachment with or without that separator (for example both
+<code class="docutils literal notranslate"><span class="pre">1[m]</span></code> and <code class="docutils literal notranslate"><span class="pre">1 [m]</span></code>).</p>
+<p>In the result display, final value-with-unit result lines are shown without
+unit brackets (for example <code class="docutils literal notranslate"><span class="pre">1.23 m</span></code>) to improve readability. Interpreted
+and simplified expression lines keep bracketed units (for example <code class="docutils literal notranslate"><span class="pre">→</span> <span class="pre">[m]</span></code>)
+so conversion targets remain explicit. When a result is inserted back into the
+editor (for example by double-clicking), SpeedCrunch uses canonical bracketed
+unit syntax again.</p>
+<p>Note that all built-in unit names are singular and use American English spelling. This is independent of the language selected for SpeedCrunch’s interface.</p>
+<p>As seen in the example above, you can use any SI prefixes such as <code class="docutils literal notranslate"><span class="pre">k</span></code> or <code class="docutils literal notranslate"><span class="pre">c</span></code>.
+They are treated like any other unit, so separate them with a space from the base unit they refer to inside brackets.
+For astronomical distances, <code class="docutils literal notranslate"><span class="pre">pc</span></code> supports positive SI-prefixed forms such as <code class="docutils literal notranslate"><span class="pre">kpc</span></code> and <code class="docutils literal notranslate"><span class="pre">Mpc</span></code>.</p>
+<p>Since units are now explicit in brackets, short identifiers such as <code class="docutils literal notranslate"><span class="pre">a</span></code>, <code class="docutils literal notranslate"><span class="pre">mg</span></code> and <code class="docutils literal notranslate"><span class="pre">l</span></code> are free to use as variable names without conflicting with units.</p>
+</section>
+<section id="information-units-bit-byte">
+<h2>Information units (bit/byte)</h2>
+<p>For the information dimension, SpeedCrunch supports both <code class="docutils literal notranslate"><span class="pre">bit</span></code> (short form <code class="docutils literal notranslate"><span class="pre">b</span></code>)
+and <code class="docutils literal notranslate"><span class="pre">byte</span></code> (short form <code class="docutils literal notranslate"><span class="pre">B</span></code>).</p>
+<section id="prefixes">
+<h3>Prefixes</h3>
+<p>Positive SI prefixes are accepted for both families (for example <code class="docutils literal notranslate"><span class="pre">kB</span></code>, <code class="docutils literal notranslate"><span class="pre">MB</span></code>,
+<code class="docutils literal notranslate"><span class="pre">kb</span></code>, <code class="docutils literal notranslate"><span class="pre">Mb</span></code>), while negative SI prefixes are rejected.</p>
+</section>
+<section id="family-mixing-rules">
+<h3>Family mixing rules</h3>
+<p>When adding/subtracting information quantities, SpeedCrunch does not implicitly mix
+bit-family and byte-family values. Use an explicit conversion if you want to switch
+family:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span><span class="p">[</span><span class="n">B</span><span class="p">]</span> <span class="o">+</span> <span class="mi">8</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
+<span class="ge">= error</span>
+
+<span class="mi">1</span><span class="p">[</span><span class="n">B</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">8</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">B</span><span class="p">])</span>
+<span class="ge">= 2 [B]</span>
+</pre></div>
+</div>
+</td></tr></tbody></table></section>
+<section id="result-unit-selection">
+<h3>Result unit selection</h3>
+<p>For sums inside the same family, the displayed result keeps the coarsest unit used
+in the expression:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">2</span><span class="p">[</span><span class="n">MB</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span><span class="p">[</span><span class="n">PB</span><span class="p">]</span> <span class="o">+</span> <span class="mi">4</span><span class="p">[</span><span class="n">TB</span><span class="p">]</span>
+<span class="ge">= 3.004000002 [PB]</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><table class="-x-quark-box -x-quark-admonition -x-quark-warning"><tbody><tr><td width="100%" class="-x-quark-box-td"><div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Prefixes cannot be used on their own. Always attach them to a unit symbol.
+For instance, if you intend to express the unit ‘newtons per centimeter’, do not type <code class="docutils literal notranslate"><span class="pre">[N</span> <span class="pre">/</span> <span class="pre">c</span> <span class="pre">m]</span></code>. Make the order explicit with <code class="docutils literal notranslate"><span class="pre">[N</span> <span class="pre">/</span> <span class="pre">(cm)]</span></code>.</p>
+</div>
+</td></tr></tbody></table><p>An important feature of SpeedCrunch’s unit system is <em>dimensional checking</em>. Simply put, it prevents comparing apples and pears: if you try to convert <code class="docutils literal notranslate"><span class="pre">[s]</span></code> to <code class="docutils literal notranslate"><span class="pre">[m]</span></code>, SpeedCrunch will complain, stating that the dimensions do not match. Indeed, the dimension of <code class="docutils literal notranslate"><span class="pre">s</span></code> is <em>time</em>, while <code class="docutils literal notranslate"><span class="pre">m</span></code> denotes a <em>length</em>, thus they cannot be compared, added, etc. When adding, multiplying, or otherwise manipulating units, SpeedCrunch will track the dimension and raise an error if it detects an invalid operation. For instance, if you type <code class="docutils literal notranslate"><span class="pre">[m^2]</span></code>, the result will be a quantity with the dimension <em>length</em><sup>2</sup> which can only be compared to other quantities with the same dimension. Currently, the available dimensions and their associated primitive units are:</p>
+<ul class="simple">
+<li><p><em>Length</em>: <code class="docutils literal notranslate"><span class="pre">m</span></code></p></li>
+<li><p><em>Mass</em>: <code class="docutils literal notranslate"><span class="pre">kg</span></code></p></li>
+<li><p><em>Time</em>: <code class="docutils literal notranslate"><span class="pre">s</span></code></p></li>
+<li><p><em>Electric current</em>: <code class="docutils literal notranslate"><span class="pre">A</span></code></p></li>
+<li><p><em>Amount</em>: <code class="docutils literal notranslate"><span class="pre">mol</span></code></p></li>
+<li><p><em>Luminous intensity</em>: <code class="docutils literal notranslate"><span class="pre">cd</span></code></p></li>
+<li><p><em>Temperature</em>: <code class="docutils literal notranslate"><span class="pre">K</span></code></p></li>
+<li><p><em>Information</em>: <code class="docutils literal notranslate"><span class="pre">b</span></code></p></li>
+</ul>
+<p>Temperature conversions also support the affine scales <code class="docutils literal notranslate"><span class="pre">degree_celsius</span></code> (short form
+<code class="docutils literal notranslate"><span class="pre">°C</span></code>) and <code class="docutils literal notranslate"><span class="pre">degree_fahrenheit</span></code> (short form <code class="docutils literal notranslate"><span class="pre">°F</span></code>). The input aliases <code class="docutils literal notranslate"><span class="pre">ºC</span></code>,
+<code class="docutils literal notranslate"><span class="pre">˚C</span></code>, <code class="docutils literal notranslate"><span class="pre">ºF</span></code> and <code class="docutils literal notranslate"><span class="pre">˚F</span></code> are accepted and normalized to <code class="docutils literal notranslate"><span class="pre">°C</span></code> and <code class="docutils literal notranslate"><span class="pre">°F</span></code>:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">77 </span><span class="p">[</span><span class="o">°</span><span class="n">F</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="o">°</span><span class="n">C</span><span class="p">]</span>
+<span class="ge">= 25 [°C]</span>
+
+<span class="mi">25 </span><span class="p">[</span><span class="o">°</span><span class="n">C</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">K</span><span class="p">]</span>
+<span class="ge">= 298.15 [K]</span>
+
+<span class="mf">298.15 </span><span class="p">[</span><span class="n">K</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="o">°</span><span class="n">C</span><span class="p">]</span>
+<span class="ge">= 25 [°C]</span>
+
+<span class="mi">77 </span><span class="p">[</span><span class="o">°</span><span class="n">F</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="o">°</span><span class="n">C</span><span class="p">]</span>
+<span class="ge">= 25 [°C]</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><p>Defining a custom unit uses bracketed unit assignment:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">earth_radius</span><span class="p">]</span> <span class="o">=</span> <span class="mi">6730</span><span class="p">[</span><span class="n">km</span><span class="p">]</span>
+
+<span class="mf">3.5</span><span class="p">[</span><span class="n">au</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="n">earth_radius</span><span class="p">]</span>
+<span class="ge">= 77799.78416790490341753343 [earth_radius]</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><p>Any variable or expression can be used as the right-hand side of a conversion expression:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">10</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">[</span><span class="n">yd</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">[</span><span class="n">ft</span><span class="p">])</span>
+<span class="ge">= 6.56167979002624671916 (1[yd] + 2[ft])</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><p>Use unit symbols by default (for example <code class="docutils literal notranslate"><span class="pre">m</span></code>, <code class="docutils literal notranslate"><span class="pre">s</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, <code class="docutils literal notranslate"><span class="pre">b</span></code>). Full
+built-in names are accepted as an alternative input form.</p>
+<p>Built-in short forms include:</p>
+<ul class="simple">
+<li><p>Length/astronomy: <code class="docutils literal notranslate"><span class="pre">au</span></code> (<code class="docutils literal notranslate"><span class="pre">astronomical_unit</span></code>), <code class="docutils literal notranslate"><span class="pre">ly</span></code> (<code class="docutils literal notranslate"><span class="pre">lightyear</span></code>),
+<code class="docutils literal notranslate"><span class="pre">ls</span></code> (<code class="docutils literal notranslate"><span class="pre">lightsecond</span></code>), <code class="docutils literal notranslate"><span class="pre">lmin</span></code> (<code class="docutils literal notranslate"><span class="pre">lightminute</span></code>), <code class="docutils literal notranslate"><span class="pre">pc</span></code> (<code class="docutils literal notranslate"><span class="pre">parsec</span></code>),
+<code class="docutils literal notranslate"><span class="pre">in</span></code> (<code class="docutils literal notranslate"><span class="pre">inch</span></code>), <code class="docutils literal notranslate"><span class="pre">ft</span></code> (<code class="docutils literal notranslate"><span class="pre">foot</span></code>).</p></li>
+<li><p>Time: <code class="docutils literal notranslate"><span class="pre">min</span></code> (<code class="docutils literal notranslate"><span class="pre">minute</span></code>), <code class="docutils literal notranslate"><span class="pre">h</span></code> (<code class="docutils literal notranslate"><span class="pre">hour</span></code>), <code class="docutils literal notranslate"><span class="pre">cy</span></code> (<code class="docutils literal notranslate"><span class="pre">century</span></code>).</p></li>
+<li><p>Angle: <code class="docutils literal notranslate"><span class="pre">deg</span></code> (<code class="docutils literal notranslate"><span class="pre">degree</span></code>), <code class="docutils literal notranslate"><span class="pre">gon</span></code> (<code class="docutils literal notranslate"><span class="pre">gradian</span></code>).</p></li>
+<li><p>Information: <code class="docutils literal notranslate"><span class="pre">b</span></code> (<code class="docutils literal notranslate"><span class="pre">bit</span></code>), <code class="docutils literal notranslate"><span class="pre">B</span></code> (<code class="docutils literal notranslate"><span class="pre">byte</span></code>).</p></li>
+<li><p>Other common aliases: <code class="docutils literal notranslate"><span class="pre">u</span></code>/<code class="docutils literal notranslate"><span class="pre">Da</span></code> (<code class="docutils literal notranslate"><span class="pre">atomic_mass_unit</span></code>), <code class="docutils literal notranslate"><span class="pre">nmi</span></code> (<code class="docutils literal notranslate"><span class="pre">nautical_mile</span></code>).</p></li>
+</ul>
+<p>For units that allow prefixes, the same short forms can be used in prefixed
+form as well (for example <code class="docutils literal notranslate"><span class="pre">kpc</span></code>, <code class="docutils literal notranslate"><span class="pre">Mpc</span></code>, <code class="docutils literal notranslate"><span class="pre">MB</span></code>, <code class="docutils literal notranslate"><span class="pre">kb</span></code>).
+Common examples include <code class="docutils literal notranslate"><span class="pre">mm</span></code>, <code class="docutils literal notranslate"><span class="pre">cm</span></code>, <code class="docutils literal notranslate"><span class="pre">km</span></code>, <code class="docutils literal notranslate"><span class="pre">mg</span></code>, <code class="docutils literal notranslate"><span class="pre">kg</span></code>, <code class="docutils literal notranslate"><span class="pre">mV</span></code>,
+<code class="docutils literal notranslate"><span class="pre">kW</span></code>, <code class="docutils literal notranslate"><span class="pre">MeV</span></code>, <code class="docutils literal notranslate"><span class="pre">dL</span></code> and <code class="docutils literal notranslate"><span class="pre">dl</span></code>.</p>
+<p>SI-accepted mass unit <code class="docutils literal notranslate"><span class="pre">t</span></code> (full name <code class="docutils literal notranslate"><span class="pre">tonne</span></code>) is available and equals
+<code class="docutils literal notranslate"><span class="pre">1000[kg]</span></code>:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">kg</span><span class="p">]</span>
+<span class="ge">= 1000 [kg]</span>
+
+<span class="mi">1000</span><span class="p">[</span><span class="n">kg</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">t</span><span class="p">]</span>
+<span class="ge">= 1 [t]</span>
+</pre></div>
+</div>
+</td></tr></tbody></table></section>
+</section>
+<section id="user-units">
+<span id="id4"></span><h2>User Units</h2>
+<p>You can define your own unit identifiers using square brackets on the left-hand side:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">two_cubic_metres</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">[</span><span class="n">m</span><span class="o">^</span><span class="mi">3</span><span class="p">]</span>
+<span class="p">[</span><span class="n">ten_metres</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
+<span class="p">[</span><span class="n">cm_s</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">cm</span><span class="o">/</span><span class="n">s</span><span class="p">]</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><p>User unit definitions can also include a trailing comment:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">cm_s</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">cm</span><span class="o">/</span><span class="n">s</span><span class="p">]</span> <span class="c">? centimeters per second</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><p>Like user variables and functions, comments are shown in the corresponding dock widget and in autocomplete suggestions.</p>
 </section>
 <section id="complex-numbers">
-<span id="id3"></span><h1>Complex numbers</h1>
+<span id="id5"></span><h2>Complex numbers</h2>
 <div class="versionadded">
 <p><span class="versionmodified added">New in version 0.12.</span></p>
 </div>
@@ -144,134 +304,6 @@ In <em>real mode</em>, <code class="docutils literal notranslate"><span class="p
 otherwise the result is <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.</p>
 <p>When complex numbers are disabled, the imaginary-unit constants <a class="reference internal" href="../reference/constants.html#sc.i" title="i"><code class="xref sc sc-const docutils literal notranslate"><span class="pre">i</span></code></a> and <a class="reference internal" href="../reference/constants.html#sc.j" title="j"><code class="xref sc sc-const docutils literal notranslate"><span class="pre">j</span></code></a> are not available. However, previously stored variables may still contain complex values.
 In that case, the imaginary part of these numbers is discarded when passing them as an argument to a built-in function.</p>
-</section>
-<section id="units">
-<span id="id4"></span><h1>Units</h1>
-<div class="versionadded">
-<p><span class="versionmodified added">New in version 0.12.</span></p>
-</div>
-<p>SpeedCrunch includes a powerful system for units and unit conversions. It provides an extensive list of built-in units and easily allows you to define your own.</p>
-<p>Units are attached to the term on their left using square brackets:</p>
-<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">5</span><span class="p">[</span><span class="n">foot</span><span class="p">]</span>
-<span class="ge">= 1.524 [meter]</span>
-</pre></div>
-</div>
-</td></tr></tbody></table><p>If the left-hand side is parenthesized, the bracket applies to the whole parenthesized expression:</p>
-<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">5</span><span class="o">+</span><span class="mi">6</span><span class="p">)[</span><span class="n">lightyear</span><span class="p">]</span>
-<span class="ge">= 11 [lightyear]</span>
-</pre></div>
-</div>
-</td></tr></tbody></table><p>By default SpeedCrunch converts the quantity into SI units:</p>
-<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">60</span><span class="p">[</span><span class="n">mile</span><span class="o">/</span><span class="n">hour</span><span class="p">]</span>
-<span class="ge">= 26.8224 [meter⋅second⁻¹]</span>
-</pre></div>
-</div>
-</td></tr></tbody></table><p>This alone would not be terribly useful. However, it is possible to convert the value to a different unit using the conversion operator <code class="docutils literal notranslate"><span class="pre">-&gt;</span></code>
-(<code class="docutils literal notranslate"><span class="pre">in</span></code> can be used as an alias):</p>
-<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">50</span><span class="p">[</span><span class="n">yard</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">[</span><span class="n">foot</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="n">centi</span> <span class="n">meter</span><span class="p">]</span>
-<span class="ge">= 4632.96 [centi⋅meter]</span>
-
-<span class="mi">10</span><span class="p">[</span><span class="n">knot</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">kilo</span> <span class="n">meter</span> <span class="o">/</span> <span class="n">hour</span><span class="p">]</span>
-<span class="ge">= 18.52 [kilo⋅meter / hour]</span>
-</pre></div>
-</div>
-</td></tr></tbody></table><p>Displayed value-unit formatting uses a narrow no-break space (U+202F) between
-the numeric value and the unit block, for example <code class="docutils literal notranslate"><span class="pre">1.23 [meter]</span></code>. Input
-accepts unit attachment with or without that separator (for example both
-<code class="docutils literal notranslate"><span class="pre">1[meter]</span></code> and <code class="docutils literal notranslate"><span class="pre">1 [meter]</span></code>).</p>
-<p>Note that all built-in unit names are singular and use American English spelling. This is independent of the language selected for SpeedCrunch’s interface.</p>
-<p>As seen in the example above, you can use any SI prefix like <code class="docutils literal notranslate"><span class="pre">kilo</span></code> or <code class="docutils literal notranslate"><span class="pre">centi</span></code>.
-They are treated like any other unit, so separate them with a space from the base unit they refer to inside brackets.
-For astronomical distances, <code class="docutils literal notranslate"><span class="pre">parsec</span></code> also supports positive SI-prefixed short forms such as <code class="docutils literal notranslate"><span class="pre">kpc</span></code> and <code class="docutils literal notranslate"><span class="pre">Mpc</span></code>.</p>
-<p>Since units are now explicit in brackets, short identifiers such as <code class="docutils literal notranslate"><span class="pre">a</span></code>, <code class="docutils literal notranslate"><span class="pre">mg</span></code> and <code class="docutils literal notranslate"><span class="pre">l</span></code> are free to use as variable names without conflicting with units.</p>
-<section id="information-units-bit-byte">
-<h2>Information units (bit/byte)</h2>
-<p>For the information dimension, SpeedCrunch supports both <code class="docutils literal notranslate"><span class="pre">bit</span></code> (short form <code class="docutils literal notranslate"><span class="pre">b</span></code>)
-and <code class="docutils literal notranslate"><span class="pre">byte</span></code> (short form <code class="docutils literal notranslate"><span class="pre">B</span></code>).</p>
-<p>Positive SI prefixes are accepted for both families (for example <code class="docutils literal notranslate"><span class="pre">kB</span></code>, <code class="docutils literal notranslate"><span class="pre">MB</span></code>,
-<code class="docutils literal notranslate"><span class="pre">kb</span></code>, <code class="docutils literal notranslate"><span class="pre">Mb</span></code>), while negative SI prefixes are rejected.</p>
-<p>When adding/subtracting information quantities, SpeedCrunch does not implicitly mix
-bit-family and byte-family values. Use an explicit conversion if you want to switch
-family:</p>
-<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span><span class="p">[</span><span class="n">B</span><span class="p">]</span> <span class="o">+</span> <span class="mi">8</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
-<span class="ge">= error</span>
-
-<span class="mi">1</span><span class="p">[</span><span class="n">B</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">8</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">B</span><span class="p">])</span>
-<span class="ge">= 2 [B]</span>
-</pre></div>
-</div>
-</td></tr></tbody></table><p>For sums inside the same family, the displayed result keeps the coarsest unit used
-in the expression:</p>
-<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">2</span><span class="p">[</span><span class="n">MB</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span><span class="p">[</span><span class="n">PB</span><span class="p">]</span> <span class="o">+</span> <span class="mi">4</span><span class="p">[</span><span class="n">TB</span><span class="p">]</span>
-<span class="ge">= 3.004000002 [PB]</span>
-</pre></div>
-</div>
-</td></tr></tbody></table><table class="-x-quark-box -x-quark-admonition -x-quark-warning"><tbody><tr><td width="100%" class="-x-quark-box-td"><div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>In SpeedCrunch (unlike in textbook notation), prefixes can be used on their own (for example <code class="docutils literal notranslate"><span class="pre">[kilo]</span></code>). Their use follows the same rules of precedence as any other mathematical operation.
-For instance, if you intend to express the unit ‘newtons per centimeter’, do not type <code class="docutils literal notranslate"><span class="pre">[newton</span> <span class="pre">/</span> <span class="pre">centi</span> <span class="pre">meter]</span></code>. Make the order explicit with <code class="docutils literal notranslate"><span class="pre">[newton</span> <span class="pre">/</span> <span class="pre">(centi</span> <span class="pre">meter)]</span></code>.</p>
-</div>
-</td></tr></tbody></table><p>An important feature of SpeedCrunch’s unit system is <em>dimensional checking</em>. Simply put, it prevents comparing apples and pears: if you try to convert <code class="docutils literal notranslate"><span class="pre">[second]</span></code> to <code class="docutils literal notranslate"><span class="pre">[meter]</span></code>, SpeedCrunch will complain, stating that the dimensions do not match. Indeed, the dimension of <code class="docutils literal notranslate"><span class="pre">second</span></code> is <em>time</em>, while <code class="docutils literal notranslate"><span class="pre">meter</span></code> denotes a <em>length</em>, thus they cannot be compared, added, etc. When adding, multiplying, or otherwise manipulating units, SpeedCrunch will track the dimension and raise an error if it detects an invalid operation. For instance, if you type <code class="docutils literal notranslate"><span class="pre">[meter^2]</span></code>, the result will be a quantity with the dimension <em>length</em><sup>2</sup> which can only be compared to other quantities with the same dimension. Currently, the available dimensions and their associated primitive units are:</p>
-<ul class="simple">
-<li><p><em>Length</em>: <code class="docutils literal notranslate"><span class="pre">meter</span></code></p></li>
-<li><p><em>Mass</em>: <code class="docutils literal notranslate"><span class="pre">kilogram</span></code></p></li>
-<li><p><em>Time</em>: <code class="docutils literal notranslate"><span class="pre">second</span></code></p></li>
-<li><p><em>Electric current</em>: <code class="docutils literal notranslate"><span class="pre">ampere</span></code></p></li>
-<li><p><em>Amount</em>: <code class="docutils literal notranslate"><span class="pre">mole</span></code></p></li>
-<li><p><em>Luminous intensity</em>: <code class="docutils literal notranslate"><span class="pre">candela</span></code></p></li>
-<li><p><em>Temperature</em>: <code class="docutils literal notranslate"><span class="pre">kelvin</span></code></p></li>
-<li><p><em>Information</em>: <code class="docutils literal notranslate"><span class="pre">bit</span></code></p></li>
-</ul>
-<p>Temperature conversions also support the affine scales <code class="docutils literal notranslate"><span class="pre">celsius</span></code> (short form
-<code class="docutils literal notranslate"><span class="pre">°C</span></code>) and <code class="docutils literal notranslate"><span class="pre">fahrenheit</span></code> (short form <code class="docutils literal notranslate"><span class="pre">°F</span></code>). The input aliases <code class="docutils literal notranslate"><span class="pre">ºC</span></code> and
-<code class="docutils literal notranslate"><span class="pre">ºF</span></code> are accepted and normalized to <code class="docutils literal notranslate"><span class="pre">°C</span></code> and <code class="docutils literal notranslate"><span class="pre">°F</span></code>:</p>
-<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">77 </span><span class="p">[</span><span class="o">°</span><span class="n">F</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="o">°</span><span class="n">C</span><span class="p">]</span>
-<span class="ge">= 25 [°C]</span>
-
-<span class="mi">25 </span><span class="p">[</span><span class="n">celsius</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">K</span><span class="p">]</span>
-<span class="ge">= 298.15 [K]</span>
-
-<span class="mf">298.15 </span><span class="p">[</span><span class="n">K</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">celsius</span><span class="p">]</span>
-<span class="ge">= 25 [celsius]</span>
-
-<span class="mi">77 </span><span class="p">[</span><span class="n">fahrenheit</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">celsius</span><span class="p">]</span>
-<span class="ge">= 25 [celsius]</span>
-</pre></div>
-</div>
-</td></tr></tbody></table><p>Defining a custom unit works exactly like defining a variable:</p>
-<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="n">earth_radius</span> <span class="o">=</span> <span class="mi">6730</span><span class="p">[</span><span class="n">kilo</span> <span class="n">meter</span><span class="p">]</span>
-
-<span class="mf">3.5</span><span class="p">[</span><span class="n">astronomical_unit</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="n">earth_radius</span><span class="p">]</span>
-<span class="ge">= 77799.78416790490341753343 [earth_radius]</span>
-</pre></div>
-</div>
-</td></tr></tbody></table><p>Any variable or expression can be used as the right-hand side of a conversion expression:</p>
-<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">10</span><span class="p">[</span><span class="n">meter</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">[</span><span class="n">yard</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">[</span><span class="n">foot</span><span class="p">])</span>
-<span class="ge">= 6.56167979002624671916 (1[yard] + 2[foot])</span>
-</pre></div>
-</div>
-</td></tr></tbody></table><p>Although full built-in unit names are always accepted, many units also support short
-forms (for example <code class="docutils literal notranslate"><span class="pre">m</span></code>, <code class="docutils literal notranslate"><span class="pre">s</span></code>, <code class="docutils literal notranslate"><span class="pre">B</span></code>, <code class="docutils literal notranslate"><span class="pre">b</span></code>). If you frequently use a particular
-set of units, consider defining additional aliases:</p>
-<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="p">[</span><span class="n">meter</span><span class="p">]</span>
-<span class="n">cm</span> <span class="o">=</span> <span class="p">[</span><span class="n">centi</span> <span class="n">meter</span><span class="p">]</span>
-<span class="n">ft</span> <span class="o">=</span> <span class="p">[</span><span class="n">foot</span><span class="p">]</span>
-</pre></div>
-</div>
-</td></tr></tbody></table><p>Built-in short forms include:</p>
-<ul class="simple">
-<li><p>Length/astronomy: <code class="docutils literal notranslate"><span class="pre">au</span></code> (<code class="docutils literal notranslate"><span class="pre">astronomical_unit</span></code>), <code class="docutils literal notranslate"><span class="pre">ly</span></code> (<code class="docutils literal notranslate"><span class="pre">lightyear</span></code>),
-<code class="docutils literal notranslate"><span class="pre">ls</span></code> (<code class="docutils literal notranslate"><span class="pre">lightsecond</span></code>), <code class="docutils literal notranslate"><span class="pre">lmin</span></code> (<code class="docutils literal notranslate"><span class="pre">lightminute</span></code>), <code class="docutils literal notranslate"><span class="pre">pc</span></code> (<code class="docutils literal notranslate"><span class="pre">parsec</span></code>),
-<code class="docutils literal notranslate"><span class="pre">in</span></code> (<code class="docutils literal notranslate"><span class="pre">inch</span></code>), <code class="docutils literal notranslate"><span class="pre">ft</span></code> (<code class="docutils literal notranslate"><span class="pre">foot</span></code>).</p></li>
-<li><p>Time: <code class="docutils literal notranslate"><span class="pre">min</span></code> (<code class="docutils literal notranslate"><span class="pre">minute</span></code>), <code class="docutils literal notranslate"><span class="pre">h</span></code> (<code class="docutils literal notranslate"><span class="pre">hour</span></code>), <code class="docutils literal notranslate"><span class="pre">cy</span></code> (<code class="docutils literal notranslate"><span class="pre">century</span></code>).</p></li>
-<li><p>Angle: <code class="docutils literal notranslate"><span class="pre">deg</span></code> (<code class="docutils literal notranslate"><span class="pre">degree</span></code>), <code class="docutils literal notranslate"><span class="pre">grad</span></code>/<code class="docutils literal notranslate"><span class="pre">gon</span></code> (<code class="docutils literal notranslate"><span class="pre">gradian</span></code>).</p></li>
-<li><p>Information: <code class="docutils literal notranslate"><span class="pre">b</span></code> (<code class="docutils literal notranslate"><span class="pre">bit</span></code>), <code class="docutils literal notranslate"><span class="pre">B</span></code> (<code class="docutils literal notranslate"><span class="pre">byte</span></code>).</p></li>
-<li><p>Other common aliases: <code class="docutils literal notranslate"><span class="pre">u</span></code>/<code class="docutils literal notranslate"><span class="pre">Da</span></code> (<code class="docutils literal notranslate"><span class="pre">atomic_mass_unit</span></code>), <code class="docutils literal notranslate"><span class="pre">nmi</span></code> (<code class="docutils literal notranslate"><span class="pre">nautical_mile</span></code>).</p></li>
-</ul>
-<p>For units that allow prefixes, the same short forms can be used in prefixed
-form as well (for example <code class="docutils literal notranslate"><span class="pre">kpc</span></code>, <code class="docutils literal notranslate"><span class="pre">Mpc</span></code>, <code class="docutils literal notranslate"><span class="pre">MB</span></code>, <code class="docutils literal notranslate"><span class="pre">kb</span></code>).
-Common examples include <code class="docutils literal notranslate"><span class="pre">mm</span></code>, <code class="docutils literal notranslate"><span class="pre">cm</span></code>, <code class="docutils literal notranslate"><span class="pre">km</span></code>, <code class="docutils literal notranslate"><span class="pre">mg</span></code>, <code class="docutils literal notranslate"><span class="pre">kg</span></code>, <code class="docutils literal notranslate"><span class="pre">mV</span></code>,
-<code class="docutils literal notranslate"><span class="pre">kW</span></code>, <code class="docutils literal notranslate"><span class="pre">MeV</span></code>, <code class="docutils literal notranslate"><span class="pre">dL</span></code> and <code class="docutils literal notranslate"><span class="pre">dl</span></code>.</p>
 <p>Some of the built-in functions are able to handle arguments with a dimension. Refer to the documentation of a particular function for more information.</p>
 </section>
 </section>

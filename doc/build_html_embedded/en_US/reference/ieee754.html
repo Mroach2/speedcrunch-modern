@@ -190,6 +190,64 @@ exponent if not specified.</p></li>
 <dd><p>Decode the quad-precision binary float <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
 </dd></dl>
 
+<dl class="sc function">
+<dt class="sig sig-object sc" id="sc.ieee754_round_half">
+<span class="sig-name descname"><span class="pre">ieee754_round_half</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Round <code class="docutils literal notranslate"><span class="pre">x</span></code> to the nearest representable half-precision value.</p>
+</dd></dl>
+
+<dl class="sc function">
+<dt class="sig sig-object sc" id="sc.ieee754_round_float">
+<span class="sig-name descname"><span class="pre">ieee754_round_float</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Round <code class="docutils literal notranslate"><span class="pre">x</span></code> to the nearest representable single-precision value.</p>
+</dd></dl>
+
+<dl class="sc function">
+<dt class="sig sig-object sc" id="sc.ieee754_round_double">
+<span class="sig-name descname"><span class="pre">ieee754_round_double</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Round <code class="docutils literal notranslate"><span class="pre">x</span></code> to the nearest representable double-precision value.</p>
+</dd></dl>
+
+<dl class="sc function">
+<dt class="sig sig-object sc" id="sc.ieee754_round_quad">
+<span class="sig-name descname"><span class="pre">ieee754_round_quad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Round <code class="docutils literal notranslate"><span class="pre">x</span></code> to the nearest representable quad-precision value.</p>
+</dd></dl>
+
+<p>For the IEEE helper functions, let <code class="docutils literal notranslate"><span class="pre">rounded</span></code> mean the corresponding
+<code class="docutils literal notranslate"><span class="pre">ieee754_round_*</span></code> result.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ieee754_*_residual(x)</span> <span class="pre">=</span> <span class="pre">x</span> <span class="pre">-</span> <span class="pre">rounded</span></code></p></li>
+<li><p>absolute error magnitude = <code class="docutils literal notranslate"><span class="pre">abs(ieee754_*_residual(x))</span></code></p></li>
+<li><p>ULP-scaled signed error = <code class="docutils literal notranslate"><span class="pre">ieee754_*_residual(x)</span> <span class="pre">/</span> <span class="pre">ulp(x)</span></code></p></li>
+</ul>
+<p>That is, residual uses the <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">rounded</span></code> sign convention (not <code class="docutils literal notranslate"><span class="pre">rounded</span> <span class="pre">-</span> <span class="pre">x</span></code>).</p>
+<dl class="sc function">
+<dt class="sig sig-object sc" id="sc.ieee754_half_residual">
+<span class="sig-name descname"><span class="pre">ieee754_half_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">ieee754_round_half(x)</span></code>.</p>
+</dd></dl>
+
+<dl class="sc function">
+<dt class="sig sig-object sc" id="sc.ieee754_float_residual">
+<span class="sig-name descname"><span class="pre">ieee754_float_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">ieee754_round_float(x)</span></code>.</p>
+</dd></dl>
+
+<dl class="sc function">
+<dt class="sig sig-object sc" id="sc.ieee754_double_residual">
+<span class="sig-name descname"><span class="pre">ieee754_double_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">ieee754_round_double(x)</span></code>.</p>
+</dd></dl>
+
+<dl class="sc function">
+<dt class="sig sig-object sc" id="sc.ieee754_quad_residual">
+<span class="sig-name descname"><span class="pre">ieee754_quad_residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">-</span> <span class="pre">ieee754_round_quad(x)</span></code>.</p>
+</dd></dl>
+
+<p>There are currently no built-in <code class="docutils literal notranslate"><span class="pre">ieee754_*_abs_error</span></code> or
+<code class="docutils literal notranslate"><span class="pre">ieee754_*_ulp_error</span></code> functions.</p>
 </section>
 
 

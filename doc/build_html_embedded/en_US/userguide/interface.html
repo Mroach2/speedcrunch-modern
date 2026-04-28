@@ -11,7 +11,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/quark.css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="next" title="Reference" href="../reference/index.html" />
-    <link rel="prev" title="User-Defined Variables and Functions" href="advanced.html" />
+    <link rel="prev" title="User-Defined Variables, Functions and Units" href="advanced.html" />
     <link rel="stylesheet" href="../" type="text/css" />
 
   </head><body>
@@ -28,7 +28,7 @@
     <td align="right" width="50%">
       <a class="rel-item rel-item-1"
            href="advanced.html"
-           title="User-Defined Variables and Functions"
+           title="User-Defined Variables, Functions and Units"
            accesskey="P">previous</a>
          | 
       <a class="rel-item rel-item-2"
@@ -97,6 +97,12 @@ Additionally, it is possible to delete a variable by selecting it and pressing t
 </li>
 <li><dl class="simple">
 <dt>Functions and User Functions</dt><dd><p>Similar to the variables widget, these show built-in and <a class="reference internal" href="advanced.html#user-functions"><span class="std std-ref">user-defined functions</span></a> respectively.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>User Units</dt><dd><p>Similar to the user functions widget, this lists <a class="reference internal" href="advanced.html#user-units"><span class="std std-ref">user-defined units</span></a>.
+Double-click inserts <code class="docutils literal notranslate"><span class="pre">[name]</span></code> in the editor, and the context menu supports edit/delete operations.</p>
 </dd>
 </dl>
 </li>
@@ -226,7 +232,7 @@ Select any plain text file and SpeedCrunch will try to evaluate each line of the
 <div class="versionadded">
 <p><span class="versionmodified added">New in version 1.0.</span></p>
 </div>
-<p>To define user variables and user functions that are loaded automatically at startup, use
+<p>To define user variables, user functions and user units that are loaded automatically at startup, use
 <span class="menuselection">Session ‣ Startup Definitions…</span>.</p>
 <p>This dialog provides:</p>
 <ul class="simple">
@@ -288,29 +294,31 @@ as a history rewrite. SpeedCrunch then recalculates all expressions below that e
 </section>
 <section id="notation">
 <span id="result-format"></span><h3>Notation</h3>
-<p>This section allows selecting the result notation to use. You can select one
-of the following notations:</p>
+<p>This section allows selecting the result notation to use (for example in
+<span class="menuselection">Settings ‣ Results ‣ Notation &amp; Precision…</span> or from the
+status-bar notation selector). You can select one of the following options.
+On first launch, the default is <span class="menuselection">Automatic decimal</span>.</p>
 <ul>
 <li><dl class="simple">
-<dt><span class="menuselection">Decimal ‣ Automatic</span></dt><dd><p>Use fixed-point decimal form for most results; for very large (more than six integer places) or very small results (less than 0.0001),
-scientific notation will be used.</p>
+<dt><span class="menuselection">Automatic decimal</span></dt><dd><p>Use fixed-point decimal form for most results; values with exponent larger than 5 or smaller than -4 are shown in
+scientific notation. With a finite precision setting, very small values may switch to scientific notation earlier.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><span class="menuselection">Decimal ‣ Fixed-Point</span></dt><dd><p>Display results in fixed-point decimal form. For excessively
+<dt><span class="menuselection">Fixed-point decimal</span></dt><dd><p>Display results in fixed-point decimal form. For excessively
 large or small numbers, this format may still fall back to scientific notation.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><span class="menuselection">Decimal ‣ Engineering</span></dt><dd><p>Display results in engineering notation. This is a variant of <a class="reference internal" href="syntax.html#scientific-notation"><span class="std std-ref">scientific notation</span></a> in which
+<dt><span class="menuselection">Engineering decimal</span></dt><dd><p>Display results in engineering notation. This is a variant of <a class="reference internal" href="syntax.html#scientific-notation"><span class="std std-ref">scientific notation</span></a> in which
 the exponent is divisible by three.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><span class="menuselection">Decimal ‣ Scientific</span></dt><dd><p>Display results in <a class="reference internal" href="syntax.html#scientific-notation"><span class="std std-ref">normalized scientific notation</span></a>.</p>
+<dt><span class="menuselection">Scientific decimal</span></dt><dd><p>Display results in <a class="reference internal" href="syntax.html#scientific-notation"><span class="std std-ref">normalized scientific notation</span></a>.</p>
 </dd>
 </dl>
 </li>
@@ -385,8 +393,14 @@ determines the angle format of the arguments.</p>
 </dd>
 </dl>
 </li>
-<li><dl>
+<li><dl class="simple">
 <dt><span class="menuselection">Turn</span></dt><dd><p>Use turns for angles. A full circle corresponds to an angle of 1 turn.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt><span class="menuselection">Revolution</span></dt><dd><p>Use revolutions for angles. A full circle corresponds to an angle of
+1 revolution.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">New in version 1.0.</span></p>
 </div>
@@ -542,6 +556,51 @@ ignored in output.</p>
 <p>Applying changes from this dialog updates only the current editor previews
 immediately (live/selection) without rewriting already displayed
 calculation history.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt><span class="menuselection">Rounding Mode</span></dt><dd><p>Choose how displayed results are rounded when formatting to a finite number
+of digits. The default is <span class="menuselection">Half Away from Zero (Arithmetic)</span>.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><span class="menuselection">Half Even (Banker’s)</span></dt><dd><p>Round to nearest; ties go to the nearest even last kept digit.
+Example at 1 fractional digit: <code class="docutils literal notranslate"><span class="pre">2.250</span> <span class="pre">-&gt;</span> <span class="pre">2.2</span></code>,
+<code class="docutils literal notranslate"><span class="pre">2.350</span> <span class="pre">-&gt;</span> <span class="pre">2.4</span></code>, <code class="docutils literal notranslate"><span class="pre">-2.250</span> <span class="pre">-&gt;</span> <span class="pre">-2.2</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><span class="menuselection">Half Away from Zero (Arithmetic)</span></dt><dd><p>Round to nearest; ties increase magnitude.
+Example at 1 fractional digit: <code class="docutils literal notranslate"><span class="pre">2.250</span> <span class="pre">-&gt;</span> <span class="pre">2.3</span></code>,
+<code class="docutils literal notranslate"><span class="pre">-2.250</span> <span class="pre">-&gt;</span> <span class="pre">-2.3</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><span class="menuselection">Toward Zero</span></dt><dd><p>Discard extra digits without rounding up.
+Example at 1 fractional digit: <code class="docutils literal notranslate"><span class="pre">2.290</span> <span class="pre">-&gt;</span> <span class="pre">2.2</span></code>,
+<code class="docutils literal notranslate"><span class="pre">-2.290</span> <span class="pre">-&gt;</span> <span class="pre">-2.2</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><span class="menuselection">Toward +Infinity</span></dt><dd><p>Always round upward.
+Example at 1 fractional digit: <code class="docutils literal notranslate"><span class="pre">2.210</span> <span class="pre">-&gt;</span> <span class="pre">2.3</span></code>,
+<code class="docutils literal notranslate"><span class="pre">-2.210</span> <span class="pre">-&gt;</span> <span class="pre">-2.2</span></code>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><span class="menuselection">Toward -Infinity</span></dt><dd><p>Always round downward.
+Example at 1 fractional digit: <code class="docutils literal notranslate"><span class="pre">2.290</span> <span class="pre">-&gt;</span> <span class="pre">2.2</span></code>,
+<code class="docutils literal notranslate"><span class="pre">-2.210</span> <span class="pre">-&gt;</span> <span class="pre">-2.3</span></code>.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>This setting affects result formatting (including live previews). It does
+not change the behavior of the <a class="reference internal" href="../reference/integer.html#sc.round" title="round"><code class="xref sc sc-func docutils literal notranslate"><span class="pre">round()</span></code></a> and <a class="reference internal" href="../reference/integer.html#sc.trunc" title="trunc"><code class="xref sc sc-func docutils literal notranslate"><span class="pre">trunc()</span></code></a> functions.</p>
 </dd>
 </dl>
 </li>
@@ -711,7 +770,7 @@ additional themes so they are displayed in this menu.</p>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><kbd class="kbd compound docutils literal notranslate"><kbd class="kbd docutils literal notranslate">Control</kbd>+<kbd class="kbd docutils literal notranslate">P</kbd></kbd></dt><dd><p>Wrap the current selection in parentheses. If no text is selected, the entire expression is wrapped.</p>
+<dt><kbd class="kbd compound docutils literal notranslate"><kbd class="kbd docutils literal notranslate">Control</kbd>+<kbd class="kbd docutils literal notranslate">(</kbd></kbd> or <kbd class="kbd compound docutils literal notranslate"><kbd class="kbd docutils literal notranslate">Control</kbd>+<kbd class="kbd docutils literal notranslate">)</kbd></kbd></dt><dd><p>Wrap the current selection in parentheses. If no text is selected, the entire expression is wrapped.</p>
 </dd>
 </dl>
 </li>
@@ -752,6 +811,11 @@ additional themes so they are displayed in this menu.</p>
 </li>
 <li><dl class="simple">
 <dt><kbd class="kbd compound docutils literal notranslate"><kbd class="kbd docutils literal notranslate">Control</kbd>+<kbd class="kbd docutils literal notranslate">7</kbd></kbd></dt><dd><p>Show/hide history widget.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><kbd class="kbd compound docutils literal notranslate"><kbd class="kbd docutils literal notranslate">Control</kbd>+<kbd class="kbd docutils literal notranslate">8</kbd></kbd></dt><dd><p>Show/hide user units widget.</p>
 </dd>
 </dl>
 </li>
@@ -897,7 +961,7 @@ versions used a simple custom text format.</p>
     <td align="right" width="50%">
       <a class="rel-item rel-item-1"
            href="advanced.html"
-           title="User-Defined Variables and Functions"
+           title="User-Defined Variables, Functions and Units"
            >previous</a>
          | 
       <a class="rel-item rel-item-2"

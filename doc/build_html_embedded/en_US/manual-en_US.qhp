@@ -33,13 +33,17 @@
                         <section title="Comments" ref="userguide/syntax.html#comments"/>
                         <section title="Operators and Precedence" ref="userguide/syntax.html#operators-and-precedence"/>
                     </section>
-                    <section title="User-Defined Variables and Functions" ref="userguide/advanced.html">
+                    <section title="User-Defined Variables, Functions and Units" ref="userguide/advanced.html">
                         <section title="Variables" ref="userguide/advanced.html#variables"/>
                         <section title="User Functions" ref="userguide/advanced.html#user-functions"/>
-                    </section>
-                    <section title="Complex numbers" ref="userguide/advanced.html#complex-numbers"/>
-                    <section title="Units" ref="userguide/advanced.html#units">
-                        <section title="Information units (bit/byte)" ref="userguide/advanced.html#information-units-bit-byte"/>
+                        <section title="Units" ref="userguide/advanced.html#units"/>
+                        <section title="Information units (bit/byte)" ref="userguide/advanced.html#information-units-bit-byte">
+                            <section title="Prefixes" ref="userguide/advanced.html#prefixes"/>
+                            <section title="Family mixing rules" ref="userguide/advanced.html#family-mixing-rules"/>
+                            <section title="Result unit selection" ref="userguide/advanced.html#result-unit-selection"/>
+                        </section>
+                        <section title="User Units" ref="userguide/advanced.html#user-units"/>
+                        <section title="Complex numbers" ref="userguide/advanced.html#complex-numbers"/>
                     </section>
                     <section title="User Interface" ref="userguide/interface.html">
                         <section title="Widgets" ref="userguide/interface.html#widgets"/>
@@ -101,6 +105,44 @@
                             <section title="Unit Exponent Style" ref="reference/units.html#unit-exponent-style"/>
                             <section title="Composed Units" ref="reference/units.html#composed-units"/>
                             <section title="Conversions" ref="reference/units.html#conversions"/>
+                            <section title="Built-in Units Table" ref="reference/units.html#built-in-units-table">
+                                <section title="Built-in Units by Quantity" ref="reference/units.html#built-in-units-by-quantity">
+                                    <section title="Absorbed Dose" ref="reference/units.html#absorbed-dose"/>
+                                    <section title="Activity Referred To A Radionuclide" ref="reference/units.html#activity-referred-to-a-radionuclide"/>
+                                    <section title="Amount Of Heat" ref="reference/units.html#amount-of-heat"/>
+                                    <section title="Amount Of Substance" ref="reference/units.html#amount-of-substance"/>
+                                    <section title="Area" ref="reference/units.html#area"/>
+                                    <section title="Capacitance" ref="reference/units.html#capacitance"/>
+                                    <section title="Catalytic Activity" ref="reference/units.html#catalytic-activity"/>
+                                    <section title="Dose Equivalent" ref="reference/units.html#dose-equivalent"/>
+                                    <section title="Electric" ref="reference/units.html#electric"/>
+                                    <section title="Energy" ref="reference/units.html#energy"/>
+                                    <section title="Force" ref="reference/units.html#force"/>
+                                    <section title="Frequency" ref="reference/units.html#frequency"/>
+                                    <section title="Illuminance" ref="reference/units.html#illuminance"/>
+                                    <section title="Inductance" ref="reference/units.html#inductance"/>
+                                    <section title="Information" ref="reference/units.html#information"/>
+                                    <section title="Kerma" ref="reference/units.html#kerma"/>
+                                    <section title="Length" ref="reference/units.html#length"/>
+                                    <section title="Luminous Flux" ref="reference/units.html#luminous-flux"/>
+                                    <section title="Luminous Intensity" ref="reference/units.html#luminous-intensity"/>
+                                    <section title="Magnetic Flux" ref="reference/units.html#magnetic-flux"/>
+                                    <section title="Magnetic Flux Density" ref="reference/units.html#magnetic-flux-density"/>
+                                    <section title="Mass" ref="reference/units.html#mass"/>
+                                    <section title="Plane Angle" ref="reference/units.html#plane-angle"/>
+                                    <section title="Power" ref="reference/units.html#power"/>
+                                    <section title="Pressure" ref="reference/units.html#pressure"/>
+                                    <section title="Radiant Flux" ref="reference/units.html#radiant-flux"/>
+                                    <section title="Solid Angle" ref="reference/units.html#solid-angle"/>
+                                    <section title="Speed" ref="reference/units.html#speed"/>
+                                    <section title="Stress" ref="reference/units.html#stress"/>
+                                    <section title="Temperature" ref="reference/units.html#temperature"/>
+                                    <section title="Time" ref="reference/units.html#time"/>
+                                    <section title="Velocity" ref="reference/units.html#velocity"/>
+                                    <section title="Volume" ref="reference/units.html#volume"/>
+                                    <section title="Work" ref="reference/units.html#work"/>
+                                </section>
+                            </section>
                         </section>
                     </section>
                 </section>
@@ -165,11 +207,19 @@
             <keyword name="ieee754_decode() (function)" id="function.ieee754_decode" ref="reference/ieee754.html#sc.ieee754_decode"/>
             <keyword name="ieee754_double_decode() (function)" id="function.ieee754_double_decode" ref="reference/ieee754.html#sc.ieee754_double_decode"/>
             <keyword name="ieee754_double_encode() (function)" id="function.ieee754_double_encode" ref="reference/ieee754.html#sc.ieee754_double_encode"/>
+            <keyword name="ieee754_double_residual() (function)" id="function.ieee754_double_residual" ref="reference/ieee754.html#sc.ieee754_double_residual"/>
             <keyword name="ieee754_encode() (function)" id="function.ieee754_encode" ref="reference/ieee754.html#sc.ieee754_encode"/>
+            <keyword name="ieee754_float_residual() (function)" id="function.ieee754_float_residual" ref="reference/ieee754.html#sc.ieee754_float_residual"/>
             <keyword name="ieee754_half_decode() (function)" id="function.ieee754_half_decode" ref="reference/ieee754.html#sc.ieee754_half_decode"/>
             <keyword name="ieee754_half_encode() (function)" id="function.ieee754_half_encode" ref="reference/ieee754.html#sc.ieee754_half_encode"/>
+            <keyword name="ieee754_half_residual() (function)" id="function.ieee754_half_residual" ref="reference/ieee754.html#sc.ieee754_half_residual"/>
             <keyword name="ieee754_quad_decode() (function)" id="function.ieee754_quad_decode" ref="reference/ieee754.html#sc.ieee754_quad_decode"/>
             <keyword name="ieee754_quad_encode() (function)" id="function.ieee754_quad_encode" ref="reference/ieee754.html#sc.ieee754_quad_encode"/>
+            <keyword name="ieee754_quad_residual() (function)" id="function.ieee754_quad_residual" ref="reference/ieee754.html#sc.ieee754_quad_residual"/>
+            <keyword name="ieee754_round_double() (function)" id="function.ieee754_round_double" ref="reference/ieee754.html#sc.ieee754_round_double"/>
+            <keyword name="ieee754_round_float() (function)" id="function.ieee754_round_float" ref="reference/ieee754.html#sc.ieee754_round_float"/>
+            <keyword name="ieee754_round_half() (function)" id="function.ieee754_round_half" ref="reference/ieee754.html#sc.ieee754_round_half"/>
+            <keyword name="ieee754_round_quad() (function)" id="function.ieee754_round_quad" ref="reference/ieee754.html#sc.ieee754_round_quad"/>
             <keyword name="ieee754_single_decode() (function)" id="function.ieee754_single_decode" ref="reference/ieee754.html#sc.ieee754_single_decode"/>
             <keyword name="ieee754_single_encode() (function)" id="function.ieee754_single_encode" ref="reference/ieee754.html#sc.ieee754_single_encode"/>
             <keyword name="imag() (function)" id="function.imag" ref="reference/basic.html#sc.imag"/>
@@ -182,10 +232,13 @@
             <keyword name="lngamma() (function)" id="function.lngamma" ref="reference/basic.html#sc.lngamma"/>
             <keyword name="log() (function)" id="function.log" ref="reference/basic.html#sc.log"/>
             <keyword name="mask() (function)" id="function.mask" ref="reference/integer.html#sc.mask"/>
+            <keyword name="mass() (function)" id="function.mass" ref="reference/basic.html#sc.mass"/>
             <keyword name="max() (function)" id="function.max" ref="reference/statistical.html#sc.max"/>
             <keyword name="median() (function)" id="function.median" ref="reference/statistical.html#sc.median"/>
             <keyword name="min() (function)" id="function.min" ref="reference/statistical.html#sc.min"/>
             <keyword name="mod() (function)" id="function.mod" ref="reference/integer.html#sc.mod"/>
+            <keyword name="molarity() (function)" id="function.molarity" ref="reference/basic.html#sc.molarity"/>
+            <keyword name="molmass() (function)" id="function.molmass" ref="reference/basic.html#sc.molmass"/>
             <keyword name="ncr() (function)" id="function.ncr" ref="reference/statistical.html#sc.ncr"/>
             <keyword name="not() (function)" id="function.not" ref="reference/integer.html#sc.not"/>
             <keyword name="npr() (function)" id="function.npr" ref="reference/statistical.html#sc.npr"/>
@@ -259,6 +312,7 @@
             <file>reference/integer.html</file>
             <file>reference/statistical.html</file>
             <file>reference/units.html</file>
+            <file>reference/units_table.html</file>
         </files>
     </filterSection>
 </QtHelpProject>

@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/quark.css" />
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="next" title="User-Defined Variables and Functions" href="advanced.html" />
+    <link rel="next" title="User-Defined Variables, Functions and Units" href="advanced.html" />
     <link rel="prev" title="First Steps" href="first_steps.html" />
     <link rel="stylesheet" href="../" type="text/css" />
 
@@ -33,7 +33,7 @@
          | 
       <a class="rel-item rel-item-2"
            href="advanced.html"
-           title="User-Defined Variables and Functions"
+           title="User-Defined Variables, Functions and Units"
            accesskey="N">next</a>
          | 
       <a class="rel-item rel-item-3"
@@ -107,7 +107,13 @@ Accepted decimal separator and grouping conventions depend on the selected
 <span id="id2"></span><h3>Scientific Notation</h3>
 <p>When dealing with very small or very large numbers (think the size of an atom or of a galaxy) the notation above is inconvenient. These are more commonly expressed in scientific notation; for instance, 1.234*10<sup>-9</sup> is preferable to 0.000000001234.</p>
 <p>Naturally, in SpeedCrunch this could be written as <code class="docutils literal notranslate"><span class="pre">1.234*10^-9</span></code>, but there’s also a shorthand notation: <code class="docutils literal notranslate"><span class="pre">1.234e-9</span></code>. Here, the <code class="docutils literal notranslate"><span class="pre">e</span></code> represents <code class="docutils literal notranslate"><span class="pre">*10^</span></code>, but it is considered a part of the number literal and treated with higher precedence. For example, <code class="docutils literal notranslate"><span class="pre">1e2^3</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">(1e2)^3</span> <span class="pre">=</span> <span class="pre">100^3</span></code>. The scale of a number (sometimes called its exponent) always begins with the scale character <code class="docutils literal notranslate"><span class="pre">E</span></code> or <code class="docutils literal notranslate"><span class="pre">e</span></code> followed by a signed integer. So <code class="docutils literal notranslate"><span class="pre">e+10</span></code>, <code class="docutils literal notranslate"><span class="pre">e-4</span></code>, <code class="docutils literal notranslate"><span class="pre">E-0</span></code> are all valid scale expressions. If the sign is ‘+’, you may simply omit it: <code class="docutils literal notranslate"><span class="pre">e0</span></code>, <code class="docutils literal notranslate"><span class="pre">E10</span></code>. The significand (i.e. the part preceding the exponent) is required; exactly one exponent must be specified.</p>
-<p>Compared to most calculators, SpeedCrunch can accept very large numbers without overflowing (e.g. both <code class="docutils literal notranslate"><span class="pre">1e+536870911</span></code> and <code class="docutils literal notranslate"><span class="pre">1e-536870911</span></code> are still valid). However, only about 78 significant digits are stored at any point. Any digits beyond that are lost.</p>
+<p>Equivalent examples:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="mi">98e3</span>
+<span class="mi">98</span><span class="o">*</span><span class="mi">10</span><span class="o">^</span><span class="mi">3</span>
+<span class="mi">98</span><span class="n">x10³</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><p>Compared to most calculators, SpeedCrunch can accept very large numbers without overflowing (e.g. both <code class="docutils literal notranslate"><span class="pre">1e+536870911</span></code> and <code class="docutils literal notranslate"><span class="pre">1e-536870911</span></code> are still valid). However, only about 78 significant digits are stored at any point. Any digits beyond that are lost.</p>
 </section>
 <section id="non-decimal-bases">
 <h3>Non-Decimal Bases</h3>
@@ -206,9 +212,11 @@ calculations and thus susceptible to rounding errors.</p>
 </pre></div>
 </div>
 </td></tr></tbody></table><p>For trigonometric input, explicit angle units override angle mode. For example,
-<code class="docutils literal notranslate"><span class="pre">cos(pi*[rad])</span></code>, <code class="docutils literal notranslate"><span class="pre">cos(180*[degree])</span></code>, <code class="docutils literal notranslate"><span class="pre">cos(200*[gradian])</span></code> and
+<code class="docutils literal notranslate"><span class="pre">cos(pi*[rad])</span></code>, <code class="docutils literal notranslate"><span class="pre">cos(180*[deg])</span></code>, <code class="docutils literal notranslate"><span class="pre">cos(200*[gon])</span></code> and
 <code class="docutils literal notranslate"><span class="pre">cos(0.5*[turn])</span></code> all evaluate to <code class="docutils literal notranslate"><span class="pre">-1</span></code> regardless of the global angle mode.
-The aliases <code class="docutils literal notranslate"><span class="pre">deg</span></code> for <code class="docutils literal notranslate"><span class="pre">degree</span></code> and <code class="docutils literal notranslate"><span class="pre">grad</span></code> for <code class="docutils literal notranslate"><span class="pre">gradian</span></code> are supported.
+The aliases <code class="docutils literal notranslate"><span class="pre">deg</span></code> for <code class="docutils literal notranslate"><span class="pre">degree</span></code>, <code class="docutils literal notranslate"><span class="pre">gon</span></code> for <code class="docutils literal notranslate"><span class="pre">gradian</span></code>, and <code class="docutils literal notranslate"><span class="pre">rev</span></code> for
+<code class="docutils literal notranslate"><span class="pre">revolution</span></code> are supported. <code class="docutils literal notranslate"><span class="pre">revolution</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">turn</span></code> (that is,
+<code class="docutils literal notranslate"><span class="pre">2*pi</span></code> radians).
 <code class="docutils literal notranslate"><span class="pre">deg</span></code> is normalized to <code class="docutils literal notranslate"><span class="pre">°</span></code> in autocomplete insertion and displayed result
 units.</p>
 <p>Only last part of sexagesimal input value can contain decimals.</p>
@@ -235,7 +243,7 @@ In the first table, fixed-point decimal values assume angle mode is set to degre
 <td><p><code class="docutils literal notranslate"><span class="pre">0.01555556</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0°00'56.00</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">56[arcsecond]</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">56[arcsec]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0.01555556</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0°00'56.00</span></code></p></td>
 </tr>
@@ -251,7 +259,7 @@ In the first table, fixed-point decimal values assume angle mode is set to degre
 <td><p><code class="docutils literal notranslate"><span class="pre">0.56666667</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0°34'00.00</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">34[arcminute]</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">34[arcmin]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0.56666667</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0°34'00.00</span></code></p></td>
 </tr>
@@ -281,8 +289,9 @@ In the first table, fixed-point decimal values assume angle mode is set to degre
 </tr>
 </tbody>
 </table>
-<p>The long-form units <code class="docutils literal notranslate"><span class="pre">arcminute</span></code> and <code class="docutils literal notranslate"><span class="pre">arcsecond</span></code> also accept the aliases
-<code class="docutils literal notranslate"><span class="pre">arcmin</span></code> and <code class="docutils literal notranslate"><span class="pre">arcsec</span></code>.</p>
+<p>Use canonical symbols <code class="docutils literal notranslate"><span class="pre">′</span></code> and <code class="docutils literal notranslate"><span class="pre">″</span></code> (insertable with <code class="docutils literal notranslate"><span class="pre">'</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;</span></code>),
+or the aliases <code class="docutils literal notranslate"><span class="pre">arcmin</span></code> and <code class="docutils literal notranslate"><span class="pre">arcsec</span></code>. Full names <code class="docutils literal notranslate"><span class="pre">arcminute</span></code> and
+<code class="docutils literal notranslate"><span class="pre">arcsecond</span></code> are also accepted.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Input</p></th>
@@ -291,48 +300,48 @@ In the first table, fixed-point decimal values assume angle mode is set to degre
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">0[second]</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">0 [second]</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">0[s]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0 [s]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0:00:00</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">::56</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">56.00 [second]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">56.00 [s]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0:00:56.00</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">56[second]</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">56.00 [second]</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">56[s]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">56.00 [s]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0:00:56.00</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">:34</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">2040.00 [second]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">2040.00 [s]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0:34:00.00</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">34[minute]</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">2040.00 [second]</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">34[min]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">2040.00 [s]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0:34:00.00</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">12:</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">43200.00 [second]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">43200.00 [s]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">12:00:00.00</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">12[hour]</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">43200.00 [second]</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">12[h]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">43200.00 [s]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">12:00:00.00</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">12:34</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">45240.00 [second]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">45240.00 [s]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">12:34:00.00</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">12:34.5</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">45270.00 [second]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">45270.00 [s]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">12:34:30.00</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">12:34:56</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">45296.00 [second]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">45296.00 [s]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">12:34:56.00</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">12:34:56.78</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">45296.78 [second]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">45296.78 [s]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">12:34:56.78</span></code></p></td>
 </tr>
 </tbody>
@@ -410,6 +419,8 @@ So <code class="docutils literal notranslate"><span class="pre">1+(2+3)+10%</spa
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">^</span> <span class="pre">b</span></code>, <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">**</span> <span class="pre">b</span></code>, <code class="docutils literal notranslate"><span class="pre">a²</span></code></p></td>
 <td><dl class="simple">
 <dt><strong>Exponentiation</strong></dt><dd><p><code class="docutils literal notranslate"><span class="pre">a²</span></code> is shorthand for <code class="docutils literal notranslate"><span class="pre">a^2</span></code>;
+<code class="docutils literal notranslate"><span class="pre">**</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">^</span></code> and can be
+used as an easy way to insert powers.
 contiguous superscript digits are
 parsed as one integer exponent. Both
 function notations <code class="docutils literal notranslate"><span class="pre">f^n(x)</span></code> and <code class="docutils literal notranslate"><span class="pre">fⁿ(x)</span></code>
@@ -422,7 +433,9 @@ In <em>real mode</em>, fractional powers of
 negative numbers are only defined for
 rational exponents with odd denominators.
 The result is negative only when the reduced
-rational exponent has an odd numerator.</p>
+rational exponent has an odd numerator.
+Positive and negative powers can be written
+with either <code class="docutils literal notranslate"><span class="pre">^</span></code> or <code class="docutils literal notranslate"><span class="pre">**</span></code>.</p>
 </dd>
 </dl>
 <div class="versionadded">
@@ -431,11 +444,14 @@ notation (equivalent to <code class="docutils literal notranslate"><span class="
 </div>
 </td>
 <td><p><code class="docutils literal notranslate"><span class="pre">3²⁰</span> <span class="pre">=</span> <span class="pre">3^20</span></code>
-<code class="docutils literal notranslate"><span class="pre">2¹⁰</span> <span class="pre">=</span> <span class="pre">1024</span></code></p>
+<code class="docutils literal notranslate"><span class="pre">2**10</span> <span class="pre">=</span> <span class="pre">1024</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">2¹⁰</span> <span class="pre">=</span> <span class="pre">1024</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">cos^2(pi)=cos²(pi)</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">2^2^3</span> <span class="pre">=</span> <span class="pre">2^8</span> <span class="pre">=</span> <span class="pre">256</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">(-1)^(2/3)</span> <span class="pre">=</span> <span class="pre">1</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">(-8)^(2/3)</span> <span class="pre">=</span> <span class="pre">4</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">10^3</span></code>, <code class="docutils literal notranslate"><span class="pre">10^-3</span></code>,
+<code class="docutils literal notranslate"><span class="pre">10**3</span></code>, <code class="docutils literal notranslate"><span class="pre">10**-3</span></code></p>
 </td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">+x</span></code>, <code class="docutils literal notranslate"><span class="pre">-x</span></code>, <code class="docutils literal notranslate"><span class="pre">~x</span></code></p></td>
@@ -538,16 +554,18 @@ and <a class="reference internal" href="../reference/integer.html#sc.shr" title=
 </td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0b10</span> <span class="pre">|</span> <span class="pre">0b01</span> <span class="pre">=</span> <span class="pre">0b11</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">in</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">in</span></code>, <code class="docutils literal notranslate"><span class="pre">--</span></code></p></td>
 <td><dl class="simple">
 <dt><strong>Unit conversion</strong></dt><dd><p>Convert the operand into the given
 unit. Both forms are equivalent. See
+<code class="docutils literal notranslate"><span class="pre">--</span></code> is a shortcut equivalent to <code class="docutils literal notranslate"><span class="pre">-&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">in</span></code>.
 <a class="reference internal" href="advanced.html#units"><span class="std std-ref">Units</span></a> for more information.</p>
 </dd>
 </dl>
 </td>
-<td><p><code class="docutils literal notranslate"><span class="pre">10[meter]</span> <span class="pre">in</span> <span class="pre">[mile]</span></code></p>
-<p><code class="docutils literal notranslate"><span class="pre">10[meter]</span> <span class="pre">-&gt;</span> <span class="pre">[mile]</span></code></p>
+<td><p><code class="docutils literal notranslate"><span class="pre">10[m]</span> <span class="pre">in</span> <span class="pre">[mi]</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">10[m]</span> <span class="pre">-&gt;</span> <span class="pre">[mi]</span></code>
+<code class="docutils literal notranslate"><span class="pre">10[m]</span> <span class="pre">--</span> <span class="pre">[mi]</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -594,7 +612,7 @@ odd <code class="docutils literal notranslate"><span class="pre">p</span></code>
          | 
       <a class="rel-item rel-item-2"
            href="advanced.html"
-           title="User-Defined Variables and Functions"
+           title="User-Defined Variables, Functions and Units"
            >next</a>
          | 
       <a class="rel-item rel-item-3"

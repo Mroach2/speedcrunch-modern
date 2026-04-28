@@ -186,6 +186,55 @@ GMT/UTC (fractional offsets are supported).</p>
 </div>
 </td></tr></tbody></table></dd></dl>
 
+<dl class="sc function">
+<dt class="sig sig-object sc" id="sc.molmass">
+<span class="sig-name descname"><span class="pre">molmass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">formula</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Compute the molar mass of a chemical formula and return the result with
+dimension <code class="docutils literal notranslate"><span class="pre">g/mol</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">formula</span></code> argument is case-sensitive and supports either plain digits
+(for example <code class="docutils literal notranslate"><span class="pre">C6H12O6</span></code>) or subscript digits (for example <code class="docutils literal notranslate"><span class="pre">C₆H₁₂O₆</span></code>).
+Parsing fails for invalid formulas.</p>
+<p>Advanced chemical notation is not supported yet. For example, grouped or
+hydrated formulas such as <code class="docutils literal notranslate"><span class="pre">K4[Fe(CN)6]·3H2O</span></code> currently fail to parse.</p>
+<p>The element table follows the official IUPAC CIAAW 2021 abridged standard
+atomic weights.</p>
+<p>Example:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="n">molmass</span><span class="p">(</span><span class="n">C6H12O6</span><span class="p">)</span>
+<span class="ge">= 180.156 g/mol</span>
+</pre></div>
+</div>
+</td></tr></tbody></table></dd></dl>
+
+<dl class="sc function">
+<dt class="sig sig-object sc" id="sc.mass">
+<span class="sig-name descname"><span class="pre">mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">mol</span></em>; <em class="sig-param"><span class="pre">formula</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Compute the mass of a substance amount and return the result with dimension
+<code class="docutils literal notranslate"><span class="pre">g</span></code>.</p>
+<p>This function reuses <a class="reference internal" href="#sc.molmass" title="molmass"><code class="xref sc sc-func docutils literal notranslate"><span class="pre">molmass()</span></code></a> internally and is equivalent to:
+<code class="docutils literal notranslate"><span class="pre">mol</span> <span class="pre">*</span> <span class="pre">molmass(formula)</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">formula</span></code> argument follows the same parsing rules as <a class="reference internal" href="#sc.molmass" title="molmass"><code class="xref sc sc-func docutils literal notranslate"><span class="pre">molmass()</span></code></a>.</p>
+<p>Example:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="n">mass</span><span class="p">(</span><span class="mi">1</span><span class="p">;</span> <span class="n">C6H12O6</span><span class="p">)</span>
+<span class="ge">= 180.156 g</span>
+</pre></div>
+</div>
+</td></tr></tbody></table></dd></dl>
+
+<dl class="sc function">
+<dt class="sig sig-object sc" id="sc.molarity">
+<span class="sig-name descname"><span class="pre">molarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">n</span></em>; <em class="sig-param"><span class="pre">V</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Compute molarity as amount of substance divided by solution volume and
+return the result with dimension <code class="docutils literal notranslate"><span class="pre">mol/L</span></code>.</p>
+<p>This function is equivalent to: <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">/</span> <span class="pre">V</span></code>.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">n</span></code> or <code class="docutils literal notranslate"><span class="pre">V</span></code> is dimensionless, SpeedCrunch interprets them as <code class="docutils literal notranslate"><span class="pre">mol</span></code>
+and <code class="docutils literal notranslate"><span class="pre">L</span></code>, respectively.</p>
+<p>Example:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="n">molarity</span><span class="p">(</span><span class="mf">0.50</span><span class="p">;</span> <span class="mf">1.00</span><span class="p">)</span>
+<span class="ge">= 0.5 mol/L</span>
+</pre></div>
+</div>
+</td></tr></tbody></table></dd></dl>
+
 </section>
 <section id="trigonometric-inverse-trigonometric">
 <span id="trigonometric"></span><h2>Trigonometric &amp; Inverse Trigonometric</h2>

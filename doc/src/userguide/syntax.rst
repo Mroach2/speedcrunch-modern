@@ -62,6 +62,12 @@ When dealing with very small or very large numbers (think the size of an atom or
 
 Naturally, in SpeedCrunch this could be written as ``1.234*10^-9``, but there's also a shorthand notation: ``1.234e-9``. Here, the ``e`` represents ``*10^``, but it is considered a part of the number literal and treated with higher precedence. For example, ``1e2^3`` is equivalent to ``(1e2)^3 = 100^3``. The scale of a number (sometimes called its exponent) always begins with the scale character ``E`` or ``e`` followed by a signed integer. So ``e+10``, ``e-4``, ``E-0`` are all valid scale expressions. If the sign is '+', you may simply omit it: ``e0``, ``E10``. The significand (i.e. the part preceding the exponent) is required; exactly one exponent must be specified.
 
+Equivalent examples::
+
+    98e3
+    98*10^3
+    98x10³
+
 Compared to most calculators, SpeedCrunch can accept very large numbers without overflowing (e.g. both ``1e+536870911`` and ``1e-536870911`` are still valid). However, only about 78 significant digits are stored at any point. Any digits beyond that are lost.
 
 Non-Decimal Bases
@@ -168,9 +174,9 @@ Dimensionless input values are automatically considered to be in current angle m
     = 180°00'00
 
 For trigonometric input, explicit angle units override angle mode. For example,
-``cos(pi*[rad])``, ``cos(180*[degree])``, ``cos(200*[gradian])`` and
+``cos(pi*[rad])``, ``cos(180*[deg])``, ``cos(200*[gon])`` and
 ``cos(0.5*[turn])`` all evaluate to ``-1`` regardless of the global angle mode.
-The aliases ``deg`` for ``degree``, ``grad`` for ``gradian``, and ``rev`` for
+The aliases ``deg`` for ``degree``, ``gon`` for ``gradian``, and ``rev`` for
 ``revolution`` are supported. ``revolution`` is equivalent to ``turn`` (that is,
 ``2*pi`` radians).
 ``deg`` is normalized to ``°`` in autocomplete insertion and displayed result
@@ -197,7 +203,7 @@ In the first table, fixed-point decimal values assume angle mode is set to degre
    * - ``56"``
      - ``0.01555556``
      - ``0°00'56.00``
-   * - ``56[arcsecond]``
+   * - ``56[arcsec]``
      - ``0.01555556``
      - ``0°00'56.00``
    * - ``56.78"``
@@ -209,7 +215,7 @@ In the first table, fixed-point decimal values assume angle mode is set to degre
    * - ``34'``
      - ``0.56666667``
      - ``0°34'00.00``
-   * - ``34[arcminute]``
+   * - ``34[arcmin]``
      - ``0.56666667``
      - ``0°34'00.00``
    * - ``34'56``
@@ -231,8 +237,9 @@ In the first table, fixed-point decimal values assume angle mode is set to degre
      - ``12.58243889``
      - ``12°34'56.78``
 
-The long-form units ``arcminute`` and ``arcsecond`` also accept the aliases
-``arcmin`` and ``arcsec``.
+Use canonical symbols ``′`` and ``″`` (insertable with ``'`` and ``"``),
+or the aliases ``arcmin`` and ``arcsec``. Full names ``arcminute`` and
+``arcsecond`` are also accepted.
 
 .. list-table::
    :header-rows: 1
@@ -240,38 +247,38 @@ The long-form units ``arcminute`` and ``arcsecond`` also accept the aliases
    * - Input
      - Fixed-Point Decimal
      - Sexagesimal
-   * - ``0[second]``
-     - ``0 [second]``
+   * - ``0[s]``
+     - ``0 [s]``
      - ``0:00:00``
    * - ``::56``
-     - ``56.00 [second]``
+     - ``56.00 [s]``
      - ``0:00:56.00``
-   * - ``56[second]``
-     - ``56.00 [second]``
+   * - ``56[s]``
+     - ``56.00 [s]``
      - ``0:00:56.00``
    * - ``:34``
-     - ``2040.00 [second]``
+     - ``2040.00 [s]``
      - ``0:34:00.00``
-   * - ``34[minute]``
-     - ``2040.00 [second]``
+   * - ``34[min]``
+     - ``2040.00 [s]``
      - ``0:34:00.00``
    * - ``12:``
-     - ``43200.00 [second]``
+     - ``43200.00 [s]``
      - ``12:00:00.00``
-   * - ``12[hour]``
-     - ``43200.00 [second]``
+   * - ``12[h]``
+     - ``43200.00 [s]``
      - ``12:00:00.00``
    * - ``12:34``
-     - ``45240.00 [second]``
+     - ``45240.00 [s]``
      - ``12:34:00.00``
    * - ``12:34.5``
-     - ``45270.00 [second]``
+     - ``45270.00 [s]``
      - ``12:34:30.00``
    * - ``12:34:56``
-     - ``45296.00 [second]``
+     - ``45296.00 [s]``
      - ``12:34:56.00``
    * - ``12:34:56.78``
-     - ``45296.78 [second]``
+     - ``45296.78 [s]``
      - ``12:34:56.78``
 
 Note that when entering time values with colons, no additional dimension units are needed. Formatting itself works as an unit.
@@ -327,6 +334,8 @@ SpeedCrunch supports the following operators, listed in order of decreasing prec
 +-------------------------------+---------------------------------------------------------------+-------------------------+
 | ``a ^ b``, ``a ** b``, ``a²`` | **Exponentiation**                                            |                         |
 |                               |   ``a²`` is shorthand for ``a^2``;                            | ``3²⁰ = 3^20``          |
+|                               |   ``**`` is equivalent to ``^`` and can be                    | ``2**10 = 1024``        |
+|                               |   used as an easy way to insert powers.                       |                         |
 |                               |   contiguous superscript digits are                           | ``2¹⁰ = 1024``          |
 |                               |   parsed as one integer exponent. Both                        |                         |
 |                               |   function notations ``f^n(x)`` and ``fⁿ(x)``                 | ``cos^2(pi)=cos²(pi)``  |
@@ -340,6 +349,8 @@ SpeedCrunch supports the following operators, listed in order of decreasing prec
 |                               |   rational exponents with odd denominators.                   |                         |
 |                               |   The result is negative only when the reduced                | ``(-8)^(2/3) = 4``      |
 |                               |   rational exponent has an odd numerator.                     |                         |
+|                               |   Positive and negative powers can be written                 | ``10^3``, ``10^-3``,    |
+|                               |   with either ``^`` or ``**``.                                | ``10**3``, ``10**-3``   |
 |                               |                                                               |                         |
 |                               | .. versionadded:: 1.0                                         |                         |
 |                               |    Integer superscript powers and ``f^n(x)`` function-power   |                         |
@@ -404,9 +415,10 @@ SpeedCrunch supports the following operators, listed in order of decreasing prec
 | ``a | b``                     | **Bitwise OR**                                                | ``0b10 | 0b01 = 0b11``  |
 |                               |   See also :func:`or`.                                        |                         |
 +-------------------------------+---------------------------------------------------------------+-------------------------+
-| ``->``, ``in``                | **Unit conversion**                                           | ``10[meter] in [mile]`` |
+| ``->``, ``in``, ``--``        | **Unit conversion**                                           | ``10[m] in [mi]``       |
 |                               |   Convert the operand into the given                          |                         |
-|                               |   unit. Both forms are equivalent. See                        | ``10[meter] -> [mile]`` |
+|                               |   unit. Both forms are equivalent. See                        | ``10[m] -> [mi]``       |
+|                               |   ``--`` is a shortcut equivalent to ``->`` and ``in``.       | ``10[m] -- [mi]``       |
 |                               |   :ref:`units` for more information.                          |                         |
 +-------------------------------+---------------------------------------------------------------+-------------------------+
 

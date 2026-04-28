@@ -78,9 +78,14 @@ Conversions
 
 Use explicit conversion to request a specific target unit expression:
 
-* ``[newton*meter] -> [joule]``
-* ``[joule/second] -> [watt]``
-* ``[volt] -> [joule/coulomb]``
+* ``[N*m] -> [J]``
+* ``[J/s] -> [W]``
+* ``[V] -> [J/C]``
 
 If no explicit conversion target is requested, SpeedCrunch applies the
 canonicalization/display policy above.
+
+Built-in Units Table
+--------------------
+
+.. include:: units_table.rst
