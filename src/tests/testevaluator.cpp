@@ -7434,6 +7434,79 @@ void test_result_display_uses_base10_exponent_notation()
     session->clearHistory();
 }
 
+void test_result_display_omits_zero_power_of_ten_generically()
+{
+    Session* session = const_cast<Session*>(eval->session());
+    Settings* settings = Settings::instance();
+    const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+    const char oldResultFormat = settings->resultFormat;
+    const int oldResultPrecision = settings->resultPrecision;
+
+    settings->simplifyResultExpressions = false;
+    settings->resultPrecision = -1;
+    session->clearHistory();
+
+    const struct {
+        const char* expr;
+        char resultFormat;
+        QString expectedResultLine;
+    } cases[] = {
+        { "4.091", 'g', QString::fromUtf8("= 4.091") },
+        { "4.091", 'e', QString::fromUtf8("= 4.091") },
+        { "4.091", 'n', QString::fromUtf8("= 4.091") },
+        { "4.091", 'f', QString::fromUtf8("= 4.091") },
+        { "sci(4.091)", 'e', QString::fromUtf8("= 4.091") },
+        { "eng(4.091)", 'e', QString::fromUtf8("= 4.091") },
+        { "sci(4.091)", 'n', QString::fromUtf8("= 4.091") },
+        { "eng(4.091)", 'n', QString::fromUtf8("= 4.091") },
+        { "sci(4.091) ? automatic decimal", 'g', QString::fromUtf8("= 4.091") },
+        { "eng(4.091) ? automatic decimal", 'g', QString::fromUtf8("= 4.091") },
+        { "4.091 ? here notation = engineering", 'g', QString::fromUtf8("= 4.091") },
+        { "4.091 ? here notation = scientific", 'g', QString::fromUtf8("= 4.091") }
+    };
+
+    for (const auto& tc : cases) {
+        settings->resultFormat = tc.resultFormat;
+        eval->setExpression(QString::fromLatin1(tc.expr));
+        const Quantity value = eval->evalUpdateAns();
+        ++eval_total_tests;
+        if (!eval->error().isEmpty()) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tevaluate zero exponent omission case\t[NEW]" << endl
+                 << "\tExpression: " << tc.expr << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+            continue;
+        }
+
+        session->clearHistory();
+        session->addHistoryEntry(HistoryEntry(
+            QString::fromLatin1(tc.expr),
+            value,
+            eval->interpretedExpression()));
+
+        TestableResultDisplay display;
+        display.resize(800, 600);
+        display.refresh();
+
+        ++eval_total_tests;
+        const QString resultLine = display.document()->findBlockByNumber(1).text();
+        if (resultLine != tc.expectedResultLine) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tresult display omits zero scientific power generically\t[NEW]" << endl
+                 << "\tExpression: " << tc.expr << endl
+                 << "\tResult   : " << resultLine.toUtf8().constData() << endl
+                 << "\tExpected : " << tc.expectedResultLine.toUtf8().constData() << endl;
+        }
+    }
+
+    settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    settings->resultFormat = oldResultFormat;
+    settings->resultPrecision = oldResultPrecision;
+    session->clearHistory();
+}
+
 void test_result_display_double_click_preserves_compact_angle_suffix()
 {
     Session* session = const_cast<Session*>(eval->session());
@@ -8736,6 +8809,7 @@ int main(int argc, char* argv[])
     test_result_display_mixed_per_term_time_conversions_in_sexagesimal_notation();
     test_result_display_strips_unit_brackets_and_double_click_restores_canonical_unit_expression();
     test_result_display_uses_base10_exponent_notation();
+    test_result_display_omits_zero_power_of_ten_generically();
     test_result_display_double_click_preserves_compact_angle_suffix();
     test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input();
     test_result_display_keeps_quantsp_before_degree_celsius_and_fahrenheit();
