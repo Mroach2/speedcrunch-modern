@@ -629,6 +629,7 @@ void Settings::load()
     constantsDockDomain = settings->value(key + QLatin1String("ConstantsDockDomain"), QString()).toString();
     constantsDockSubdomain = settings->value(key + QLatin1String("ConstantsDockSubdomain"), QString()).toString();
     constantsDockSearchText = settings->value(key + QLatin1String("ConstantsDockSearchText"), QString()).toString();
+    functionsDockDomain = settings->value(key + QLatin1String("FunctionsDockDomain"), QString()).toString();
     functionsDockSearchText = settings->value(key + QLatin1String("FunctionsDockSearchText"), QString()).toString();
     userFunctionsDockSearchText = settings->value(key + QLatin1String("UserFunctionsDockSearchText"), QString()).toString();
     userUnitsDockSearchText = settings->value(key + QLatin1String("UserUnitsDockSearchText"), QString()).toString();
@@ -752,6 +753,7 @@ void Settings::save()
     settings->setValue(key + QLatin1String("ConstantsDockDomain"), constantsDockDomain);
     settings->setValue(key + QLatin1String("ConstantsDockSubdomain"), constantsDockSubdomain);
     settings->setValue(key + QLatin1String("ConstantsDockSearchText"), constantsDockSearchText);
+    settings->setValue(key + QLatin1String("FunctionsDockDomain"), functionsDockDomain);
     settings->setValue(key + QLatin1String("FunctionsDockSearchText"), functionsDockSearchText);
     settings->setValue(key + QLatin1String("UserFunctionsDockSearchText"), userFunctionsDockSearchText);
     settings->setValue(key + QLatin1String("UserUnitsDockSearchText"), userUnitsDockSearchText);

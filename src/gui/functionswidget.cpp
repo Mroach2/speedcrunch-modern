@@ -25,6 +25,7 @@
 #include <QEvent>
 #include <QString>
 #include <QTimer>
+#include <QComboBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -35,6 +36,7 @@
 FunctionsWidget::FunctionsWidget(QWidget* parent)
     : QWidget(parent)
     , m_filterTimer(new QTimer(this))
+    , m_domain(new QComboBox(this))
     , m_functions(new QTreeWidget(this))
     , m_noMatchLabel(new QLabel(m_functions))
     , m_searchFilter(new QLineEdit(this))
@@ -59,6 +61,16 @@ FunctionsWidget::FunctionsWidget(QWidget* parent)
     m_noMatchLabel->adjustSize();
     m_noMatchLabel->hide();
 
+    m_domain->setEditable(false);
+    m_domain->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    QWidget* domainBox = new QWidget(this);
+    QHBoxLayout* domainLayout = new QHBoxLayout;
+    domainLayout->addWidget(new QLabel(tr("Domain"), this));
+    domainLayout->addWidget(m_domain);
+    domainLayout->setContentsMargins(0, 0, 0, 0);
+    domainBox->setLayout(domainLayout);
+
     QWidget* searchBox = new QWidget(this);
     QHBoxLayout* searchLayout = new QHBoxLayout;
     searchLayout->addWidget(m_searchLabel);
@@ -68,6 +80,7 @@ FunctionsWidget::FunctionsWidget(QWidget* parent)
 
     QVBoxLayout* layout = new QVBoxLayout;
     layout->setContentsMargins(3, 3, 3, 3);
+    layout->addWidget(domainBox);
     layout->addWidget(searchBox);
     layout->addWidget(m_functions);
     setLayout(layout);
@@ -78,6 +91,7 @@ FunctionsWidget::FunctionsWidget(QWidget* parent)
     retranslateText();
 
     connect(m_filterTimer, SIGNAL(timeout()), SLOT(updateList()));
+    connect(m_domain, SIGNAL(activated(int)), SLOT(updateList()));
     connect(m_functions, SIGNAL(itemActivated(QTreeWidgetItem*, int)), SLOT(handleItemActivated(QTreeWidgetItem*, int)));
     connect(m_searchFilter, SIGNAL(textChanged(const QString &)), SLOT(triggerFilter()));
     QShortcut* returnShortcut = new QShortcut(QKeySequence(Qt::Key_Return), this);
@@ -108,6 +122,7 @@ void FunctionsWidget::updateList()
     m_filterTimer->stop();
     m_functions->clear();
     QString term = m_searchFilter->text();
+    const QString selectedDomain = m_domain->currentText();
     QStringList functionNames = FunctionRepo::instance()->getIdentifiers();
     FunctionRepo::instance()->retranslateText();
 
@@ -120,17 +135,20 @@ void FunctionsWidget::updateList()
         QStringList str;
         str << identifier << f->name();
 
+        const bool domainMatches = selectedDomain == tr("All") || f->domain() == selectedDomain;
         if (term.isEmpty()
             || str.at(0).contains(term, Qt::CaseInsensitive)
             || str.at(1).contains(term, Qt::CaseInsensitive))
         {
-            QTreeWidgetItem* item = new QTreeWidgetItem(m_functions, str);
-            if (layoutDirection() == Qt::LeftToRight) {
-                item->setTextAlignment(0, Qt::AlignLeft);
-                item->setTextAlignment(1, Qt::AlignLeft);
-            } else {
-                item->setTextAlignment(0, Qt::AlignRight);
-                item->setTextAlignment(1, Qt::AlignLeft);
+            if (domainMatches) {
+                QTreeWidgetItem* item = new QTreeWidgetItem(m_functions, str);
+                if (layoutDirection() == Qt::LeftToRight) {
+                    item->setTextAlignment(0, Qt::AlignLeft);
+                    item->setTextAlignment(1, Qt::AlignLeft);
+                } else {
+                    item->setTextAlignment(0, Qt::AlignRight);
+                    item->setTextAlignment(1, Qt::AlignLeft);
+                }
             }
         }
     }
@@ -159,6 +177,12 @@ void FunctionsWidget::retranslateText()
     m_functions->setHeaderLabels(titles);
 
     m_searchLabel->setText(tr("Search"));
+    const QString selectedDomain = m_domain->currentText();
+    m_domain->clear();
+    m_domain->addItem(tr("All"));
+    m_domain->addItems(FunctionRepo::instance()->domains());
+    const int selectedIndex = m_domain->findText(selectedDomain);
+    m_domain->setCurrentIndex(selectedIndex >= 0 ? selectedIndex : 0);
     m_noMatchLabel->setText(tr("No match found"));
 
     updateList();
@@ -176,6 +200,15 @@ const QTreeWidgetItem* FunctionsWidget::currentItem() const
 
 QString FunctionsWidget::searchText() const { return m_searchFilter->text(); }
 void FunctionsWidget::setSearchText(const QString& text) { m_searchFilter->setText(text); }
+QString FunctionsWidget::selectedDomain() const { return m_domain->currentText(); }
+void FunctionsWidget::setSelectedDomain(const QString& domain)
+{
+    const int index = m_domain->findText(domain);
+    if (index >= 0) {
+        m_domain->setCurrentIndex(index);
+        updateList();
+    }
+}
 
 void FunctionsWidget::handleItemActivated(QTreeWidgetItem* item, int /*column*/)
 {

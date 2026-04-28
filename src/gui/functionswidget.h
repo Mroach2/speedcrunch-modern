@@ -24,6 +24,7 @@
 #include <QWidget>
 
 class QEvent;
+class QComboBox;
 class QLabel;
 class QLineEdit;
 class QTreeWidget;
@@ -40,6 +41,8 @@ public:
     QList<QTreeWidgetItem*> selectedItems() const;
     QString searchText() const;
     void setSearchText(const QString& text);
+    QString selectedDomain() const;
+    void setSelectedDomain(const QString& domain);
 
 signals:
     void functionSelected(const QString&);
@@ -56,6 +59,7 @@ private:
     Q_DISABLE_COPY(FunctionsWidget)
 
     QTimer* m_filterTimer;
+    QComboBox* m_domain;
     QTreeWidget* m_functions;
     bool m_insertAllItems;
     QLabel* m_noMatchLabel;

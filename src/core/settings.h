@@ -204,6 +204,7 @@ public:
     QString constantsDockDomain;
     QString constantsDockSubdomain;
     QString constantsDockSearchText;
+    QString functionsDockDomain;
     QString functionsDockSearchText;
     QString userFunctionsDockSearchText;
     QString userUnitsDockSearchText;

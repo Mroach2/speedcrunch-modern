@@ -1466,6 +1466,7 @@ void MainWindow::createFunctionsDock(bool takeFocus)
             this, &MainWindow::insertFunctionIntoEditor);
 
     addTabifiedDock(m_docks.functions, takeFocus);
+    m_docks.functions->widget()->setSelectedDomain(m_settings->functionsDockDomain);
     m_docks.functions->widget()->setSearchText(m_settings->functionsDockSearchText);
     m_settings->functionsDockVisible = true;
 }
@@ -2076,8 +2077,10 @@ void MainWindow::saveSettings()
         m_settings->constantsDockSubdomain = m_docks.constants->widget()->selectedSubdomain();
         m_settings->constantsDockSearchText = m_docks.constants->widget()->searchText();
     }
-    if (m_docks.functions)
+    if (m_docks.functions) {
+        m_settings->functionsDockDomain = m_docks.functions->widget()->selectedDomain();
         m_settings->functionsDockSearchText = m_docks.functions->widget()->searchText();
+    }
     if (m_docks.userFunctions)
         m_settings->userFunctionsDockSearchText = m_docks.userFunctions->widget()->searchText();
     if (m_docks.userUnits)

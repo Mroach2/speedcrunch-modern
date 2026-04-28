@@ -45,7 +45,32 @@
 #include <random>
 #include <string>
 
-#define FUNCTION_INSERT(ID) insert(new Function(#ID, function_ ## ID, this))
+static QString domainToDisplay(FunctionDomain domain)
+{
+    switch (domain) {
+    case FunctionDomain::Arithmetic: return FunctionRepo::tr("Arithmetic");
+    case FunctionDomain::Chemistry: return FunctionRepo::tr("Chemistry");
+    case FunctionDomain::Complex: return FunctionRepo::tr("Complex");
+    case FunctionDomain::Combinatorics: return FunctionRepo::tr("Combinatorics");
+    case FunctionDomain::Probability: return FunctionRepo::tr("Probability");
+    case FunctionDomain::Statistics: return FunctionRepo::tr("Statistics");
+    case FunctionDomain::Aggregation: return FunctionRepo::tr("Aggregation");
+    case FunctionDomain::Random: return FunctionRepo::tr("Random");
+    case FunctionDomain::BaseConversion: return FunctionRepo::tr("Base conversion");
+    case FunctionDomain::NumberFormatting: return FunctionRepo::tr("Number formatting");
+    case FunctionDomain::IntegerArithmetic: return FunctionRepo::tr("Integer arithmetic");
+    case FunctionDomain::SpecialFunctions: return FunctionRepo::tr("Special functions");
+    case FunctionDomain::ExponentialLogarithmic: return FunctionRepo::tr("Exponential & Logarithmic");
+    case FunctionDomain::AngleConversion: return FunctionRepo::tr("Angle conversion");
+    case FunctionDomain::Trigonometry: return FunctionRepo::tr("Trigonometry");
+    case FunctionDomain::Bitwise: return FunctionRepo::tr("Bitwise");
+    case FunctionDomain::FloatingPoint: return FunctionRepo::tr("Floating point");
+    case FunctionDomain::DateTime: return FunctionRepo::tr("Date & Time");
+    }
+    return QString();
+}
+
+#define FUNCTION_INSERT(DOMAIN, ID) insert(new Function(#ID, function_ ## ID, DOMAIN, this))
 #define FUNCTION_USAGE(ID, USAGE) find(#ID)->setUsage(QString::fromLatin1(USAGE));
 #define FUNCTION_USAGE_TR(ID, USAGE) find(#ID)->setUsage(USAGE);
 #define FUNCTION_NAME(ID, NAME) find(#ID)->setName(NAME)
@@ -1414,143 +1439,163 @@ Quantity function_molarity(Function* f, const Function::ArgumentList& args)
 
 void FunctionRepo::createFunctions()
 {
-    // Analysis.
-    FUNCTION_INSERT(abs);
-    FUNCTION_INSERT(absdev);
-    FUNCTION_INSERT(average);
-    FUNCTION_INSERT(bin);
-    FUNCTION_INSERT(binpad);
-    FUNCTION_INSERT(cbrt);
-    FUNCTION_INSERT(ceil);
-    FUNCTION_INSERT(dec);
-    FUNCTION_INSERT(floor);
-    FUNCTION_INSERT(frac);
-    FUNCTION_INSERT(gamma);
-    FUNCTION_INSERT(geomean);
-    FUNCTION_INSERT(eng);
-    FUNCTION_INSERT(hex);
-    FUNCTION_INSERT(hexpad);
-    FUNCTION_INSERT(int);
-    FUNCTION_INSERT(lngamma);
-    FUNCTION_INSERT(mass);
-    FUNCTION_INSERT(molarity);
-    FUNCTION_INSERT(molmass);
-    FUNCTION_INSERT(max);
-    FUNCTION_INSERT(min);
-    FUNCTION_INSERT(oct);
-    FUNCTION_INSERT(octpad);
-    FUNCTION_INSERT(product);
-    FUNCTION_INSERT(round);
-    FUNCTION_INSERT(sci);
-    FUNCTION_INSERT(sgn);
-    FUNCTION_INSERT(summation);
-    FUNCTION_INSERT(sqrt);
-    FUNCTION_INSERT(stddev);
-    FUNCTION_INSERT(sum);
-    FUNCTION_INSERT(rand);
-    FUNCTION_INSERT(randint);
-    FUNCTION_INSERT(rat);
-    FUNCTION_INSERT(trunc);
-    FUNCTION_INSERT(variance);
+    // Aggregation.
+    FUNCTION_INSERT(FunctionDomain::Aggregation, max);
+    FUNCTION_INSERT(FunctionDomain::Aggregation, min);
+    FUNCTION_INSERT(FunctionDomain::Aggregation, product);
+    FUNCTION_INSERT(FunctionDomain::Aggregation, sum);
+    FUNCTION_INSERT(FunctionDomain::Aggregation, summation);
+
+    // Angle conversion.
+    FUNCTION_INSERT(FunctionDomain::AngleConversion, degrees);
+    FUNCTION_INSERT(FunctionDomain::AngleConversion, gradians);
+    FUNCTION_INSERT(FunctionDomain::AngleConversion, radians);
+    FUNCTION_INSERT(FunctionDomain::AngleConversion, turns);
+
+    // Arithmetic.
+    FUNCTION_INSERT(FunctionDomain::Arithmetic, abs);
+    FUNCTION_INSERT(FunctionDomain::Arithmetic, cbrt);
+    FUNCTION_INSERT(FunctionDomain::Arithmetic, ceil);
+    FUNCTION_INSERT(FunctionDomain::Arithmetic, floor);
+    FUNCTION_INSERT(FunctionDomain::Arithmetic, frac);
+    FUNCTION_INSERT(FunctionDomain::Arithmetic, int);
+    FUNCTION_INSERT(FunctionDomain::Arithmetic, round);
+    FUNCTION_INSERT(FunctionDomain::Arithmetic, sgn);
+    FUNCTION_INSERT(FunctionDomain::Arithmetic, sqrt);
+    FUNCTION_INSERT(FunctionDomain::Arithmetic, trunc);
+
+    // Base conversion.
+    FUNCTION_INSERT(FunctionDomain::BaseConversion, bin);
+    FUNCTION_INSERT(FunctionDomain::BaseConversion, binpad);
+    FUNCTION_INSERT(FunctionDomain::BaseConversion, dec);
+    FUNCTION_INSERT(FunctionDomain::BaseConversion, hex);
+    FUNCTION_INSERT(FunctionDomain::BaseConversion, hexpad);
+    FUNCTION_INSERT(FunctionDomain::BaseConversion, oct);
+    FUNCTION_INSERT(FunctionDomain::BaseConversion, octpad);
+
+    // Bitwise.
+    FUNCTION_INSERT(FunctionDomain::Bitwise, and);
+    FUNCTION_INSERT(FunctionDomain::Bitwise, mask);
+    FUNCTION_INSERT(FunctionDomain::Bitwise, not);
+    FUNCTION_INSERT(FunctionDomain::Bitwise, or);
+    FUNCTION_INSERT(FunctionDomain::Bitwise, popcount);
+    FUNCTION_INSERT(FunctionDomain::Bitwise, shl);
+    FUNCTION_INSERT(FunctionDomain::Bitwise, shr);
+    FUNCTION_INSERT(FunctionDomain::Bitwise, unmask);
+    FUNCTION_INSERT(FunctionDomain::Bitwise, xor);
+
+    // Chemistry.
+    FUNCTION_INSERT(FunctionDomain::Chemistry, mass);
+    FUNCTION_INSERT(FunctionDomain::Chemistry, molarity);
+    FUNCTION_INSERT(FunctionDomain::Chemistry, molmass);
+
+    // Combinatorics.
+    FUNCTION_INSERT(FunctionDomain::Combinatorics, ncr);
+    FUNCTION_INSERT(FunctionDomain::Combinatorics, npr);
 
     // Complex.
-    FUNCTION_INSERT(real);
-    FUNCTION_INSERT(imag);
-    FUNCTION_INSERT(conj);
-    FUNCTION_INSERT(phase);
-    FUNCTION_INSERT(polar);
-    FUNCTION_INSERT(cart);
+    FUNCTION_INSERT(FunctionDomain::Complex, cart);
+    FUNCTION_INSERT(FunctionDomain::Complex, conj);
+    FUNCTION_INSERT(FunctionDomain::Complex, imag);
+    FUNCTION_INSERT(FunctionDomain::Complex, phase);
+    FUNCTION_INSERT(FunctionDomain::Complex, polar);
+    FUNCTION_INSERT(FunctionDomain::Complex, real);
 
-    // Discrete.
-    FUNCTION_INSERT(gcd);
-    FUNCTION_INSERT(lcm);
-    FUNCTION_INSERT(ncr);
-    FUNCTION_INSERT(npr);
+    // Date & Time.
+    FUNCTION_INSERT(FunctionDomain::DateTime, datetime);
+    FUNCTION_INSERT(FunctionDomain::DateTime, epoch);
+
+    // Exponential & Logarithmic.
+    FUNCTION_INSERT(FunctionDomain::ExponentialLogarithmic, exp);
+    FUNCTION_INSERT(FunctionDomain::ExponentialLogarithmic, ln);
+    FUNCTION_INSERT(FunctionDomain::ExponentialLogarithmic, log);
+    FUNCTION_INSERT(FunctionDomain::ExponentialLogarithmic, log10);
+    FUNCTION_INSERT(FunctionDomain::ExponentialLogarithmic, log2);
+
+    // Floating point.
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_decode);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_double_decode);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_double_encode);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_double_residual);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_encode);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_float_residual);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_half_decode);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_half_encode);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_half_residual);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_quad_decode);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_quad_encode);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_quad_residual);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_round_double);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_round_float);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_round_half);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_round_quad);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_single_decode);
+    FUNCTION_INSERT(FunctionDomain::FloatingPoint, ieee754_single_encode);
+
+    // Integer arithmetic.
+    FUNCTION_INSERT(FunctionDomain::IntegerArithmetic, emod);
+    FUNCTION_INSERT(FunctionDomain::IntegerArithmetic, gcd);
+    FUNCTION_INSERT(FunctionDomain::IntegerArithmetic, idiv);
+    FUNCTION_INSERT(FunctionDomain::IntegerArithmetic, lcm);
+    FUNCTION_INSERT(FunctionDomain::IntegerArithmetic, mod);
+    FUNCTION_INSERT(FunctionDomain::IntegerArithmetic, powmod);
+
+    // Number formatting.
+    FUNCTION_INSERT(FunctionDomain::NumberFormatting, eng);
+    FUNCTION_INSERT(FunctionDomain::NumberFormatting, rat);
+    FUNCTION_INSERT(FunctionDomain::NumberFormatting, sci);
 
     // Probability.
-    FUNCTION_INSERT(binomcdf);
-    FUNCTION_INSERT(binommean);
-    FUNCTION_INSERT(binompmf);
-    FUNCTION_INSERT(binomvar);
-    FUNCTION_INSERT(erf);
-    FUNCTION_INSERT(erfc);
-    FUNCTION_INSERT(hypercdf);
-    FUNCTION_INSERT(hypermean);
-    FUNCTION_INSERT(hyperpmf);
-    FUNCTION_INSERT(hypervar);
-    FUNCTION_INSERT(median);
-    FUNCTION_INSERT(poicdf);
-    FUNCTION_INSERT(poimean);
-    FUNCTION_INSERT(poipmf);
-    FUNCTION_INSERT(poivar);
+    FUNCTION_INSERT(FunctionDomain::Probability, binomcdf);
+    FUNCTION_INSERT(FunctionDomain::Probability, binommean);
+    FUNCTION_INSERT(FunctionDomain::Probability, binompmf);
+    FUNCTION_INSERT(FunctionDomain::Probability, binomvar);
+    FUNCTION_INSERT(FunctionDomain::Probability, hypercdf);
+    FUNCTION_INSERT(FunctionDomain::Probability, hypermean);
+    FUNCTION_INSERT(FunctionDomain::Probability, hyperpmf);
+    FUNCTION_INSERT(FunctionDomain::Probability, hypervar);
+    FUNCTION_INSERT(FunctionDomain::Probability, poicdf);
+    FUNCTION_INSERT(FunctionDomain::Probability, poimean);
+    FUNCTION_INSERT(FunctionDomain::Probability, poipmf);
+    FUNCTION_INSERT(FunctionDomain::Probability, poivar);
+
+    // Random.
+    FUNCTION_INSERT(FunctionDomain::Random, rand);
+    FUNCTION_INSERT(FunctionDomain::Random, randint);
+
+    // Special functions.
+    FUNCTION_INSERT(FunctionDomain::SpecialFunctions, erf);
+    FUNCTION_INSERT(FunctionDomain::SpecialFunctions, erfc);
+    FUNCTION_INSERT(FunctionDomain::SpecialFunctions, gamma);
+    FUNCTION_INSERT(FunctionDomain::SpecialFunctions, lngamma);
+
+    // Statistics.
+    FUNCTION_INSERT(FunctionDomain::Statistics, absdev);
+    FUNCTION_INSERT(FunctionDomain::Statistics, average);
+    FUNCTION_INSERT(FunctionDomain::Statistics, geomean);
+    FUNCTION_INSERT(FunctionDomain::Statistics, median);
+    FUNCTION_INSERT(FunctionDomain::Statistics, stddev);
+    FUNCTION_INSERT(FunctionDomain::Statistics, variance);
 
     // Trigonometry.
-    FUNCTION_INSERT(arccos);
-    FUNCTION_INSERT(arcosh);
-    FUNCTION_INSERT(arsinh);
-    FUNCTION_INSERT(artanh);
-    FUNCTION_INSERT(arcsin);
-    FUNCTION_INSERT(arctan);
-    FUNCTION_INSERT(arctan2);
-    FUNCTION_INSERT(cos);
-    FUNCTION_INSERT(cosh);
-    FUNCTION_INSERT(cot);
-    FUNCTION_INSERT(csc);
-    FUNCTION_INSERT(degrees);
-    FUNCTION_INSERT(exp);
-    FUNCTION_INSERT(gradians);
-    FUNCTION_INSERT(log2);
-    FUNCTION_INSERT(log10);
-    FUNCTION_INSERT(ln);
-    FUNCTION_INSERT(log);
-    FUNCTION_INSERT(radians);
-    FUNCTION_INSERT(sec);
-    FUNCTION_INSERT(sin);
-    FUNCTION_INSERT(sinh);
-    FUNCTION_INSERT(tan);
-    FUNCTION_INSERT(turns);
-    FUNCTION_INSERT(tanh);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, arccos);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, arcosh);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, arcsin);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, arctan);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, arctan2);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, arsinh);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, artanh);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, cos);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, cosh);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, cot);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, csc);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, sec);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, sin);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, sinh);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, tan);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, tanh);
 
-    // Logic.
-    FUNCTION_INSERT(mask);
-    FUNCTION_INSERT(unmask);
-    FUNCTION_INSERT(not);
-    FUNCTION_INSERT(and);
-    FUNCTION_INSERT(or);
-    FUNCTION_INSERT(xor);
-    FUNCTION_INSERT(popcount);
-    FUNCTION_INSERT(shl);
-    FUNCTION_INSERT(shr);
-    FUNCTION_INSERT(idiv);
-    FUNCTION_INSERT(mod);
-    FUNCTION_INSERT(emod);
-    FUNCTION_INSERT(powmod);
-
-    // IEEE-754.
-    FUNCTION_INSERT(ieee754_decode);
-    FUNCTION_INSERT(ieee754_encode);
-    FUNCTION_INSERT(ieee754_half_decode);
-    FUNCTION_INSERT(ieee754_half_encode);
-    FUNCTION_INSERT(ieee754_single_decode);
-    FUNCTION_INSERT(ieee754_single_encode);
-    FUNCTION_INSERT(ieee754_double_decode);
-    FUNCTION_INSERT(ieee754_double_encode);
-    FUNCTION_INSERT(ieee754_quad_decode);
-    FUNCTION_INSERT(ieee754_quad_encode);
-    FUNCTION_INSERT(ieee754_round_half);
-    FUNCTION_INSERT(ieee754_round_float);
-    FUNCTION_INSERT(ieee754_round_double);
-    FUNCTION_INSERT(ieee754_round_quad);
-    FUNCTION_INSERT(ieee754_half_residual);
-    FUNCTION_INSERT(ieee754_float_residual);
-    FUNCTION_INSERT(ieee754_double_residual);
-    FUNCTION_INSERT(ieee754_quad_residual);
-
-    //Date convertion
-    FUNCTION_INSERT(datetime);
-    FUNCTION_INSERT(epoch);
-
-    // Symbol aliases.
+// Symbol aliases.
     m_functions.insert(QString(UnicodeChars::Summation).toUpper(), find(QStringLiteral("summation")));
     m_functions.insert(QString(UnicodeChars::SquareRoot).toUpper(), find(QStringLiteral("sqrt")));
     m_functions.insert(QString(UnicodeChars::CubeRoot).toUpper(), find(QStringLiteral("cbrt")));
@@ -1578,6 +1623,7 @@ void FunctionRepo::insert(Function* function)
 {
     if (!function)
         return;
+    function->setDomain(domainToDisplay(function->domainType()));
     m_functions.insert(function->identifier().toUpper(), function);
 }
 
@@ -1621,6 +1667,31 @@ QStringList FunctionRepo::getIdentifiers() const
         return displayIdentifier(s);
     });
     result.removeDuplicates();
+    return result;
+}
+
+const QStringList& FunctionRepo::domains() const
+{
+    static QStringList result;
+    result = QStringList()
+        << domainToDisplay(FunctionDomain::Arithmetic)
+        << domainToDisplay(FunctionDomain::Chemistry)
+        << domainToDisplay(FunctionDomain::Complex)
+        << domainToDisplay(FunctionDomain::Combinatorics)
+        << domainToDisplay(FunctionDomain::Probability)
+        << domainToDisplay(FunctionDomain::Statistics)
+        << domainToDisplay(FunctionDomain::Aggregation)
+        << domainToDisplay(FunctionDomain::Random)
+        << domainToDisplay(FunctionDomain::BaseConversion)
+        << domainToDisplay(FunctionDomain::NumberFormatting)
+        << domainToDisplay(FunctionDomain::IntegerArithmetic)
+        << domainToDisplay(FunctionDomain::SpecialFunctions)
+        << domainToDisplay(FunctionDomain::ExponentialLogarithmic)
+        << domainToDisplay(FunctionDomain::AngleConversion)
+        << domainToDisplay(FunctionDomain::Trigonometry)
+        << domainToDisplay(FunctionDomain::Bitwise)
+        << domainToDisplay(FunctionDomain::FloatingPoint)
+        << domainToDisplay(FunctionDomain::DateTime);
     return result;
 }
 
