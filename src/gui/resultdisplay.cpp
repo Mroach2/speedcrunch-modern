@@ -436,6 +436,7 @@ void ResultDisplay::refresh()
 {
     const Session* session = Evaluator::instance()->session();
     const int historyCount = session->historySize();
+    const int previousScrollValue = verticalScrollBar()->value();
 
     // Fast path for the common "new evaluation added one history entry" case.
     if (historyCount == m_count + 1 && historyCount > 0) {
@@ -471,6 +472,7 @@ void ResultDisplay::refresh()
     }
 
     setPlainText(allLines.join(QLatin1String("\n")));
+    verticalScrollBar()->setValue(previousScrollValue);
 
     markHistoryBlockIndexCacheDirty();
     updateHoverHighlightSelection();
