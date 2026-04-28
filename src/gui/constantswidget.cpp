@@ -39,6 +39,11 @@
 
 static QString constantExpression(const Constant& constant)
 {
+    if (constant.name == Constants::tr("pi (π)"))
+        return QString(UnicodeChars::Pi);
+    if (constant.name == Constants::tr("Euler's number (e)"))
+        return QStringLiteral("e");
+
     QString unit = constant.unit;
     unit.replace(UnicodeChars::MiddleDot, MathDsl::MulDotOp);
     return constant.unit.isEmpty()
