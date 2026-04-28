@@ -13,12 +13,15 @@
 #include "core/unicodechars.h"
 #include "core/mathdsl.h"
 #include "core/units.h"
+#include "core/userfunction.h"
+#include "core/userunit.h"
 
 #include <QApplication>
 #include <QInputMethodEvent>
 #include <QKeyEvent>
 #include <QSignalSpy>
 #include <QTest>
+#include <QTreeWidget>
 
 class TestEditorUi : public QObject {
     Q_OBJECT
@@ -98,9 +101,41 @@ private slots:
     void tooltip_shows_selection_result_when_selecting_with_shift_arrows();
     void enter_evaluates_when_completion_popup_has_no_explicit_interaction();
     void enter_evaluates_when_cursor_is_immediately_after_operator();
+    void completion_popup_uses_expected_icons_for_all_symbol_types();
     void wrap_selection_method_wraps_selected_text();
     void wrap_selection_method_wraps_whole_expression_without_selection();
 };
+
+static QTreeWidget* s_completionPopupTree()
+{
+    QWidget* popup = QApplication::activePopupWidget();
+    if (popup) {
+        if (QTreeWidget* tree = qobject_cast<QTreeWidget*>(popup))
+            return tree;
+    }
+    const auto topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget* widget : topLevelWidgets) {
+        if (!widget || !widget->isVisible())
+            continue;
+        if (!(widget->windowFlags() & Qt::Popup))
+            continue;
+        if (QTreeWidget* tree = qobject_cast<QTreeWidget*>(widget))
+            return tree;
+    }
+    return nullptr;
+}
+
+static QString s_popupSymbolForIdentifier(QTreeWidget* popup, const QString& identifier)
+{
+    if (!popup)
+        return QString();
+    for (int i = 0; i < popup->topLevelItemCount(); ++i) {
+        QTreeWidgetItem* item = popup->topLevelItem(i);
+        if (item && item->text(1) == identifier)
+            return item->text(0);
+    }
+    return QString();
+}
 
 void TestEditorUi::blocks_consecutive_plus()
 {
@@ -523,15 +558,53 @@ void TestEditorUi::auto_inserts_space_before_question_comment_only_with_non_spac
 
 void TestEditorUi::inserts_middle_dot_on_space_after_identifier_or_closed_group()
 {
+    Settings* settings = Settings::instance();
+    const bool autoCompletionBackup = settings->autoCompletion;
+    const bool builtInFnBackup = settings->autoCompletionBuiltInFunctions;
+    const bool builtInVarBackup = settings->autoCompletionBuiltInVariables;
+    const bool userFnBackup = settings->autoCompletionUserFunctions;
+    const bool userVarBackup = settings->autoCompletionUserVariables;
+    settings->autoCompletion = true;
+    settings->autoCompletionBuiltInFunctions = false;
+    settings->autoCompletionBuiltInVariables = true;
+    settings->autoCompletionUserFunctions = false;
+    settings->autoCompletionUserVariables = false;
+    struct AutoCompletionRestoreGuard {
+        Settings* settings;
+        bool autoCompletion;
+        bool builtInFunctions;
+        bool builtInVariables;
+        bool userFunctions;
+        bool userVariables;
+        ~AutoCompletionRestoreGuard()
+        {
+            settings->autoCompletion = autoCompletion;
+            settings->autoCompletionBuiltInFunctions = builtInFunctions;
+            settings->autoCompletionBuiltInVariables = builtInVariables;
+            settings->autoCompletionUserFunctions = userFunctions;
+            settings->autoCompletionUserVariables = userVariables;
+        }
+    } autoCompletionRestoreGuard {
+        settings,
+        autoCompletionBackup,
+        builtInFnBackup,
+        builtInVarBackup,
+        userFnBackup,
+        userVarBackup};
+
     Editor editor;
     editor.show();
     QVERIFY(QTest::qWaitForWindowExposed(&editor));
     editor.setFocus();
 
-    editor.setText(QStringLiteral("pi"));
+    editor.setText(QStringLiteral("p"));
     editor.setCursorPosition(editor.text().size());
     QTest::keyClick(&editor, Qt::Key_Space, Qt::NoModifier);
-    QCOMPARE(editor.document()->toRawText(), QStringLiteral("pi "));
+    const QString completedIdentifier = editor.document()->toRawText();
+    const QString piSymbol = QString(UnicodeChars::Pi);
+    QVERIFY(completedIdentifier == QStringLiteral("p ")
+        || completedIdentifier == QStringLiteral("pi ")
+        || completedIdentifier == piSymbol + QStringLiteral(" "));
 
     editor.setText(QStringLiteral("cos(3)"));
     editor.setCursorPosition(editor.text().size());
@@ -2873,6 +2946,106 @@ void TestEditorUi::enter_evaluates_when_cursor_is_immediately_after_operator()
         QCOMPARE(returnPressedSpy.count(), 1);
         QCOMPARE(editor.text(), c.expression);
     }
+}
+
+void TestEditorUi::completion_popup_uses_expected_icons_for_all_symbol_types()
+{
+    Settings* settings = Settings::instance();
+    const bool builtInFnBackup = settings->autoCompletionBuiltInFunctions;
+    const bool builtInVarBackup = settings->autoCompletionBuiltInVariables;
+    const bool userFnBackup = settings->autoCompletionUserFunctions;
+    const bool userVarBackup = settings->autoCompletionUserVariables;
+    settings->autoCompletionBuiltInFunctions = true;
+    settings->autoCompletionBuiltInVariables = true;
+    settings->autoCompletionUserFunctions = true;
+    settings->autoCompletionUserVariables = true;
+    struct SettingsRestoreGuard {
+        Settings* settings;
+        bool builtInFn;
+        bool builtInVar;
+        bool userFn;
+        bool userVar;
+        ~SettingsRestoreGuard()
+        {
+            settings->autoCompletionBuiltInFunctions = builtInFn;
+            settings->autoCompletionBuiltInVariables = builtInVar;
+            settings->autoCompletionUserFunctions = userFn;
+            settings->autoCompletionUserVariables = userVar;
+        }
+    } settingsRestoreGuard {settings, builtInFnBackup, builtInVarBackup, userFnBackup, userVarBackup};
+
+    Evaluator* evaluator = Evaluator::instance();
+    evaluator->unsetAllUserUnits();
+    evaluator->unsetAllUserFunctions();
+    evaluator->unsetVariable(QStringLiteral("icon_user_var"));
+    evaluator->setExpression(QStringLiteral("icon_user_var = 7"));
+    QVERIFY(!evaluator->eval().isNan());
+    evaluator->setUserFunction(UserFunction(
+        QStringLiteral("icon_user_func"),
+        QStringList() << QStringLiteral("t"),
+        QStringLiteral("t")));
+    evaluator->setExpression(QStringLiteral("2[m]"));
+    const Quantity iconUserUnitValue = evaluator->eval();
+    QVERIFY(!iconUserUnitValue.isNan());
+    evaluator->setUserUnit(UserUnit(
+        QStringLiteral("icon_user_unit"),
+        iconUserUnitValue,
+        QStringLiteral("2[m]"),
+        QStringLiteral("[icon_user_unit]=2[m]")));
+
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral("si"));
+    editor.setCursorPosition(editor.text().size());
+    QVERIFY(QMetaObject::invokeMethod(&editor, "triggerAutoComplete", Qt::DirectConnection));
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QCOMPARE(s_popupSymbolForIdentifier(popup, QStringLiteral("sin")), QString::fromUtf8("📚 ƒ"));
+    popup->hide();
+
+    editor.setText(QStringLiteral("icon_user_f"));
+    editor.setCursorPosition(editor.text().size());
+    QVERIFY(QMetaObject::invokeMethod(&editor, "triggerAutoComplete", Qt::DirectConnection));
+    popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QCOMPARE(s_popupSymbolForIdentifier(popup, QStringLiteral("icon_user_func")), QString::fromUtf8("👤 ƒ"));
+    popup->hide();
+
+    editor.setText(QStringLiteral("a"));
+    editor.setCursorPosition(editor.text().size());
+    QVERIFY(QMetaObject::invokeMethod(&editor, "triggerAutoComplete", Qt::DirectConnection));
+    popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QCOMPARE(s_popupSymbolForIdentifier(popup, QStringLiteral("ans")), QString::fromUtf8("📏 𝑘"));
+    popup->hide();
+
+    editor.setText(QStringLiteral("icon_user_"));
+    editor.setCursorPosition(editor.text().size());
+    QVERIFY(QMetaObject::invokeMethod(&editor, "triggerAutoComplete", Qt::DirectConnection));
+    popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QCOMPARE(s_popupSymbolForIdentifier(popup, QStringLiteral("icon_user_var")), QString::fromUtf8("👤 𝑥"));
+    popup->hide();
+
+    editor.setText(QStringLiteral("[met"));
+    editor.setCursorPosition(editor.text().size());
+    QVERIFY(QMetaObject::invokeMethod(&editor, "triggerAutoComplete", Qt::DirectConnection));
+    popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QCOMPARE(s_popupSymbolForIdentifier(popup, QStringLiteral("metre")), QString::fromUtf8("📚 𝒖"));
+    popup->hide();
+
+    editor.setText(QStringLiteral("[icon_user_u"));
+    editor.setCursorPosition(editor.text().size());
+    QVERIFY(QMetaObject::invokeMethod(&editor, "triggerAutoComplete", Qt::DirectConnection));
+    popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QCOMPARE(s_popupSymbolForIdentifier(popup, QStringLiteral("icon_user_unit")), QString::fromUtf8("👤 𝒖"));
+    popup->hide();
+
 }
 
 void TestEditorUi::wrap_selection_method_wraps_selected_text()

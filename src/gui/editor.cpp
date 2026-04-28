@@ -3794,6 +3794,14 @@ void EditorCompletion::showCompletion(const QStringList& choices)
 
     m_popup->setUpdatesEnabled(false);
     m_popup->clear();
+    // Performance: compute these once per popup render (not per row) because
+    // unit completion can contain many entries and this function runs often.
+    Evaluator* evaluator = Evaluator::instance();
+    const QList<QString> builtInUnitKeys =
+        Units::builtInUnitLookup(Settings::instance()->angleUnit).keys();
+    const QSet<QString> builtInUnits(
+        builtInUnitKeys.constBegin(),
+        builtInUnitKeys.constEnd());
 
     for (int i = 0; i < choices.count(); ++i) {
         const auto pair = choices.at(i).split(':');
@@ -3806,10 +3814,17 @@ void EditorCompletion::showCompletion(const QStringList& choices)
 
         if (FunctionRepo::instance()->find(identifier)) {
             typeSymbol = QString::fromUtf8("📚 ƒ");
-        } else if (Evaluator::instance()->hasUserFunction(identifier)) {
+        // Reuse local evaluator pointer to avoid repeated singleton lookups
+        // on every completion row.
+        } else if (evaluator->hasUserFunction(identifier)) {
             typeSymbol = QString::fromUtf8("👤 ƒ");
-        } else if (Evaluator::instance()->hasVariable(identifier)) {
-            const auto variable = Evaluator::instance()->getVariable(identifier);
+        } else if (evaluator->hasUserUnit(identifier)) {
+            typeSymbol = QString::fromUtf8("👤 𝒖");
+        // O(1) membership check against precomputed built-in unit identifiers.
+        } else if (builtInUnits.contains(identifier)) {
+            typeSymbol = QString::fromUtf8("📚 𝒖");
+        } else if (evaluator->hasVariable(identifier)) {
+            const auto variable = evaluator->getVariable(identifier);
             if (variable.type() == Variable::BuiltIn)
                 typeSymbol = QString::fromUtf8("📏 𝑘");
         }
