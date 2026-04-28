@@ -62,6 +62,7 @@ VariableListWidget::VariableListWidget(QWidget* parent)
     m_noMatchLabel->setAlignment(Qt::AlignCenter);
     m_noMatchLabel->adjustSize();
     m_noMatchLabel->hide();
+    m_searchFilter->setClearButtonEnabled(true);
 
     QWidget* searchBox = new QWidget(this);
     QHBoxLayout* searchLayout = new QHBoxLayout;

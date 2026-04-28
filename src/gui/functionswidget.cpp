@@ -60,6 +60,7 @@ FunctionsWidget::FunctionsWidget(QWidget* parent)
     m_noMatchLabel->setAlignment(Qt::AlignCenter);
     m_noMatchLabel->adjustSize();
     m_noMatchLabel->hide();
+    m_searchFilter->setClearButtonEnabled(true);
 
     m_domain->setEditable(false);
     m_domain->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);

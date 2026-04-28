@@ -80,6 +80,7 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
 
     m_filter = new QLineEdit(this);
     m_filter->setMinimumWidth(fontMetrics().horizontalAdvance('X') * 10);
+    m_filter->setClearButtonEnabled(true);
 
     connect(m_filter, SIGNAL(textChanged(const QString &)), SLOT(triggerFilter()));
 
