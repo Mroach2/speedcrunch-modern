@@ -643,6 +643,7 @@ void Settings::load()
     key = KEY + QLatin1String("/Display/");
     displayFont = settings->value(key + QLatin1String("DisplayFont"), QFont().toString()).toString();
     colorScheme = settings->value(key + QLatin1String("ColorSchemeName"), DefaultColorScheme).toString();
+    customColorSchemeJson = settings->value(key + QLatin1String("CustomColorSchemeJson"), QString()).toString();
 
     delete settings;
 }
@@ -764,6 +765,7 @@ void Settings::save()
 
     settings->setValue(key + QLatin1String("DisplayFont"), displayFont);
     settings->setValue(key + QLatin1String("ColorSchemeName"), colorScheme);
+    settings->setValue(key + QLatin1String("CustomColorSchemeJson"), customColorSchemeJson);
 
 
     delete settings;

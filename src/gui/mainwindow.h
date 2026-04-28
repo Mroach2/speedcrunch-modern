@@ -212,6 +212,7 @@ private slots:
     void showManualWindow();
     void showNumberFormatDialog();
     void showResultSlotsDialog();
+    void showCustomThemeDialog();
     void showContextHelp();
     void showReadyMessage();
     void showAngleModeContextMenu(const QPoint&);
@@ -409,6 +410,7 @@ private:
         QAction* settingsDisplayZoomIn;
         QAction* settingsDisplayZoomOut;
         QAction* settingsDisplayFont;
+        QAction* settingsDisplayColorSchemeCustom;
         QVector<QAction*> settingsDisplayColorSchemes;
         QAction* settingsRadixCharDefault;
         QAction* settingsRadixCharDot;
@@ -528,6 +530,7 @@ private:
     ManualServer* m_manualServer;
     VersionCheck* m_versionCheck;
     QString m_colorSchemeToRevert;
+    QString m_customColorSchemeJsonToRevert;
     int m_pendingHistoryEditIndex;
     bool m_shutdownStateSaved;
 };

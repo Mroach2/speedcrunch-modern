@@ -7,7 +7,6 @@ Table of Contents
    introduction
    userguide/index
    reference/index
-   advanced/index
 
 
 Indices and Tables

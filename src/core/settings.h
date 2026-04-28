@@ -212,6 +212,7 @@ public:
     QString formulaBookActivePage;
 
     QString colorScheme;
+    QString customColorSchemeJson;
     QString displayFont;
 
     QString language;

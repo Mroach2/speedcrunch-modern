@@ -76,9 +76,11 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QComboBox>
+#include <QColorDialog>
 #include <QFileDialog>
 #include <QFont>
 #include <QFontDialog>
+#include <QGridLayout>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
@@ -147,6 +149,39 @@ static bool isWaylandPlatform()
     const auto platform = QGuiApplication::platformName();
     const bool isWayland = (platform == "wayland");
     return isWayland;
+}
+
+QString colorSchemeRoleLabel(ColorScheme::Role role)
+{
+    switch (role) {
+    case ColorScheme::Cursor: return QStringLiteral("cursor");
+    case ColorScheme::Number: return QStringLiteral("number");
+    case ColorScheme::Parens: return QStringLiteral("parens");
+    case ColorScheme::Result: return QStringLiteral("result");
+    case ColorScheme::Comment: return QStringLiteral("comment");
+    case ColorScheme::Matched: return QStringLiteral("matched");
+    case ColorScheme::Function: return QStringLiteral("function");
+    case ColorScheme::Operator: return QStringLiteral("operator");
+    case ColorScheme::Variable: return QStringLiteral("variable");
+    case ColorScheme::ScrollBar: return QStringLiteral("scrollbar");
+    case ColorScheme::Separator: return QStringLiteral("separator");
+    case ColorScheme::Background: return QStringLiteral("background");
+    case ColorScheme::EditorBackground: return QStringLiteral("editorbackground");
+    }
+    return QString();
+}
+
+void updateColorButtonStyle(QPushButton* button, const QColor& color)
+{
+    if (!button || !color.isValid())
+        return;
+
+    const int brightness = qRound(0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue());
+    const QString textColor = brightness >= 160 ? QStringLiteral("#111111") : QStringLiteral("#f5f5f5");
+
+    button->setText(color.name());
+    button->setStyleSheet(QStringLiteral("QPushButton { background-color: %1; color: %2; }")
+                              .arg(color.name(), textColor));
 }
 
 static void typeTextThroughEditorInputRules(Editor* editor, const QString& text)
@@ -432,6 +467,7 @@ void MainWindow::createActions()
     m_actions.settingsBehaviorHistorySizeLimit = new QAction(this);
     m_actions.settingsResultFormatComplexDisabled = new QAction(this);
     m_actions.settingsDisplayFont = new QAction(this);
+    m_actions.settingsDisplayColorSchemeCustom = new QAction(this);
     m_actions.settingsLanguage = new QAction(this);
     m_actions.settingsRadixCharComma = new QAction(this);
     m_actions.settingsRadixCharDefault = new QAction(this);
@@ -519,6 +555,7 @@ void MainWindow::createActions()
     m_actions.settingsBehaviorAutoResultToClipboard->setCheckable(true);
     m_actions.settingsBehaviorSimplifyResultExpressions->setCheckable(true);
     m_actions.settingsResultFormatComplexDisabled->setCheckable(true);
+    m_actions.settingsDisplayColorSchemeCustom->setCheckable(true);
     m_actions.settingsRadixCharComma->setCheckable(true);
     m_actions.settingsRadixCharDefault->setCheckable(true);
     m_actions.settingsRadixCharDot->setCheckable(true);
@@ -845,6 +882,7 @@ void MainWindow::setActionsText()
     m_actions.settingsImaginaryUnitI->setText(MainWindow::tr("Imaginary Unit &i"));
     m_actions.settingsImaginaryUnitJ->setText(MainWindow::tr("Imaginary Unit &j"));
     m_actions.settingsDisplayFont->setText(MainWindow::tr("&Font..."));
+    m_actions.settingsDisplayColorSchemeCustom->setText(MainWindow::tr("&Custom..."));
     m_actions.settingsLanguage->setText(MainWindow::tr("&Language..."));
 
     m_actions.helpManual->setText(MainWindow::tr("User &Manual"));
@@ -1049,6 +1087,8 @@ void MainWindow::createMenus()
     const auto schemes = m_actions.settingsDisplayColorSchemes;
     for (auto& action : schemes)
         m_menus.colorScheme->addAction(action);
+    m_menus.colorScheme->addSeparator();
+    m_menus.colorScheme->addAction(m_actions.settingsDisplayColorSchemeCustom);
     m_menus.display->addAction(m_actions.settingsDisplayFont);
     m_menus.display->addSeparator();
     m_menus.display->addAction(m_actions.settingsBehaviorSyntaxHighlighting);
@@ -1755,6 +1795,7 @@ void MainWindow::createFixedConnections()
     connect(this, SIGNAL(syntaxHighlightingChanged()), m_widgets.editor, SLOT(rehighlight()));
 
     connect(m_actions.settingsDisplayFont, SIGNAL(triggered()), SLOT(showFontDialog()));
+    connect(m_actions.settingsDisplayColorSchemeCustom, SIGNAL(triggered()), SLOT(showCustomThemeDialog()));
 
     const auto schemes = m_actions.settingsDisplayColorSchemes;
     for (auto& action : schemes) // TODO: Use Qt 5.7's qAsConst();
@@ -1967,10 +2008,15 @@ void MainWindow::applySettings()
     m_widgets.display->verticalScrollBar()->setValue(m_widgets.display->verticalScrollBar()->maximum());
 
     const auto schemes = m_actions.settingsDisplayColorSchemes;
+    bool colorSchemeMatched = false;
     for (auto& action : schemes) {
-        if (m_settings->colorScheme == action->data().toString())
+        if (m_settings->colorScheme == action->data().toString()) {
             action->setChecked(true);
+            colorSchemeMatched = true;
+        }
     }
+    m_actions.settingsDisplayColorSchemeCustom->setChecked(!colorSchemeMatched
+                                                           && m_settings->colorScheme == QLatin1String("Custom"));
 
     if (m_widgets.display->isEmpty())
         QTimer::singleShot(0, this, SLOT(showReadyMessage()));
@@ -2334,23 +2380,176 @@ void MainWindow::setResultPrecisionCustom()
 void MainWindow::applySelectedColorScheme()
 {
     m_settings->colorScheme = m_actionGroups.colorScheme->checkedAction()->data().toString();
+    m_actions.settingsDisplayColorSchemeCustom->setChecked(false);
     emit colorSchemeChanged();
 }
 
 void MainWindow::applyColorSchemeFromAction(QAction* action)
 {
     m_settings->colorScheme = action->data().toString();
+    m_actions.settingsDisplayColorSchemeCustom->setChecked(false);
     emit colorSchemeChanged();
 }
 
 void MainWindow::saveColorSchemeToRevert()
 {
     m_colorSchemeToRevert = m_settings->colorScheme;
+    m_customColorSchemeJsonToRevert = m_settings->customColorSchemeJson;
 }
 
 void MainWindow::revertColorScheme()
 {
     m_settings->colorScheme = m_colorSchemeToRevert;
+    m_settings->customColorSchemeJson = m_customColorSchemeJsonToRevert;
+    m_actions.settingsDisplayColorSchemeCustom->setChecked(m_settings->colorScheme == QLatin1String("Custom"));
+    emit colorSchemeChanged();
+}
+
+void MainWindow::showCustomThemeDialog()
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("Custom Theme"));
+    dialog.setMinimumSize(720, 560);
+
+    QVBoxLayout* layout = new QVBoxLayout(&dialog);
+    layout->addWidget(new QLabel(
+        tr("Customize every theme color role. Import or export theme files in JSON format."),
+        &dialog));
+
+    QPlainTextEdit* preview = new QPlainTextEdit(&dialog);
+    preview->setReadOnly(true);
+    preview->setPlainText(
+        QStringLiteral("2+2*5\n"
+                       "3^4 + 2^10\n"
+                       "sin(pi/6) + cos(pi/3)\n"
+                       "distance=42[km]\n"
+                       "speed=distance/1.5[h]\n"
+                       "f(x)=x^2+2*x+1\n"
+                       "f(ans) ? quadratic sample\n"
+                       "= 256"));
+    auto previewHighlighter = new SyntaxHighlighter(preview);
+    layout->addWidget(preview);
+
+    QWidget* rolesWidget = new QWidget(&dialog);
+    QGridLayout* roleLayout = new QGridLayout(rolesWidget);
+    roleLayout->setContentsMargins(0, 0, 0, 0);
+    roleLayout->setHorizontalSpacing(10);
+    roleLayout->setVerticalSpacing(6);
+    layout->addWidget(rolesWidget);
+
+    auto currentScheme = ColorScheme::loadByName(m_settings->colorScheme);
+    if (!currentScheme.isValid()) {
+        const QJsonDocument customDoc = QJsonDocument::fromJson(m_settings->customColorSchemeJson.toUtf8());
+        currentScheme = ColorScheme(customDoc);
+    }
+    if (!currentScheme.isValid())
+        currentScheme = ColorScheme::loadByName(QStringLiteral("Terminal"));
+    if (!currentScheme.isValid())
+        currentScheme = ColorScheme(QJsonDocument(QJsonObject()));
+
+    QMap<ColorScheme::Role, QColor> colorsByRole;
+    const auto roleEntries = ColorScheme::roleNames();
+    for (const auto& roleEntry : roleEntries)
+        colorsByRole.insert(roleEntry.second, currentScheme.colorForRole(roleEntry.second));
+
+    QMap<ColorScheme::Role, QPushButton*> roleButtons;
+    const auto applyPreview = [&colorsByRole, preview, previewHighlighter]() {
+        QJsonObject object;
+        const auto roles = ColorScheme::roleNames();
+        for (const auto& roleEntry : roles)
+            object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
+        const ColorScheme scheme = ColorScheme::fromJsonObject(object);
+        previewHighlighter->setColorScheme(ColorScheme::fromJsonObject(scheme.toJsonObject()));
+        QPalette palette = preview->palette();
+        palette.setColor(QPalette::Base, scheme.colorForRole(ColorScheme::Background));
+        preview->setPalette(palette);
+        previewHighlighter->rehighlight();
+    };
+
+    int row = 0;
+    for (const auto& roleEntry : roleEntries) {
+        const ColorScheme::Role role = roleEntry.second;
+        QLabel* roleLabel = new QLabel(colorSchemeRoleLabel(role), rolesWidget);
+        QPushButton* colorButton = new QPushButton(rolesWidget);
+        updateColorButtonStyle(colorButton, colorsByRole.value(role));
+        roleButtons.insert(role, colorButton);
+        roleLayout->addWidget(roleLabel, row, 0);
+        roleLayout->addWidget(colorButton, row, 1);
+        connect(colorButton, &QPushButton::clicked, &dialog, [&, role]() {
+            const QColor initial = colorsByRole.value(role);
+            const QColor chosen = QColorDialog::getColor(initial, &dialog, tr("Select color for %1").arg(colorSchemeRoleLabel(role)));
+            if (!chosen.isValid())
+                return;
+            colorsByRole[role] = chosen;
+            updateColorButtonStyle(roleButtons.value(role), chosen);
+            applyPreview();
+        });
+        ++row;
+    }
+
+    applyPreview();
+
+    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    QPushButton* importButton = buttons->addButton(tr("Import..."), QDialogButtonBox::ActionRole);
+    QPushButton* exportButton = buttons->addButton(tr("Export..."), QDialogButtonBox::ActionRole);
+    layout->addWidget(buttons);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    connect(importButton, &QPushButton::clicked, this, [&, roleEntries]() {
+        const QString filePath = QFileDialog::getOpenFileName(
+            this, tr("Import Theme"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+            tr("Theme file (*.json);;All files (*)"));
+        if (filePath.isEmpty())
+            return;
+        QFile file(filePath);
+        if (!file.open(QIODevice::ReadOnly)) {
+            QMessageBox::critical(this, tr("Error"), tr("Can't read from file %1").arg(filePath));
+            return;
+        }
+        const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        const ColorScheme importedScheme(doc);
+        if (!importedScheme.isValid()) {
+            QMessageBox::critical(this, tr("Error"), tr("Invalid theme file."));
+            return;
+        }
+        for (const auto& roleEntry : roleEntries) {
+            const QColor color = importedScheme.colorForRole(roleEntry.second);
+            colorsByRole[roleEntry.second] = color;
+            updateColorButtonStyle(roleButtons.value(roleEntry.second), color);
+        }
+        applyPreview();
+    });
+    connect(exportButton, &QPushButton::clicked, this, [&, roleEntries]() {
+        QString filePath = QFileDialog::getSaveFileName(
+            this, tr("Export Theme"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+            tr("Theme file (*.json);;All files (*)"));
+        if (filePath.isEmpty())
+            return;
+        if (!filePath.endsWith(QLatin1String(".json"), Qt::CaseInsensitive))
+            filePath += QLatin1String(".json");
+        QFile file(filePath);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            QMessageBox::critical(this, tr("Error"), tr("Can't write to file %1").arg(filePath));
+            return;
+        }
+        QJsonObject object;
+        for (const auto& roleEntry : roleEntries)
+            object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
+        file.write(QJsonDocument(object).toJson(QJsonDocument::Indented));
+    });
+
+    if (dialog.exec() != QDialog::Accepted) {
+        m_actions.settingsDisplayColorSchemeCustom->setChecked(m_settings->colorScheme == QLatin1String("Custom"));
+        return;
+    }
+
+    QJsonObject object;
+    for (const auto& roleEntry : roleEntries)
+        object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
+    m_settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(object).toJson(QJsonDocument::Compact));
+    m_settings->colorScheme = QStringLiteral("Custom");
+    m_actions.settingsDisplayColorSchemeCustom->setChecked(true);
     emit colorSchemeChanged();
 }
 

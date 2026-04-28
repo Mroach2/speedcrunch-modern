@@ -494,8 +494,40 @@ User Interface Settings
 +++++++++++++++++++++++
 
 * :menuselection:`Settings --> Appearance --> Theme`
-    Select a theme. See :ref:`color_schemes` for information on how to install
-    additional themes so they are displayed in this menu.
+    Select a theme. Built-in themes are listed first, followed by
+    :menuselection:`Custom...`.
+
+    The :menuselection:`Custom...` entry opens the custom theme editor, where each
+    supported color role can be adjusted and previewed. The preview box is read-only
+    and includes representative expressions (numbers, exponents, functions, variables,
+    units, comments, and result lines) so changes are visible immediately.
+
+    The custom editor includes:
+
+    * per-role color selection buttons showing both the ``#RRGGBB`` value and the
+      actual color;
+    * :guilabel:`Import...` to load a theme from a JSON file;
+    * :guilabel:`Export...` to save the current custom theme as JSON.
+
+    When the dialog opens, it initializes from the currently selected theme.
+
+    SpeedCrunch also supports loading additional theme files from the following
+    directory:
+
+    * Windows: :file:`C:/Users/<USERNAME>/AppData/Roaming/SpeedCrunch/color-schemes/`
+    * Linux/Unix: :file:`~/.local/share/SpeedCrunch/color-schemes/`
+    * Linux (Flatpak): :file:`~/.var/app/org.speedcrunch.SpeedCrunch/data/SpeedCrunch/color-schemes/`
+    * OS X: :file:`~/Library/Application Support/SpeedCrunch/color-schemes/`
+    * Portable version (any OS): :file:`color-schemes` subdirectory in the
+      application directory.
+
+    Theme files use JSON and map role names to color values. Supported role names are:
+    ``cursor``, ``number``, ``parens``, ``result``, ``comment``, ``matched``,
+    ``function``, ``operator``, ``variable``, ``scrollbar``, ``separator``,
+    ``background``, ``editorbackground``.
+
+    .. versionadded:: 1.0
+       The :menuselection:`Custom...` theme editor, including live preview and JSON import/export.
 * :menuselection:`Settings --> Appearance --> Font`
     Select the font to use for the expression editor and result display.
 * :menuselection:`Settings --> Appearance --> Syntax Highlighting`

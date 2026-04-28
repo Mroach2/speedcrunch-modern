@@ -21,6 +21,7 @@
 #define GUI_SYNTAXHIGHLIGHTER_H
 
 #include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
 #include <QSyntaxHighlighter>
 
 class QPlainTextEdit;
@@ -47,10 +48,13 @@ public:
     ColorScheme(const QJsonDocument& doc);
     bool isValid() const { return m_valid; }
     QColor colorForRole(Role role) const;
+    QJsonObject toJsonObject() const;
 
     static QStringList enumerate();
     static ColorScheme loadFromFile(const QString& path);
     static ColorScheme loadByName(const QString& name);
+    static ColorScheme fromJsonObject(const QJsonObject& object);
+    static QVector<QPair<QString, Role>> roleNames();
 
 private:
     bool m_valid;

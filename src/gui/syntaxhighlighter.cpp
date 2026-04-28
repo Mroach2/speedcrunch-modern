@@ -36,6 +36,7 @@
 #include <QTextDocumentFragment>
 
 static const constexpr auto COLOR_SCHEME_EXTENSION = "json";
+static const constexpr auto DefaultColorSchemeName = "Terminal";
 
 static QString textNormalizedForHighlighting(QString text)
 {
@@ -108,25 +109,11 @@ QColor getFallbackColor(ColorScheme::Role role)
 ColorScheme::ColorScheme(const QJsonDocument& doc)
     : m_valid(false)
 {
-    static const QVector<std::pair<QString, ColorScheme::Role>> RoleNames {
-        { QStringLiteral("cursor"), ColorScheme::Cursor },
-        { QStringLiteral("number"), ColorScheme::Number },
-        { QStringLiteral("parens"), ColorScheme::Parens },
-        { QStringLiteral("result"), ColorScheme::Result },
-        { QStringLiteral("comment"), ColorScheme::Comment },
-        { QStringLiteral("matched"), ColorScheme::Matched },
-        { QStringLiteral("function"), ColorScheme::Function },
-        { QStringLiteral("operator"), ColorScheme::Operator },
-        { QStringLiteral("variable"), ColorScheme::Variable },
-        { QStringLiteral("scrollbar"), ColorScheme::ScrollBar },
-        { QStringLiteral("separator"), ColorScheme::Separator },
-        { QStringLiteral("background"), ColorScheme::Background },
-        { QStringLiteral("editorbackground"), ColorScheme::EditorBackground },
-    };
     if (!doc.isObject())
         return;
     auto obj = doc.object();
-    for (auto& role : RoleNames) {
+    const auto roleEntries = roleNames();
+    for (const auto& role : roleEntries) {
         auto v = obj.value(role.first);
         if (v.isUndefined())
             // Having a key missing is fine...
@@ -182,6 +169,39 @@ ColorScheme ColorScheme::loadByName(const QString& name)
             return colorScheme;
     }
     return ColorScheme();
+}
+
+QJsonObject ColorScheme::toJsonObject() const
+{
+    QJsonObject object;
+    const auto roleEntries = roleNames();
+    for (const auto& roleEntry : roleEntries)
+        object.insert(roleEntry.first, colorForRole(roleEntry.second).name());
+    return object;
+}
+
+ColorScheme ColorScheme::fromJsonObject(const QJsonObject& object)
+{
+    return ColorScheme(QJsonDocument(object));
+}
+
+QVector<QPair<QString, ColorScheme::Role>> ColorScheme::roleNames()
+{
+    return {
+        { QStringLiteral("cursor"), ColorScheme::Cursor },
+        { QStringLiteral("number"), ColorScheme::Number },
+        { QStringLiteral("parens"), ColorScheme::Parens },
+        { QStringLiteral("result"), ColorScheme::Result },
+        { QStringLiteral("comment"), ColorScheme::Comment },
+        { QStringLiteral("matched"), ColorScheme::Matched },
+        { QStringLiteral("function"), ColorScheme::Function },
+        { QStringLiteral("operator"), ColorScheme::Operator },
+        { QStringLiteral("variable"), ColorScheme::Variable },
+        { QStringLiteral("scrollbar"), ColorScheme::ScrollBar },
+        { QStringLiteral("separator"), ColorScheme::Separator },
+        { QStringLiteral("background"), ColorScheme::Background },
+        { QStringLiteral("editorbackground"), ColorScheme::EditorBackground },
+    };
 }
 
 
@@ -337,8 +357,18 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 
 void SyntaxHighlighter::update()
 {
-    QString name = Settings::instance()->colorScheme;
-    setColorScheme(ColorScheme::loadByName(name));
+    const Settings* settings = Settings::instance();
+    const QString name = settings->colorScheme;
+    if (name == QLatin1String("Custom")) {
+        const QJsonDocument customDoc = QJsonDocument::fromJson(settings->customColorSchemeJson.toUtf8());
+        ColorScheme customScheme(customDoc);
+        if (customScheme.isValid())
+            setColorScheme(std::move(customScheme));
+        else
+            setColorScheme(ColorScheme::loadByName(DefaultColorSchemeName));
+    } else {
+        setColorScheme(ColorScheme::loadByName(name));
+    }
 
     QColor backgroundColor = colorForRole(ColorScheme::Background);
     QWidget* parentWidget = static_cast<QWidget*>(parent());
