@@ -1430,6 +1430,8 @@ void MainWindow::createBookDock(bool)
 
     // No focus for this dock.
     addTabifiedDock(m_docks.book, false);
+    if (!m_settings->formulaBookActivePage.isEmpty())
+        m_docks.book->openPage(QUrl(m_settings->formulaBookActivePage));
     m_settings->formulaBookDockVisible = true;
 }
 
@@ -1446,6 +1448,10 @@ void MainWindow::createConstantsDock(bool takeFocus)
             m_docks.constants->widget(), &ConstantsWidget::handleRadixCharacterChange);
 
     addTabifiedDock(m_docks.constants, takeFocus);
+    m_docks.constants->widget()->restoreState(
+        m_settings->constantsDockDomain,
+        m_settings->constantsDockSubdomain,
+        m_settings->constantsDockSearchText);
     m_settings->constantsDockVisible = true;
 }
 
@@ -1460,6 +1466,7 @@ void MainWindow::createFunctionsDock(bool takeFocus)
             this, &MainWindow::insertFunctionIntoEditor);
 
     addTabifiedDock(m_docks.functions, takeFocus);
+    m_docks.functions->widget()->setSearchText(m_settings->functionsDockSearchText);
     m_settings->functionsDockVisible = true;
 }
 
@@ -1501,6 +1508,7 @@ void MainWindow::createVariablesDock(bool takeFocus)
             m_docks.variables->widget(), &VariableListWidget::updateList);
 
     addTabifiedDock(m_docks.variables, takeFocus);
+    m_docks.variables->widget()->setSearchText(m_settings->variablesDockSearchText);
     m_settings->variablesDockVisible = true;
 }
 
@@ -1521,6 +1529,7 @@ void MainWindow::createUserFunctionsDock(bool takeFocus)
             m_docks.userFunctions->widget(), &UserFunctionListWidget::updateList);
 
     addTabifiedDock(m_docks.userFunctions, takeFocus);
+    m_docks.userFunctions->widget()->setSearchText(m_settings->userFunctionsDockSearchText);
     m_settings->userFunctionsDockVisible = true;
 }
 
@@ -1541,6 +1550,7 @@ void MainWindow::createUserUnitsDock(bool takeFocus)
             m_docks.userUnits->widget(), &UserUnitListWidget::updateList);
 
     addTabifiedDock(m_docks.userUnits, takeFocus);
+    m_docks.userUnits->widget()->setSearchText(m_settings->userUnitsDockSearchText);
     m_settings->userUnitsDockVisible = true;
 }
 
@@ -2061,6 +2071,22 @@ void MainWindow::checkInitialDigitGrouping()
 
 void MainWindow::saveSettings()
 {
+    if (m_docks.constants) {
+        m_settings->constantsDockDomain = m_docks.constants->widget()->selectedDomain();
+        m_settings->constantsDockSubdomain = m_docks.constants->widget()->selectedSubdomain();
+        m_settings->constantsDockSearchText = m_docks.constants->widget()->searchText();
+    }
+    if (m_docks.functions)
+        m_settings->functionsDockSearchText = m_docks.functions->widget()->searchText();
+    if (m_docks.userFunctions)
+        m_settings->userFunctionsDockSearchText = m_docks.userFunctions->widget()->searchText();
+    if (m_docks.userUnits)
+        m_settings->userUnitsDockSearchText = m_docks.userUnits->widget()->searchText();
+    if (m_docks.variables)
+        m_settings->variablesDockSearchText = m_docks.variables->widget()->searchText();
+    if (m_docks.book)
+        m_settings->formulaBookActivePage = m_docks.book->currentPage();
+
     m_settings->windowGeometry = m_settings->windowPositionSave ? saveGeometry() : QByteArray();
     if (m_widgets.manual)
         m_settings->manualWindowGeometry = m_settings->windowPositionSave ? m_widgets.manual->saveGeometry() : QByteArray();

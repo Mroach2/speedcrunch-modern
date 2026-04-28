@@ -183,6 +183,9 @@ QString UserUnitListWidget::getUserUnitName(const QTreeWidgetItem* item)
     return item->text(0);
 }
 
+QString UserUnitListWidget::searchText() const { return m_searchFilter->text(); }
+void UserUnitListWidget::setSearchText(const QString& text) { m_searchFilter->setText(text); }
+
 void UserUnitListWidget::activateItem()
 {
     if (!currentItem() || m_userUnits->selectedItems().isEmpty())

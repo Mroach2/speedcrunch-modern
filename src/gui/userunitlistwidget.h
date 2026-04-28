@@ -29,6 +29,8 @@ public:
 
     QTreeWidgetItem* currentItem() const;
     QString getUserUnitName(const QTreeWidgetItem*);
+    QString searchText() const;
+    void setSearchText(const QString& text);
 
 signals:
     void userUnitSelected(const QString&);

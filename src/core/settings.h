@@ -201,6 +201,14 @@ public:
     bool userUnitsDockVisible;
     bool windowOnfullScreen;
     bool bitfieldVisible;
+    QString constantsDockDomain;
+    QString constantsDockSubdomain;
+    QString constantsDockSearchText;
+    QString functionsDockSearchText;
+    QString userFunctionsDockSearchText;
+    QString userUnitsDockSearchText;
+    QString variablesDockSearchText;
+    QString formulaBookActivePage;
 
     QString colorScheme;
     QString displayFont;

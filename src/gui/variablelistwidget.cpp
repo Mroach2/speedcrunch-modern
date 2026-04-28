@@ -176,6 +176,9 @@ QTreeWidgetItem* VariableListWidget::currentItem() const
     return m_variables->currentItem();
 }
 
+QString VariableListWidget::searchText() const { return m_searchFilter->text(); }
+void VariableListWidget::setSearchText(const QString& text) { m_searchFilter->setText(text); }
+
 void VariableListWidget::activateItem()
 {
     if (!currentItem() || m_variables->selectedItems().isEmpty())

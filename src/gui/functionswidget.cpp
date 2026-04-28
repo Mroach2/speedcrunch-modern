@@ -174,6 +174,9 @@ const QTreeWidgetItem* FunctionsWidget::currentItem() const
     return m_functions->currentItem();
 }
 
+QString FunctionsWidget::searchText() const { return m_searchFilter->text(); }
+void FunctionsWidget::setSearchText(const QString& text) { m_searchFilter->setText(text); }
+
 void FunctionsWidget::handleItemActivated(QTreeWidgetItem* item, int /*column*/)
 {
     emit functionSelected(item->text(0));

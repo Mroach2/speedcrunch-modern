@@ -125,9 +125,11 @@ void BookDock::handleAnchorClick(const QUrl& url)
 
 void BookDock::openPage(const QUrl& url)
 {
-    QString content = m_book->getPageContent(url.toString());
+    const QString page = url.toString().isEmpty() ? QStringLiteral("index") : url.toString();
+    QString content = m_book->getPageContent(page);
     if (!content.isNull())
         m_browser->setHtml(content);
+    m_currentPage = page;
 }
 
 void BookDock::retranslateText()
@@ -144,4 +146,9 @@ void BookDock::changeEvent(QEvent* event)
         retranslateText();
     else
         QDockWidget::changeEvent(event);
+}
+
+QString BookDock::currentPage() const
+{
+    return m_currentPage.isEmpty() ? QStringLiteral("index") : m_currentPage;
 }

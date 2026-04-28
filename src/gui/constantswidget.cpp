@@ -146,6 +146,27 @@ ConstantsWidget::~ConstantsWidget()
     m_filterTimer->stop();
 }
 
+QString ConstantsWidget::selectedDomain() const { return m_domain->currentText(); }
+QString ConstantsWidget::selectedSubdomain() const { return m_subdomain->currentText(); }
+QString ConstantsWidget::searchText() const { return m_filter->text(); }
+void ConstantsWidget::restoreState(const QString& domain, const QString& subdomain, const QString& searchText)
+{
+    if (!searchText.isNull())
+        m_filter->setText(searchText);
+    if (!domain.isEmpty()) {
+        const int domainIndex = m_domain->findText(domain);
+        if (domainIndex >= 0)
+            m_domain->setCurrentIndex(domainIndex);
+    }
+    refreshSubdomains();
+    if (!subdomain.isEmpty()) {
+        const int subdomainIndex = m_subdomain->findText(subdomain);
+        if (subdomainIndex >= 0)
+            m_subdomain->setCurrentIndex(subdomainIndex);
+    }
+    filter();
+}
+
 void ConstantsWidget::handleRadixCharacterChange()
 {
     updateList();

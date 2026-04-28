@@ -626,6 +626,14 @@ void Settings::load()
     constantsDockVisible = settings->value(key + QLatin1String("ConstantsDockVisible"), false).toBool();
     windowAlwaysOnTop = settings->value(key + QLatin1String("WindowAlwaysOnTop"), false).toBool();
     bitfieldVisible = settings->value(key + QLatin1String("BitfieldVisible"), false).toBool();
+    constantsDockDomain = settings->value(key + QLatin1String("ConstantsDockDomain"), QString()).toString();
+    constantsDockSubdomain = settings->value(key + QLatin1String("ConstantsDockSubdomain"), QString()).toString();
+    constantsDockSearchText = settings->value(key + QLatin1String("ConstantsDockSearchText"), QString()).toString();
+    functionsDockSearchText = settings->value(key + QLatin1String("FunctionsDockSearchText"), QString()).toString();
+    userFunctionsDockSearchText = settings->value(key + QLatin1String("UserFunctionsDockSearchText"), QString()).toString();
+    userUnitsDockSearchText = settings->value(key + QLatin1String("UserUnitsDockSearchText"), QString()).toString();
+    variablesDockSearchText = settings->value(key + QLatin1String("VariablesDockSearchText"), QString()).toString();
+    formulaBookActivePage = settings->value(key + QLatin1String("FormulaBookActivePage"), QStringLiteral("index")).toString();
 
     windowState = settings->value(key + QLatin1String("State")).toByteArray();
     windowGeometry = settings->value(key + QLatin1String("WindowGeometry")).toByteArray();
@@ -741,6 +749,14 @@ void Settings::save()
     settings->setValue(key + QLatin1String("WindowGeometry"), windowGeometry);
     settings->setValue(key + QLatin1String("ManualWindowGeometry"), manualWindowGeometry);
     settings->setValue(key + QLatin1String("BitfieldVisible"), bitfieldVisible);
+    settings->setValue(key + QLatin1String("ConstantsDockDomain"), constantsDockDomain);
+    settings->setValue(key + QLatin1String("ConstantsDockSubdomain"), constantsDockSubdomain);
+    settings->setValue(key + QLatin1String("ConstantsDockSearchText"), constantsDockSearchText);
+    settings->setValue(key + QLatin1String("FunctionsDockSearchText"), functionsDockSearchText);
+    settings->setValue(key + QLatin1String("UserFunctionsDockSearchText"), userFunctionsDockSearchText);
+    settings->setValue(key + QLatin1String("UserUnitsDockSearchText"), userUnitsDockSearchText);
+    settings->setValue(key + QLatin1String("VariablesDockSearchText"), variablesDockSearchText);
+    settings->setValue(key + QLatin1String("FormulaBookActivePage"), formulaBookActivePage);
 
     key = KEY + QLatin1String("/Display/");
 

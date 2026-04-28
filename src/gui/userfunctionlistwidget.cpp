@@ -194,6 +194,9 @@ QString UserFunctionListWidget::getUserFunctionName(const QTreeWidgetItem *item)
     return item->text(0).section("(", 0, 0);
 }
 
+QString UserFunctionListWidget::searchText() const { return m_searchFilter->text(); }
+void UserFunctionListWidget::setSearchText(const QString& text) { m_searchFilter->setText(text); }
+
 void UserFunctionListWidget::activateItem()
 {
     if (!currentItem() || m_userFunctions->selectedItems().isEmpty())

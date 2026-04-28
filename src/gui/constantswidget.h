@@ -34,6 +34,10 @@ class ConstantsWidget : public QWidget {
 public:
     explicit ConstantsWidget(QWidget* parent = nullptr);
     ~ConstantsWidget();
+    QString selectedDomain() const;
+    QString selectedSubdomain() const;
+    QString searchText() const;
+    void restoreState(const QString& domain, const QString& subdomain, const QString& searchText);
 
 signals:
     void constantSelected(const QString&);

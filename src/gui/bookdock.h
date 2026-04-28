@@ -47,6 +47,7 @@ signals:
 public slots:
     void openPage(const QUrl&);
     void retranslateText();
+    QString currentPage() const;
 
 protected:
     virtual void changeEvent(QEvent*);
@@ -58,6 +59,7 @@ private:
     Q_DISABLE_COPY(BookDock)
     Book* m_book;
     TextBrowser* m_browser;
+    QString m_currentPage;
 };
 
 #endif // GUI_BOOKDOCK_H

@@ -41,6 +41,8 @@ public:
     ~VariableListWidget();
 
     QTreeWidgetItem* currentItem() const;
+    QString searchText() const;
+    void setSearchText(const QString& text);
 
 signals:
     void variableSelected(const QString&);

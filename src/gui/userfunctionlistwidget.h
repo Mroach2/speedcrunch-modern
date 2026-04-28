@@ -41,6 +41,8 @@ public:
 
     QTreeWidgetItem* currentItem() const;
     QString getUserFunctionName(const QTreeWidgetItem *);
+    QString searchText() const;
+    void setSearchText(const QString& text);
 
 signals:
     void userFunctionSelected(const QString&);

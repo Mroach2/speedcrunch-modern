@@ -38,6 +38,8 @@ public:
 
     const QTreeWidgetItem* currentItem() const;
     QList<QTreeWidgetItem*> selectedItems() const;
+    QString searchText() const;
+    void setSearchText(const QString& text);
 
 signals:
     void functionSelected(const QString&);
