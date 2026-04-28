@@ -436,3 +436,38 @@ Examples::
     (-13)^(1/9.123) = 1.32465488702830785593
     (-13)^(1/2) = NaN
     (-13)^pi = NaN
+
+
+Complex Numbers
+---------------
+.. versionadded:: 0.12
+
+SpeedCrunch supports complex-number expressions. Enable complex mode in
+:menuselection:`Settings --> Complex Numbers`, then enter the imaginary unit as
+``i`` or ``j``::
+
+    j^2
+    = -1
+
+    (5+3j)/(8-2j)
+    = 0.5+0.5j
+
+Syntax note: ``5j`` means ``5*j``, while ``j5`` is a variable named ``j5``.
+Write ``j*5`` explicitly if needed.
+
+The displayed imaginary-unit symbol is configurable in
+:menuselection:`Settings --> Complex Numbers --> Imaginary Unit i/j`.
+
+Not every function accepts complex arguments. Refer to each function entry in
+the reference.
+
+Caution: with complex mode enabled, fractional powers return principal complex
+roots. For example, ``x^(1/3)`` may be non-real. In contrast, :func:`cbrt`
+always returns the real cubic root for real inputs.
+
+In real mode, ``x^y`` with negative real ``x`` is only defined when ``y`` can
+be reduced to a rational with odd denominator; otherwise the result is ``NaN``.
+
+When complex mode is disabled, :const:`i` and :const:`j` are unavailable as
+built-in constants. Previously stored variables may still contain complex
+values.

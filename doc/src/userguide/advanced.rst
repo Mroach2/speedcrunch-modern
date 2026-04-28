@@ -247,34 +247,4 @@ User unit definitions can also include a trailing comment::
 Like user variables and functions, comments are shown in the corresponding dock widget and in autocomplete suggestions.
 
 
-.. _complex_numbers:
-
-Complex numbers
----------------
-.. versionadded:: 0.12
-
-SpeedCrunch supports calculations involving complex numbers. To use them, select :menuselection:`Settings --> Results --> Complex Numbers --> Cartesian` or :menuselection:`Polar`. The imaginary unit can be entered as either ``i`` or ``j``::
-
-    j^2
-    = -1
-
-    (5+3j)/(8-2j)
-    = 0.5+0.5j
-
-A note on the syntax of complex numbers: ``5j`` denotes the number ``5*j`` while ``j5`` is a variable named 'j5'. If necessary, consider writing the multiplication explicitly, i.e. ``j*5``.
-The symbol used in displayed results can be selected via :menuselection:`Settings --> Results --> Complex Numbers --> Imaginary Unit 'i'` or :menuselection:`Imaginary Unit 'j'`.
-
-Not every function in SpeedCrunch supports complex arguments. Refer to a function's documentation for more information.
-
-Caution is advised when using functions like :func:`cbrt` or any fractional power operation with complex numbers.
-With complex number support enabled, the power operation ``x^(1/3)`` will return the first complex cubic root of ``x`` which is usually non-real.
-However, when given a real argument, :func:`cbrt` will *always* return the real cubic root, regardless of whether or not complex numbers are enabled.
-In *real mode*, ``x^y`` with negative real ``x`` is only defined when ``y`` can be reduced to a rational with an odd denominator;
-otherwise the result is ``NaN``.
-
-When complex numbers are disabled, the imaginary-unit constants :const:`i` and :const:`j` are not available. However, previously stored variables may still contain complex values.
-In that case, the imaginary part of these numbers is discarded when passing them as an argument to a built-in function.
-
-
-
 Some of the built-in functions are able to handle arguments with a dimension. Refer to the documentation of a particular function for more information.

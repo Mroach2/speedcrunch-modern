@@ -586,6 +586,36 @@ odd <code class="docutils literal notranslate"><span class="pre">p</span></code>
 </pre></div>
 </div>
 </td></tr></tbody></table></section>
+<section id="complex-numbers">
+<h2>Complex Numbers</h2>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 0.12.</span></p>
+</div>
+<p>SpeedCrunch supports complex-number expressions. Enable complex mode in
+<span class="menuselection">Settings ‣ Complex Numbers</span>, then enter the imaginary unit as
+<code class="docutils literal notranslate"><span class="pre">i</span></code> or <code class="docutils literal notranslate"><span class="pre">j</span></code>:</p>
+<table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="no">j</span><span class="o">^</span><span class="mi">2</span>
+<span class="ge">= -1</span>
+
+<span class="p">(</span><span class="mi">5</span><span class="o">+</span><span class="mi">3</span><span class="no">j</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">8</span><span class="o">-</span><span class="mi">2</span><span class="no">j</span><span class="p">)</span>
+<span class="ge">= 0.5+0.5j</span>
+</pre></div>
+</div>
+</td></tr></tbody></table><p>Syntax note: <code class="docutils literal notranslate"><span class="pre">5j</span></code> means <code class="docutils literal notranslate"><span class="pre">5*j</span></code>, while <code class="docutils literal notranslate"><span class="pre">j5</span></code> is a variable named <code class="docutils literal notranslate"><span class="pre">j5</span></code>.
+Write <code class="docutils literal notranslate"><span class="pre">j*5</span></code> explicitly if needed.</p>
+<p>The displayed imaginary-unit symbol is configurable in
+<span class="menuselection">Settings ‣ Complex Numbers ‣ Imaginary Unit i/j</span>.</p>
+<p>Not every function accepts complex arguments. Refer to each function entry in
+the reference.</p>
+<p>Caution: with complex mode enabled, fractional powers return principal complex
+roots. For example, <code class="docutils literal notranslate"><span class="pre">x^(1/3)</span></code> may be non-real. In contrast, <a class="reference internal" href="../reference/basic.html#sc.cbrt" title="cbrt"><code class="xref sc sc-func docutils literal notranslate"><span class="pre">cbrt()</span></code></a>
+always returns the real cubic root for real inputs.</p>
+<p>In real mode, <code class="docutils literal notranslate"><span class="pre">x^y</span></code> with negative real <code class="docutils literal notranslate"><span class="pre">x</span></code> is only defined when <code class="docutils literal notranslate"><span class="pre">y</span></code> can
+be reduced to a rational with odd denominator; otherwise the result is <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.</p>
+<p>When complex mode is disabled, <a class="reference internal" href="../reference/constants.html#sc.i" title="i"><code class="xref sc sc-const docutils literal notranslate"><span class="pre">i</span></code></a> and <a class="reference internal" href="../reference/constants.html#sc.j" title="j"><code class="xref sc sc-const docutils literal notranslate"><span class="pre">j</span></code></a> are unavailable as
+built-in constants. Previously stored variables may still contain complex
+values.</p>
+</section>
 </section>
 
 

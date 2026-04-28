@@ -687,9 +687,38 @@ expression fits in one visual line; otherwise, it moves the cursor.</p></li>
 <section id="user-interface-settings">
 <h3>User Interface Settings</h3>
 <ul>
-<li><dl class="simple">
-<dt><span class="menuselection">Settings ‣ Appearance ‣ Theme</span></dt><dd><p>Select a theme. See <a class="reference internal" href="../advanced/colorschemeformat.html#color-schemes"><span class="std std-ref">Color Scheme File Format</span></a> for information on how to install
-additional themes so they are displayed in this menu.</p>
+<li><dl>
+<dt><span class="menuselection">Settings ‣ Appearance ‣ Theme</span></dt><dd><p>Select a theme. Built-in themes are listed first, followed by
+<span class="menuselection">Custom…</span>.</p>
+<p>The <span class="menuselection">Custom…</span> entry opens the custom theme editor, where each
+supported color role can be adjusted and previewed. The preview box is read-only
+and includes representative expressions (numbers, exponents, functions, variables,
+units, comments, and result lines) so changes are visible immediately.</p>
+<p>The custom editor includes:</p>
+<ul class="simple">
+<li><p>per-role color selection buttons showing both the <code class="docutils literal notranslate"><span class="pre">#RRGGBB</span></code> value and the
+actual color;</p></li>
+<li><p><span class="guilabel">Import…</span> to load a theme from a JSON file;</p></li>
+<li><p><span class="guilabel">Export…</span> to save the current custom theme as JSON.</p></li>
+</ul>
+<p>When the dialog opens, it initializes from the currently selected theme.</p>
+<p>SpeedCrunch also supports loading additional theme files from the following
+directory:</p>
+<ul class="simple">
+<li><p>Windows: <code class="file docutils literal notranslate"><span class="pre">C:/Users/&lt;USERNAME&gt;/AppData/Roaming/SpeedCrunch/color-schemes/</span></code></p></li>
+<li><p>Linux/Unix: <code class="file docutils literal notranslate"><span class="pre">~/.local/share/SpeedCrunch/color-schemes/</span></code></p></li>
+<li><p>Linux (Flatpak): <code class="file docutils literal notranslate"><span class="pre">~/.var/app/org.speedcrunch.SpeedCrunch/data/SpeedCrunch/color-schemes/</span></code></p></li>
+<li><p>OS X: <code class="file docutils literal notranslate"><span class="pre">~/Library/Application</span> <span class="pre">Support/SpeedCrunch/color-schemes/</span></code></p></li>
+<li><p>Portable version (any OS): <code class="file docutils literal notranslate"><span class="pre">color-schemes</span></code> subdirectory in the
+application directory.</p></li>
+</ul>
+<p>Theme files use JSON and map role names to color values. Supported role names are:
+<code class="docutils literal notranslate"><span class="pre">cursor</span></code>, <code class="docutils literal notranslate"><span class="pre">number</span></code>, <code class="docutils literal notranslate"><span class="pre">parens</span></code>, <code class="docutils literal notranslate"><span class="pre">result</span></code>, <code class="docutils literal notranslate"><span class="pre">comment</span></code>, <code class="docutils literal notranslate"><span class="pre">matched</span></code>,
+<code class="docutils literal notranslate"><span class="pre">function</span></code>, <code class="docutils literal notranslate"><span class="pre">operator</span></code>, <code class="docutils literal notranslate"><span class="pre">variable</span></code>, <code class="docutils literal notranslate"><span class="pre">scrollbar</span></code>, <code class="docutils literal notranslate"><span class="pre">separator</span></code>,
+<code class="docutils literal notranslate"><span class="pre">background</span></code>, <code class="docutils literal notranslate"><span class="pre">editorbackground</span></code>.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 1.0: </span>The <span class="menuselection">Custom…</span> theme editor, including live preview and JSON import/export.</p>
+</div>
 </dd>
 </dl>
 </li>

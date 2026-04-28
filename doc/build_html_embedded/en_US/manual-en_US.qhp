@@ -32,6 +32,7 @@
                         </section>
                         <section title="Comments" ref="userguide/syntax.html#comments"/>
                         <section title="Operators and Precedence" ref="userguide/syntax.html#operators-and-precedence"/>
+                        <section title="Complex Numbers" ref="userguide/syntax.html#complex-numbers"/>
                     </section>
                     <section title="User-Defined Variables, Functions and Units" ref="userguide/advanced.html">
                         <section title="Variables" ref="userguide/advanced.html#variables"/>
@@ -43,7 +44,6 @@
                             <section title="Result unit selection" ref="userguide/advanced.html#result-unit-selection"/>
                         </section>
                         <section title="User Units" ref="userguide/advanced.html#user-units"/>
-                        <section title="Complex numbers" ref="userguide/advanced.html#complex-numbers"/>
                     </section>
                     <section title="User Interface" ref="userguide/interface.html">
                         <section title="Widgets" ref="userguide/interface.html#widgets"/>
@@ -144,11 +144,6 @@
                                 </section>
                             </section>
                         </section>
-                    </section>
-                </section>
-                <section title="Advanced Topics" ref="advanced/index.html">
-                    <section title="Color Scheme File Format" ref="advanced/colorschemeformat.html">
-                        <section title="Supported Color Roles" ref="advanced/colorschemeformat.html#supported-color-roles"/>
                     </section>
                 </section>
                 <section title="Function Index" ref="sc-functionindex.html"/>
@@ -291,8 +286,6 @@
             <file>genindex.html</file>
             <file>introduction.html</file>
             <file>sc-functionindex.html</file>
-            <file>advanced/colorschemeformat.html</file>
-            <file>advanced/index.html</file>
             <file>_static/basic.css</file>
             <file>_static/file.png</file>
             <file>_static/minus.png</file>

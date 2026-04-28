@@ -287,7 +287,10 @@ If <code class="docutils literal notranslate"><span class="pre">bits</span></cod
 <dl class="sc function">
 <dt class="sig sig-object sc" id="sc.round">
 <span class="sig-name descname"><span class="pre">round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">x</span></em><span class="optional">[</span>; <em class="sig-param"><span class="pre">n</span></em><span class="optional">]</span><span class="sig-paren">)</span></dt>
-<dd><p>Round <code class="docutils literal notranslate"><span class="pre">x</span></code> to the nearest number with <code class="docutils literal notranslate"><span class="pre">n</span></code> fractional digits; <code class="docutils literal notranslate"><span class="pre">n</span></code> may be omitted, in which case <code class="docutils literal notranslate"><span class="pre">x</span></code> is rounded to the closest integer. Ties are broken by rounding to the nearest <em>even</em> integer. This rounding strategy, commonly known as <em>Banker’s rounding</em>, serves to avoid a bias (for instance when averaging or summing).</p>
+<dd><p>Round <code class="docutils literal notranslate"><span class="pre">x</span></code> to the nearest number with <code class="docutils literal notranslate"><span class="pre">n</span></code> fractional digits; <code class="docutils literal notranslate"><span class="pre">n</span></code> may be omitted, in which case <code class="docutils literal notranslate"><span class="pre">x</span></code> is rounded to the closest integer.</p>
+<p>Tie handling and directional behavior follow the global
+<span class="menuselection">Settings ‣ Results ‣ Rounding Mode</span> option (for
+example <em>Half Even (Banker’s)</em>, <em>Half Away from Zero</em>, or directed modes).</p>
 <p>Example:</p>
 <table class="-x-quark-literal-block"><tbody><tr><td width="100%" class="-x-quark-literal-block-td"><div class="highlight-speedcrunch notranslate"><div class="highlight"><pre><span></span><span class="n">round</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
 <span class="ge">= 0</span>
@@ -302,7 +305,7 @@ If <code class="docutils literal notranslate"><span class="pre">bits</span></cod
 <span class="ge">= 12300</span>
 </pre></div>
 </div>
-</td></tr></tbody></table><p>Only real, dimensionless arguments are allowed.</p>
+</td></tr></tbody></table><p><code class="docutils literal notranslate"><span class="pre">x</span></code> must be real. <code class="docutils literal notranslate"><span class="pre">n</span></code> must be a real, dimensionless integer.</p>
 </dd></dl>
 
 <dl class="sc function">
