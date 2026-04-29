@@ -1278,6 +1278,9 @@ void test_units_grouping_and_inverse_presentation()
     settings->unitNegativeExponentStyle = Settings::UnitNegativeExponentSuperscript;
     setRuntimeUnitNegativeExponentStyle(Settings::UnitNegativeExponentSuperscript);
     CHECK_EVAL_FORMAT("[m^2*s^-2]", u8"1[J·kg⁻¹]");
+    CHECK_EVAL("molmass(C6H12O6) * molmass(C6H12O6)", u8"32456.184336 g²·mol⁻²");
+    CHECK_EVAL_FORMAT("molmass(C6H12O6) * molmass(C6H12O6)", u8"32456.184336[g²·mol⁻²]");
+    CHECK_EVAL_FORMAT("molmass(C6H12O6) * molmass(C6H12O6) -> [g²/mol²]", u8"32456.184336[g²·mol⁻²]");
 
     settings->unitNegativeExponentStyle = Settings::UnitNegativeExponentFraction;
     setRuntimeUnitNegativeExponentStyle(Settings::UnitNegativeExponentFraction);
@@ -2746,7 +2749,7 @@ void test_function_basic()
     CHECK_EVAL(QString::fromUtf8("molmass(NaCl)"), u8"58.44 g·mol⁻¹");
     CHECK_EVAL(QString::fromUtf8("molmass(C₆H₁₂O₆)"), u8"180.156 g·mol⁻¹");
     CHECK_EVAL(QString::fromUtf8("molmass(Na₂SO₄)"), u8"142.036 g·mol⁻¹");
-    CHECK_EVAL("molmass(C6H12O6)*molmass(C6H12O6)", u8"32456.184336 g·mol⁻¹·g·mol⁻¹");
+    CHECK_EVAL("molmass(C6H12O6)*molmass(C6H12O6)", u8"32456.184336 g²·mol⁻²");
     {
         ++eval_total_tests;
         const QString expr = QStringLiteral("molmass(C6H12O6)*molmass(C6H12O6)");

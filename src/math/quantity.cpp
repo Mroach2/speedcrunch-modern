@@ -468,6 +468,69 @@ QString simplifyExplicitAngleCompositeDisplayUnits(const QString& unitName)
     return rendered.join(QString(MathDsl::MulDotOp));
 }
 
+QString simplifyRepeatedCompositeDisplayUnitFactors(const QString& unitName)
+{
+    QString normalized = unitName.trimmed();
+    if (normalized.isEmpty())
+        return normalized;
+
+    if (normalized.contains(MathDsl::DivOp)
+        || normalized.contains(MathDsl::AddOp)
+        || normalized.contains(MathDsl::SubOpAl1)
+        || normalized.contains(MathDsl::GroupStart)
+        || normalized.contains(MathDsl::GroupEnd))
+    {
+        return normalized;
+    }
+
+    QMap<QString, int> exponentsByBase;
+    QStringList order;
+    QString token;
+    const auto isMulSeparator = [](const QChar ch) {
+        return ch.isSpace()
+            || ch == MathDsl::MulOpAl1
+            || ch == MathDsl::MulDotOp
+            || ch == MathDsl::MulCrossOp;
+    };
+    auto flushToken = [&]() -> bool {
+        const QString raw = token.trimmed();
+        token.clear();
+        if (raw.isEmpty())
+            return true;
+        QString base;
+        int exponent = 0;
+        if (!parseUnitFactorAndExponent(raw, &base, &exponent))
+            return false;
+        if (!exponentsByBase.contains(base))
+            order.append(base);
+        exponentsByBase[base] += exponent;
+        return true;
+    };
+
+    for (int i = 0; i < normalized.size(); ++i) {
+        const QChar ch = normalized.at(i);
+        if (isMulSeparator(ch)) {
+            if (!flushToken())
+                return unitName;
+            continue;
+        }
+        token += ch;
+    }
+    if (!flushToken())
+        return unitName;
+
+    QStringList rendered;
+    for (const QString& base : order) {
+        const int exponent = exponentsByBase.value(base);
+        if (exponent == 0)
+            continue;
+        rendered << formatUnitFactorWithExponent(base, exponent);
+    }
+    if (rendered.isEmpty())
+        return normalized;
+    return rendered.join(QString(MathDsl::MulDotOp));
+}
+
 QString normalizeDisplayUnitNameForOutput(const QString& unitName)
 {
     QString normalized = unitName.trimmed();
@@ -1451,6 +1514,9 @@ Quantity Quantity::operator*(const Quantity& other) const
     }
 
     if (result.hasUnit()) {
+        const QString factorSimplified = simplifyRepeatedCompositeDisplayUnitFactors(result.unitName());
+        if (factorSimplified != result.unitName())
+            result.setDisplayUnit(result.unit(), factorSimplified);
         const QString simplified = simplifyExplicitAngleCompositeDisplayUnits(result.unitName());
         if (simplified != result.unitName())
             result.setDisplayUnit(result.unit(), simplified);
@@ -2280,10 +2346,7 @@ Quantity DMath::raise(const Quantity& n1, int n)
         result.modifyDimension(name, exp * n);
         ++i;
     }
-    if (n1.isDimensionless()
-        && n1.hasUnit()
-        && Units::isExplicitAngleUnitName(n1.unitName())
-        && n != 0)
+    if (n1.hasUnit() && n != 0)
     {
         result.setDisplayUnit(CMath::raise(n1.unit(), n),
                               formatUnitFactorWithExponent(n1.unitName(), n));
@@ -2302,7 +2365,6 @@ Quantity DMath::raise(const Quantity& n1, const Quantity& n2)
     if (n1.isDimensionless()) {
         Rational exponent(n2.m_numericValue.real);
         if (n1.hasUnit()
-            && Units::isExplicitAngleUnitName(n1.unitName())
             && abs(exponent.toHNumber() - n2.m_numericValue.real) < RATIONAL_TOL
             && exponent.denominator() == 1
             && exponent.numerator() != 0)
