@@ -28,6 +28,33 @@
 #include <algorithm>
 
 namespace {
+EvaluationContext currentEvaluationContextFromSettings()
+{
+    Settings* settings = Settings::instance();
+    EvaluationContext ctx;
+    ctx.main.fmt = settings->resultFormat;
+    ctx.main.prec = settings->resultPrecision;
+    ctx.main.cplx = settings->resultFormatComplex;
+
+    if (settings->multipleResultLinesEnabled) {
+        if (settings->secondaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->alternativeResultFormat, settings->secondaryResultPrecision, settings->secondaryResultFormatComplex});
+        if (settings->tertiaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->tertiaryResultFormat, settings->tertiaryResultPrecision, settings->tertiaryResultFormatComplex});
+        if (settings->quaternaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->quaternaryResultFormat, settings->quaternaryResultPrecision, settings->quaternaryResultFormatComplex});
+        if (settings->quinaryResultEnabled)
+            ctx.extras.append(ResultLineContext{settings->quinaryResultFormat, settings->quinaryResultPrecision, settings->quinaryResultFormatComplex});
+    }
+
+    ctx.complexOn = settings->complexNumbers;
+    ctx.unit = settings->imaginaryUnit;
+    ctx.angle = settings->angleUnit;
+    ctx.unitExp = settings->unitNegativeExponentStyle;
+    ctx.round = settings->resultRoundingMode;
+    return ctx;
+}
+
 void applyEvaluationContextToSettings(const EvaluationContext& ctx)
 {
     Settings* settings = Settings::instance();
@@ -216,6 +243,7 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
 
     // Recover ans from history when missing or NaN, e.g. older sessions where
     // comment-only lines could overwrite ans with NaN.
+    const EvaluationContext originalContext = currentEvaluationContextFromSettings();
     const bool hasAns = hasVariable("ans");
     const bool hasContextHistory = !m_history.isEmpty() && m_history.first().hasContext();
     const bool needsAnsRecovery = hasContextHistory || !hasAns || getVariable("ans").value().isNan();
@@ -230,7 +258,6 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
         }
 
         if (recoveredValue.isNan() && hasContextHistory) {
-            const EvaluationContext savedCtx = m_history.last().contextRef();
             Evaluator* evaluator = Evaluator::instance();
             for (int i = 0; i < m_history.size(); ++i) {
                 const HistoryEntry entry = historyEntryAtRef(i);
@@ -240,7 +267,7 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
                 if (evaluator->error().isEmpty() && !value.isNan())
                     recoveredValue = value;
             }
-            applyEvaluationContextToSettings(savedCtx);
+            applyEvaluationContextToSettings(originalContext);
         }
 
         if (!recoveredValue.isNan()) {
