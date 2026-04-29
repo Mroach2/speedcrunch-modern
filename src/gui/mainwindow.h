@@ -297,7 +297,10 @@ private:
                                        int* ignoredLines = nullptr,
                                        QList<int>* ignoredLineNumbers = nullptr,
                                        bool dryRun = false);
-    bool rebuildSessionFromEntries(const QList<HistoryEntry>& entries, int* errorIndex = nullptr, QString* errorText = nullptr);
+    bool rebuildSessionFromEntries(const QList<HistoryEntry>& entries,
+                                   int startIndex = 0,
+                                   int* errorIndex = nullptr,
+                                   QString* errorText = nullptr);
     QList<HistoryEntry> historyEntries() const;
 
     static QTranslator* createTranslator(const QString& langCode);

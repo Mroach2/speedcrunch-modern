@@ -6402,8 +6402,8 @@ void test_session_history_limit()
         HistoryEntry(QString::number(i), Quantity(i)).serialize(entry);
         histEntries.append(entry);
     }
-    json["version"] = QString(SPEEDCRUNCH_VERSION);
-    json["history"] = histEntries;
+    json["speedcrunch"] = QString(SPEEDCRUNCH_VERSION);
+    json["hst"] = histEntries;
 
     Session loaded;
     loaded.deSerialize(json, false);
@@ -6428,8 +6428,8 @@ void test_session_history_limit()
         HistoryEntry("? foo", CMath::nan()).serialize(entry);
         histWithCommentTail.append(entry);
     }
-    jsonWithCommentTail["version"] = QString(SPEEDCRUNCH_VERSION);
-    jsonWithCommentTail["history"] = histWithCommentTail;
+    jsonWithCommentTail["speedcrunch"] = QString(SPEEDCRUNCH_VERSION);
+    jsonWithCommentTail["hst"] = histWithCommentTail;
 
     Session loadedWithCommentTail;
     loadedWithCommentTail.deSerialize(jsonWithCommentTail, false);
@@ -6473,7 +6473,7 @@ void test_session_deserialize_without_history()
 
     QJsonObject json;
     source.serialize(json);
-    json.remove("history");
+    json.remove("hst");
 
     Evaluator::instance()->setSession(&restored);
     restored.deSerialize(json, false);

@@ -21,6 +21,7 @@
 #include "variable.h"
 #include "evaluator.h"
 #include "settings.h"
+#include "sessionjsonkeys.h"
 
 #include <QFile>
 #include <QJsonDocument>
@@ -146,7 +147,8 @@ void Session::normalizeHistoryOrder()
 
 void Session::serialize(QJsonObject &json) const
 {
-    json["version"] = QString(SPEEDCRUNCH_VERSION);
+    json[QLatin1String(SessionJsonKeys::SchemaVersion)] = SessionJsonKeys::SchemaVersionValue;
+    json[QLatin1String(SessionJsonKeys::SpeedCrunch)] = QString(SPEEDCRUNCH_VERSION);
 
     // history
     QJsonArray hist_entries;
@@ -155,7 +157,7 @@ void Session::serialize(QJsonObject &json) const
         historyEntryAtRef(i).serialize(curr_entry_obj);
         hist_entries.append(curr_entry_obj);
     }
-    json["history"] = hist_entries;
+    json[QLatin1String(SessionJsonKeys::History)] = hist_entries;
 
     //variables
     QJsonArray var_entries;
@@ -164,12 +166,12 @@ void Session::serialize(QJsonObject &json) const
         i.next();
         QJsonObject curr_entry_obj;
         //ignore builtin variables
-        if(i.value().type()==Variable::BuiltIn && i.value().identifier()!="ans")
+        if(i.value().type()==Variable::BuiltIn && i.value().identifier()!=QLatin1String("ans"))
             continue;
         i.value().serialize(curr_entry_obj);
         var_entries.append(curr_entry_obj);
     }
-    json["variables"] = var_entries;
+    json[QLatin1String(SessionJsonKeys::Variables)] = var_entries;
 
 
     // functions
@@ -181,7 +183,7 @@ void Session::serialize(QJsonObject &json) const
         j.value().serialize(curr_entry_obj);
         func_entries.append(curr_entry_obj);
     }
-    json["functions"] = func_entries;
+    json[QLatin1String(SessionJsonKeys::Functions)] = func_entries;
 
     QJsonArray unit_entries;
     QHashIterator<QString, UserUnit> k(m_userUnits);
@@ -191,12 +193,14 @@ void Session::serialize(QJsonObject &json) const
         k.value().serialize(curr_entry_obj);
         unit_entries.append(curr_entry_obj);
     }
-    json["units"] = unit_entries;
+    json[QLatin1String(SessionJsonKeys::Units)] = unit_entries;
 }
 
 int Session::deSerialize(const QJsonObject &json, bool merge=false)
 {
-    QString version = json["version"].toString();
+    const int schemaVersion = json[QLatin1String(SessionJsonKeys::SchemaVersion)].toInt();
+    (void)schemaVersion;
+    QString version = json[QLatin1String(SessionJsonKeys::SpeedCrunch)].toString();
     if(!merge) {
         m_history.clear();
         m_historyHead = 0;
@@ -207,24 +211,24 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
 
     Evaluator::instance()->initializeBuiltInVariables();
 
-    if (json.contains("history")) {
-        QJsonArray hist_obj = json["history"].toArray();
+    if (json.contains(QLatin1String(SessionJsonKeys::History))) {
+        QJsonArray hist_obj = json[QLatin1String(SessionJsonKeys::History)].toArray();
         int n = hist_obj.size();
         for (int i = 0; i < n; ++i)
             addHistoryEntry(HistoryEntry(hist_obj[i].toObject()));
     }
 
-    if (json.contains("variables")) {
-        QJsonArray var_obj = json["variables"].toArray();
+    if (json.contains(QLatin1String(SessionJsonKeys::Variables))) {
+        QJsonArray var_obj = json[QLatin1String(SessionJsonKeys::Variables)].toArray();
         int n = var_obj.size();
         for(int i=0; i<n; ++i) {
             QJsonObject var = var_obj[i].toObject();
-            m_variables[var["identifier"].toString()].deSerialize(var);
+            m_variables[var[QLatin1String(SessionJsonKeys::Variable::Id)].toString()].deSerialize(var);
         }
     }
 
-    if (json.contains("functions")) {
-        QJsonArray func_obj = json["functions"].toArray();
+    if (json.contains(QLatin1String(SessionJsonKeys::Functions))) {
+        QJsonArray func_obj = json[QLatin1String(SessionJsonKeys::Functions)].toArray();
         int n = func_obj.size();
         for(int i=0; i<n; ++i) {
             UserFunction func(func_obj[i].toObject());
@@ -232,8 +236,8 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
         }
     }
 
-    if (json.contains("units")) {
-        QJsonArray unit_obj = json["units"].toArray();
+    if (json.contains(QLatin1String(SessionJsonKeys::Units))) {
+        QJsonArray unit_obj = json[QLatin1String(SessionJsonKeys::Units)].toArray();
         const int n = unit_obj.size();
         for (int i = 0; i < n; ++i) {
             UserUnit unit(unit_obj[i].toObject());

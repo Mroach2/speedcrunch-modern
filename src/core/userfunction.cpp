@@ -20,6 +20,7 @@
 #include "core/userfunction.h"
 #include "core/evaluator.h"
 #include "core/opcode.h"
+#include "core/sessionjsonkeys.h"
 #include <QJsonArray>
 
 
@@ -29,39 +30,41 @@
 
 UserFunction::UserFunction(const QJsonObject &json) : UserFunction()
 {
-    if (json.contains("name"))
-        m_name = json["name"].toString();
+    if (json.contains(QLatin1String(SessionJsonKeys::Function::Id)))
+        m_name = json[QLatin1String(SessionJsonKeys::Function::Id)].toString();
 
-    if (json.contains("args")) {
-        const QJsonArray args_json = json["args"].toArray();
-        int n = json["args"].toArray().size();
+    if (json.contains(QLatin1String(SessionJsonKeys::Function::Arguments))) {
+        const QJsonArray args_json = json[QLatin1String(SessionJsonKeys::Function::Arguments)].toArray();
+        int n = json[QLatin1String(SessionJsonKeys::Function::Arguments)].toArray().size();
         for(int i=0; i<n; ++i)
             m_arguments.append(args_json.at(i).toString());
     }
 
-    if (json.contains("expression"))
-        m_expression = json["expression"].toString();
-    if (json.contains("interpretedExpression"))
-        m_interpretedExpression = json["interpretedExpression"].toString();
-    if(json.contains("description"))
-        m_description = json["description"].toString();
+    if (json.contains(QLatin1String(SessionJsonKeys::Function::Expression)))
+        m_expression = json[QLatin1String(SessionJsonKeys::Function::Expression)].toString();
+    if (json.contains(QLatin1String(SessionJsonKeys::Function::InterpretedExpression)))
+        m_interpretedExpression = json[QLatin1String(SessionJsonKeys::Function::InterpretedExpression)].toString();
+    if(json.contains(QLatin1String(SessionJsonKeys::Function::Description)))
+        m_description = json[QLatin1String(SessionJsonKeys::Function::Description)].toString();
 
-    if(json.contains("opcodes")) {
-        const QJsonArray  & codes_json = json["opcodes"].toArray();
+    if(json.contains(QLatin1String(SessionJsonKeys::Function::Opcodes))) {
+        const QJsonArray  & codes_json = json[QLatin1String(SessionJsonKeys::Function::Opcodes)].toArray();
         for(int i=0; i<codes_json.size(); ++i) {
-            Opcode opcode(static_cast<Opcode::Type>(codes_json[i].toObject()["t"].toInt()),  codes_json[i].toObject()["i"].toInt());
-            if(codes_json[i].toObject().contains("text"))
-                opcode.text = codes_json[i].toObject()["text"].toString();
+            Opcode opcode(static_cast<Opcode::Type>(
+                              codes_json[i].toObject()[QLatin1String(SessionJsonKeys::Function::Opcode::Type)].toInt()),
+                          codes_json[i].toObject()[QLatin1String(SessionJsonKeys::Function::Opcode::Index)].toInt());
+            if(codes_json[i].toObject().contains(QLatin1String(SessionJsonKeys::Function::Opcode::Text)))
+                opcode.text = codes_json[i].toObject()[QLatin1String(SessionJsonKeys::Function::Opcode::Text)].toString();
             opcodes.append(opcode);
         }
 
-        const QJsonArray & const_json = json["constants"].toArray();
+        const QJsonArray & const_json = json[QLatin1String(SessionJsonKeys::Function::Constants)].toArray();
         for(int i=0; i<const_json.size(); ++i) {
             CNumber hn(const_json[i].toObject());
             constants.append(hn);
         }
 
-        const QJsonArray & id_json = json["identifiers"].toArray();
+        const QJsonArray & id_json = json[QLatin1String(SessionJsonKeys::Function::Identifiers)].toArray();
         for(int i=0; i<id_json.size(); ++i) {
             identifiers.append(id_json[i].toString());
         }
@@ -121,16 +124,16 @@ void UserFunction::setDescription(const QString &expr)
 
 void UserFunction::serialize(QJsonObject &json) const
 {
-    json["name"] = m_name;
+    json[QLatin1String(SessionJsonKeys::Function::Id)] = m_name;
     QJsonArray args;
     for(int i=0; i<m_arguments.count(); ++i)
         args.append(m_arguments[i]);
-    json["args"] = args;
-    json["expression"] = m_expression;
+    json[QLatin1String(SessionJsonKeys::Function::Arguments)] = args;
+    json[QLatin1String(SessionJsonKeys::Function::Expression)] = m_expression;
     if (m_interpretedExpression != "")
-        json["interpretedExpression"] = m_interpretedExpression;
+        json[QLatin1String(SessionJsonKeys::Function::InterpretedExpression)] = m_interpretedExpression;
     if(m_description!="")
-        json["description"] = m_description;
+        json[QLatin1String(SessionJsonKeys::Function::Description)] = m_description;
 
 #ifdef SAVE_COMPILED_FORM
     // if compiled form is available, save it as well
@@ -139,13 +142,13 @@ void UserFunction::serialize(QJsonObject &json) const
         for(int i=0;i<opcodes.size(); ++i) {
             QJsonObject curr_code_json;
             const Opcode & curr_code = opcodes.at(i);
-            curr_code_json["t"] = curr_code.type;
-            curr_code_json["i"] = int(curr_code.index);
+            curr_code_json[QLatin1String(SessionJsonKeys::Function::Opcode::Type)] = curr_code.type;
+            curr_code_json[QLatin1String(SessionJsonKeys::Function::Opcode::Index)] = int(curr_code.index);
             if(curr_code.text != "")
-                curr_code_json["text"] = curr_code.text;
+                curr_code_json[QLatin1String(SessionJsonKeys::Function::Opcode::Text)] = curr_code.text;
             opcodes_json.append(curr_code_json);
         }
-        json["opcodes"] = opcodes_json;
+        json[QLatin1String(SessionJsonKeys::Function::Opcodes)] = opcodes_json;
 
         QJsonArray constants_json;
         for(int i=0; i<constants.size(); ++i) {
@@ -153,13 +156,13 @@ void UserFunction::serialize(QJsonObject &json) const
             constants.at(i).serialize(curr_const_json);
             constants_json.append(curr_const_json);
         }
-        json["constants"] = constants_json;
+        json[QLatin1String(SessionJsonKeys::Function::Constants)] = constants_json;
 
         QJsonArray identifiers_json;
         for(int i=0; i<identifiers.size(); ++i) {
             identifiers_json.append(identifiers.at(i));
         }
-        json["identifiers"] = identifiers_json;
+        json[QLatin1String(SessionJsonKeys::Function::Identifiers)] = identifiers_json;
     }
 #endif
 }

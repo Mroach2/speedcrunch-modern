@@ -7439,6 +7439,11 @@ bool Evaluator::isUserUnitAssign() const
     return m_assignUnit;
 }
 
+bool Evaluator::isUserVariableAssign() const
+{
+    return !m_assignId.isEmpty() && !m_assignFunc && !m_assignUnit;
+}
+
 bool Evaluator::isBuiltInVariable(const QString& id) const
 {
     // Defining variables with the same name as existing functions

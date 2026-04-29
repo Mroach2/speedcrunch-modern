@@ -15,29 +15,29 @@ UserUnit::UserUnit(const QJsonObject& json)
 
 void UserUnit::serialize(QJsonObject& json) const
 {
-    json[QStringLiteral("name")] = m_name;
+    json[QStringLiteral("id")] = m_name;
 
     QJsonObject valueJson;
     m_value.serialize(valueJson);
-    json[QStringLiteral("value")] = valueJson;
+    json[QStringLiteral("qty")] = valueJson;
 
     if (!m_expression.isEmpty())
-        json[QStringLiteral("expression")] = m_expression;
+        json[QStringLiteral("xpr")] = m_expression;
     if (!m_interpretedExpression.isEmpty())
-        json[QStringLiteral("interpretedExpression")] = m_interpretedExpression;
+        json[QStringLiteral("itp")] = m_interpretedExpression;
     if (!m_description.isEmpty())
-        json[QStringLiteral("description")] = m_description;
+        json[QStringLiteral("dsc")] = m_description;
 }
 
 void UserUnit::deSerialize(const QJsonObject& json)
 {
-    m_name = json[QStringLiteral("name")].toString();
-    if (json.contains(QStringLiteral("value")) && json[QStringLiteral("value")].isObject())
-        m_value.deSerialize(json[QStringLiteral("value")].toObject());
+    m_name = json[QStringLiteral("id")].toString();
+    if (json.contains(QStringLiteral("qty")) && json[QStringLiteral("qty")].isObject())
+        m_value = Quantity::deSerialize(json[QStringLiteral("qty")].toObject());
     else
         m_value = Quantity(1);
 
-    m_expression = json[QStringLiteral("expression")].toString();
-    m_interpretedExpression = json[QStringLiteral("interpretedExpression")].toString();
-    m_description = json[QStringLiteral("description")].toString();
+    m_expression = json[QStringLiteral("xpr")].toString();
+    m_interpretedExpression = json[QStringLiteral("itp")].toString();
+    m_description = json[QStringLiteral("dsc")].toString();
 }

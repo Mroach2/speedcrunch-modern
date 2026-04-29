@@ -31,6 +31,7 @@ UserUnitListWidget::UserUnitListWidget(QWidget* parent)
     , m_noMatchLabel(new QLabel(m_userUnits))
     , m_searchFilter(new QLineEdit(this))
     , m_searchLabel(new QLabel(this))
+    , m_pendingRefresh(false)
 {
     m_filterTimer->setInterval(500);
     m_filterTimer->setSingleShot(true);
@@ -104,6 +105,11 @@ UserUnitListWidget::~UserUnitListWidget()
 
 void UserUnitListWidget::updateList()
 {
+    if (!isVisible()) {
+        m_pendingRefresh = true;
+        return;
+    }
+
     setUpdatesEnabled(false);
 
     m_filterTimer->stop();
@@ -155,6 +161,7 @@ void UserUnitListWidget::updateList()
     }
 
     setUpdatesEnabled(true);
+    m_pendingRefresh = false;
 }
 
 void UserUnitListWidget::retranslateText()
@@ -247,4 +254,11 @@ void UserUnitListWidget::keyPressEvent(QKeyEvent* event)
         return;
     }
     event->accept();
+}
+
+void UserUnitListWidget::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+    if (m_pendingRefresh)
+        updateList();
 }

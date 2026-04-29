@@ -27,6 +27,7 @@ class QEvent;
 class QKeyEvent;
 class QLabel;
 class QLineEdit;
+class QShowEvent;
 class QTimer;
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -60,8 +61,9 @@ protected slots:
     void triggerFilter();
 
 protected:
-    void changeEvent(QEvent*);
-    void keyPressEvent(QKeyEvent*);
+    void changeEvent(QEvent*) override;
+    void keyPressEvent(QKeyEvent*) override;
+    void showEvent(QShowEvent*) override;
 
 private:
     Q_DISABLE_COPY(VariableListWidget)
@@ -75,6 +77,7 @@ private:
     QLabel* m_noMatchLabel;
     QLineEdit* m_searchFilter;
     QLabel* m_searchLabel;
+    bool m_pendingRefresh;
 };
 
 #endif

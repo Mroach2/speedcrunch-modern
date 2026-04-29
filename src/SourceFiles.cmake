@@ -15,6 +15,7 @@ core/pageserver.h
 core/settings.h
 core/opcode.h
 core/sessionhistory.h
+core/sessionjsonkeys.h
 core/variable.h
 core/userfunction.h
 core/userunit.h

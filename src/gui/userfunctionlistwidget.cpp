@@ -44,6 +44,7 @@ UserFunctionListWidget::UserFunctionListWidget(QWidget* parent)
     , m_noMatchLabel(new QLabel(m_userFunctions))
     , m_searchFilter(new QLineEdit(this))
     , m_searchLabel(new QLabel(this))
+    , m_pendingRefresh(false)
 {
     m_filterTimer->setInterval(500);
     m_filterTimer->setSingleShot(true);
@@ -117,6 +118,11 @@ UserFunctionListWidget::~UserFunctionListWidget()
 
 void UserFunctionListWidget::updateList()
 {
+    if (!isVisible()) {
+        m_pendingRefresh = true;
+        return;
+    }
+
     setUpdatesEnabled(false);
 
     m_filterTimer->stop();
@@ -166,6 +172,7 @@ void UserFunctionListWidget::updateList()
     }
 
     setUpdatesEnabled(true);
+    m_pendingRefresh = false;
 }
 
 void UserFunctionListWidget::retranslateText()
@@ -258,4 +265,11 @@ void UserFunctionListWidget::keyPressEvent(QKeyEvent* event)
         return;
     }
     event->accept();
+}
+
+void UserFunctionListWidget::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+    if (m_pendingRefresh)
+        updateList();
 }

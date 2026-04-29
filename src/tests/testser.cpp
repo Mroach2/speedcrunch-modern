@@ -123,12 +123,12 @@ int main(int, char**)
     a.setFormat(Format::Binary() + Format::Fixed());
     a *= Units::metre();
     a.setDisplayUnit(CNumber("0.3"), QString("foot"));
-    const char q_json_blob[] = "{\"dimension\":{\"length\":\"1\"},\"format\":{\"base\":\"Binary\",\"mode\":\"Fixed\"},\"numeric_value\":{\"value\":\"3.000000000000000000000000000000000000000000000000000000000000000000000000000000\"},\"unit\":{\"value\":\"0.300000000000000000000000000000000000000000000000000000000000000000000000000000\"},\"unit_name\":\"foot\"}";
+    const char q_json_blob[] = "{\"dim\":{\"length\":\"1\"},\"format\":{\"base\":\"Binary\",\"mode\":\"Fixed\"},\"unit\":{\"value\":\"0.300000000000000000000000000000000000000000000000000000000000000000000000000000\"},\"unit_name\":\"foot\",\"val\":\"3.000000000000000000000000000000000000000000000000000000000000000000000000000000\"}";
     CHECK_SER(a, q_json_blob);
 
     Quantity b(CNumber("1+1j"));
     b.setFormat(Format::Polar());
-    const char q_json_blob2[] = "{\"format\":{\"form\":\"Polar\"},\"numeric_value\":{\"value\":\"1.000000000000000000000000000000000000000000000000000000000000000000000000000000+1.000000000000000000000000000000000000000000000000000000000000000000000000000000j\"}}";
+    const char q_json_blob2[] = "{\"format\":{\"form\":\"Polar\"},\"val\":\"1.000000000000000000000000000000000000000000000000000000000000000000000000000000+1.000000000000000000000000000000000000000000000000000000000000000000000000000000j\"}";
     CHECK_SER(b, q_json_blob2);
 
     /* HNumber deserialization tests */

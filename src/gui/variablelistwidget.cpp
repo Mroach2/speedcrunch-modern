@@ -44,6 +44,7 @@ VariableListWidget::VariableListWidget(QWidget* parent)
     , m_noMatchLabel(new QLabel(m_variables))
     , m_searchFilter(new QLineEdit(this))
     , m_searchLabel(new QLabel(this))
+    , m_pendingRefresh(false)
 {
     m_filterTimer->setInterval(500);
     m_filterTimer->setSingleShot(true);
@@ -117,6 +118,11 @@ VariableListWidget::~VariableListWidget()
 
 void VariableListWidget::updateList()
 {
+    if (!isVisible()) {
+        m_pendingRefresh = true;
+        return;
+    }
+
     setUpdatesEnabled(false);
 
     m_filterTimer->stop();
@@ -157,6 +163,7 @@ void VariableListWidget::updateList()
     }
 
     setUpdatesEnabled(true);
+    m_pendingRefresh = false;
 }
 
 void VariableListWidget::retranslateText()
@@ -244,6 +251,13 @@ void VariableListWidget::keyPressEvent(QKeyEvent* event)
         return;
     }
     QWidget::keyPressEvent(event);
+}
+
+void VariableListWidget::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+    if (m_pendingRefresh)
+        updateList();
 }
 
 static QString formatValue(const Quantity& value)

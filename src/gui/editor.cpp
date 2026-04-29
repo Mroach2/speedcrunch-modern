@@ -3090,7 +3090,7 @@ void Editor::keyPressEvent(QKeyEvent* event)
 
     case Qt::Key_Enter:
     case Qt::Key_Return:
-        QTimer::singleShot(0, this, SLOT(triggerEnter()));
+        triggerEnter();
         event->accept();
         return;
 
@@ -3742,7 +3742,7 @@ bool EditorCompletion::eventFilter(QObject* object, QEvent* event)
 
             m_popup->hide();
             m_editor->setFocus();
-            QMetaObject::invokeMethod(m_editor, "triggerEnter", Qt::QueuedConnection);
+            QMetaObject::invokeMethod(m_editor, "triggerEnter", Qt::DirectConnection);
             return true;
 
         case Qt::Key_Tab:

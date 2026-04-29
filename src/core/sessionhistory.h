@@ -22,6 +22,7 @@
 
 #include <QJsonArray>
 #include <QString>
+#include <QStringList>
 #include <QList>
 #include <QVector>
 
@@ -56,6 +57,7 @@ private:
     Quantity m_result;
     EvaluationContext m_ctx;
     bool m_hasCtx = false;
+    QStringList m_renderedLines;
 public:
     HistoryEntry() : m_expr(""), m_result(0) {}
     HistoryEntry(const QJsonObject & json);
@@ -64,13 +66,14 @@ public:
     HistoryEntry(const QString & expr, const EvaluationContext& ctx);
     HistoryEntry(const QString & expr, const Quantity & num, const QString& interpretedExpr, const EvaluationContext& ctx);
     HistoryEntry(const HistoryEntry & other)
-        : m_expr(other.m_expr), m_interpretedExpr(other.m_interpretedExpr), m_result(other.m_result), m_ctx(other.m_ctx), m_hasCtx(other.m_hasCtx) {}
+        : m_expr(other.m_expr), m_interpretedExpr(other.m_interpretedExpr), m_result(other.m_result), m_ctx(other.m_ctx), m_hasCtx(other.m_hasCtx), m_renderedLines(other.m_renderedLines) {}
     HistoryEntry& operator=(const HistoryEntry& other) = default;    
 
     void setExpr(const QString & e);
     void setInterpretedExpr(const QString& e);
     void setResult(const Quantity & n);
     void setContext(const EvaluationContext& ctx);
+    void setRenderedLines(const QStringList& lines);
 
     QString expr() const;
     QString interpretedExpr() const;
@@ -78,6 +81,8 @@ public:
     EvaluationContext context() const;
     const EvaluationContext& contextRef() const;
     bool hasContext() const;
+    QStringList renderedLines() const;
+    bool hasRenderedLines() const;
 
     void serialize(QJsonObject & json) const;
     void deSerialize(const QJsonObject & json);

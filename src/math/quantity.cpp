@@ -1041,9 +1041,9 @@ void Quantity::cleanDimension()
 
 void Quantity::serialize(QJsonObject& json) const
 {
-    QJsonObject nom_json;
-    m_numericValue.serialize(nom_json);
-    json["numeric_value"] = nom_json;
+    json["val"] = CMath::format(
+        m_numericValue,
+        CNumber::Format::Fixed() + CNumber::Format::Precision(DECPRECISION));
 
     if (hasDimension()) {
         QJsonObject dim_json;
@@ -1055,7 +1055,7 @@ void Quantity::serialize(QJsonObject& json) const
                 dim_json[key] = exp.toString();
             ++i;
         }
-        json["dimension"] = dim_json;
+        json["dim"] = dim_json;
     }
 
     if (hasUnit()) {
@@ -1075,9 +1075,10 @@ void Quantity::serialize(QJsonObject& json) const
 Quantity Quantity::deSerialize(const QJsonObject& json)
 {
     Quantity result;
-    if (json.contains("numeric_value")) {
-        QJsonObject num_json = json["numeric_value"].toObject();
-        result.m_numericValue = CNumber(num_json);
+    if (json.contains("val")) {
+        QString str = json["val"].toString();
+        str.replace(",", ".");
+        result.m_numericValue = CNumber(str.toLatin1().constData());
     }
     result.stripUnits();
     if (json.contains("unit")) {
@@ -1087,8 +1088,8 @@ Quantity Quantity::deSerialize(const QJsonObject& json)
     if (json.contains("unit_name"))
         result.m_unitName = json["unit_name"].toString();
 
-    if (json.contains("dimension")) {
-        QJsonObject dim_json = json["dimension"].toObject();
+    if (json.contains("dim")) {
+        QJsonObject dim_json = json["dim"].toObject();
         for (int i = 0; i < dim_json.count(); ++i) {
             auto key = dim_json.keys().at(i);
             Rational val(dim_json[key].toString());

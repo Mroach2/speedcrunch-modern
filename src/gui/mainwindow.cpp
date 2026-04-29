@@ -52,6 +52,7 @@
 #include "gui/notationandprecisiondialog.h"
 #include "core/manualserver.h"
 #include "gui/resultdisplay.h"
+#include "gui/resultlineformatutils.h"
 #include "gui/syntaxhighlighter.h"
 #include "math/cmath.h"
 #include "math/floatconfig.h"
@@ -188,6 +189,28 @@ void applyEvaluationContext(Settings* settings, const EvaluationContext& ctx)
     CMath::setImaginaryUnitSymbol(settings->imaginaryUnit);
     setRuntimeUnitNegativeExponentStyle(settings->unitNegativeExponentStyle);
     setRuntimeResultRoundingMode(settings->resultRoundingMode);
+}
+
+QStringList renderedLinesForHistoryEntry(const HistoryEntry& entry, Settings* settings)
+{
+    const EvaluationContext previousContext = currentEvaluationContext(settings);
+    applyEvaluationContext(settings, entry.contextRef());
+
+    QStringList lines;
+    lines.append(ResultLineFormatUtils::formattedExpressionLineForDisplay(
+        entry.expr(),
+        entry.interpretedExpr()));
+    if (!entry.result().isNan()) {
+        lines.append(ResultLineFormatUtils::formatResultLinesForDisplay(
+            entry.expr(),
+            entry.interpretedExpr(),
+            entry.result(),
+            false,
+            true));
+    }
+
+    applyEvaluationContext(settings, previousContext);
+    return lines;
 }
 }
 
@@ -2806,7 +2829,9 @@ void MainWindow::showSessionImportDialog()
             }
         } else {
             const QString interpretedExpr = m_evaluator->interpretedExpression();
-            m_session->addHistoryEntry(HistoryEntry(normalizedExp, result, interpretedExpr));
+            HistoryEntry historyEntry(normalizedExp, result, interpretedExpr);
+            historyEntry.setRenderedLines(renderedLinesForHistoryEntry(historyEntry, m_settings));
+            m_session->addHistoryEntry(historyEntry);
             m_widgets.editor->setText(str);
             m_widgets.editor->selectAll();
             m_widgets.editor->stopAutoCalc();
@@ -2873,8 +2898,15 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
             hasExistingVariable && !m_evaluator->isBuiltInVariable(target.identifier);
         const bool hasExistingUserFunction =
             m_evaluator->hasUserFunction(target.identifier);
-        const bool hasExistingUserUnit =
+        bool hasExistingUserUnit =
             m_evaluator->hasUserUnit(target.identifier);
+        if (hasExistingUserUnit) {
+            const UserUnit* existingUnit = m_evaluator->getUserUnit(target.identifier);
+            if (!existingUnit || existingUnit->value().isZero()) {
+                m_evaluator->unsetUserUnit(target.identifier);
+                hasExistingUserUnit = false;
+            }
+        }
 
         if (!overwriteExisting && (hasExistingVariable || hasExistingUserFunction || hasExistingUserUnit)) {
             ++localIgnoredLines;
@@ -4320,15 +4352,6 @@ void MainWindow::restoreSession(bool restoreHistory) {
         json.remove(QLatin1String("history"));
     m_session->deSerialize(json, true);
 
-    if (restoreHistory && !m_session->historyIsEmpty()) {
-        const QList<HistoryEntry> entries = historyEntries();
-        int errorIndex = -1;
-        QString errorText;
-        if (!rebuildSessionFromEntries(entries, &errorIndex, &errorText)) {
-            showStateLabel(tr("Could not recalculate from calculation %1: %2").arg(errorIndex + 1).arg(errorText));
-        }
-    }
-
     file.close();
     emit historyChanged();
     emit variablesChanged();
@@ -4378,8 +4401,7 @@ void MainWindow::evaluateEditorExpression()
 
             int errorIndex = -1;
             QString errorText;
-            if (!rebuildSessionFromEntries(updatedEntries, &errorIndex, &errorText)) {
-                rebuildSessionFromEntries(previousEntries);
+            if (!rebuildSessionFromEntries(updatedEntries, m_pendingHistoryEditIndex, &errorIndex, &errorText)) {
                 m_widgets.display->setEditingHistoryIndex(m_pendingHistoryEditIndex);
                 restoreDisplayScroll();
                 showStateLabel(tr("Could not recalculate from calculation %1: %2").arg(errorIndex + 1).arg(errorText));
@@ -4421,13 +4443,17 @@ void MainWindow::evaluateEditorExpression()
         return;
 
     const QString interpretedExpr = m_evaluator->interpretedExpression();
-    m_session->addHistoryEntry(HistoryEntry(enteredExpr, result, interpretedExpr, evalContext));
+    HistoryEntry historyEntry(enteredExpr, result, interpretedExpr, evalContext);
+    historyEntry.setRenderedLines(renderedLinesForHistoryEntry(historyEntry, m_settings));
+    m_session->addHistoryEntry(historyEntry);
     if (m_settings->historySaving == Settings::HistorySavingContinuously)
         saveSessionToDefaultPath();
+    const bool userVariableAssign = m_evaluator->isUserVariableAssign();
     emit historyChanged();
     if (!startedFromHistoryEdit)
         m_widgets.display->verticalScrollBar()->setValue(m_widgets.display->verticalScrollBar()->maximum());
-    emit variablesChanged();
+    if (userVariableAssign)
+        emit variablesChanged();
     if (m_evaluator->isUserUnitAssign())
         emit unitsChanged();
 
@@ -4685,8 +4711,7 @@ void MainWindow::editHistoryEntryContext(int index)
 
     int errorIndex = -1;
     QString errorText;
-    if (!rebuildSessionFromEntries(updatedEntries, &errorIndex, &errorText)) {
-        rebuildSessionFromEntries(previousEntries);
+    if (!rebuildSessionFromEntries(updatedEntries, index, &errorIndex, &errorText)) {
         QScrollBar* bar = m_widgets.display->verticalScrollBar();
         bar->setValue(qBound(bar->minimum(), previousDisplayScrollValue, bar->maximum()));
         showStateLabel(tr("Could not recalculate from calculation %1: %2").arg(errorIndex + 1).arg(errorText));
@@ -4735,21 +4760,63 @@ QList<HistoryEntry> MainWindow::historyEntries() const
     return entries;
 }
 
-bool MainWindow::rebuildSessionFromEntries(const QList<HistoryEntry>& entries, int* errorIndex, QString* errorText)
+bool MainWindow::rebuildSessionFromEntries(const QList<HistoryEntry>& entries,
+                                           int startIndex,
+                                           int* errorIndex,
+                                           QString* errorText)
 {
     if (errorIndex)
         *errorIndex = -1;
     if (errorText)
         *errorText = QString();
 
-    m_session->clearHistory();
-    m_session->clearVariables();
-    m_session->clearUserFunctions();
-    m_evaluator->initializeBuiltInVariables();
-    m_conditions.autoAns = false;
+    if (startIndex < 0 || startIndex > entries.size()) {
+        if (errorText)
+            *errorText = tr("Invalid recalculation start index");
+        return false;
+    }
+
+    const Session previousSessionState = *m_session;
+    const bool previousAutoAns = m_conditions.autoAns;
+
+    if (startIndex == 0) {
+        bool hasBaselineAns = false;
+        Quantity baselineAnsValue = CMath::nan();
+        const bool hadPreviousAns = m_evaluator->hasVariable(QStringLiteral("ans"));
+        if (hadPreviousAns) {
+            const Variable previousAnsVariable = m_evaluator->getVariable(QStringLiteral("ans"));
+            baselineAnsValue = previousAnsVariable.value();
+            hasBaselineAns = !baselineAnsValue.isNan();
+        }
+        if (!hasBaselineAns) {
+            for (int i = previousSessionState.historySize() - 1; i >= 0; --i) {
+                const Quantity candidate = previousSessionState.historyEntryAtRef(i).result();
+                if (!candidate.isNan()) {
+                    baselineAnsValue = candidate;
+                    hasBaselineAns = true;
+                    break;
+                }
+            }
+        }
+        m_session->clearHistory();
+        m_session->clearVariables();
+        m_session->clearUserFunctions();
+        m_evaluator->initializeBuiltInVariables();
+        if (hasBaselineAns) {
+            m_evaluator->setVariable(
+                QStringLiteral("ans"),
+                baselineAnsValue,
+                Variable::BuiltIn);
+        }
+        m_conditions.autoAns = false;
+    } else {
+        while (m_session->historySize() > startIndex)
+            m_session->removeHistoryEntryAt(m_session->historySize() - 1);
+    }
+
     const EvaluationContext originalContext = currentEvaluationContext(m_settings);
 
-    for (int i = 0; i < entries.size(); ++i) {
+    for (int i = startIndex; i < entries.size(); ++i) {
         const HistoryEntry entry = entries.at(i);
         const QString currentExpr = entry.expr();
         applyEvaluationContext(m_settings, entry.contextRef());
@@ -4764,6 +4831,8 @@ bool MainWindow::rebuildSessionFromEntries(const QList<HistoryEntry>& entries, i
             if (errorText)
                 *errorText = m_evaluator->error();
             applyEvaluationContext(m_settings, originalContext);
+            *m_session = previousSessionState;
+            m_conditions.autoAns = previousAutoAns;
             return false;
         }
 
@@ -4773,12 +4842,14 @@ bool MainWindow::rebuildSessionFromEntries(const QList<HistoryEntry>& entries, i
             continue;
 
         const QString interpretedExpr = m_evaluator->interpretedExpression();
-        m_session->addHistoryEntry(HistoryEntry(currentExpr, result, interpretedExpr, entry.contextRef()));
-        if (!result.isNan())
-            m_conditions.autoAns = true;
+        HistoryEntry rebuiltEntry(currentExpr, result, interpretedExpr, entry.contextRef());
+        rebuiltEntry.setRenderedLines(renderedLinesForHistoryEntry(rebuiltEntry, m_settings));
+        m_session->addHistoryEntry(rebuiltEntry);
     }
 
     applyEvaluationContext(m_settings, originalContext);
+    const bool hasAns = m_evaluator->hasVariable(QStringLiteral("ans"));
+    m_conditions.autoAns = hasAns && !m_evaluator->getVariable(QStringLiteral("ans")).value().isNan();
     return true;
 }
 

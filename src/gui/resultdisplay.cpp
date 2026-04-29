@@ -70,6 +70,20 @@ QColor hoverColorForBackground(const QColor& background)
                   mixChannel(background.blue(), target.blue()));
 }
 
+int maxRenderedHistoryEntries()
+{
+    static const int kDefaultMaxRenderedHistoryEntries = 800;
+    const int configuredLimit = Settings::instance()->maxHistoryEntries;
+    if (configuredLimit > 0)
+        return qMin(configuredLimit, kDefaultMaxRenderedHistoryEntries);
+    return kDefaultMaxRenderedHistoryEntries;
+}
+
+int firstDisplayedHistoryIndexForCount(int historyCount)
+{
+    return qMax(0, historyCount - maxRenderedHistoryEntries());
+}
+
 void cloneMenuActions(const QMenu* sourceMenu, QMenu* targetMenu)
 {
     const QList<QAction*> sourceActions = sourceMenu->actions();
@@ -220,6 +234,18 @@ QString formattedExpressionForDisplay(const HistoryEntry& entry)
         entry.interpretedExpr());
 }
 
+QStringList renderedHistoryLinesForDisplay(const HistoryEntry& entry)
+{
+    if (entry.hasRenderedLines())
+        return entry.renderedLines();
+
+    QStringList lines;
+    lines.append(formattedExpressionForDisplay(entry));
+    if (!entry.result().isNan())
+        lines.append(formatResultLines(entry));
+    return lines;
+}
+
 QString formattedExpressionForDisplay(const QString& expression,
                                      const QString& interpretedExpression)
 {
@@ -242,6 +268,7 @@ ResultDisplay::ResultDisplay(QWidget* parent)
     , m_hoveredHistoryIndex(-1)
     , m_editingHistoryIndex(-1)
     , m_count(0)
+    , m_firstDisplayedHistoryIndex(0)
     , m_scrollToBottomButton(new QToolButton(this))
 {
     setViewportMargins(0, 0, 0, 0);
@@ -415,6 +442,7 @@ void ResultDisplay::rehighlight()
 void ResultDisplay::clear()
 {
     m_count = 0;
+    m_firstDisplayedHistoryIndex = 0;
     setPlainText(QLatin1String(""));
     markHistoryBlockIndexCacheDirty();
     clearHoverFeedback();
@@ -437,20 +465,20 @@ void ResultDisplay::refresh()
     const Session* session = Evaluator::instance()->session();
     const int historyCount = session->historySize();
     const int previousScrollValue = verticalScrollBar()->value();
+    const int firstDisplayedHistoryIndex = firstDisplayedHistoryIndexForCount(historyCount);
 
     // Fast path for the common "new evaluation added one history entry" case.
-    if (historyCount == m_count + 1 && historyCount > 0) {
+    if (historyCount == m_count + 1
+        && historyCount > 0
+        && firstDisplayedHistoryIndex == m_firstDisplayedHistoryIndex) {
         clearHoverFeedback();
         const HistoryEntry& lastEntry = session->historyEntryAtRef(historyCount - 1);
-        const QString expressionLine = formattedExpressionForDisplay(lastEntry);
-        appendPlainText(expressionLine);
-        if (!lastEntry.result().isNan()) {
-            const QStringList resultLines = formatResultLines(lastEntry);
-            for (const QString& line : resultLines)
-                appendPlainText(line);
-        }
+        const QStringList renderedLines = renderedHistoryLinesForDisplay(lastEntry);
+        for (const QString& line : renderedLines)
+            appendPlainText(line);
         appendPlainText(QLatin1String(""));
         m_count = historyCount;
+        m_firstDisplayedHistoryIndex = firstDisplayedHistoryIndex;
         markHistoryBlockIndexCacheDirty();
         updateHoverHighlightSelection();
         updateScrollToBottomButtonVisibility();
@@ -459,15 +487,13 @@ void ResultDisplay::refresh()
 
     clearHoverFeedback();
     m_count = historyCount;
+    m_firstDisplayedHistoryIndex = firstDisplayedHistoryIndex;
 
     QStringList allLines;
-    allLines.reserve(qMax(1, m_count * 3));
-    for (int i = 0; i < m_count; ++i) {
+    allLines.reserve(qMax(1, (m_count - m_firstDisplayedHistoryIndex) * 3));
+    for (int i = m_firstDisplayedHistoryIndex; i < m_count; ++i) {
         const HistoryEntry& historyEntry = session->historyEntryAtRef(i);
-        allLines.append(formattedExpressionForDisplay(historyEntry));
-        const Quantity value = historyEntry.result();
-        if (!value.isNan())
-            allLines.append(formatResultLines(historyEntry));
+        allLines.append(renderedHistoryLinesForDisplay(historyEntry));
         allLines.append(QLatin1String(""));
     }
 
@@ -483,12 +509,15 @@ void ResultDisplay::refreshLastHistoryEntry()
 {
     const Session* session = Evaluator::instance()->session();
     const int historyCount = session->historySize();
+    const int firstDisplayedHistoryIndex = firstDisplayedHistoryIndexForCount(historyCount);
     if (historyCount == 0) {
         clear();
         return;
     }
 
-    if (m_count != historyCount || blockCount() <= 0) {
+    if (m_count != historyCount
+        || m_firstDisplayedHistoryIndex != firstDisplayedHistoryIndex
+        || blockCount() <= 0) {
         refresh();
         return;
     }
@@ -507,10 +536,7 @@ void ResultDisplay::refreshLastHistoryEntry()
         startBlock = startBlock.previous();
 
     const HistoryEntry& lastEntry = session->historyEntryAtRef(historyCount - 1);
-    QStringList updatedLines;
-    updatedLines.append(formattedExpressionForDisplay(lastEntry));
-    if (!lastEntry.result().isNan())
-        updatedLines.append(formatResultLines(lastEntry));
+    QStringList updatedLines = renderedHistoryLinesForDisplay(lastEntry);
     updatedLines.append(QLatin1String(""));
 
     clearHoverFeedback();
@@ -1137,10 +1163,11 @@ int ResultDisplay::historyIndexAtPosition(const QPoint& pos) const
         return -1;
 
     const int historyIndex = m_blockToHistoryIndex.at(blockNumber);
-    if (historyIndex < 0 || historyIndex >= m_historyBlockRanges.size())
+    const int localHistoryIndex = historyIndex - m_firstDisplayedHistoryIndex;
+    if (localHistoryIndex < 0 || localHistoryIndex >= m_historyBlockRanges.size())
         return -1;
 
-    const QPair<int, int> range = m_historyBlockRanges.at(historyIndex);
+    const QPair<int, int> range = m_historyBlockRanges.at(localHistoryIndex);
     // Separator blank lines are intentionally mapped in the cache; keep them
     // non-interactive while still allowing genuine blank lines inside entries.
     if (blockNumber < range.first || blockNumber > range.second)
@@ -1153,14 +1180,15 @@ bool ResultDisplay::blockRangeForHistoryIndex(int historyIndex, int& startBlock,
 {
     startBlock = -1;
     endBlock = -1;
-    if (historyIndex < 0)
+    const int localHistoryIndex = historyIndex - m_firstDisplayedHistoryIndex;
+    if (localHistoryIndex < 0)
         return false;
 
     ensureHistoryBlockIndexCache();
-    if (historyIndex >= m_historyBlockRanges.size())
+    if (localHistoryIndex >= m_historyBlockRanges.size())
         return false;
 
-    const QPair<int, int> range = m_historyBlockRanges.at(historyIndex);
+    const QPair<int, int> range = m_historyBlockRanges.at(localHistoryIndex);
     startBlock = range.first;
     endBlock = range.second;
     return startBlock >= 0 && endBlock >= startBlock;
@@ -1367,10 +1395,12 @@ void ResultDisplay::ensureHistoryBlockIndexCache() const
 
     const Session* session = Evaluator::instance()->session();
     const int historySize = session->historySize();
-    m_historyBlockRanges.reserve(historySize);
+    const int firstDisplayedHistoryIndex = firstDisplayedHistoryIndexForCount(historySize);
+    const int displayedHistoryCount = historySize - firstDisplayedHistoryIndex;
+    m_historyBlockRanges.reserve(qMax(0, displayedHistoryCount));
 
     QTextBlock block = document()->firstBlock();
-    for (int i = 0; i < historySize; ++i) {
+    for (int i = firstDisplayedHistoryIndex; i < historySize; ++i) {
         const int startBlock = block.isValid() ? block.blockNumber() : -1;
         int endBlock = -1;
 

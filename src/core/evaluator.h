@@ -157,6 +157,7 @@ public:
     Tokens tokens() const;
     bool isUserFunctionAssign() const;
     bool isUserUnitAssign() const;
+    bool isUserVariableAssign() const;
 
     Variable getVariable(const QString&) const;
     QList<Variable> getVariables() const;

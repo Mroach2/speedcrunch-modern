@@ -28,27 +28,23 @@ Variable::Variable(const QJsonObject &json)
 
 void Variable::serialize(QJsonObject &json) const
 {
-    json["identifier"] = m_identifier;
+    json["id"] = m_identifier;
     QJsonObject value;
     m_value.serialize(value);
-    json["value"] = value;
-    json["type"] = (m_type==UserDefined) ? QStringLiteral("User") : QStringLiteral("BuiltIn");
+    json["qty"] = value;
     if (!m_description.isEmpty())
-        json["description"] = m_description;
+        json["dsc"] = m_description;
 }
 
 void Variable::deSerialize(const QJsonObject &json)
 {
-    if (json.contains("identifier"))
-        m_identifier = json["identifier"].toString();
+    if (json.contains("id"))
+        m_identifier = json["id"].toString();
 
-    if (json.contains("type")) {
-        QString str = json["type"].toString();
-        m_type = (str=="User") ? UserDefined : BuiltIn;
-    }
+    m_type = (m_identifier == QStringLiteral("ans")) ? BuiltIn : UserDefined;
 
-    if (json.contains("value"))
-        m_value = Quantity(json["value"].toObject());
+    if (json.contains("qty"))
+        m_value = Quantity(json["qty"].toObject());
 
-    m_description = json["description"].toString();
+    m_description = json["dsc"].toString();
 }

@@ -139,6 +139,7 @@ private:
     int m_hoveredHistoryIndex;
     int m_editingHistoryIndex;
     int m_count;
+    int m_firstDisplayedHistoryIndex;
     QToolButton* m_scrollToBottomButton;
 };
 
