@@ -50,6 +50,7 @@ static bool isSubscriptLetter(QChar ch);
 static bool isIdentifierStart(QChar ch);
 static bool isIdentifierContinue(QChar ch);
 static QString superscriptDigitsToAscii(const QString& text);
+static bool normalizeUnsignedIntegerEquivalentDecimalText(QString& text);
 
 #ifdef EVALUATOR_DEBUG
 #include <QDebug>
@@ -1234,6 +1235,50 @@ static bool isStandaloneNumericLiteralOperandForDisplay(const Tokens& tokens,
     return false;
 }
 
+static bool isUnsignedIntegerDigitsText(const QString& text)
+{
+    if (text.isEmpty())
+        return false;
+    for (const QChar& ch : text) {
+        if (!ch.isDigit())
+            return false;
+    }
+    return true;
+}
+
+static bool isIntegerNumericLiteralOperandForDisplay(const Tokens& tokens,
+                                                     int rangeStart,
+                                                     int rangeEnd)
+{
+    if (!isStandaloneNumericLiteralOperandForDisplay(tokens, rangeStart, rangeEnd))
+        return false;
+
+    if (rangeStart == rangeEnd && tokens.at(rangeStart).isNumber()) {
+        QString text = tokens.at(rangeStart).text();
+        return normalizeUnsignedIntegerEquivalentDecimalText(text)
+            || isUnsignedIntegerDigitsText(text);
+    }
+
+    if (tokens.at(rangeStart).asOperator() == Token::AssociationStart
+        && tokens.at(rangeEnd).asOperator() == Token::AssociationEnd) {
+        int innerStart = rangeStart + 1;
+        int innerEnd = rangeEnd - 1;
+        if (innerStart > innerEnd)
+            return false;
+        if (tokens.at(innerStart).asOperator() == Token::Addition
+            || tokens.at(innerStart).asOperator() == Token::Subtraction) {
+            ++innerStart;
+        }
+        if (innerStart != innerEnd || !tokens.at(innerStart).isNumber())
+            return false;
+        QString text = tokens.at(innerStart).text();
+        return normalizeUnsignedIntegerEquivalentDecimalText(text)
+            || isUnsignedIntegerDigitsText(text);
+    }
+
+    return false;
+}
+
 static bool isHardcodedNumericOperandOnLeftOfMultiplicationForDisplay(const Tokens& tokens,
                                                                       int mulIndex)
 {
@@ -1289,6 +1334,18 @@ static bool isHardcodedNumericOperandOnLeftOfMultiplicationForDisplay(const Toke
         if (groupStart > 0 && tokens.at(groupStart - 1).isIdentifier())
             return false;
         start = groupStart;
+    }
+
+    if (start >= 2
+        && tokens.at(start - 1).asOperator() == Token::Exponentiation
+        && tokens.at(start - 2).isNumber())
+    {
+        QString baseText = tokens.at(start - 2).text();
+        normalizeUnsignedIntegerEquivalentDecimalText(baseText);
+        if (baseText == QLatin1String("10")
+            && isIntegerNumericLiteralOperandForDisplay(tokens, start, end)) {
+            start -= 2;
+        }
     }
 
     if (start > 0) {
@@ -1374,8 +1431,42 @@ static bool isHardcodedNumericOperandOnRightOfMultiplicationForDisplay(const Tok
         break;
     }
 
-    if (end + 1 < tokens.size() && tokens.at(end + 1).asOperator() == Token::Exponentiation)
-        return false;
+    if (end + 1 < tokens.size() && tokens.at(end + 1).asOperator() == Token::Exponentiation) {
+        if (start != end || !tokens.at(start).isNumber())
+            return false;
+        QString baseText = tokens.at(start).text();
+        normalizeUnsignedIntegerEquivalentDecimalText(baseText);
+        if (baseText != QLatin1String("10"))
+            return false;
+
+        const int exponentStart = end + 2;
+        if (exponentStart >= tokens.size())
+            return false;
+        int exponentEnd = exponentStart;
+        if (tokens.at(exponentStart).asOperator() == Token::AssociationStart) {
+            int depth = 0;
+            int groupEnd = -1;
+            for (int i = exponentStart; i < tokens.size(); ++i) {
+                const Token::Operator op = tokens.at(i).asOperator();
+                if (op == Token::AssociationStart) {
+                    ++depth;
+                    continue;
+                }
+                if (op == Token::AssociationEnd) {
+                    --depth;
+                    if (depth == 0) {
+                        groupEnd = i;
+                        break;
+                    }
+                }
+            }
+            if (groupEnd < 0)
+                return false;
+            exponentEnd = groupEnd;
+        }
+
+        return isIntegerNumericLiteralOperandForDisplay(tokens, exponentStart, exponentEnd);
+    }
 
     return isStandaloneNumericLiteralOperandForDisplay(tokens, start, end);
 }
@@ -6169,17 +6260,22 @@ QString Evaluator::buildInterpretedExpressionFromOpcodes() const
                 rightText = wrapInParentheses(rightText);
         }
 
-        // For explicit multiplications, isolate power terms to improve
-        // readability in compound products (for example "1·(2^3)·3").
+        // For explicit multiplications, isolate most power terms to improve
+        // readability in compound products (for example "1·(2^3)·3"), but
+        // keep scientific-notation powers of ten flat ("x·10^n").
         if (opcodeType == Opcode::Mul && !isImplicitMultiplication) {
+            static const QRegularExpression s_scientificPowerOfTenRE(
+                QStringLiteral(R"(^10\^(?:[−-]?\d+|\([−-]?\d+\))$)"));
             if (left.rootOpcode == Opcode::Pow
                 && !left.isLiteralSymbol
+                && !s_scientificPowerOfTenRE.match(leftText).hasMatch()
                 && !isWrappedInOuterParentheses(leftText))
             {
                 leftText = wrapInParentheses(leftText);
             }
             if (right.rootOpcode == Opcode::Pow
                 && !right.isLiteralSymbol
+                && !s_scientificPowerOfTenRE.match(rightText).hasMatch()
                 && !isWrappedInOuterParentheses(rightText))
             {
                 rightText = wrapInParentheses(rightText);

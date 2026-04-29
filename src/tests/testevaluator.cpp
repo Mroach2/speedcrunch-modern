@@ -4227,6 +4227,7 @@ void test_implicit_multiplication()
     CHECK_INTERPRETED("2^12.12", "2^(12.12)");
     CHECK_INTERPRETED("2^12.000-2+1/(1×2^3×3)-2^12!+2^12.1!",
                       "2^12-2+1/(1·(2^3)·3)-2^(12!)+2^(12.1!)");
+    CHECK_INTERPRETED("123.567 × 10^0", "123.567·10^0");
     CHECK_INTERPRETED(QString::fromUtf8("pi  −−−−−3"), "pi-3");
     CHECK_INTERPRETED(QString::fromUtf8("pi  −−−−−−3"), "pi+3");
     CHECK_INTERPRETED("1/(1×2^3×3)", "1/(1·(2^3)·3)");
@@ -4238,6 +4239,10 @@ void test_implicit_multiplication()
                       "sin(23)·cos(232323)·pi·pi·2·cos(pi)·pi·23");
     CHECK_INTERPRETED("sin 23       cos 232323×pi×pi   2×cos pi×pi×23  23 × 323",
                       "sin(23)·cos(232323)·pi·pi·2·cos(pi)·pi·2323×323");
+    CHECK_DISPLAY_INTERPRETED(QString::fromUtf8("123.567 × 10⁰"),
+                              QString::fromUtf8("123.567 × 10⁰"));
+    CHECK_DISPLAY_SIMPLIFIED_INTERPRETED(QString::fromUtf8("123.567 × 10⁰"),
+                                         QString::fromUtf8("123.567 × 10⁰"));
     CHECK_EVAL("2^2(2)", "8");
     CHECK_EVAL("2^2(2)(2)", "16");
     CHECK_EVAL("2^2(2*2)", "16");
