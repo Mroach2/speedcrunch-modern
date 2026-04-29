@@ -542,8 +542,12 @@ QString NumberFormatter::format(Quantity q, char resultFormatOverride,
         }
     }
 
+    const bool useSexagesimalOutput =
+        format.base == Quantity::Format::Base::Decimal
+        && format.mode == Quantity::Format::Mode::Sexagesimal;
+
     bool time = false, arc = q.isDimensionless();
-    if (activeResultFormat == 's' && q.hasDimension()) {
+    if (useSexagesimalOutput && q.hasDimension()) {
         auto dimension = q.getDimensionByQuantity();
         if (dimension.count() == 1 && dimension.firstKey() == UnitQuantity::Time) {
             auto iterator = dimension.begin();
@@ -554,7 +558,7 @@ QString NumberFormatter::format(Quantity q, char resultFormatOverride,
         }
     }
 
-    if (arc && activeResultFormat == 's') {     // convert to arcseconds
+    if (arc && useSexagesimalOutput) {     // convert to arcseconds
         // Sexagesimal angle formatting is unitless "D°M′S″" output. If the
         // value carries an explicit angle display unit (e.g. [rad]), drop it
         // before numeric formatting/parsing to avoid contaminating the
@@ -570,7 +574,7 @@ QString NumberFormatter::format(Quantity q, char resultFormatOverride,
     }
 
     bool negative = false;
-    if (activeResultFormat == 's' && q.isNegative()) {
+    if (useSexagesimalOutput && q.isNegative()) {
         q *= Quantity(HNumber(-1));
         negative = true;
     }
@@ -578,7 +582,7 @@ QString NumberFormatter::format(Quantity q, char resultFormatOverride,
     if (result.isEmpty())
         result = DMath::format(q, format);
 
-    if (activeResultFormat == 's' && (arc || time)) {   // sexagesimal
+    if (useSexagesimalOutput && (arc || time)) {   // sexagesimal
         int dotPos = result.indexOf(MathDsl::DotSep);
         HNumber seconds(dotPos > 0 ? result.left(dotPos).toStdString().c_str() : result.toStdString().c_str());
         HNumber mains = HMath::floor(seconds / HNumber(3600));

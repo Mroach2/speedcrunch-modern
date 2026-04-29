@@ -5195,6 +5195,9 @@ void test_display_interpreted_spacing()
 
 void test_format()
 {
+    Settings* settings = Settings::instance();
+    const char savedResultFormat = settings->resultFormat;
+
     CHECK_EVAL("bin(123)", "0b1111011");
     CHECK_EVAL("oct(123)", "0o173");
     CHECK_EVAL("hex(123)", "0x7B");
@@ -5254,6 +5257,17 @@ void test_format()
     CHECK_EVAL("hexpad(256)", "0x0100");
     CHECK_EVAL("octpad(256)", "0o000400");
 
+    settings->resultFormat = 's';
+    CHECK_EVAL("bin(23.45)", "0b10111.01110011001100110011");
+    CHECK_EVAL("hex(23.45)", "0x17.73333333333333333333");
+    CHECK_EVAL("oct(23.45)", "0o27.34631463146314631463");
+    CHECK_EVAL("sci(23.45)", "2.345e1");
+    CHECK_EVAL("eng(23.45)", "23.45e0");
+    CHECK_EVAL("binpad(23)", "0b00010111");
+    CHECK_EVAL("hexpad(23)", "0x17");
+    CHECK_EVAL("octpad(23)", "0o027");
+    settings->resultFormat = savedResultFormat;
+
     CHECK_EVAL_FAIL("binpad(1.5)");
     CHECK_EVAL_FAIL("binpad(1[metre])");
     CHECK_EVAL_FAIL("hexpad(1+j)");
@@ -5270,7 +5284,6 @@ void test_format()
 
     CHECK_EVAL("polar(3+4j)", "5 · exp(i · 0.92729521800161223243)");
 
-    Settings* settings = Settings::instance();
     const char savedComplexForm = settings->resultFormatComplex;
     const char savedAngleUnit = settings->angleUnit;
 
