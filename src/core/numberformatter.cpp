@@ -472,7 +472,10 @@ QString NumberFormatter::format(Quantity q, char resultFormatOverride,
     Quantity::Format format = q.format();
     // Check per-expression rational-display override encoded in format precision.
     const bool forceRationalDisplay = format.precision == ForcedRationalPrecision;
-    if ((activeResultFormat == 'r' || forceRationalDisplay)
+    const bool hasExplicitFormatOverride =
+        format.base != Quantity::Format::Base::Null
+        || format.mode != Quantity::Format::Mode::Null;
+    if (((!hasExplicitFormatOverride && activeResultFormat == 'r') || forceRationalDisplay)
             && format.base != Quantity::Format::Base::Binary
             && format.base != Quantity::Format::Base::Octal
             && format.base != Quantity::Format::Base::Hexadecimal
