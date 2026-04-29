@@ -203,10 +203,18 @@ static bool s_tryParseMolarMassFormula(const QString& formulaText, Quantity* out
 
     const Quantity gramsPerMole = Units::gram() / Units::mole();
     Quantity mass = Quantity(totalMass) * gramsPerMole;
-    const QString gramsPerMoleSymbol =
-        QString(::unitSymbol(UnitId::Gram))
-        + MathDsl::DivOp
-        + QString(::unitSymbol(UnitId::Mole));
+    QString gramsPerMoleSymbol;
+    if (runtimeUnitNegativeExponentStyle() == Settings::UnitNegativeExponentSuperscript) {
+        gramsPerMoleSymbol = QString(::unitSymbol(UnitId::Gram))
+            + QLatin1Char(' ')
+            + QString(::unitSymbol(UnitId::Mole))
+            + QString(MathDsl::PowNeg)
+            + QString(MathDsl::Pow1);
+    } else {
+        gramsPerMoleSymbol = QString(::unitSymbol(UnitId::Gram))
+            + MathDsl::DivOp
+            + QString(::unitSymbol(UnitId::Mole));
+    }
     mass.setDisplayUnit(gramsPerMole.numericValue(), gramsPerMoleSymbol);
     *outMass = mass;
     return true;

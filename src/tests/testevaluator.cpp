@@ -2730,14 +2730,14 @@ void test_function_basic()
     CHECK_EVAL_PRECISE("ieee754_double_residual(ieee754_double_residual(pi/2))", "-0.00000000000000000000000000000000149738490485916978");
     CHECK_EVAL_PRECISE("ieee754_double_residual(ieee754_double_residual(ieee754_double_residual(pi/2)))", "0.00000000000000000000000000000000000000000000000006");
 
-    CHECK_EVAL("molmass(H)", "1.008 g/mol");
-    CHECK_EVAL("molmass(He)", "4.0026 g/mol");
-    CHECK_EVAL("molmass(C6H12O6)", "180.156 g/mol");
-    CHECK_EVAL(QString::fromUtf8("molmass(H₂O)"), "18.015 g/mol");
-    CHECK_EVAL(QString::fromUtf8("molmass(NaCl)"), "58.44 g/mol");
-    CHECK_EVAL(QString::fromUtf8("molmass(C₆H₁₂O₆)"), "180.156 g/mol");
-    CHECK_EVAL(QString::fromUtf8("molmass(Na₂SO₄)"), "142.036 g/mol");
-    CHECK_EVAL(QStringLiteral("molmass(C6H12O6)*molmass(C6H12O6)"), "32456.184336 g/mol g/mol");
+    CHECK_EVAL("molmass(H)", u8"1.008 g·mol⁻¹");
+    CHECK_EVAL("molmass(He)", u8"4.0026 g·mol⁻¹");
+    CHECK_EVAL("molmass(C6H12O6)", u8"180.156 g·mol⁻¹");
+    CHECK_EVAL(QString::fromUtf8("molmass(H₂O)"), u8"18.015 g·mol⁻¹");
+    CHECK_EVAL(QString::fromUtf8("molmass(NaCl)"), u8"58.44 g·mol⁻¹");
+    CHECK_EVAL(QString::fromUtf8("molmass(C₆H₁₂O₆)"), u8"180.156 g·mol⁻¹");
+    CHECK_EVAL(QString::fromUtf8("molmass(Na₂SO₄)"), u8"142.036 g·mol⁻¹");
+    CHECK_EVAL("molmass(C6H12O6)*molmass(C6H12O6)", u8"32456.184336 g·mol⁻¹·g·mol⁻¹");
     {
         ++eval_total_tests;
         const QString expr = QStringLiteral("molmass(C6H12O6)*molmass(C6H12O6)");
@@ -2755,9 +2755,14 @@ void test_function_basic()
                 value,
                 true,
                 true);
+            const bool hasCompactSuperscript = lines.last().contains(QString::fromUtf8("g²·mol⁻²"));
+            const bool hasCompactFraction = lines.last().contains(QString::fromUtf8("g²/mol²"));
+            const bool hasInverseOnlySuperscript = lines.last().contains(QString::fromUtf8("1·mol⁻²"));
+            const bool hasInverseOnlyFraction = lines.last().contains(QString::fromUtf8("1/mol²"));
             if (lines.isEmpty()
-                || !lines.last().contains(QString::fromUtf8("g²/mol²"))
-                || lines.last().contains(QString::fromUtf8("1/mol²"))) {
+                || (!hasCompactSuperscript && !hasCompactFraction)
+                || hasInverseOnlySuperscript
+                || hasInverseOnlyFraction) {
                 ++eval_failed_tests;
                 ++eval_new_failed_tests;
                 cerr << __FILE__ << "[" << __LINE__ << "]\tmolmass product tooltip/result keeps gram numerator\t[NEW]" << endl
