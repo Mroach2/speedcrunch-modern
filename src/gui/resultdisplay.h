@@ -56,6 +56,7 @@ public:
     void restoreViewportTopAnchor(const QPair<int, int>& anchor);
 
 signals:
+    void clicked();
     void shiftWheelDown();
     void shiftWheelUp();
     void shiftControlWheelDown();

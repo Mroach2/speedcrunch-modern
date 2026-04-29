@@ -1842,6 +1842,7 @@ void MainWindow::createFixedConnections()
     connect(this, SIGNAL(historyChanged()), m_widgets.editor, SLOT(updateHistory()));
 
     connect(m_widgets.display, SIGNAL(copyAvailable(bool)), SLOT(handleCopyAvailable(bool)));
+    connect(m_widgets.display, SIGNAL(clicked()), SLOT(hideStateLabel()));
     connect(m_widgets.display, SIGNAL(expressionSelected(const QString&)), SLOT(insertTextIntoEditor(const QString&)));
     connect(m_widgets.display, SIGNAL(editHistoryEntryRequested(int)), SLOT(startHistoryEntryEdit(int)));
     connect(m_widgets.display, SIGNAL(editHistoryEntryContextRequested(int)), SLOT(editHistoryEntryContext(int)));
@@ -4869,12 +4870,7 @@ void MainWindow::handleDisplaySelectionChange()
         return;
     }
 
-    if (m_widgets.editor->text().trimmed().isEmpty()) {
-        hideStateLabel();
-        return;
-    }
-
-    m_widgets.editor->refreshAutoCalc();
+    hideStateLabel();
 }
 
 void MainWindow::handleEditorSelectionChange()

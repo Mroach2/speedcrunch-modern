@@ -667,6 +667,8 @@ void ResultDisplay::mouseDoubleClickEvent(QMouseEvent* event)
 
 void ResultDisplay::mousePressEvent(QMouseEvent* event)
 {
+    emit clicked();
+
     if (m_editingHistoryIndex >= 0) {
         const QRect cancelRect = cancelGlyphBadgeRectForEditingIndex();
         if (event->button() == Qt::LeftButton && cancelRect.isValid() && cancelRect.contains(event->pos())) {
