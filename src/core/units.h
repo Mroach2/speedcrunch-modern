@@ -300,6 +300,7 @@ public:
     static QString degreeAliasSymbol();
     static QString arcminuteAliasSymbol();
     static QString arcsecondAliasSymbol();
+    static QStringList affineUnitAliases(UnitId id);
     static void findUnit(Quantity& q);
     static const QHash<QString, Quantity>& builtInUnitValues();
     static QHash<QString, Quantity> builtInUnitLookup(char angleMode);

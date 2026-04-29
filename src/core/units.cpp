@@ -1204,6 +1204,30 @@ QString Units::arcsecondAliasSymbol()
     return UnitAltSymbol::Arcsecond;
 }
 
+QStringList Units::affineUnitAliases(UnitId id)
+{
+    switch (id) {
+    case UnitId::DegreeCelsius:
+        return {
+            UnitAltSymbol::DegreeCelsius1,
+            UnitAltSymbol::DegreeCelsius2,
+            UnitAltSymbol::DegreeCelsius3,
+            UnitAltSymbol::DegreeCelsius4,
+            UnitAltSymbol::DegreeCelsius5
+        };
+    case UnitId::DegreeFahrenheit:
+        return {
+            UnitAltSymbol::DegreeFahrenheit1,
+            UnitAltSymbol::DegreeFahrenheit2,
+            UnitAltSymbol::DegreeFahrenheit3,
+            UnitAltSymbol::DegreeFahrenheit4,
+            UnitAltSymbol::DegreeFahrenheit5
+        };
+    default:
+        return {};
+    }
+}
+
 QString prefixName(PrefixId id)
 {
     for (const PrefixSpec& prefix : s_siPrefixes()) {

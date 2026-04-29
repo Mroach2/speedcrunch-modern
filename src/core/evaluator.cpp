@@ -6921,6 +6921,7 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
                             val1.unitName(), val2.numericValue().real, &affineBaseValue))
                     {
                         Quantity absolute = Quantity(affineBaseValue) * Units::kelvin();
+                        absolute.setDisplayUnit(CNumber(1), val1.unitName());
                         val2 = checkOperatorResultWithDeferredNoOperand(absolute);
                     } else {
                         val2 = checkOperatorResultWithDeferredNoOperand(val2 * val1);

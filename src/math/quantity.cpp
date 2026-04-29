@@ -102,6 +102,136 @@ bool isSteradianUnitName(const QString& unitName)
     return unitId(normalizeUnitName(unitName)) == UnitId::Steradian;
 }
 
+enum class AffineTemperatureScale {
+    None,
+    Celsius,
+    Fahrenheit
+};
+
+AffineTemperatureScale affineTemperatureScaleFromDisplayUnitName(const QString& unitName)
+{
+    QString normalized = UnicodeChars::normalizeUnitSymbolAliases(unitName).trimmed();
+    if (normalized.isEmpty())
+        return AffineTemperatureScale::None;
+
+    auto matchesUnitAndAliases = [&](UnitId id) {
+        if (normalized == ::unitSymbol(id) || normalized == ::unitName(id))
+            return true;
+        const QStringList aliases = Units::affineUnitAliases(id);
+        for (const QString& alias : aliases) {
+            if (normalized == UnicodeChars::normalizeUnitSymbolAliases(alias).trimmed())
+                return true;
+        }
+        return false;
+    };
+
+    if (matchesUnitAndAliases(UnitId::DegreeCelsius)) {
+        return AffineTemperatureScale::Celsius;
+    }
+    if (matchesUnitAndAliases(UnitId::DegreeFahrenheit)) {
+        return AffineTemperatureScale::Fahrenheit;
+    }
+
+    return AffineTemperatureScale::None;
+}
+
+bool tryAffineScaleByRealScalar(const Quantity& affineQuantity,
+                                const HNumber& scalar,
+                                CNumber* scaledBaseValueOut)
+{
+    if (!scaledBaseValueOut
+        || !affineQuantity.hasUnit()
+        || !affineQuantity.numericValue().isNearReal())
+    {
+        return false;
+    }
+
+    const AffineTemperatureScale scale =
+        affineTemperatureScaleFromDisplayUnitName(affineQuantity.unitName());
+    if (scale == AffineTemperatureScale::None)
+        return false;
+
+    static const HNumber kelvinOffset("273.15");
+    static const HNumber five(5);
+    static const HNumber nine(9);
+    static const HNumber thirtyTwo(32);
+
+    HNumber affineValue;
+    if (scale == AffineTemperatureScale::Celsius) {
+        affineValue = affineQuantity.numericValue().real - kelvinOffset;
+    } else {
+        affineValue =
+            (affineQuantity.numericValue().real - kelvinOffset) * (nine / five)
+            + thirtyTwo;
+    }
+
+    const HNumber scaledAffineValue = affineValue * scalar;
+    HNumber scaledBaseValue;
+    if (scale == AffineTemperatureScale::Celsius) {
+        scaledBaseValue = scaledAffineValue + kelvinOffset;
+    } else {
+        scaledBaseValue =
+            ((scaledAffineValue - thirtyTwo) * (five / nine)) + kelvinOffset;
+    }
+
+    *scaledBaseValueOut = CNumber(scaledBaseValue);
+    return true;
+}
+
+bool tryAffineValueFromBase(const Quantity& affineQuantity,
+                            HNumber* affineValueOut,
+                            AffineTemperatureScale* scaleOut = nullptr)
+{
+    if (!affineValueOut
+        || !affineQuantity.hasUnit()
+        || !affineQuantity.numericValue().isNearReal())
+    {
+        return false;
+    }
+
+    const AffineTemperatureScale scale =
+        affineTemperatureScaleFromDisplayUnitName(affineQuantity.unitName());
+    if (scale == AffineTemperatureScale::None)
+        return false;
+
+    static const HNumber kelvinOffset("273.15");
+    static const HNumber five(5);
+    static const HNumber nine(9);
+    static const HNumber thirtyTwo(32);
+
+    if (scale == AffineTemperatureScale::Celsius) {
+        *affineValueOut = affineQuantity.numericValue().real - kelvinOffset;
+    } else {
+        *affineValueOut =
+            (affineQuantity.numericValue().real - kelvinOffset) * (nine / five)
+            + thirtyTwo;
+    }
+
+    if (scaleOut)
+        *scaleOut = scale;
+    return true;
+}
+
+bool tryAffineBaseFromValue(const HNumber& affineValue,
+                            const AffineTemperatureScale scale,
+                            HNumber* baseValueOut)
+{
+    if (!baseValueOut || scale == AffineTemperatureScale::None)
+        return false;
+
+    static const HNumber kelvinOffset("273.15");
+    static const HNumber five(5);
+    static const HNumber nine(9);
+    static const HNumber thirtyTwo(32);
+
+    if (scale == AffineTemperatureScale::Celsius) {
+        *baseValueOut = affineValue + kelvinOffset;
+    } else {
+        *baseValueOut = ((affineValue - thirtyTwo) * (five / nine)) + kelvinOffset;
+    }
+    return true;
+}
+
 bool isExactDimension(const Quantity& q, const QMap<UnitQuantity, Rational>& expected)
 {
     return q.getDimensionByQuantity() == expected;
@@ -558,7 +688,21 @@ Quantity operator-(const Quantity& a, const Quantity& b)
     {
         return DMath::nan(DimensionMismatch);
     }
-    res.m_numericValue -= b.m_numericValue;
+    HNumber lhsAffine;
+    HNumber rhsAffine;
+    AffineTemperatureScale lhsScale = AffineTemperatureScale::None;
+    AffineTemperatureScale rhsScale = AffineTemperatureScale::None;
+    const bool lhsIsAffine = tryAffineValueFromBase(a, &lhsAffine, &lhsScale);
+    const bool rhsIsAffine = tryAffineValueFromBase(b, &rhsAffine, &rhsScale);
+    if (lhsIsAffine && rhsIsAffine && lhsScale == rhsScale) {
+        HNumber baseDiff;
+        if (tryAffineBaseFromValue(lhsAffine - rhsAffine, lhsScale, &baseDiff))
+            res.m_numericValue = CNumber(baseDiff);
+        else
+            res.m_numericValue -= b.m_numericValue;
+    } else {
+        res.m_numericValue -= b.m_numericValue;
+    }
     return res;
 }
 
@@ -939,7 +1083,21 @@ Quantity Quantity::operator+(const Quantity& other) const
     }
     Quantity result(*this);
     result.m_format = Quantity::Format();
-    result.m_numericValue += other.m_numericValue;
+    HNumber lhsAffine;
+    HNumber rhsAffine;
+    AffineTemperatureScale lhsScale = AffineTemperatureScale::None;
+    AffineTemperatureScale rhsScale = AffineTemperatureScale::None;
+    const bool lhsIsAffine = tryAffineValueFromBase(*this, &lhsAffine, &lhsScale);
+    const bool rhsIsAffine = tryAffineValueFromBase(other, &rhsAffine, &rhsScale);
+    if (lhsIsAffine && rhsIsAffine && lhsScale == rhsScale) {
+        HNumber baseSum;
+        if (tryAffineBaseFromValue(lhsAffine + rhsAffine, lhsScale, &baseSum))
+            result.m_numericValue = CNumber(baseSum);
+        else
+            result.m_numericValue += other.m_numericValue;
+    } else {
+        result.m_numericValue += other.m_numericValue;
+    }
     if (info1 != InformationUnitFamily::None && info1 == info2
         && this->hasUnit() && other.hasUnit())
     {
@@ -975,7 +1133,21 @@ Quantity& Quantity::operator+=(const Quantity& other)
             *this = DMath::nan(DimensionMismatch);
             return *this;
         }
-        this->m_numericValue += other.m_numericValue;
+        HNumber lhsAffine;
+        HNumber rhsAffine;
+        AffineTemperatureScale lhsScale = AffineTemperatureScale::None;
+        AffineTemperatureScale rhsScale = AffineTemperatureScale::None;
+        const bool lhsIsAffine = tryAffineValueFromBase(*this, &lhsAffine, &lhsScale);
+        const bool rhsIsAffine = tryAffineValueFromBase(other, &rhsAffine, &rhsScale);
+        if (lhsIsAffine && rhsIsAffine && lhsScale == rhsScale) {
+            HNumber baseSum;
+            if (tryAffineBaseFromValue(lhsAffine + rhsAffine, lhsScale, &baseSum))
+                this->m_numericValue = CNumber(baseSum);
+            else
+                this->m_numericValue += other.m_numericValue;
+        } else {
+            this->m_numericValue += other.m_numericValue;
+        }
         if (info1 != InformationUnitFamily::None && info1 == info2
             && this->hasUnit() && other.hasUnit())
         {
@@ -994,6 +1166,31 @@ Quantity& Quantity::operator-=(const Quantity& other)
 Quantity Quantity::operator*(const Quantity& other) const
 {
     Quantity result(*this);
+
+    if (this->isDimensionless()
+        && this->numericValue().isNearReal()
+        && other.hasUnit()
+        && affineTemperatureScaleFromDisplayUnitName(other.unitName()) != AffineTemperatureScale::None)
+    {
+        CNumber scaledBaseValue;
+        if (tryAffineScaleByRealScalar(other, this->numericValue().real, &scaledBaseValue)) {
+            result = other;
+            result.m_numericValue = scaledBaseValue;
+            return result;
+        }
+    } else if (other.isDimensionless()
+               && other.numericValue().isNearReal()
+               && this->hasUnit()
+               && affineTemperatureScaleFromDisplayUnitName(this->unitName()) != AffineTemperatureScale::None)
+    {
+        CNumber scaledBaseValue;
+        if (tryAffineScaleByRealScalar(*this, other.numericValue().real, &scaledBaseValue)) {
+            result = *this;
+            result.m_numericValue = scaledBaseValue;
+            return result;
+        }
+    }
+
     result.m_numericValue *= other.m_numericValue;
     const bool lhsExplicitAngleUnit =
         this->hasUnit() && Units::isExplicitAngleUnitName(this->unitName());
@@ -1282,6 +1479,23 @@ Quantity &Quantity::operator*=(const Quantity& other)
 Quantity Quantity::operator/(const Quantity& other) const
 {
     Quantity result(*this);
+
+    if (other.isDimensionless()
+        && other.numericValue().isNearReal()
+        && this->hasUnit()
+        && affineTemperatureScaleFromDisplayUnitName(this->unitName()) != AffineTemperatureScale::None)
+    {
+        CNumber scaledBaseValue;
+        if (tryAffineScaleByRealScalar(*this,
+                                       HNumber(1) / other.numericValue().real,
+                                       &scaledBaseValue))
+        {
+            result = *this;
+            result.m_numericValue = scaledBaseValue;
+            return result;
+        }
+    }
+
     result.m_numericValue /= other.m_numericValue;
     const auto isPureTimeQuantity = [](const Quantity& quantity) {
         QMap<UnitQuantity, Rational> dimension = quantity.getDimensionByQuantity();

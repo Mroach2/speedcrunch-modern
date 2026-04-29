@@ -2836,9 +2836,9 @@ void TestEditorUi::tooltip_handles_affine_temperature_units_without_arrow_and_wi
     };
     const QList<Case> cases = {
         {QString::fromUtf8("100 [°C]"),
-         QStringLiteral("= 373.15") + QString(MathDsl::QuantSp) + QString::fromUtf8("K")},
+         QStringLiteral("= 100") + QString(MathDsl::QuantSp) + QString::fromUtf8("°C")},
         {QString::fromUtf8("203 [°F]"),
-         QStringLiteral("= 368.15") + QString(MathDsl::QuantSp) + QString::fromUtf8("K")},
+         QStringLiteral("= 203") + QString(MathDsl::QuantSp) + QString::fromUtf8("°F")},
         {QString::fromUtf8("1 [K] -> [°C]"),
          QString(MathDsl::Equals)
              + QStringLiteral(" ")
