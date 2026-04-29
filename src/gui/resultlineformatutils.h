@@ -562,8 +562,52 @@ inline QString simplifiedExpressionLineForDisplay(const QString& interpretedExpr
     if (!simplifyResultExpressions)
         return QString();
 
+    auto splitConversionSides = [](const QString& expression,
+                                   QString* leftOut,
+                                   QString* rightOut) -> bool {
+        const QString asciiArrow = QString(MathDsl::SubOpAl1) + QString(MathDsl::GreaterThanOp);
+        int splitPos = expression.lastIndexOf(MathDsl::TransOp);
+        int splitWidth = 1;
+        if (splitPos < 0) {
+            splitPos = expression.lastIndexOf(asciiArrow);
+            splitWidth = asciiArrow.size();
+        }
+        if (splitPos < 0)
+            return false;
+
+        if (leftOut)
+            *leftOut = expression.left(splitPos).trimmed();
+        if (rightOut)
+            *rightOut = expression.mid(splitPos + splitWidth).trimmed();
+        return true;
+    };
+
+    QString sourceLeft;
+    QString sourceRight;
+    const bool sourceHasConversionTarget =
+        splitConversionSides(sourceExpression, &sourceLeft, &sourceRight);
+
     QString expressionForSimplification = interpretedExpression;
+    if (sourceHasConversionTarget) {
+        QString interpretedLeft;
+        QString interpretedRight;
+        if (splitConversionSides(interpretedExpression, &interpretedLeft, &interpretedRight)
+            && !interpretedLeft.isEmpty())
+        {
+            expressionForSimplification = interpretedLeft;
+        } else if (!sourceLeft.isEmpty()) {
+            expressionForSimplification = sourceLeft;
+        } else if (!sourceRight.isEmpty()) {
+            expressionForSimplification = sourceRight;
+        }
+    }
+
     if (expressionForSimplification.isEmpty()) {
+        if (!sourceLeft.isEmpty())
+            expressionForSimplification = sourceLeft;
+        else if (!sourceRight.isEmpty())
+            expressionForSimplification = sourceRight;
+
         const bool sourceHasExplicitAngles =
             containsExplicitBracketedAngleUnit(sourceExpression)
             || containsExplicitSexagesimalAngleMarkers(sourceExpression);

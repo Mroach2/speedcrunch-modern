@@ -8200,6 +8200,123 @@ void test_result_display_preserves_standalone_sexagesimal_angles_without_implici
     session->clearHistory();
 }
 
+void test_result_display_adds_simplified_line_for_unit_conversion_when_interpreted_is_empty()
+{
+    Settings* settings = Settings::instance();
+    Session* session = const_cast<Session*>(eval->session());
+    const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+    const char oldUnitExponentStyle = settings->unitNegativeExponentStyle;
+
+    settings->simplifyResultExpressions = true;
+    settings->unitNegativeExponentStyle = Settings::UnitNegativeExponentSuperscript;
+    setRuntimeUnitNegativeExponentStyle(Settings::UnitNegativeExponentSuperscript);
+    session->clearHistory();
+
+    const QString expression =
+        QStringLiteral("molmass(C6H12O6) * molmass(C6H12O6) -> [g²/mol²]");
+    eval->setExpression(expression);
+    const Quantity value = eval->evalUpdateAns();
+
+    ++eval_total_tests;
+    if (!eval->error().isEmpty()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__
+             << "]\tresult display simplified line for conversion expression\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+    } else {
+        // Reproduce the display path where interpreted text may be empty.
+        session->addHistoryEntry(HistoryEntry(expression, value, QString()));
+
+        TestableResultDisplay display;
+        display.resize(800, 600);
+        display.refresh();
+
+        ++eval_total_tests;
+        const QString line1 = display.document()->findBlockByNumber(1).text();
+        const QString line2 = display.document()->findBlockByNumber(2).text();
+        const bool hasSimplifiedLine =
+            line1.startsWith(QStringLiteral("= "))
+            && line1.contains(QString::fromUtf8("molmass²(C6H12O6)"));
+        const bool hasFinalResultLine =
+            line2.startsWith(QStringLiteral("= "))
+            && line2.contains(QString::fromUtf8("32456.184336"))
+            && line2.contains(QString::fromUtf8("g²"))
+            && line2.contains(QString::fromUtf8("mol⁻²"));
+        if (!hasSimplifiedLine || !hasFinalResultLine) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__
+                 << "]\tresult display simplified line for conversion expression\t[NEW]" << endl
+                 << "\tText     : " << display.document()->toPlainText().toUtf8().constData() << endl
+                 << "\tExpected : simplified molmass² line and final result line" << endl;
+        }
+    }
+
+    settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    settings->unitNegativeExponentStyle = oldUnitExponentStyle;
+    setRuntimeUnitNegativeExponentStyle(oldUnitExponentStyle);
+    session->clearHistory();
+}
+
+void test_result_display_adds_simplified_line_for_unit_conversion_with_interpreted_expression()
+{
+    Settings* settings = Settings::instance();
+    Session* session = const_cast<Session*>(eval->session());
+    const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+    const char oldUnitExponentStyle = settings->unitNegativeExponentStyle;
+
+    settings->simplifyResultExpressions = true;
+    settings->unitNegativeExponentStyle = Settings::UnitNegativeExponentSuperscript;
+    setRuntimeUnitNegativeExponentStyle(Settings::UnitNegativeExponentSuperscript);
+    session->clearHistory();
+
+    const QString expression =
+        QStringLiteral("molmass(C6H12O6) * molmass(C6H12O6) -> [g²/mol²]");
+    eval->setExpression(expression);
+    const Quantity value = eval->evalUpdateAns();
+
+    ++eval_total_tests;
+    if (!eval->error().isEmpty()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__
+             << "]\tresult display simplified line for conversion with interpreted expression\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+    } else {
+        session->addHistoryEntry(HistoryEntry(expression, value, eval->interpretedExpression()));
+
+        TestableResultDisplay display;
+        display.resize(800, 600);
+        display.refresh();
+
+        ++eval_total_tests;
+        const QString line1 = display.document()->findBlockByNumber(1).text();
+        const QString line2 = display.document()->findBlockByNumber(2).text();
+        const bool hasSimplifiedLine =
+            line1.startsWith(QStringLiteral("= "))
+            && line1.contains(QString::fromUtf8("molmass²(C6H12O6)"));
+        const bool hasFinalResultLine =
+            line2.startsWith(QStringLiteral("= "))
+            && line2.contains(QString::fromUtf8("32456.184336"))
+            && line2.contains(QString::fromUtf8("g²"))
+            && line2.contains(QString::fromUtf8("mol⁻²"));
+        if (!hasSimplifiedLine || !hasFinalResultLine) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__
+                 << "]\tresult display simplified line for conversion with interpreted expression\t[NEW]" << endl
+                 << "\tText     : " << display.document()->toPlainText().toUtf8().constData() << endl
+                 << "\tExpected : simplified molmass² line and final result line" << endl;
+        }
+    }
+
+    settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    settings->unitNegativeExponentStyle = oldUnitExponentStyle;
+    setRuntimeUnitNegativeExponentStyle(oldUnitExponentStyle);
+    session->clearHistory();
+}
+
 void test_result_display_shows_pi_multiples_for_radian_angle_results()
 {
     Settings* settings = Settings::instance();
@@ -8860,6 +8977,8 @@ int main(int argc, char* argv[])
     test_result_display_keeps_quantsp_before_degree_celsius_and_fahrenheit();
     test_value_unit_separator_normalization();
     test_result_display_preserves_standalone_sexagesimal_angles_without_implicit_conversion();
+    test_result_display_adds_simplified_line_for_unit_conversion_when_interpreted_is_empty();
+    test_result_display_adds_simplified_line_for_unit_conversion_with_interpreted_expression();
     test_result_display_shows_pi_multiples_for_radian_angle_results();
     test_result_display_compacts_bracketed_degree_inside_trig_call();
     test_trig_symbolic_fraction_half();
