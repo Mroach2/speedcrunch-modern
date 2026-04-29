@@ -174,6 +174,32 @@ QString collapseValueUnitMultiplicationSpacing(QString text)
         QStringLiteral("\\1") + QString(MathDsl::QuantSp) + QStringLiteral("\\2"));
 }
 
+bool endsWithNumericLiteral(QStringView text)
+{
+    int end = text.size() - 1;
+    while (end >= 0 && text.at(end).isSpace())
+        --end;
+    if (end < 0)
+        return false;
+
+    int start = end;
+    while (start >= 0) {
+        const QChar ch = text.at(start);
+        if (ch.isLetterOrNumber()
+            || ch == MathDsl::DotSep
+            || ch == MathDsl::CommaSep
+            || ch == MathDsl::AddOp
+            || MathDsl::isSubtractionOperator(ch)) {
+            --start;
+            continue;
+        }
+        break;
+    }
+
+    const QString candidate = text.mid(start + 1, end - start).toString();
+    return RegExpPatterns::signedNumericLiteralWithSpaces().match(candidate).hasMatch();
+}
+
 } // namespace
 
 QString applyOperatorSpacingForDisplay(const QString& input)
@@ -322,14 +348,14 @@ QString applyValueUnitSpacingForDisplay(const QString& input)
     for (const QChar ch : input) {
         if (ch == MathDsl::UnitStart && !output.isEmpty()) {
             if (output.back().isSpace()) {
-                int i = output.size() - 1;
-                while (i >= 0 && output.at(i).isSpace())
-                    --i;
-                if (i >= 0 && output.at(i).isDigit()) {
+                if (endsWithNumericLiteral(QStringView(output))) {
+                    int i = output.size() - 1;
+                    while (i >= 0 && output.at(i).isSpace())
+                        --i;
                     output.truncate(i + 1);
                     output += MathDsl::QuantSp;
                 }
-            } else if (output.back().isDigit()) {
+            } else if (endsWithNumericLiteral(QStringView(output))) {
                 output += MathDsl::QuantSp;
             }
         }

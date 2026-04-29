@@ -8092,6 +8092,9 @@ void test_value_unit_separator_normalization()
     const QString expectedWithSeparator = QStringLiteral("1")
         + QString(MathDsl::QuantSp)
         + QStringLiteral("[kg]");
+    const QString expectedHexWithSeparator = QStringLiteral("0xA")
+        + QString(MathDsl::QuantSp)
+        + QStringLiteral("[kg]");
 
     ++eval_total_tests;
     const QString noSpaceInput =
@@ -8113,6 +8116,28 @@ void test_value_unit_separator_normalization()
         cerr << __FILE__ << "[" << __LINE__ << "]\tnormalize value-unit regular space\t[NEW]" << endl
              << "\tResult   : " << regularSpaceInput.toUtf8().constData() << endl
              << "\tExpected : " << expectedWithSeparator.toUtf8().constData() << endl;
+    }
+
+    ++eval_total_tests;
+    const QString noSpaceHexInput =
+        DisplayFormatUtils::applyValueUnitSpacingForDisplay(QStringLiteral("0xA[kg]"));
+    if (noSpaceHexInput != expectedHexWithSeparator) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tnormalize value-unit hex without space\t[NEW]" << endl
+             << "\tResult   : " << noSpaceHexInput.toUtf8().constData() << endl
+             << "\tExpected : " << expectedHexWithSeparator.toUtf8().constData() << endl;
+    }
+
+    ++eval_total_tests;
+    const QString regularSpaceHexInput =
+        DisplayFormatUtils::applyValueUnitSpacingForDisplay(QStringLiteral("0xA [kg]"));
+    if (regularSpaceHexInput != expectedHexWithSeparator) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tnormalize value-unit hex regular space\t[NEW]" << endl
+             << "\tResult   : " << regularSpaceHexInput.toUtf8().constData() << endl
+             << "\tExpected : " << expectedHexWithSeparator.toUtf8().constData() << endl;
     }
 }
 
