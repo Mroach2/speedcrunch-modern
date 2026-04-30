@@ -1057,8 +1057,7 @@ inline QString formatNumericResultLine(const Quantity& value,
                                 complexNumbers,
                                 complexFormat));
     formattedText = NumberFormatter::rewriteScientificNotationForDisplay(formattedText);
-    if (formattedText.endsWith(QString::fromUtf8(" × 10⁰")))
-        formattedText.chop(QString::fromUtf8(" × 10⁰").size());
+    formattedText.replace(QString::fromUtf8(" × 10⁰"), QString());
     formattedText = appendAngleModeSuffixIfNeeded(
         formattedText, sourceExpression, interpretedExpression, value, resultFormat, settings);
     return stripUnitBrackets ? stripDisplayedUnitBrackets(formattedText) : formattedText;

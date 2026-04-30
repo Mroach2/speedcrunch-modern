@@ -7500,6 +7500,8 @@ void test_result_display_omits_zero_power_of_ten_generically()
         { "4.091", 'e', QString::fromUtf8("= 4.091") },
         { "4.091", 'n', QString::fromUtf8("= 4.091") },
         { "4.091", 'f', QString::fromUtf8("= 4.091") },
+        { "2 [m]", 'e', QString::fromUtf8("= 2 m") },
+        { "2 [m]", 'n', QString::fromUtf8("= 2 m") },
         { "sci(4.091)", 'e', QString::fromUtf8("= 4.091") },
         { "eng(4.091)", 'e', QString::fromUtf8("= 4.091") },
         { "sci(4.091)", 'n', QString::fromUtf8("= 4.091") },
