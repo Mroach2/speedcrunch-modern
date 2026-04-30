@@ -1739,6 +1739,15 @@ void TestEditorUi::converts_caret_exponents_to_superscripts_globally()
     imeCaretCommit.setCommitString(QStringLiteral("^"));
     QApplication::sendEvent(&editor, &imeCaretCommit);
     QCOMPARE(editor.document()->toRawText(), QStringLiteral("s") + MathDsl::Pow2);
+
+    editor.setText(QStringLiteral("s") + MathDsl::Pow2);
+    editor.setCursorPosition(editor.text().size());
+    QInputMethodEvent imeCaretPreeditAfterSup(QString::fromUtf8("ˆ"), imeAttrs);
+    QApplication::sendEvent(&editor, &imeCaretPreeditAfterSup);
+    QInputMethodEvent imePowNegCommit(QString(), imeAttrs);
+    imePowNegCommit.setCommitString(QString(MathDsl::PowNeg));
+    QApplication::sendEvent(&editor, &imePowNegCommit);
+    QCOMPARE(editor.document()->toRawText(), QStringLiteral("s") + MathDsl::Pow2);
 }
 
 void TestEditorUi::keeps_scientific_notation_exponent_minus_unwrapped()

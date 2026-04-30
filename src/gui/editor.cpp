@@ -2315,11 +2315,14 @@ void Editor::inputMethodEvent(QInputMethodEvent* event)
         && !(QApplication::keyboardModifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier))) {
         const QChar typed = normalizedCommit.at(0);
         const bool isTypedDigit = typed.isDigit();
-        const bool isTypedMinus = MathDsl::isSubtractionOperatorAlias(typed);
+        const bool isTypedMinus = MathDsl::isSubtractionOperatorAlias(typed)
+                                  || typed == MathDsl::PowNeg;
         if (isTypedDigit || isTypedMinus) {
             const int cursorPos = textCursor().position();
             const int prevIndex = previousNonSpaceIndex(text(), cursorPos);
             const QChar prevChar = prevIndex >= 0 ? text().at(prevIndex) : QChar();
+            const int baseIndex = previousNonSpaceIndex(text(), prevIndex);
+            const QChar baseBeforeCaret = baseIndex >= 0 ? text().at(baseIndex) : QChar();
             const bool preeditCarriesCaret = textContainsOnlyCaretOperators(normalizedPreedit);
             const bool afterCaretRaw = isCaretOperatorAlias(prevChar);
             const bool afterCaretFromIme = preeditCarriesCaret || m_pendingDeadCaretPreedit;
@@ -2327,6 +2330,8 @@ void Editor::inputMethodEvent(QInputMethodEvent* event)
             const bool continuingSuperscript =
                 prevChar == MathDsl::PowNeg
                 || MathDsl::isSuperscriptDigit(prevChar);
+            const bool chainedAfterSuperscriptBase =
+                afterCaretRaw && MathDsl::isSuperscriptPowerChar(baseBeforeCaret);
 
             if (squareBracketContext && afterCaretFromIme && !afterCaretRaw) {
                 const bool validExponentBase =
@@ -2339,7 +2344,18 @@ void Editor::inputMethodEvent(QInputMethodEvent* event)
                 }
             }
 
-            if ((afterCaret || continuingSuperscript) && !(isTypedMinus && !afterCaret)) {
+            const bool invalidSuperscriptMinus =
+                isTypedMinus
+                && (!afterCaret || chainedAfterSuperscriptBase || continuingSuperscript);
+
+            if ((afterCaret || continuingSuperscript) && invalidSuperscriptMinus) {
+                // Do not let raw IME minus/superscript-minus commit leak through
+                // while inside an existing superscript exponent chain.
+                event->accept();
+                return;
+            }
+
+            if ((afterCaret || continuingSuperscript) && !invalidSuperscriptMinus) {
                 const QChar superscript = isTypedDigit
                     ? MathDsl::asciiDigitToSuperscript(typed)
                     : MathDsl::PowNeg;
@@ -2556,7 +2572,8 @@ void Editor::keyPressEvent(QKeyEvent* event)
 
         const QChar typed = normalizedEventText.at(0);
         const bool isTypedDigit = typed.isDigit();
-        const bool isTypedMinus = MathDsl::isSubtractionOperatorAlias(typed);
+        const bool isTypedMinus = MathDsl::isSubtractionOperatorAlias(typed)
+                                  || typed == MathDsl::PowNeg;
         if (!isTypedDigit && !isTypedMinus)
             return false;
 
@@ -2565,13 +2582,17 @@ void Editor::keyPressEvent(QKeyEvent* event)
         if (prevIndex < 0)
             return false;
         const QChar prev = text().at(prevIndex);
+        const int baseIndex = previousNonSpaceIndex(text(), prevIndex);
+        const QChar baseBeforeCaret = baseIndex >= 0 ? text().at(baseIndex) : QChar();
         const bool afterCaret = isCaretOperatorAlias(prev);
         const bool continuingSuperscript = prev == MathDsl::PowNeg
                                            || MathDsl::isSuperscriptDigit(prev);
+        const bool chainedAfterSuperscriptBase =
+            afterCaret && MathDsl::isSuperscriptPowerChar(baseBeforeCaret);
 
         if (!afterCaret && !continuingSuperscript)
             return false;
-        if (isTypedMinus && !afterCaret)
+        if (isTypedMinus && (!afterCaret || chainedAfterSuperscriptBase || continuingSuperscript))
             return false;
 
         const QChar superscript = isTypedDigit
