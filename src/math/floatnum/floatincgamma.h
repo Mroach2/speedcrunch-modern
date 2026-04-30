@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2009 SpeedCrunch developers
+// SPDX-FileCopyrightText: 2026 SpeedCrunch developers
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #ifndef FLOATINCGAMMA_H

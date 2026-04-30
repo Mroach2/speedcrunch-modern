@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2016 SpeedCrunch developers
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 #include <string>
 #include <iostream>
 

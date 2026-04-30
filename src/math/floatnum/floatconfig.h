@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2007-2009 SpeedCrunch developers
+// SPDX-FileCopyrightText: 2007-2008, 2024, 2026 SpeedCrunch developers
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 /* this file contains the basic settings, that control the overall

@@ -1,30 +1,6 @@
-// quantity.h
-// Support for units and dimensions
-//
-// This file is part of the SpeedCrunch project
-// Copyright (C) 2016 Pol Welter.
-// Copyright (C) 2016-2026 @heldercorreia
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program; see the file COPYING.  If not, write to
-// the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-// Boston, MA 02110-1301, USA.
-//
-// Module scope:
-// - Defines Quantity, the runtime numeric+unit value type used by evaluation.
-// - Owns quantity arithmetic behavior and dimension-carrying operations.
-// - Uses UnitQuantity-based dimensions, but does not
-//   define dimension vocabulary or canonical dimension metadata itself.
+// SPDX-FileCopyrightText: 2016-2018, 2026 SpeedCrunch developers
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 
 #ifndef QUANTITY_H
 #define QUANTITY_H
