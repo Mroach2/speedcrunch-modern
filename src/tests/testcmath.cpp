@@ -19,7 +19,7 @@
 // Boston, MA 02110-1301, USA.
 
 #include "math/cmath.h"
-#include "math/floatconst.h"
+#include "math/floatnum/floatconst.h"
 
 #include "tests/testcommon.h"
 

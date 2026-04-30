@@ -56,7 +56,7 @@
 #include "gui/resultlineformatutils.h"
 #include "gui/syntaxhighlighter.h"
 #include "math/cmath.h"
-#include "math/floatconfig.h"
+#include "math/floatnum/floatconfig.h"
 #include "core/mathdsl.h"
 #include "core/units.h"
 

@@ -37,18 +37,18 @@
 
 /* a few tests depend on 32 bit integer size, fix this in future!! */
 
-#include "math/floatconst.h"
-#include "math/floatcommon.h"
-#include "math/floatconvert.h"
-#include "math/floatlog.h"
-#include "math/floatexp.h"
-#include "math/floattrig.h"
-#include "math/floathmath.h"
-#include "math/floatipower.h"
-#include "math/floatpower.h"
-#include "math/floatgamma.h"
-#include "math/floatlogic.h"
-#include "math/floaterf.h"
+#include "math/floatnum/floatconst.h"
+#include "math/floatnum/floatcommon.h"
+#include "math/floatnum/floatconvert.h"
+#include "math/floatnum/floatlog.h"
+#include "math/floatnum/floatexp.h"
+#include "math/floatnum/floattrig.h"
+#include "math/floatnum/floathmath.h"
+#include "math/floatnum/floatipower.h"
+#include "math/floatnum/floatpower.h"
+#include "math/floatnum/floatgamma.h"
+#include "math/floatnum/floatlogic.h"
+#include "math/floatnum/floaterf.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>

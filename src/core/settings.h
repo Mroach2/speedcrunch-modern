@@ -27,7 +27,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QList>
 
-#include "math/floatconvert.h"
+#include "math/floatnum/floatconvert.h"
 
 class Settings {
 public:

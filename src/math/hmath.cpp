@@ -20,10 +20,10 @@
 
 #include "hmath.h"
 
-#include "floatcommon.h"
-#include "floatconst.h"
-#include "floatconvert.h"
-#include "floathmath.h"
+#include "floatnum/floatcommon.h"
+#include "floatnum/floatconst.h"
+#include "floatnum/floatconvert.h"
+#include "floatnum/floathmath.h"
 #include "rational.h"
 #include "core/mathdsl.h"
 

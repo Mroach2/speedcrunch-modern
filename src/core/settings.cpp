@@ -21,7 +21,7 @@
 
 #include "core/settings.h"
 
-#include "math/floatconfig.h"
+#include "math/floatnum/floatconfig.h"
 #include "core/mathdsl.h"
 
 #include <QDir>

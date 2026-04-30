@@ -30,7 +30,7 @@
 #include "gui/simplifiedexpressionutils.h"
 #include "gui/syntaxhighlighter.h"
 #include "math/cmath.h"
-#include "math/floatconfig.h"
+#include "math/floatnum/floatconfig.h"
 #include "core/evaluator.h"
 #include "core/session.h"
 #include "core/sessionhistory.h"

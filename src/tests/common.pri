@@ -33,24 +33,24 @@ HEADERS += ../core/book.h \
            ../core/userunit.h \
            ../gui/displayformatutils.h \
            ../gui/functiontooltiputils.h \
-           ../math/floatcommon.h \
-           ../math/floatconfig.h \
-           ../math/floatconst.h \
-           ../math/floatconvert.h \
-           ../math/floaterf.h \
-           ../math/floatexp.h \
-           ../math/floatgamma.h \
-           ../math/floathmath.h \
-           ../math/floatincgamma.h \
-           ../math/floatio.h \
-           ../math/floatipower.h \
-           ../math/floatlog.h \
-           ../math/floatlogic.h \
-           ../math/floatlong.h \
-           ../math/floatnum.h \
-           ../math/floatpower.h \
-           ../math/floatseries.h \
-           ../math/floattrig.h \
+           ../math/floatnum/floatnum/floatcommon.h \
+           ../math/floatnum/floatnum/floatconfig.h \
+           ../math/floatnum/floatnum/floatconst.h \
+           ../math/floatnum/floatnum/floatconvert.h \
+           ../math/floatnum/floatnum/floaterf.h \
+           ../math/floatnum/floatnum/floatexp.h \
+           ../math/floatnum/floatnum/floatgamma.h \
+           ../math/floatnum/floatnum/floathmath.h \
+           ../math/floatnum/floatnum/floatincgamma.h \
+           ../math/floatnum/floatnum/floatio.h \
+           ../math/floatnum/floatnum/floatipower.h \
+           ../math/floatnum/floatnum/floatlog.h \
+           ../math/floatnum/floatnum/floatlogic.h \
+           ../math/floatnum/floatnum/floatlong.h \
+           ../math/floatnum/floatnum/floatnum.h \
+           ../math/floatnum/floatnum/floatpower.h \
+           ../math/floatnum/floatnum/floatseries.h \
+           ../math/floatnum/floatnum/floattrig.h \
            ../math/hmath.h \
            ../math/number.h \
            ../math/quantity.cpp \
@@ -76,23 +76,23 @@ SOURCES += ../core/book.cpp \
            ../gui/displayformatutils.cpp \
            ../core/opcode.cpp \
            ../gui/functiontooltiputils.cpp \
-           ../math/floatcommon.c \
-           ../math/floatconst.c \
-           ../math/floatconvert.c \
-           ../math/floaterf.c \
-           ../math/floatexp.c \
-           ../math/floatgamma.c \
-           ../math/floathmath.c \
-           ../math/floatio.c \
-           ../math/floatipower.c \
-           ../math/floatlog.c \
-           ../math/floatlogic.c \
-           ../math/floatlong.c \
-           ../math/floatnum.c \
-           ../math/floatpower.c \
-           ../math/floatseries.c \
-           ../math/floattrig.c \
-           ../math/floatincgamma.c \
+           ../math/floatnum/floatnum/floatcommon.c \
+           ../math/floatnum/floatnum/floatconst.c \
+           ../math/floatnum/floatnum/floatconvert.c \
+           ../math/floatnum/floatnum/floaterf.c \
+           ../math/floatnum/floatnum/floatexp.c \
+           ../math/floatnum/floatnum/floatgamma.c \
+           ../math/floatnum/floatnum/floathmath.c \
+           ../math/floatnum/floatnum/floatio.c \
+           ../math/floatnum/floatnum/floatipower.c \
+           ../math/floatnum/floatnum/floatlog.c \
+           ../math/floatnum/floatnum/floatlogic.c \
+           ../math/floatnum/floatnum/floatlong.c \
+           ../math/floatnum/floatnum/floatnum.c \
+           ../math/floatnum/floatnum/floatpower.c \
+           ../math/floatnum/floatnum/floatseries.c \
+           ../math/floatnum/floatnum/floattrig.c \
+           ../math/floatnum/floatnum/floatincgamma.c \
            ../math/hmath.cpp \
            ../math/number.c \
            ../math/cmath.cpp \

@@ -103,24 +103,24 @@ HEADERS += core/book.h \
            gui/mainwindow.h \
            gui/syntaxhighlighter.h \
            math/cmath.h \
-           math/floatcommon.h \
-           math/floatconfig.h \
-           math/floatconst.h \
-           math/floatconvert.h \
-           math/floaterf.h \
-           math/floatexp.h \
-           math/floatgamma.h \
-           math/floathmath.h \
-           math/floatincgamma.h \
-           math/floatio.h \
-           math/floatipower.h \
-           math/floatlog.h \
-           math/floatlogic.h \
-           math/floatlong.h \
-           math/floatnum.h \
-           math/floatpower.h \
-           math/floatseries.h \
-           math/floattrig.h \
+           math/floatnum/floatcommon.h \
+           math/floatnum/floatconfig.h \
+           math/floatnum/floatconst.h \
+           math/floatnum/floatconvert.h \
+           math/floatnum/floaterf.h \
+           math/floatnum/floatexp.h \
+           math/floatnum/floatgamma.h \
+           math/floatnum/floathmath.h \
+           math/floatnum/floatincgamma.h \
+           math/floatnum/floatio.h \
+           math/floatnum/floatipower.h \
+           math/floatnum/floatlog.h \
+           math/floatnum/floatlogic.h \
+           math/floatnum/floatlong.h \
+           math/floatnum/floatnum.h \
+           math/floatnum/floatpower.h \
+           math/floatnum/floatseries.h \
+           math/floatnum/floattrig.h \
            math/hmath.h \
            math/number.h \
            math/quantity.h \
@@ -168,23 +168,23 @@ SOURCES += main.cpp \
            gui/manualwindow.cpp \
            gui/notationandprecisiondialog.cpp \
            gui/numberformatdialog.cpp \
-           math/floatcommon.c \
-           math/floatconst.c \
-           math/floatconvert.c \
-           math/floaterf.c \
-           math/floatexp.c \
-           math/floatgamma.c \
-           math/floathmath.c \
-           math/floatio.c \
-           math/floatipower.c \
-           math/floatlog.c \
-           math/floatlogic.c \
-           math/floatlong.c \
-           math/floatnum.c \
-           math/floatpower.c \
-           math/floatseries.c \
-           math/floattrig.c \
-           math/floatincgamma.c \
+           math/floatnum/floatcommon.c \
+           math/floatnum/floatconst.c \
+           math/floatnum/floatconvert.c \
+           math/floatnum/floaterf.c \
+           math/floatnum/floatexp.c \
+           math/floatnum/floatgamma.c \
+           math/floatnum/floathmath.c \
+           math/floatnum/floatio.c \
+           math/floatnum/floatipower.c \
+           math/floatnum/floatlog.c \
+           math/floatnum/floatlogic.c \
+           math/floatnum/floatlong.c \
+           math/floatnum/floatnum.c \
+           math/floatnum/floatpower.c \
+           math/floatnum/floatseries.c \
+           math/floatnum/floattrig.c \
+           math/floatnum/floatincgamma.c \
            math/hmath.cpp \
            math/number.c \
            math/cmath.cpp \

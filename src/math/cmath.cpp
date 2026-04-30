@@ -26,7 +26,7 @@
 #include "core/unicodechars.h"
 #include "core/mathdsl.h"
 #include "cnumberparser.h"
-#include "floatconvert.h"
+#include "floatnum/floatconvert.h"
 #include "hmath.h"
 
 #include <QString>

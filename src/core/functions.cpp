@@ -28,7 +28,7 @@
 #include "core/unicodechars.h"
 #include "math/hmath.h"
 #include "math/cmath.h"
-#include "math/floatconfig.h"
+#include "math/floatnum/floatconfig.h"
 
 #include <QCoreApplication>
 #include <QDateTime>

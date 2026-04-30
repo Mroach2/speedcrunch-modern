@@ -18,7 +18,7 @@
 // Boston, MA 02110-1301, USA.
 
 #include "math/hmath.h"
-#include "math/floatconst.h"
+#include "math/floatnum/floatconst.h"
 #include "tests/testcommon.h"
 
 #include <QtCore/QCoreApplication>
