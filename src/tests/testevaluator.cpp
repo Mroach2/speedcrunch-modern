@@ -7722,40 +7722,54 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
         settings->angleUnit = angleUnit;
         Evaluator::instance()->initializeAngleUnits();
         session->clearHistory();
-        eval->setExpression(QString::fromUtf8("cos(180°)"));
-        const Quantity value = eval->evalUpdateAns();
+        eval->setExpression(QString::fromUtf8("uf_trig_wrap(x)=sin(x)"));
+        eval->evalUpdateAns();
 
-        ++eval_total_tests;
-        if (!eval->error().isEmpty()) {
-            ++eval_failed_tests;
-            ++eval_new_failed_tests;
-            cerr << __FILE__ << "[" << __LINE__ << "]\t" << label << "\t[NEW]" << endl
-                 << "\tError: " << qPrintable(eval->error()) << endl;
-            return;
-        }
-
-        session->addHistoryEntry(HistoryEntry(
+        const QString expressions[] = {
             QString::fromUtf8("cos(180°)"),
-            value,
-            eval->interpretedExpression()));
+            QString::fromUtf8("uf_trig_wrap(90°)"),
+            QStringLiteral("uf_trig_wrap((pi/2)[rad])")
+        };
 
-        TestableResultDisplay display;
-        display.resize(800, 600);
-        display.refresh();
+        for (const QString& expr : expressions) {
+            session->clearHistory();
+            eval->setExpression(expr);
+            const Quantity value = eval->evalUpdateAns();
 
-        ++eval_total_tests;
-        const QString resultLine = display.document()->findBlockByNumber(1).text();
-        const QString angleSuffixSpaced = QString(MathDsl::QuantSp) + Units::angleModeUnitSymbol(angleUnit);
-        const QString angleSuffixCompact = Units::angleModeUnitSymbol(angleUnit);
-        if (resultLine.endsWith(angleSuffixSpaced)
-            || resultLine.endsWith(angleSuffixCompact)
-            || resultLine.contains(QString(MathDsl::UnitStart))
-            || resultLine.contains(QString(MathDsl::UnitEnd))) {
-            ++eval_failed_tests;
-            ++eval_new_failed_tests;
-            cerr << __FILE__ << "[" << __LINE__ << "]\t" << label << "\t[NEW]" << endl
-                 << "\tLine     : " << resultLine.toUtf8().constData() << endl
-                 << "\tExpected : scalar trig result with no angle suffix or []" << endl;
+            ++eval_total_tests;
+            if (!eval->error().isEmpty()) {
+                ++eval_failed_tests;
+                ++eval_new_failed_tests;
+                cerr << __FILE__ << "[" << __LINE__ << "]\t" << label << "\t[NEW]" << endl
+                     << "\tExpression: " << expr.toUtf8().constData() << endl
+                     << "\tError: " << qPrintable(eval->error()) << endl;
+                continue;
+            }
+
+            session->addHistoryEntry(HistoryEntry(
+                expr,
+                value,
+                eval->interpretedExpression()));
+
+            TestableResultDisplay display;
+            display.resize(800, 600);
+            display.refresh();
+
+            ++eval_total_tests;
+            const QString resultLine = display.document()->findBlockByNumber(1).text();
+            const QString angleSuffixSpaced = QString(MathDsl::QuantSp) + Units::angleModeUnitSymbol(angleUnit);
+            const QString angleSuffixCompact = Units::angleModeUnitSymbol(angleUnit);
+            if (resultLine.endsWith(angleSuffixSpaced)
+                || resultLine.endsWith(angleSuffixCompact)
+                || resultLine.contains(QString(MathDsl::UnitStart))
+                || resultLine.contains(QString(MathDsl::UnitEnd))) {
+                ++eval_failed_tests;
+                ++eval_new_failed_tests;
+                cerr << __FILE__ << "[" << __LINE__ << "]\t" << label << "\t[NEW]" << endl
+                     << "\tExpression: " << expr.toUtf8().constData() << endl
+                     << "\tLine     : " << resultLine.toUtf8().constData() << endl
+                     << "\tExpected : scalar trig result with no angle suffix or []" << endl;
+            }
         }
     };
     auto checkScientificAngleUnitSpacing = [&](const QString& expr,

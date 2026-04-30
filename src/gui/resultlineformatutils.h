@@ -22,9 +22,11 @@
 #include "math/rational.h"
 
 #include <QRegularExpression>
+#include <QHash>
 #include <QSet>
 #include <QString>
 #include <QVector>
+#include <functional>
 
 namespace ResultLineFormatUtils {
 
@@ -794,7 +796,77 @@ inline bool expressionUsesTrigFunction(const QString& sourceExpression,
     const QString source = interpretedExpression.isEmpty()
         ? sourceExpression
         : interpretedExpression;
-    return RegExpPatterns::trigFunctionCall().match(source).hasMatch();
+    if (RegExpPatterns::trigFunctionCall().match(source).hasMatch())
+        return true;
+
+    const QList<UserFunction> userFunctions = Evaluator::instance()->getUserFunctions();
+    if (userFunctions.isEmpty())
+        return false;
+
+    QHash<QString, QString> bodiesByName;
+    for (const UserFunction& function : userFunctions) {
+        QString body = function.interpretedExpression().trimmed();
+        if (body.isEmpty())
+            body = function.expression().trimmed();
+        if (!body.isEmpty())
+            bodiesByName.insert(function.name(), body);
+    }
+    if (bodiesByName.isEmpty())
+        return false;
+
+    const QRegularExpression& anyFunctionCall = RegExpPatterns::anyFunctionCall();
+    auto callsUserFunctionByName = [&bodiesByName, &anyFunctionCall](const QString& text) {
+        QRegularExpressionMatchIterator it = anyFunctionCall.globalMatch(text);
+        while (it.hasNext()) {
+            const QRegularExpressionMatch match = it.next();
+            if (bodiesByName.contains(match.captured(1)))
+                return true;
+        }
+        return false;
+    };
+    if (!callsUserFunctionByName(source))
+        return false;
+
+    QHash<QString, bool> memo;
+    QSet<QString> visiting;
+    std::function<bool(const QString&)> userFunctionUsesTrig = [&](const QString& functionName) -> bool {
+        const auto memoIt = memo.constFind(functionName);
+        if (memoIt != memo.constEnd())
+            return memoIt.value();
+        if (visiting.contains(functionName))
+            return false;
+
+        const QString body = bodiesByName.value(functionName);
+        if (body.isEmpty())
+            return false;
+
+        visiting.insert(functionName);
+        bool usesTrig = RegExpPatterns::trigFunctionCall().match(body).hasMatch();
+        if (!usesTrig) {
+            QRegularExpressionMatchIterator it = anyFunctionCall.globalMatch(body);
+            while (it.hasNext()) {
+                const QRegularExpressionMatch match = it.next();
+                const QString callee = match.captured(1);
+                if (bodiesByName.contains(callee) && userFunctionUsesTrig(callee)) {
+                    usesTrig = true;
+                    break;
+                }
+            }
+        }
+        visiting.remove(functionName);
+        memo.insert(functionName, usesTrig);
+        return usesTrig;
+    };
+
+    QRegularExpressionMatchIterator sourceCalls = anyFunctionCall.globalMatch(source);
+    while (sourceCalls.hasNext()) {
+        const QRegularExpressionMatch match = sourceCalls.next();
+        const QString called = match.captured(1);
+        if (bodiesByName.contains(called) && userFunctionUsesTrig(called))
+            return true;
+    }
+
+    return false;
 }
 
 inline bool shouldShowAdditionalRationalForTrig(const Settings* settings,

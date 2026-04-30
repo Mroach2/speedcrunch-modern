@@ -89,6 +89,15 @@ inline const QRegularExpression& trigFunctionCall()
     return pattern;
 }
 
+// Matches a generic function-call start and captures function identifier.
+// Example input/output: "foo(x)" -> captures "foo"; "1+2" -> no match.
+inline const QRegularExpression& anyFunctionCall()
+{
+    static const QRegularExpression pattern(
+        QStringLiteral(R"(\b([\p{L}_][\p{L}\p{N}_]*)\s*\()"));
+    return pattern;
+}
+
 // Returns true when identifier text names a trigonometric function.
 // Example input/output: "tan" -> true; "round" -> false.
 inline bool isTrigFunctionIdentifier(QStringView identifier)
