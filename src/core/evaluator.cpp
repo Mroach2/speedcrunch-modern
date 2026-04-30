@@ -10,6 +10,7 @@
 #include "core/unitdisplayformat.h"
 #include "core/unicodechars.h"
 #include "core/mathdsl.h"
+#include "core/numberformatter.h"
 #include "math/rational.h"
 #include "core/units.h"
 
@@ -7575,11 +7576,19 @@ Quantity Evaluator::evalUpdateAns()
 
 void Evaluator::setVariable(const QString& id, Quantity value,
                             Variable::Type type,
-                            const QString& description)
+                            const QString& description,
+                            const QString& formattedValue)
 {
     if (!m_session)
         m_session = new Session;
-    m_session->addVariable(Variable(id, value, type, description));
+    Variable variable(id, value, type, description);
+    if (type == Variable::UserDefined) {
+        if (!formattedValue.isEmpty())
+            variable.setFormattedValue(formattedValue);
+        else
+            variable.setFormattedValue(NumberFormatter::format(value));
+    }
+    m_session->addVariable(variable);
 }
 
 Variable Evaluator::getVariable(const QString& id) const

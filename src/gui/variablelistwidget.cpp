@@ -15,11 +15,13 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
+#include <QSet>
 #include <QShortcut>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
 static QString formatValue(const Quantity &value);
+static QString formatValue(const Variable& variable);
 
 VariableListWidget::VariableListWidget(QWidget* parent)
     : QWidget(parent)
@@ -110,15 +112,22 @@ void VariableListWidget::updateList()
     setUpdatesEnabled(false);
 
     m_filterTimer->stop();
-    m_variables->clear();
-    QString term = m_searchFilter->text();
-    QList<Variable> variables = Evaluator::instance()->getUserDefinedVariables();
+    const QString term = m_searchFilter->text();
+    const QList<Variable> variables = Evaluator::instance()->getUserDefinedVariables();
+    QHash<QString, QTreeWidgetItem*> itemsByName;
+    itemsByName.reserve(m_variables->topLevelItemCount());
+    for (int i = 0; i < m_variables->topLevelItemCount(); ++i) {
+        QTreeWidgetItem* item = m_variables->topLevelItem(i);
+        itemsByName.insert(item->text(0), item);
+    }
+    QSet<QString> visibleNames;
+    visibleNames.reserve(variables.count());
 
     for (int i = 0; i < variables.count(); ++i) {
-        QString varName = variables.at(i).identifier();
+        const QString varName = variables.at(i).identifier();
 
         QStringList namesAndValues;
-        namesAndValues << varName << formatValue(variables.at(i).value())
+        namesAndValues << varName << formatValue(variables.at(i))
                        << variables.at(i).description();
 
         if (term.isEmpty()
@@ -126,11 +135,23 @@ void VariableListWidget::updateList()
             || namesAndValues.at(1).contains(term, Qt::CaseInsensitive)
             || namesAndValues.at(2).contains(term, Qt::CaseInsensitive))
         {
-            QTreeWidgetItem* item = new QTreeWidgetItem(m_variables, namesAndValues);
+            visibleNames.insert(varName);
+            QTreeWidgetItem* item = itemsByName.value(varName, nullptr);
+            if (!item)
+                item = new QTreeWidgetItem(m_variables);
+            item->setText(0, namesAndValues.at(0));
+            item->setText(1, namesAndValues.at(1));
+            item->setText(2, namesAndValues.at(2));
             item->setTextAlignment(0, Qt::AlignLeft | Qt::AlignVCenter);
             item->setTextAlignment(1, Qt::AlignLeft | Qt::AlignVCenter);
             item->setTextAlignment(2, Qt::AlignLeft | Qt::AlignVCenter);
         }
+    }
+
+    for (int i = m_variables->topLevelItemCount() - 1; i >= 0; --i) {
+        QTreeWidgetItem* item = m_variables->topLevelItem(i);
+        if (!visibleNames.contains(item->text(0)))
+            delete m_variables->takeTopLevelItem(i);
     }
 
     m_variables->resizeColumnToContents(0);
@@ -247,4 +268,11 @@ void VariableListWidget::showEvent(QShowEvent* event)
 static QString formatValue(const Quantity& value)
 {
     return NumberFormatter::format(value);
+}
+
+static QString formatValue(const Variable& variable)
+{
+    if (!variable.formattedValue().isEmpty())
+        return variable.formattedValue();
+    return formatValue(variable.value());
 }

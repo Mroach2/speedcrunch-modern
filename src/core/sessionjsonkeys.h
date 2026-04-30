@@ -248,6 +248,7 @@ namespace Variable {
 inline constexpr const char* Id = "id";
 inline constexpr const char* Quantity = "qty";
 inline constexpr const char* Description = "dsc";
+inline constexpr const char* FormattedValue = "fmt";
 }
 
 namespace Function {

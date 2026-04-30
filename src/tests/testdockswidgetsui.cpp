@@ -3,7 +3,9 @@
 
 
 #include "core/evaluator.h"
+#include "core/settings.h"
 #include "gui/userunitlistwidget.h"
+#include "gui/variablelistwidget.h"
 
 #include <QTest>
 #include <QTreeWidget>
@@ -13,6 +15,7 @@ class TestDocksWidgetsUi : public QObject {
 
 private slots:
     void user_units_dock_shows_rhs_and_description_after_definition();
+    void user_variables_dock_keeps_existing_value_text_after_new_definition();
 };
 
 void TestDocksWidgetsUi::user_units_dock_shows_rhs_and_description_after_definition()
@@ -38,6 +41,63 @@ void TestDocksWidgetsUi::user_units_dock_shows_rhs_and_description_after_definit
     QCOMPARE(item->text(0), QStringLiteral("cm_s"));
     QCOMPARE(item->text(1), QStringLiteral("2[cm/s]"));
     QCOMPARE(item->text(2), QStringLiteral("speed alias"));
+}
+
+void TestDocksWidgetsUi::user_variables_dock_keeps_existing_value_text_after_new_definition()
+{
+    Evaluator* evaluator = Evaluator::instance();
+    Settings* settings = Settings::instance();
+
+    evaluator->unsetAllUserDefinedVariables();
+
+    const char oldResultFormat = settings->resultFormat;
+    const int oldResultPrecision = settings->resultPrecision;
+
+    settings->resultFormat = 'f';
+    settings->resultPrecision = 0;
+    evaluator->setExpression(QStringLiteral("v_fixed = 100000"));
+    QVERIFY(!evaluator->eval().isNan());
+
+    VariableListWidget widget;
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    widget.updateList();
+
+    QTreeWidget* tree = widget.findChild<QTreeWidget*>();
+    QVERIFY(tree != nullptr);
+
+    QTreeWidgetItem* fixedItem = nullptr;
+    for (int i = 0; i < tree->topLevelItemCount(); ++i) {
+        QTreeWidgetItem* item = tree->topLevelItem(i);
+        if (item && item->text(0) == QStringLiteral("v_fixed")) {
+            fixedItem = item;
+            break;
+        }
+    }
+    QVERIFY(fixedItem != nullptr);
+    const QString fixedValueBefore = fixedItem->text(1);
+    QVERIFY(!fixedValueBefore.isEmpty());
+
+    settings->resultFormat = 'e';
+    settings->resultPrecision = 2;
+    evaluator->setExpression(QStringLiteral("v_sci = 100000"));
+    QVERIFY(!evaluator->eval().isNan());
+
+    widget.updateList();
+
+    fixedItem = nullptr;
+    for (int i = 0; i < tree->topLevelItemCount(); ++i) {
+        QTreeWidgetItem* item = tree->topLevelItem(i);
+        if (item && item->text(0) == QStringLiteral("v_fixed")) {
+            fixedItem = item;
+            break;
+        }
+    }
+    QVERIFY(fixedItem != nullptr);
+    QCOMPARE(fixedItem->text(1), fixedValueBefore);
+
+    settings->resultFormat = oldResultFormat;
+    settings->resultPrecision = oldResultPrecision;
 }
 
 QTEST_MAIN(TestDocksWidgetsUi)

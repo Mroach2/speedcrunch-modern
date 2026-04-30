@@ -1118,11 +1118,12 @@ void MainWindow::createMenus()
 {
     m_menus.session = new QMenu("", this);
     menuBar()->addMenu(m_menus.session);
+    m_menus.session->addAction(m_actions.sessionImportUserDefinitions);
+    m_menus.session->addSeparator();
     m_menus.session->addAction(m_actions.sessionLoad);
     m_menus.session->addAction(m_actions.sessionSave);
     m_menus.session->addSeparator();
     m_menus.session->addAction(m_actions.sessionImport);
-    m_menus.session->addAction(m_actions.sessionImportUserDefinitions);
     m_menus.sessionExport = m_menus.session->addMenu("");
     m_menus.sessionExport->addAction(m_actions.sessionExportPlainText);
     m_menus.sessionExport->addAction(m_actions.sessionExportHtml);
@@ -2965,7 +2966,8 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
                     previousVariable.identifier(),
                     previousVariable.value(),
                     previousVariable.type(),
-                    previousVariable.description());
+                    previousVariable.description(),
+                    previousVariable.formattedValue());
             }
             if (hasPreviousUserFunction)
                 m_evaluator->setUserFunction(previousFunction);

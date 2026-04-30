@@ -352,6 +352,7 @@ gui/functiontooltiputils.cpp
 gui/resultdisplay.cpp
 gui/syntaxhighlighter.cpp
 gui/editor.cpp
+gui/variablelistwidget.cpp
 gui/userunitlistwidget.cpp
 math/floatnum/floatcommon.c
 math/floatnum/floatconst.c

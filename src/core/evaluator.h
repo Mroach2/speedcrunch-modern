@@ -150,6 +150,7 @@ public:
     QList<Variable> getUserDefinedVariablesPlusAns() const;
     void setVariable(const QString&, Quantity,
                      Variable::Type = Variable::UserDefined,
+                     const QString& = QString(),
                      const QString& = QString());
     void unsetVariable(const QString&, ForceBuiltinVariableErasure = false);
     void unsetAllUserDefinedVariables();

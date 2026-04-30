@@ -3,6 +3,7 @@
 
 
 #include "variable.h"
+#include "sessionjsonkeys.h"
 
 
 Variable::Variable(const QJsonObject &json)
@@ -12,23 +13,26 @@ Variable::Variable(const QJsonObject &json)
 
 void Variable::serialize(QJsonObject &json) const
 {
-    json["id"] = m_identifier;
+    json[QLatin1String(SessionJsonKeys::Variable::Id)] = m_identifier;
     QJsonObject value;
     m_value.serialize(value);
-    json["qty"] = value;
+    json[QLatin1String(SessionJsonKeys::Variable::Quantity)] = value;
     if (!m_description.isEmpty())
-        json["dsc"] = m_description;
+        json[QLatin1String(SessionJsonKeys::Variable::Description)] = m_description;
+    if (!m_formattedValue.isEmpty())
+        json[QLatin1String(SessionJsonKeys::Variable::FormattedValue)] = m_formattedValue;
 }
 
 void Variable::deSerialize(const QJsonObject &json)
 {
-    if (json.contains("id"))
-        m_identifier = json["id"].toString();
+    if (json.contains(QLatin1String(SessionJsonKeys::Variable::Id)))
+        m_identifier = json[QLatin1String(SessionJsonKeys::Variable::Id)].toString();
 
     m_type = (m_identifier == QStringLiteral("ans")) ? BuiltIn : UserDefined;
 
-    if (json.contains("qty"))
-        m_value = Quantity(json["qty"].toObject());
+    if (json.contains(QLatin1String(SessionJsonKeys::Variable::Quantity)))
+        m_value = Quantity(json[QLatin1String(SessionJsonKeys::Variable::Quantity)].toObject());
 
-    m_description = json["dsc"].toString();
+    m_description = json[QLatin1String(SessionJsonKeys::Variable::Description)].toString();
+    m_formattedValue = json[QLatin1String(SessionJsonKeys::Variable::FormattedValue)].toString();
 }
