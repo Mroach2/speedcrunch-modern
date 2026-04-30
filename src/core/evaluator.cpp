@@ -436,6 +436,32 @@ static bool s_isUserUnitLhsTokens(const Tokens& tokens)
         && tokens.at(3).asOperator() == Token::Assignment;
 }
 
+static bool s_isBracketedExpression(const QString& text)
+{
+    const QString trimmed = text.trimmed();
+    if (trimmed.size() < 2
+        || trimmed.at(0) != MathDsl::UnitStart
+        || trimmed.at(trimmed.size() - 1) != MathDsl::UnitEnd)
+    {
+        return false;
+    }
+
+    int depth = 0;
+    for (int i = 0; i < trimmed.size(); ++i) {
+        const QChar ch = trimmed.at(i);
+        if (ch == MathDsl::UnitStart) {
+            ++depth;
+        } else if (ch == MathDsl::UnitEnd) {
+            --depth;
+            if (depth < 0)
+                return false;
+            if (depth == 0 && i != trimmed.size() - 1)
+                return false;
+        }
+    }
+    return depth == 0;
+}
+
 static bool splitUserFunctionDescription(const QString& expression,
                                          QString* expressionWithoutDescription,
                                          QString* description)
@@ -6738,8 +6764,15 @@ Quantity Evaluator::evalNoAssign()
                 m_interpretedExpression =
                     leftSide + QStringLiteral("=") + m_interpretedExpression;
             } else if (m_assignUnit) {
+                QString interpretedRightSide = m_interpretedExpression;
+                if (s_isBracketedExpression(m_assignUnitExpr)
+                    && !s_isBracketedExpression(interpretedRightSide))
+                {
+                    interpretedRightSide =
+                        QStringLiteral("[%1]").arg(interpretedRightSide.trimmed());
+                }
                 m_interpretedExpression =
-                    QStringLiteral("[%1]=%2").arg(m_assignId, m_interpretedExpression);
+                    QStringLiteral("[%1]=%2").arg(m_assignId, interpretedRightSide);
             } else {
                 m_interpretedExpression =
                     m_assignId + QStringLiteral("=") + m_interpretedExpression;

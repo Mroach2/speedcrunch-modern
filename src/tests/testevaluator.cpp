@@ -3654,6 +3654,7 @@ void test_user_functions()
 
 void test_user_units()
 {
+    CHECK_INTERPRETED(QString::fromUtf8("[foounit] = [m⁵]"), "[foounit]=[m^5]");
     CHECK_EVAL("[two_cubic_metres] = 2[m^3]", "2 cubic_metre");
     CHECK_EVAL("1[two_cubic_metres] -> [m^3]", "2 m³");
 
@@ -7500,8 +7501,8 @@ void test_result_display_omits_zero_power_of_ten_generically()
         { "4.091", 'e', QString::fromUtf8("= 4.091") },
         { "4.091", 'n', QString::fromUtf8("= 4.091") },
         { "4.091", 'f', QString::fromUtf8("= 4.091") },
-        { "2 [m]", 'e', QString::fromUtf8("= 2 m") },
-        { "2 [m]", 'n', QString::fromUtf8("= 2 m") },
+        { "2 [m]", 'e', QStringLiteral("= 2") + QString(MathDsl::QuantSp) + QStringLiteral("m") },
+        { "2 [m]", 'n', QStringLiteral("= 2") + QString(MathDsl::QuantSp) + QStringLiteral("m") },
         { "sci(4.091)", 'e', QString::fromUtf8("= 4.091") },
         { "eng(4.091)", 'e', QString::fromUtf8("= 4.091") },
         { "sci(4.091)", 'n', QString::fromUtf8("= 4.091") },
