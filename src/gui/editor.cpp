@@ -1672,10 +1672,9 @@ QStringList Editor::matchFragment(const QString& id, bool unitContext) const
     for (int i = 0; i < variables.count(); ++i) {
         const Variable variable = variables.at(i);
         const bool isBuiltIn = variable.type() == Variable::BuiltIn;
-        const bool includeVariable = unitContext
-            ? (!isBuiltIn && settings->autoCompletionUserVariables)
-            : ((isBuiltIn && settings->autoCompletionBuiltInVariables)
-               || (!isBuiltIn && settings->autoCompletionUserVariables));
+        const bool includeVariable = !unitContext
+            && ((isBuiltIn && settings->autoCompletionBuiltInVariables)
+                || (!isBuiltIn && settings->autoCompletionUserVariables));
         if (!includeVariable)
             continue;
 

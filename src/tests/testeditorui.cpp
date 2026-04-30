@@ -77,6 +77,10 @@ private slots:
     void accepts_degree_alias_in_unit_brackets_and_normalizes_to_degree_sign();
     void offers_unit_completion_for_degree_symbol_in_unit_context();
     void matches_micro_units_when_typing_u_in_unit_context();
+    void unit_context_completion_excludes_user_variables();
+    void unit_context_completion_excludes_built_in_functions();
+    void unit_context_completion_excludes_user_functions();
+    void unit_context_completion_excludes_built_in_variables();
     void unit_context_completion_includes_angle_units_and_long_forms();
     void completes_binary_prefixed_information_unit_to_short_form_in_unit_context();
     void completes_day_unit_to_short_form_in_unit_context();
@@ -2181,6 +2185,74 @@ void TestEditorUi::matches_micro_units_when_typing_u_in_unit_context()
     QVERIFY(uChoices.contains(localizedChoice(QString::fromUtf8("µs"))));
     QVERIFY(uChoices.contains(localizedChoice(QString::fromUtf8("µas"))));
     QVERIFY(!uChoices.contains(localizedChoice(QStringLiteral("uas"))));
+}
+
+void TestEditorUi::unit_context_completion_excludes_user_variables()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    Evaluator* evaluator = Evaluator::instance();
+    evaluator->setVariable(QStringLiteral("foo"), Quantity(3));
+
+    const QStringList unitChoices = editor.matchFragment(QStringLiteral("fo"), true);
+    for (const QString& choice : unitChoices)
+        QVERIFY2(!choice.startsWith(QStringLiteral("foo:")), qPrintable(choice));
+
+    evaluator->unsetVariable(QStringLiteral("foo"));
+}
+
+void TestEditorUi::unit_context_completion_excludes_built_in_functions()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    const QStringList choices = editor.matchFragment(QStringLiteral("si"), true);
+    for (const QString& choice : choices)
+        QVERIFY2(!choice.startsWith(QStringLiteral("sin:")), qPrintable(choice));
+}
+
+void TestEditorUi::unit_context_completion_excludes_user_functions()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    Evaluator* evaluator = Evaluator::instance();
+    evaluator->setUserFunction(UserFunction(
+        QStringLiteral("foof"),
+        QStringList() << QStringLiteral("x"),
+        QStringLiteral("x")));
+
+    const QStringList choices = editor.matchFragment(QStringLiteral("foo"), true);
+    for (const QString& choice : choices)
+        QVERIFY2(!choice.startsWith(QStringLiteral("foof:")), qPrintable(choice));
+
+    evaluator->unsetUserFunction(QStringLiteral("foof"));
+}
+
+void TestEditorUi::unit_context_completion_excludes_built_in_variables()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    const QStringList ansChoices = editor.matchFragment(QStringLiteral("an"), true);
+    const QStringList eChoices = editor.matchFragment(QStringLiteral("e"), true);
+    const QStringList piChoices = editor.matchFragment(QStringLiteral("pi"), true);
+
+    for (const QString& choice : ansChoices)
+        QVERIFY2(!choice.startsWith(QStringLiteral("ans:")), qPrintable(choice));
+    for (const QString& choice : eChoices)
+        QVERIFY2(!choice.startsWith(QStringLiteral("e:")), qPrintable(choice));
+    for (const QString& choice : piChoices)
+        QVERIFY2(!choice.startsWith(QStringLiteral("pi:")), qPrintable(choice));
 }
 
 void TestEditorUi::unit_context_completion_includes_angle_units_and_long_forms()
