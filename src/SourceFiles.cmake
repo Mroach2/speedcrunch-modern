@@ -16,6 +16,7 @@ core/settings.h
 core/opcode.h
 core/sessionhistory.h
 core/sessionjsonkeys.h
+core/startupdefinitions.h
 core/variable.h
 core/userfunction.h
 core/userunit.h
@@ -80,6 +81,7 @@ core/pageserver.cpp
 core/settings.cpp
 core/session.cpp
 core/sessionhistory.cpp
+core/startupdefinitions.cpp
 core/variable.cpp
 core/userfunction.cpp
 core/userunit.cpp

@@ -28,6 +28,7 @@
 #include "core/regexpatterns.h"
 #include "core/settings.h"
 #include "core/session.h"
+#include "core/startupdefinitions.h"
 #include "core/unicodechars.h"
 #include "core/variable.h"
 #include "core/sessionhistory.h"
@@ -78,6 +79,7 @@
 #include <QDialogButtonBox>
 #include <QComboBox>
 #include <QColorDialog>
+#include <QFile>
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QFont>
@@ -2009,6 +2011,8 @@ void MainWindow::applySettings()
         m_actions.settingsBehaviorHistorySavingOnExit->setChecked(true);
     }
 
+    StartupDefinitions::loadInto(m_settings);
+
     if (m_settings->startupUserDefinitionsApplyBeforeRestore)
         applyStartupUserDefinitions();
     restoreSession(m_settings->historySaving != Settings::HistorySavingNever);
@@ -3237,7 +3241,7 @@ void MainWindow::showUserDefinitionsImportDialog()
     m_settings->startupUserDefinitions = textEdit->toPlainText();
     m_settings->startupUserDefinitionsOverwrite = strategy->currentData().toBool();
     m_settings->startupUserDefinitionsApplyBeforeRestore = applyBeforeRestore->isChecked();
-    m_settings->save();
+    StartupDefinitions::saveFrom(m_settings);
 
     showStateLabel(tr("Startup user definitions saved."));
 }
