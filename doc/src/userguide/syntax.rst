@@ -135,6 +135,7 @@ These functions only accept real, dimensionless integer arguments and also only 
     = 0b00000000000000000000011000000000
 
 To change the base that is used for displaying results, select one of the corresponding settings in :menuselection:`Settings --> Results --> Notation`.
+This affects only subsequent calculations/results; existing history entries are not rewritten.
 
 SpeedCrunch stores integers with a precision of up to 256 bits. Since this would be unwieldy,
 the binary representation of a negative number in SpeedCrunch is *not* its two's complement.

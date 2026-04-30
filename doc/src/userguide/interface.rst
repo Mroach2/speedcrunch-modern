@@ -409,6 +409,12 @@ This section contains settings that control result output and post-evaluation be
 * :menuselection:`Rounding Mode`
     Choose how displayed results are rounded when formatting to a finite number
     of digits. The default is :menuselection:`Half Away from Zero (Arithmetic)`.
+    Available modes are:
+    :menuselection:`Half Even (Banker's)`,
+    :menuselection:`Half Away from Zero (Arithmetic)`,
+    :menuselection:`Up (Ceil)`,
+    :menuselection:`Down (Floor)`,
+    :menuselection:`Toward Zero (Truncation)`.
 
     * :menuselection:`Half Even (Banker's)`
         Round to nearest; ties go to the nearest even last kept digit.
@@ -433,6 +439,8 @@ This section contains settings that control result output and post-evaluation be
 
     This setting affects result formatting (including live previews). It does
     not change the behavior of the :func:`round` and :func:`trunc` functions.
+    Like other result-format settings, changes apply to subsequent calculations
+    and previews; already stored history entries keep their original display.
 * :menuselection:`Automatically Copy New Results to Clipboard`
     Automatically copy each newly evaluated result to the clipboard.
 * :menuselection:`Simplify Displayed Expressions`

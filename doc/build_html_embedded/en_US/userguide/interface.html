@@ -300,7 +300,7 @@ status-bar notation selector). You can select one of the following options.
 On first launch, the default is <span class="menuselection">Automatic decimal</span>.</p>
 <ul>
 <li><dl class="simple">
-<dt><span class="menuselection">Automatic decimal</span></dt><dd><p>Use fixed-point decimal form for most results; values with exponent larger than 5 or smaller than -4 are shown in
+<dt><span class="menuselection">Automatic decimal</span></dt><dd><p>Use fixed-point decimal form for most results; values with exponent larger than 14 or smaller than -9 are shown in
 scientific notation. With a finite precision setting, very small values may switch to scientific notation earlier.</p>
 </dd>
 </dl>
@@ -561,7 +561,13 @@ calculation history.</p>
 </li>
 <li><dl>
 <dt><span class="menuselection">Rounding Mode</span></dt><dd><p>Choose how displayed results are rounded when formatting to a finite number
-of digits. The default is <span class="menuselection">Half Away from Zero (Arithmetic)</span>.</p>
+of digits. The default is <span class="menuselection">Half Away from Zero (Arithmetic)</span>.
+Available modes are:
+<span class="menuselection">Half Even (Banker’s)</span>,
+<span class="menuselection">Half Away from Zero (Arithmetic)</span>,
+<span class="menuselection">Up (Ceil)</span>,
+<span class="menuselection">Down (Floor)</span>,
+<span class="menuselection">Toward Zero (Truncation)</span>.</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt><span class="menuselection">Half Even (Banker’s)</span></dt><dd><p>Round to nearest; ties go to the nearest even last kept digit.
@@ -600,7 +606,9 @@ Example at 1 fractional digit: <code class="docutils literal notranslate"><span 
 </li>
 </ul>
 <p>This setting affects result formatting (including live previews). It does
-not change the behavior of the <a class="reference internal" href="../reference/integer.html#sc.round" title="round"><code class="xref sc sc-func docutils literal notranslate"><span class="pre">round()</span></code></a> and <a class="reference internal" href="../reference/integer.html#sc.trunc" title="trunc"><code class="xref sc sc-func docutils literal notranslate"><span class="pre">trunc()</span></code></a> functions.</p>
+not change the behavior of the <a class="reference internal" href="../reference/integer.html#sc.round" title="round"><code class="xref sc sc-func docutils literal notranslate"><span class="pre">round()</span></code></a> and <a class="reference internal" href="../reference/integer.html#sc.trunc" title="trunc"><code class="xref sc sc-func docutils literal notranslate"><span class="pre">trunc()</span></code></a> functions.
+Like other result-format settings, changes apply to subsequent calculations
+and previews; already stored history entries keep their original display.</p>
 </dd>
 </dl>
 </li>
