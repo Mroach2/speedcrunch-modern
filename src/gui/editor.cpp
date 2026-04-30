@@ -1015,30 +1015,6 @@ static QString normalizeTypedTextForSquareBracketContext(const QString& surround
             }
         }
 
-        if (ch.isDigit()) {
-            const bool afterExponentStart =
-                previous == MathDsl::PowOp
-                || previous == MathDsl::PowNeg
-                || (previous == MathDsl::GroupStart && previousPrevious == MathDsl::PowOp);
-            const bool afterSignedExponentStart =
-                MathDsl::isSubtractionOperatorAlias(previous)
-                && (previousPrevious == MathDsl::PowOp
-                    || (previousPrevious == MathDsl::GroupStart && previousThird == MathDsl::PowOp));
-            const bool afterFractionSlashInParenthesizedExponent =
-                previous == MathDsl::DivOp
-                && parenthesizedExponentDepth > 0;
-            const bool afterRadixInParenthesizedExponent =
-                previous == MathDsl::DotSep
-                && parenthesizedExponentDepth > 0;
-            if (!previous.isDigit()
-                && !afterExponentStart
-                && !afterSignedExponentStart
-                && !afterFractionSlashInParenthesizedExponent
-                && !afterRadixInParenthesizedExponent) {
-                return QString();
-            }
-        }
-
         if (ch == MathDsl::DotSep || ch == MathDsl::CommaSep) {
             if (parenthesizedExponentDepth <= 0 || !previous.isDigit())
                 return QString();

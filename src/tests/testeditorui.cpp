@@ -1330,7 +1330,7 @@ void TestEditorUi::unit_bracket_context_allows_digits_and_minus_only_in_exponent
     editor.setText(QStringLiteral("[m"));
     editor.setCursorPosition(editor.text().size());
     QTest::keyClicks(&editor, QStringLiteral("2"));
-    QCOMPARE(editor.document()->toRawText(), QStringLiteral("[m"));
+    QCOMPARE(editor.document()->toRawText(), QStringLiteral("[m2"));
 
     editor.setText(QStringLiteral("[m^"));
     editor.setCursorPosition(editor.text().size());
@@ -1673,7 +1673,8 @@ void TestEditorUi::unit_bracket_context_allows_digits_and_minus_only_in_exponent
              QStringLiteral("2")
                  + QString(MathDsl::QuantSp)
                  + QStringLiteral("[m/s")
-                 + QString(MathDsl::MulDotOp));
+                 + QString(MathDsl::MulDotOp)
+                 + QStringLiteral("2"));
 
     editor.setText(QStringLiteral("2")
                    + QString(MathDsl::QuantSp)
