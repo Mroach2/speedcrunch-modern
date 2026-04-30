@@ -156,9 +156,9 @@ void test_format()
     CHECK_FORMAT(g + Format::Precision(3), HNumber("1000"), "1000.000");
     CHECK_FORMAT(g + Format::Precision(3), HNumber("10000"), "10000.000");
     CHECK_FORMAT(g + Format::Precision(3), HNumber("100000"), "100000.000");
-    CHECK_FORMAT(g + Format::Precision(3), HNumber("1000000"), "1.000e6");
-    CHECK_FORMAT(g + Format::Precision(3), HNumber("10000000"), "1.000e7");
-    CHECK_FORMAT(g + Format::Precision(3), HNumber("100000000"), "1.000e8");
+    CHECK_FORMAT(g + Format::Precision(3), HNumber("1000000"), "1000000.000");
+    CHECK_FORMAT(g + Format::Precision(3), HNumber("10000000"), "10000000.000");
+    CHECK_FORMAT(g + Format::Precision(3), HNumber("100000000"), "100000000.000");
     CHECK_FORMAT(g + Format::Precision(3), HNumber("1403.1977"), "1403.198");
     CHECK_FORMAT(g + Format::Precision(3), HNumber("2604.1980"), "2604.198");
     CHECK_FORMAT(g + Format::Precision(3), HNumber("2.47e4"), "24700.000");

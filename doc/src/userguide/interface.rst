@@ -223,7 +223,7 @@ status-bar notation selector). You can select one of the following options.
 On first launch, the default is :menuselection:`Automatic decimal`.
 
 * :menuselection:`Automatic decimal`
-    Use fixed-point decimal form for most results; values with exponent larger than 5 or smaller than -4 are shown in
+    Use fixed-point decimal form for most results; values with exponent larger than 14 or smaller than -9 are shown in
     scientific notation. With a finite precision setting, very small values may switch to scientific notation earlier.
 * :menuselection:`Fixed-point decimal`
     Display results in fixed-point decimal form. For excessively

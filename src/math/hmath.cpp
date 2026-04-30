@@ -904,9 +904,9 @@ char* formatGeneral(cfloatnum x, int prec, int base = 10)
     int expd = float_getexponent(x);
 
     char* str;
-    if (expd > 5)
+    if (expd > 14)
         str = formatScientific(x, prec, base);
-    else if (expd < -4)
+    else if (expd < -9)
         str = formatScientific(x, prec, base);
     else if ((expd < 0) && (prec >= 0) && (expd < -prec))
         str = formatScientific(x, prec, base);
