@@ -98,6 +98,12 @@
 #endif // Q_OS_WIN32
 
 namespace {
+constexpr const char* kFeedbackUrl = "https://www.speedcrunch.org/issues.html";
+constexpr const char* kCommunityUrl = "https://groups.google.com/group/speedcrunch/";
+constexpr const char* kFacebookGroupUrl = "https://www.facebook.com/groups/1783793218546797";
+constexpr const char* kNewsUrl = "http://speedcrunch.blogspot.com/";
+constexpr const char* kDonateUrl = "https://www.speedcrunch.org/donate.html";
+
 EvaluationContext currentEvaluationContext(const Settings* settings)
 {
     EvaluationContext ctx;
@@ -596,6 +602,7 @@ void MainWindow::createActions()
     m_actions.helpUpdates = new QAction(this);
     m_actions.helpFeedback = new QAction(this);
     m_actions.helpCommunity = new QAction(this);
+    m_actions.helpFacebookGroup = new QAction(this);
     m_actions.helpNews = new QAction(this);
     m_actions.helpDonate = new QAction(this);
     m_actions.helpAbout = new QAction(this);
@@ -978,9 +985,10 @@ void MainWindow::setActionsText()
     m_actions.helpManual->setText(MainWindow::tr("User &Manual"));
     m_actions.contextHelp->setText(MainWindow::tr("Context Help"));
     m_actions.helpUpdates->setText(MainWindow::tr("Check for &Updates"));
-    m_actions.helpFeedback->setText(MainWindow::tr("Send &Feedback"));
-    m_actions.helpCommunity->setText(MainWindow::tr("Join &Community"));
-    m_actions.helpNews->setText(MainWindow::tr("&News Feed"));
+    m_actions.helpFeedback->setText(MainWindow::tr("Issue Tracker"));
+    m_actions.helpCommunity->setText(MainWindow::tr("Google Group"));
+    m_actions.helpFacebookGroup->setText(MainWindow::tr("Facebook &Group"));
+    m_actions.helpNews->setText(MainWindow::tr("&Blogspot"));
     m_actions.helpDonate->setText(MainWindow::tr("&Donate"));
     m_actions.helpAbout->setText(MainWindow::tr("About &SpeedCrunch"));
 }
@@ -1284,12 +1292,13 @@ void MainWindow::createMenus()
     m_menus.help->addAction(m_actions.helpManual);
     m_menus.help->addAction(m_actions.contextHelp);
     m_menus.help->addSeparator();
-    m_menus.help->addAction(m_actions.helpUpdates);
     m_menus.help->addAction(m_actions.helpFeedback);
     m_menus.help->addAction(m_actions.helpCommunity);
+    m_menus.help->addAction(m_actions.helpFacebookGroup);
     m_menus.help->addAction(m_actions.helpNews);
-    m_menus.help->addAction(m_actions.helpDonate);
     m_menus.help->addSeparator();
+    m_menus.help->addAction(m_actions.helpUpdates);
+    m_menus.help->addAction(m_actions.helpDonate);
     m_menus.help->addAction(m_actions.helpAbout);
 
     addActions(menuBar()->actions());
@@ -1827,6 +1836,7 @@ void MainWindow::createFixedConnections()
     connect(m_actions.helpUpdates, SIGNAL(triggered()), SLOT(checkForUpdates()));
     connect(m_actions.helpFeedback, SIGNAL(triggered()), SLOT(openFeedbackURL()));
     connect(m_actions.helpCommunity, SIGNAL(triggered()), SLOT(openCommunityURL()));
+    connect(m_actions.helpFacebookGroup, SIGNAL(triggered()), SLOT(openFacebookGroupURL()));
     connect(m_actions.helpNews, SIGNAL(triggered()), SLOT(openNewsURL()));
     connect(m_actions.helpDonate, SIGNAL(triggered()), SLOT(openDonateURL()));
     connect(m_actions.helpAbout, SIGNAL(triggered()), SLOT(showAboutDialog()));
@@ -4301,22 +4311,27 @@ void MainWindow::checkForUpdates()
 
 void MainWindow::openFeedbackURL()
 {
-    QDesktopServices::openUrl(QUrl(QString::fromLatin1("https://bitbucket.org/heldercorreia/speedcrunch/issues?status=new&status=open")));
+    QDesktopServices::openUrl(QUrl(QString::fromLatin1(kFeedbackUrl)));
 }
 
 void MainWindow::openCommunityURL()
 {
-    QDesktopServices::openUrl(QUrl(QString::fromLatin1("https://groups.google.com/group/speedcrunch/")));
+    QDesktopServices::openUrl(QUrl(QString::fromLatin1(kCommunityUrl)));
+}
+
+void MainWindow::openFacebookGroupURL()
+{
+    QDesktopServices::openUrl(QUrl(QString::fromLatin1(kFacebookGroupUrl)));
 }
 
 void MainWindow::openNewsURL()
 {
-    QDesktopServices::openUrl(QUrl(QString::fromLatin1("http://speedcrunch.blogspot.com/")));
+    QDesktopServices::openUrl(QUrl(QString::fromLatin1(kNewsUrl)));
 }
 
 void MainWindow::openDonateURL()
 {
-    QDesktopServices::openUrl(QUrl(QString::fromLatin1("https://www.speedcrunch.org/donate.html")));
+    QDesktopServices::openUrl(QUrl(QString::fromLatin1(kDonateUrl)));
 }
 
 void MainWindow::copy()
