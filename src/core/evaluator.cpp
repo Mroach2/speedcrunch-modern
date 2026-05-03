@@ -4036,7 +4036,8 @@ static QString formatInterpretedExpressionForDisplayImpl(const QString& expressi
         const bool shouldTreatIdentifierAsUnit =
             token.isIdentifier()
             && unitOnlyAddSubExpression
-            && isKnownUnitIdentifier(operatorText);
+            && isKnownUnitIdentifier(operatorText)
+            && !Evaluator::instance()->hasVariable(operatorText);
         const bool isUnitConversionTargetIdentifier =
             token.isIdentifier()
             && isKnownUnitIdentifier(operatorText)
@@ -8215,6 +8216,25 @@ QString Evaluator::autoFix(const QString& expr)
     while (result.endsWith("="))
         result = result.left(result.length() - 1);
 
+    auto closeUnmatchedListBraces = [&]() {
+        QString closingStack;
+        for (int i = 0; i < result.size(); ++i) {
+            const QChar ch = result.at(i);
+            if (ch == MathDsl::ListStart) {
+                closingStack.append(MathDsl::ListEnd);
+                continue;
+            }
+            if (ch != MathDsl::ListEnd || closingStack.isEmpty())
+                continue;
+            closingStack.chop(1);
+        }
+        while (!closingStack.isEmpty()) {
+            result.append(closingStack.at(closingStack.size() - 1));
+            closingStack.chop(1);
+        }
+    };
+    closeUnmatchedListBraces();
+
     // Make committed evaluation consistent with live/selection previews by
     // swallowing safe trailing incomplete tokens (e.g. "1+2+").
     QString withoutTrailingIncompleteToken;
@@ -8578,6 +8598,8 @@ QString Evaluator::autoFix(const QString& expr)
                     closingStack.append(MathDsl::GroupEnd);
                 else if (tokens.at(i).text() == QString(MathDsl::UnitStart))
                     closingStack.append(MathDsl::UnitEnd);
+                else if (tokens.at(i).text() == QString(MathDsl::ListStart))
+                    closingStack.append(MathDsl::ListEnd);
                 continue;
             }
             if (tokens.at(i).asOperator() != Token::AssociationEnd)

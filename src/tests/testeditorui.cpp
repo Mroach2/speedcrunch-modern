@@ -4,6 +4,7 @@
 
 #include "gui/editor.h"
 #include "gui/editorutils.h"
+#include "gui/syntaxhighlighter.h"
 #include "core/evaluator.h"
 #include "core/settings.h"
 #include "core/unicodechars.h"
@@ -17,6 +18,7 @@
 #include <QKeyEvent>
 #include <QSignalSpy>
 #include <QTest>
+#include <QTextLayout>
 #include <QTreeWidget>
 
 class TestEditorUi : public QObject {
@@ -31,6 +33,8 @@ private slots:
     void blocks_leading_operators_when_auto_ans_is_off_except_configured_exceptions();
     void keeps_disallowed_start_chars_blocked_when_auto_ans_is_on();
     void allows_special_function_symbols_as_leading_chars();
+    void allows_list_start_after_operators();
+    void highlights_list_braces_as_parentheses();
     void auto_ans_rewrite_helper_handles_tilde_and_factorial();
     void blocks_operator_right_after_open_square_bracket();
     void inserts_value_unit_space_brackets_after_number_or_symbol();
@@ -411,6 +415,66 @@ void TestEditorUi::allows_special_function_symbols_as_leading_chars()
 
     QVERIFY(!EditorUtils::isAllowedLeadingCharAtExpressionStart(QChar(0x00A7), autoAnsOff)); // §
     QVERIFY(!EditorUtils::isAllowedLeadingCharAtExpressionStart(QChar(0x00A7), autoAnsOn)); // §
+}
+
+void TestEditorUi::allows_list_start_after_operators()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    const QString listStart(MathDsl::ListStart);
+    const QVector<QPair<QString, QString>> cases = {
+        {QStringLiteral("1+"), QStringLiteral("1+")},
+        {QStringLiteral("1-"), QStringLiteral("1") + QString(MathDsl::SubOp)},
+        {QStringLiteral("1/"), QStringLiteral("1/")},
+        {QStringLiteral("1*"), QStringLiteral("1") + QString(MathDsl::MulCrossOp)},
+        {QStringLiteral("1^"), QStringLiteral("1^")}
+    };
+    for (const auto& testCase : cases) {
+        editor.setText(testCase.first);
+        editor.setCursorPosition(editor.text().size());
+        QKeyEvent openListByText(
+            QEvent::KeyPress, Qt::Key_unknown, Qt::NoModifier, listStart);
+        QApplication::sendEvent(&editor, &openListByText);
+        QCOMPARE(editor.document()->toRawText(), testCase.second + listStart);
+    }
+}
+
+void TestEditorUi::highlights_list_braces_as_parentheses()
+{
+    Settings* settings = Settings::instance();
+    const bool oldSyntaxHighlighting = settings->syntaxHighlighting;
+    settings->syntaxHighlighting = true;
+
+    QPlainTextEdit editor;
+    SyntaxHighlighter highlighter(&editor);
+    QJsonObject colors;
+    colors.insert(QStringLiteral("number"), QStringLiteral("#111111"));
+    colors.insert(QStringLiteral("parens"), QStringLiteral("#123456"));
+    colors.insert(QStringLiteral("operator"), QStringLiteral("#222222"));
+    colors.insert(QStringLiteral("separator"), QStringLiteral("#333333"));
+    highlighter.setColorScheme(ColorScheme(QJsonDocument(colors)));
+
+    editor.setPlainText(QStringLiteral("{1; 2}"));
+    highlighter.rehighlight();
+
+    const QList<QTextLayout::FormatRange> formats =
+        editor.document()->firstBlock().layout()->formats();
+    auto colorAt = [&formats](int pos) {
+        for (const QTextLayout::FormatRange& range : formats) {
+            if (pos >= range.start && pos < range.start + range.length)
+                return range.format.foreground().color();
+        }
+        return QColor();
+    };
+
+    const QColor parensColor(QStringLiteral("#123456"));
+    QCOMPARE(colorAt(0), parensColor);
+    QCOMPARE(colorAt(5), parensColor);
+
+    settings->syntaxHighlighting = oldSyntaxHighlighting;
 }
 
 void TestEditorUi::auto_ans_rewrite_helper_handles_tilde_and_factorial()

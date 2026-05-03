@@ -2924,7 +2924,11 @@ void Editor::keyPressEvent(QKeyEvent* event)
         && !typedForRules.isNull()) {
         const QChar prev = previousNonSpaceChar(text(), cursorPosition);
         const auto isGroupStartLetterDigitOrCurrency = [](const QChar& ch) {
-            return ch == MathDsl::GroupStart || ch.isLetter() || ch.isDigit() || isCurrencySymbolChar(ch);
+            return ch == MathDsl::GroupStart
+                || ch == MathDsl::ListStart
+                || ch.isLetter()
+                || ch.isDigit()
+                || isCurrencySymbolChar(ch);
         };
 
         if (typedForRules == MathDsl::GreaterThanOp
@@ -2983,6 +2987,7 @@ void Editor::keyPressEvent(QKeyEvent* event)
         } else if (isCaretOperatorAlias(prev)) {
             if (!(MathDsl::isSubtractionOperatorAlias(typedForRules)
                   || typedForRules == MathDsl::GroupStart
+                  || typedForRules == MathDsl::ListStart
                   || typedForRules.isLetter()
                   || typedForRules.isDigit()
                   || isCurrencySymbolChar(typedForRules))) {
@@ -2991,6 +2996,7 @@ void Editor::keyPressEvent(QKeyEvent* event)
             }
         } else if (isAnyMultiplicationOperator(prev)) {
             if (typedForRules == MathDsl::GroupStart
+                || typedForRules == MathDsl::ListStart
                 || typedForRules.isLetter()
                 || isCurrencySymbolChar(typedForRules)
                 || (typedForRules.isDigit() && !squareBracketContext)) {

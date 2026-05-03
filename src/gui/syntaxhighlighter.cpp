@@ -336,6 +336,12 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             groupDigits(text, token.pos(), token.size());
         }
     }
+
+    for (int i = 0; i < text.size(); ++i) {
+        const QChar ch = text.at(i);
+        if (ch == MathDsl::ListStart || ch == MathDsl::ListEnd)
+            setFormat(i, 1, colorForRole(ColorScheme::Parens));
+    }
 }
 
 void SyntaxHighlighter::update()

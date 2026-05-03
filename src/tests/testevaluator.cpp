@@ -757,6 +757,9 @@ void test_lists_and_matrices()
 {
     CHECK_EVAL("{1;2;3;4;5}", "{1; 2; 3; 4; 5}");
     CHECK_EVAL("mylist = {1; 2; 3; 4; 5}", "{1; 2; 3; 4; 5}");
+    CHECK_EVAL("d = {1; 2; 3; 4; 5}", "{1; 2; 3; 4; 5}");
+    CHECK_DISPLAY_INTERPRETED("d", "d");
+    CHECK_EVAL("d", "{1; 2; 3; 4; 5}");
     CHECK_EVAL("average(mylist)", "3");
     CHECK_EVAL("mean(mylist)", "3");
     CHECK_EVAL("median(mylist)", "3");
@@ -3283,6 +3286,9 @@ void test_auto_fix_parentheses()
     CHECK_AUTOFIX("x+(8-(2*1", "x+(8-(2*1))");
     CHECK_AUTOFIX("x+(8-(2*1)", "x+(8-(2*1))");
     CHECK_AUTOFIX("x+(8-(2*1))", "x+(8-(2*1))");
+    CHECK_AUTOFIX("{1; 2", "{1; 2}");
+    CHECK_AUTOFIX("2 * {1; 2", "2 * {1; 2}");
+    CHECK_EVAL(eval->autoFix(QStringLiteral("{1; 2")), "{1; 2}");
 
     CHECK_AUTOFIX("x + sin (pi", "x + sin (pi)");
 
