@@ -1161,23 +1161,23 @@ void MainWindow::createMenus()
     m_menus.keypadZoom->addAction(m_actions.viewKeypadZoom100);
     m_menus.keypadZoom->addAction(m_actions.viewKeypadZoom150);
     m_menus.keypadZoom->addAction(m_actions.viewKeypadZoom200);
+    m_menus.view->addAction(m_actions.viewStatusBar);
     m_menus.view->addSeparator();
     m_menus.view->addAction(m_actions.viewFormulaBook);
     m_menus.view->addAction(m_actions.viewConstants);
     m_menus.view->addAction(m_actions.viewFunctions);
+    m_menus.view->addSeparator();
     m_menus.view->addAction(m_actions.viewVariables);
     m_menus.view->addAction(m_actions.viewUserFunctions);
     m_menus.view->addAction(m_actions.viewUserUnits);
-    m_menus.view->addAction(m_actions.viewBitfield);
-    m_menus.view->addAction(m_actions.viewHistory);
     m_menus.view->addSeparator();
-    m_menus.view->addAction(m_actions.viewStatusBar);
+    m_menus.view->addAction(m_actions.viewHistory);
+    m_menus.view->addAction(m_actions.viewBitfield);
+    m_menus.view->addSeparator();
 #if !defined(Q_OS_MACOS)
     m_menus.view->addAction(m_actions.viewMenuBar);
-#endif
-    m_menus.view->addSeparator();
     m_menus.view->addAction(m_actions.viewFullScreenMode);
-
+#endif
     m_menus.settings = new QMenu("", this);
     menuBar()->addMenu(m_menus.settings);
 
