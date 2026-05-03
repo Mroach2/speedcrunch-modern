@@ -135,6 +135,7 @@ void Session::serialize(QJsonObject &json) const
 {
     json[QLatin1String(SessionJsonKeys::SchemaVersion)] = SessionJsonKeys::SchemaVersionValue;
     json[QLatin1String(SessionJsonKeys::SpeedCrunch)] = QString(SPEEDCRUNCH_VERSION);
+    json[QLatin1String(SessionJsonKeys::Session)] = QLatin1String(SessionJsonKeys::SessionValueMain);
 
     // history
     QJsonArray hist_entries;

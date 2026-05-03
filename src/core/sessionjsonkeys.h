@@ -8,24 +8,25 @@
   "$id": "https://speedcrunch.org/schemas/session.json",
   "title": "SpeedCrunch Session",
   "type": "object",
-  "required": ["sch", "speedcrunch", "hst", "vars", "fns", "unts"],
+  "required": ["scheme", "speedcrunch", "session", "history", "variables", "functions", "units"],
   "additionalProperties": false,
   "properties": {
-    "sch": { "type": "integer", "const": 1 },
+    "scheme": { "type": "integer", "const": 1 },
     "speedcrunch": { "type": "string" },
-    "hst": {
+    "session": { "type": "string", "const": "main" },
+    "history": {
       "type": "array",
       "items": { "$ref": "#/$defs/historyEntry" }
     },
-    "vars": {
+    "variables": {
       "type": "array",
       "items": { "$ref": "#/$defs/variable" }
     },
-    "fns": {
+    "functions": {
       "type": "array",
       "items": { "$ref": "#/$defs/userFunction" }
     },
-    "unts": {
+    "units": {
       "type": "array",
       "items": { "$ref": "#/$defs/userUnit" }
     }
@@ -200,13 +201,15 @@
 #define CORE_SESSIONJSONKEYS_H
 
 namespace SessionJsonKeys {
-inline constexpr const char* SchemaVersion = "sch";
+inline constexpr const char* SchemaVersion = "scheme";
 inline constexpr int SchemaVersionValue = 1;
 inline constexpr const char* SpeedCrunch = "speedcrunch";
-inline constexpr const char* History = "hst";
-inline constexpr const char* Variables = "vars";
-inline constexpr const char* Functions = "fns";
-inline constexpr const char* Units = "unts";
+inline constexpr const char* Session = "session";
+inline constexpr const char* SessionValueMain = "main";
+inline constexpr const char* History = "history";
+inline constexpr const char* Variables = "variables";
+inline constexpr const char* Functions = "functions";
+inline constexpr const char* Units = "units";
 
 namespace Common {
 inline constexpr const char* Id = "id";
