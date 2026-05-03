@@ -167,6 +167,19 @@ General
 
         absdev(x1; x2; ... ) = abs(x1 - x) + abs(x2 - x) + ...
 
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened first.
+
+.. function:: mad(x1; x2; ...)
+
+    .. versionadded:: 1.0
+
+    Computes the median absolute deviation of the arguments from their median::
+
+        mad(x1; x2; ... ) = median(abs(x1 - median(x)); abs(x2 - median(x)); ...)
+
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened first.
 
 
 .. _binomial-distribution:

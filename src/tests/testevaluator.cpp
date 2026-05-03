@@ -760,6 +760,8 @@ void test_lists_and_matrices()
     CHECK_EVAL("average(mylist)", "3");
     CHECK_EVAL("mean(mylist)", "3");
     CHECK_EVAL("median(mylist)", "3");
+    CHECK_EVAL("absdev(mylist)", "1.2");
+    CHECK_EVAL("mad(mylist)", "1");
     CHECK_EVAL("stdevp(mylist)", "1.4142135623730950488");
     CHECK_EVAL("stdevs(mylist)", "1.581138830084189666");
     CHECK_EVAL("min(mylist)", "1");
@@ -795,6 +797,8 @@ void test_lists_and_matrices()
     CHECK_EVAL("max(flatten(mat))", "6");
     CHECK_EVAL("sum(mat)", "21");
     CHECK_EVAL("average(mat)", "3.5");
+    CHECK_EVAL("absdev(mat)", "1.5");
+    CHECK_EVAL("mad(mat)", "1.5");
     CHECK_EVAL("count(mat)", "6");
     CHECK_EVAL("rows(mat)", "2");
     CHECK_EVAL("cols(mat)", "3");
@@ -818,6 +822,7 @@ void test_lists_and_matrices()
     CHECK_EVAL("covs(X)", "{{1; 1}; {1; 1}}");
     CHECK_EVAL("corrp(X)", "{{1; 1}; {1; 1}}");
     CHECK_EVAL("corrs(X)", "{{1; 1}; {1; 1}}");
+    CHECK_EVAL("mad(1; 2; 100)", "1");
 
     CHECK_EVAL_FAIL("{{{1}}}");
     CHECK_EVAL_FAIL("{{{1;2};{3;4}}}");

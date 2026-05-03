@@ -317,6 +317,8 @@ Quantity function_mean(Function* f, const Function::ArgumentList& args)
     return function_average(f, args);
 }
 
+Quantity function_median(Function* f, const Function::ArgumentList& args);
+
 Quantity function_list(Function* f, const Function::ArgumentList& args)
 {
     ENSURE_MINIMUM_ARGUMENT_COUNT(1);
@@ -331,14 +333,35 @@ Quantity function_list(Function* f, const Function::ArgumentList& args)
 Quantity function_absdev(Function* f, const Function::ArgumentList& args)
 {
     /* TODO : complex mode switch for this function */
-    ENSURE_MINIMUM_ARGUMENT_COUNT(2);
-    Quantity mean = function_average(f, args);
+    const Function::ArgumentList values = s_collectionElementsOrArgs(args);
+    if (values.count() < 1 || (!args.at(0).isCollection() && values.count() < 2)) {
+        f->setError(InvalidParamCount);
+        return CMath::nan(InvalidParamCount);
+    }
+    Quantity mean = function_average(f, values);
     if (mean.isNan())
         return mean;   // pass the error along
     Quantity acc = 0;
-    for (int i = 0; i < args.count(); ++i)
-        acc += DMath::abs(args.at(i) - mean);
-    return acc / Quantity(args.count());
+    for (int i = 0; i < values.count(); ++i)
+        acc += DMath::abs(values.at(i) - mean);
+    return acc / Quantity(values.count());
+}
+
+Quantity function_mad(Function* f, const Function::ArgumentList& args)
+{
+    const Function::ArgumentList values = s_collectionElementsOrArgs(args);
+    if (values.count() < 1 || (!args.at(0).isCollection() && values.count() < 2)) {
+        f->setError(InvalidParamCount);
+        return CMath::nan(InvalidParamCount);
+    }
+    const Quantity median = function_median(f, values);
+    if (median.isNan())
+        return median;
+    Function::ArgumentList deviations;
+    deviations.reserve(values.count());
+    for (const Quantity& value : values)
+        deviations.append(DMath::abs(value - median));
+    return function_median(f, deviations);
 }
 
 Quantity function_int(Function* f, const Function::ArgumentList& args)
@@ -2018,6 +2041,7 @@ void FunctionRepo::createFunctions()
     FUNCTION_INSERT(FunctionDomain::Statistics, average);
     FUNCTION_INSERT(FunctionDomain::Statistics, mean);
     FUNCTION_INSERT(FunctionDomain::Statistics, geomean);
+    FUNCTION_INSERT(FunctionDomain::Statistics, mad);
     FUNCTION_INSERT(FunctionDomain::Statistics, median);
     FUNCTION_INSERT(FunctionDomain::Statistics, stdevp);
     FUNCTION_INSERT(FunctionDomain::Statistics, stdevs);
@@ -2232,6 +2256,7 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(log10, "x");
     FUNCTION_USAGE(ln, "x");
     FUNCTION_USAGE(lngamma, "x");
+    FUNCTION_USAGE(mad, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(mass, "mol; formula");
     FUNCTION_USAGE(molarity, "n; V");
     FUNCTION_USAGE(molmass, "formula");
@@ -2398,6 +2423,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(molarity, tr("Molarity"));
     FUNCTION_NAME(molmass, tr("Molar Mass"));
     FUNCTION_NAME(log, tr("Logarithm to Arbitrary Base"));
+    FUNCTION_NAME(mad, tr("Median Absolute Deviation"));
     FUNCTION_NAME(mask, tr("Mask to a bit size"));
     FUNCTION_NAME(max, tr("Maximum"));
     FUNCTION_NAME(median, tr("Median Value (50th Percentile)"));
