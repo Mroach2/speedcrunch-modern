@@ -6,7 +6,18 @@ General
 
 .. function:: average(x1; x2; ...)
 
+    .. versionadded:: 1.0
+
     Computes the arithmetic average of the arguments (sum of the arguments divided by their number). The arguments must share the same dimension.
+
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened and reduced over all elements.
+
+.. function:: mean(x1; x2; ...)
+
+    .. versionadded:: 1.0
+
+    Alias for :func:`average`.
 
 .. function:: geomean(x1; x2; ...)
 
@@ -14,21 +25,48 @@ General
 
 .. function:: median(x1; x2; ...)
 
+    .. versionadded:: 1.0
+
     Computes the median of the arguments, i.e. the value dividing the set of arguments into two evenly sized parts.
 
     First the set of arguments is sorted. If the number of arguments is odd, the element in the middle of the sorted list is returned. If the number of arguments is even, the arithmetic mean of the two central elements is returned.
 
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened first.
+
 .. function:: min(x1; x2; ...)
+
+    .. versionadded:: 1.0
 
     Returns the minimum out of the supplied argument list. The arguments must be real and share the same dimension.
 
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened first.
+
 .. function:: max(x1; x2; ...)
+
+    .. versionadded:: 1.0
 
     Returns the maximum out of the supplied argument list. The arguments must be real and share the same dimension.
 
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened first.
+
 .. function:: sum(x1; x2; ...)
 
+    .. versionadded:: 1.0
+
     Computes the sum of all the given arguments. These must share the same dimension.
+
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened first.
+
+.. function:: count(x1; x2; ...)
+
+    .. versionadded:: 1.0
+
+    Returns the number of arguments. With a single list or matrix argument, it
+    returns the number of contained elements.
 
 .. function:: summation(start; end; expression)
 
@@ -77,19 +115,51 @@ General
         randint(1; 6)
         randint(6; 1)
 
-.. function:: variance(x1; x2; ...)
+.. function:: varp(x1; x2; ...)
 
-    Computes the population variance of the arguments. The variance is measure for the spreading of a set of numbers.
+    .. versionadded:: 1.0
+
+    Computes the population variance of the arguments, using normalization by
+    ``n``. The variance is a measure for the spreading of a set of numbers.
 
     The arguments must share the same dimension.
 
-    .. note::
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened first.
 
-        This function computes the *population variance*, which assumes that all possible realizations are all given as arguments. A function to estimate the variance from a sample (*sample variance*) is not included with SpeedCrunch.
+.. function:: vars(x1; x2; ...)
 
-.. function:: stddev(x1; x2; ...)
+    .. versionadded:: 1.0
 
-    Computes the standard deviation of the given arguments. It is obtained by taking the square root of the :func:`variance <variance>` of its arguments.
+    Computes the sample variance of the arguments, using normalization by
+    ``n-1``. Use this when the arguments are a sample of a larger population.
+
+    The arguments must share the same dimension.
+
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened first.
+
+.. function:: stdevp(x1; x2; ...)
+
+    .. versionadded:: 1.0
+
+    Computes the population standard deviation of the given arguments. It is
+    obtained by taking the square root of :func:`varp` and uses normalization
+    by ``n``.
+
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened first.
+
+.. function:: stdevs(x1; x2; ...)
+
+    .. versionadded:: 1.0
+
+    Computes the sample standard deviation of the given arguments. It is
+    obtained by taking the square root of :func:`vars` and uses normalization
+    by ``n-1``.
+
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened first.
 
 .. function:: absdev(x1; x2; ...)
 

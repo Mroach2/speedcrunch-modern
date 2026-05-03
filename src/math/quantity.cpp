@@ -12,6 +12,7 @@
 #include "core/units.h"
 
 #include <QRegularExpression>
+#include <QJsonArray>
 #include <QStringList>
 
 #define RATIONAL_TOL HNumber("1e-20")
@@ -708,6 +709,14 @@ QMap<UnitQuantity, Rational> dimensionTesla()
 
 Quantity operator-(const Quantity& q)
 {
+    if (q.isCollection()) {
+        QVector<QVector<Quantity>> rows = q.matrix();
+        for (QVector<Quantity>& row : rows) {
+            for (Quantity& element : row)
+                element = -element;
+        }
+        return q.isList() ? Quantity::list(rows.value(0)) : Quantity::matrix(rows);
+    }
     Quantity res(q);
     res.m_numericValue = -res.m_numericValue;
     return res;
@@ -715,6 +724,8 @@ Quantity operator-(const Quantity& q)
 
 Quantity operator-(const Quantity& a, const Quantity& b)
 {
+    if (a.isCollection() || b.isCollection())
+        return a + (-b);
     Quantity res(a);
     res.m_format = Quantity::Format();
     if (!a.sameDimension(b))
@@ -775,6 +786,8 @@ bool operator<=(const Quantity& l, const Quantity& r)
 
 bool operator==(const Quantity& l, const Quantity& r)
 {
+    if (l.isCollection() || r.isCollection())
+        return l.m_matrix == r.m_matrix;
     if (l.sameDimension(r))
         return l.m_numericValue == r.m_numericValue;
     return false;
@@ -812,6 +825,7 @@ Quantity::Quantity()
     : m_numericValue(0)
     , m_unit(nullptr)
     , m_unitName("")
+    , m_collectionIsMatrix(false)
 {
 }
 
@@ -821,6 +835,8 @@ Quantity::Quantity(const Quantity& other)
     , m_unit(nullptr)
     , m_unitName(other.m_unitName)
     , m_format(other.m_format)
+    , m_matrix(other.m_matrix)
+    , m_collectionIsMatrix(other.m_collectionIsMatrix)
 {
     if (other.hasUnit())
         this->m_unit = new CNumber(other.unit());
@@ -856,36 +872,165 @@ Quantity::~Quantity()
 
 bool Quantity::isNan() const
 {
+    if (isCollection()) {
+        for (const QVector<Quantity>& row : m_matrix)
+            for (const Quantity& element : row)
+                if (element.isNan())
+                    return true;
+        return false;
+    }
     return m_numericValue.isNan();
 }
 
 bool Quantity::isZero() const
 {
+    if (isCollection())
+        return false;
     return m_numericValue.isZero();
 }
 
 bool Quantity::isReal() const
 {
+    if (isCollection()) {
+        for (const QVector<Quantity>& row : m_matrix)
+            for (const Quantity& element : row)
+                if (!element.isReal())
+                    return false;
+        return true;
+    }
     return m_numericValue.isReal();
 }
 
 bool Quantity::isPositive() const
 {
+    if (isCollection())
+        return false;
     return m_numericValue.isPositive();
 }
 
 bool Quantity::isNegative() const
 {
+    if (isCollection())
+        return false;
     return m_numericValue.isNegative();
 }
 
 bool Quantity::isInteger() const
 {
+    if (isCollection())
+        return false;
     return (!this->hasDimension() && !this->hasUnit()) && m_numericValue.isInteger();
+}
+
+bool Quantity::isCollection() const
+{
+    return !m_matrix.isEmpty();
+}
+
+bool Quantity::isList() const
+{
+    return isCollection() && !m_collectionIsMatrix;
+}
+
+bool Quantity::isMatrix() const
+{
+    return isCollection() && m_collectionIsMatrix;
+}
+
+int Quantity::rows() const
+{
+    return isCollection() ? m_matrix.size() : 0;
+}
+
+int Quantity::columns() const
+{
+    return isCollection() && !m_matrix.isEmpty() ? m_matrix.at(0).size() : 0;
+}
+
+int Quantity::elementCount() const
+{
+    return rows() * columns();
+}
+
+QVector<Quantity> Quantity::elements() const
+{
+    QVector<Quantity> result;
+    for (const QVector<Quantity>& row : m_matrix)
+        result += row;
+    return result;
+}
+
+QVector<QVector<Quantity>> Quantity::matrix() const
+{
+    return m_matrix;
+}
+
+Quantity Quantity::list(const QVector<Quantity>& elements)
+{
+    for (const Quantity& element : elements) {
+        if (element.isMatrix())
+            return DMath::nan(OutOfDomain);
+        if (!element.isCollection()
+            && (element.hasUnit() || element.hasDimension()))
+            return DMath::nan(InvalidDimension);
+    }
+
+    bool allRows = !elements.isEmpty();
+    for (const Quantity& element : elements)
+        allRows = allRows && element.isList();
+
+    if (allRows) {
+        QVector<QVector<Quantity>> rows;
+        int columns = -1;
+        for (const Quantity& element : elements) {
+            const QVector<Quantity> row = element.elements();
+            if (columns < 0)
+                columns = row.size();
+            if (row.size() != columns)
+                return DMath::nan(DimensionMismatch);
+            rows.append(row);
+        }
+        return Quantity::matrix(rows);
+    }
+
+    for (const Quantity& element : elements) {
+        if (element.isCollection())
+            return DMath::nan(OutOfDomain);
+    }
+
+    Quantity result;
+    result.m_matrix.append(elements);
+    result.m_collectionIsMatrix = false;
+    result.m_numericValue = CMath::nan(OutOfDomain);
+    return result;
+}
+
+Quantity Quantity::matrix(const QVector<QVector<Quantity>>& rows)
+{
+    if (rows.isEmpty())
+        return DMath::nan(OutOfDomain);
+    const int columns = rows.at(0).size();
+    if (columns == 0)
+        return DMath::nan(OutOfDomain);
+    for (const QVector<Quantity>& row : rows) {
+        if (row.size() != columns)
+            return DMath::nan(DimensionMismatch);
+        for (const Quantity& element : row) {
+            if (element.isCollection())
+                return DMath::nan(OutOfDomain);
+        }
+    }
+    Quantity result;
+    result.m_matrix = rows;
+    result.m_collectionIsMatrix = true;
+    result.m_numericValue = CMath::nan(OutOfDomain);
+    return result;
 }
 
 bool Quantity::hasUnit() const
 {
+    if (isCollection())
+        return false;
     return this->m_unit != NULL;
 }
 
@@ -905,6 +1050,8 @@ QString Quantity::unitName() const
 
 CNumber Quantity::numericValue() const
 {
+    if (isCollection())
+        return CMath::nan(OutOfDomain);
     return m_numericValue;
 }
 
@@ -935,6 +1082,8 @@ void Quantity::stripUnits()
 
 bool Quantity::hasDimension() const
 {
+    if (isCollection())
+        return false;
     return !this->m_dimension.empty();
 }
 
@@ -944,6 +1093,8 @@ bool Quantity::hasDimension() const
  */
 bool Quantity::isDimensionless() const
 {
+    if (isCollection())
+        return true;
     Quantity temp(*this);
     temp.cleanDimension();
     return temp.m_dimension.empty();
@@ -1017,6 +1168,22 @@ void Quantity::cleanDimension()
 
 void Quantity::serialize(QJsonObject& json) const
 {
+    if (isCollection()) {
+        QJsonArray rows;
+        for (const QVector<Quantity>& row : m_matrix) {
+            QJsonArray values;
+            for (const Quantity& element : row) {
+                QJsonObject elementJson;
+                element.serialize(elementJson);
+                values.append(elementJson);
+            }
+            rows.append(values);
+        }
+        json["matrix"] = rows;
+        json["matrix_kind"] = isMatrix() ? QStringLiteral("matrix") : QStringLiteral("list");
+        return;
+    }
+
     json["val"] = CMath::format(
         m_numericValue,
         CNumber::Format::Fixed() + CNumber::Format::Precision(DECPRECISION));
@@ -1051,6 +1218,21 @@ void Quantity::serialize(QJsonObject& json) const
 Quantity Quantity::deSerialize(const QJsonObject& json)
 {
     Quantity result;
+    if (json.contains("matrix")) {
+        QVector<QVector<Quantity>> rows;
+        const QJsonArray rowsJson = json["matrix"].toArray();
+        for (const QJsonValue& rowValue : rowsJson) {
+            QVector<Quantity> row;
+            const QJsonArray rowJson = rowValue.toArray();
+            for (const QJsonValue& value : rowJson)
+                row.append(Quantity::deSerialize(value.toObject()));
+            rows.append(row);
+        }
+        if (json["matrix_kind"].toString() != QStringLiteral("matrix"))
+            return Quantity::list(rows.at(0));
+        return Quantity::matrix(rows);
+    }
+
     if (json.contains("val")) {
         QString str = json["val"].toString();
         str.replace(",", ".");
@@ -1083,6 +1265,15 @@ Quantity Quantity::deSerialize(const QJsonObject& json)
 
 Error Quantity::error() const
 {
+    if (isCollection()) {
+        for (const QVector<Quantity>& row : m_matrix) {
+            for (const Quantity& element : row) {
+                if (element.error() != Success)
+                    return element.error();
+            }
+        }
+        return Success;
+    }
     return m_numericValue.error();
 }
 
@@ -1091,6 +1282,8 @@ Quantity& Quantity::operator=(const Quantity& other)
     m_numericValue = other.m_numericValue;
     m_dimension = other.m_dimension;
     m_format = other.m_format;
+    m_matrix = other.m_matrix;
+    m_collectionIsMatrix = other.m_collectionIsMatrix;
     stripUnits();
     if(other.hasUnit()) {
         m_unit = new CNumber(*other.m_unit);
@@ -1102,6 +1295,31 @@ Quantity& Quantity::operator=(const Quantity& other)
 
 Quantity Quantity::operator+(const Quantity& other) const
 {
+    if (isCollection() || other.isCollection()) {
+        if ((!isCollection() && (hasUnit() || hasDimension()))
+            || (!other.isCollection() && (other.hasUnit() || other.hasDimension())))
+            return DMath::nan(InvalidDimension);
+        const bool lhsCollection = isCollection();
+        const bool rhsCollection = other.isCollection();
+        if (lhsCollection && rhsCollection
+            && (rows() != other.rows() || columns() != other.columns()))
+            return DMath::nan(DimensionMismatch);
+
+        const QVector<QVector<Quantity>> source =
+            lhsCollection ? m_matrix : other.m_matrix;
+        QVector<QVector<Quantity>> resultRows;
+        for (int r = 0; r < source.size(); ++r) {
+            QVector<Quantity> row;
+            for (int c = 0; c < source.at(r).size(); ++c) {
+                const Quantity& left = lhsCollection ? m_matrix.at(r).at(c) : *this;
+                const Quantity& right = rhsCollection ? other.m_matrix.at(r).at(c) : other;
+                row.append(left + right);
+            }
+            resultRows.append(row);
+        }
+        return resultRows.size() == 1 ? Quantity::list(resultRows.at(0)) : Quantity::matrix(resultRows);
+    }
+
     if (!this->sameDimension(other))
         return DMath::nan(DimensionMismatch);
     const InformationUnitFamily info1 = informationUnitFamily(this->unitName());
@@ -1205,6 +1423,47 @@ Quantity& Quantity::operator-=(const Quantity& other)
 
 Quantity Quantity::operator*(const Quantity& other) const
 {
+    if (isCollection() || other.isCollection()) {
+        if ((!isCollection() && (hasUnit() || hasDimension()))
+            || (!other.isCollection() && (other.hasUnit() || other.hasDimension())))
+            return DMath::nan(InvalidDimension);
+        if (isMatrix() && other.isMatrix()) {
+            if (columns() != other.rows())
+                return DMath::nan(DimensionMismatch);
+            QVector<QVector<Quantity>> resultRows;
+            for (int r = 0; r < rows(); ++r) {
+                QVector<Quantity> row;
+                for (int c = 0; c < other.columns(); ++c) {
+                    Quantity sum(0);
+                    for (int k = 0; k < columns(); ++k)
+                        sum += m_matrix.at(r).at(k) * other.m_matrix.at(k).at(c);
+                    row.append(sum);
+                }
+                resultRows.append(row);
+            }
+            return Quantity::matrix(resultRows);
+        }
+
+        const bool lhsCollection = isCollection();
+        const bool rhsCollection = other.isCollection();
+        if (lhsCollection && rhsCollection
+            && (rows() != other.rows() || columns() != other.columns()))
+            return DMath::nan(DimensionMismatch);
+        const QVector<QVector<Quantity>> source =
+            lhsCollection ? m_matrix : other.m_matrix;
+        QVector<QVector<Quantity>> resultRows;
+        for (int r = 0; r < source.size(); ++r) {
+            QVector<Quantity> row;
+            for (int c = 0; c < source.at(r).size(); ++c) {
+                const Quantity& left = lhsCollection ? m_matrix.at(r).at(c) : *this;
+                const Quantity& right = rhsCollection ? other.m_matrix.at(r).at(c) : other;
+                row.append(left * right);
+            }
+            resultRows.append(row);
+        }
+        return resultRows.size() == 1 ? Quantity::list(resultRows.at(0)) : Quantity::matrix(resultRows);
+    }
+
     Quantity result(*this);
 
     if (this->isDimensionless()
@@ -1521,6 +1780,27 @@ Quantity &Quantity::operator*=(const Quantity& other)
 
 Quantity Quantity::operator/(const Quantity& other) const
 {
+    if (isCollection() || other.isCollection()) {
+        if ((!isCollection() && (hasUnit() || hasDimension()))
+            || (!other.isCollection() && (other.hasUnit() || other.hasDimension())))
+            return DMath::nan(InvalidDimension);
+        if (other.isCollection() && !isCollection())
+            return DMath::nan(OutOfDomain);
+        if (isCollection() && other.isCollection()
+            && (rows() != other.rows() || columns() != other.columns()))
+            return DMath::nan(DimensionMismatch);
+        QVector<QVector<Quantity>> resultRows;
+        for (int r = 0; r < m_matrix.size(); ++r) {
+            QVector<Quantity> row;
+            for (int c = 0; c < m_matrix.at(r).size(); ++c) {
+                const Quantity& divisor = other.isCollection() ? other.m_matrix.at(r).at(c) : other;
+                row.append(m_matrix.at(r).at(c) / divisor);
+            }
+            resultRows.append(row);
+        }
+        return resultRows.size() == 1 ? Quantity::list(resultRows.at(0)) : Quantity::matrix(resultRows);
+    }
+
     Quantity result(*this);
 
     if (other.isDimensionless()
@@ -2213,6 +2493,21 @@ WRAPPER_DMATH_4(decodeIeee754)
 
 QString DMath::format(Quantity q, Quantity::Format format)
 {
+    if (q.isCollection()) {
+        const QString listStart(MathDsl::ListStart);
+        const QString listEnd(MathDsl::ListEnd);
+        QStringList rowTexts;
+        for (const QVector<Quantity>& row : q.matrix()) {
+            QStringList elementTexts;
+            for (const Quantity& element : row)
+                elementTexts << DMath::format(element, format);
+            rowTexts << (listStart + elementTexts.join(QStringLiteral("; ")) + listEnd);
+        }
+        if (q.isList())
+            return rowTexts.value(0);
+        return listStart + rowTexts.join(QStringLiteral("; ")) + listEnd;
+    }
+
     format = q.format() + format;  // Left hand side operator takes priority.
 
     // Handle units.

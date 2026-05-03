@@ -10,6 +10,7 @@
 #include "core/errors.h"
 
 #include <QMap>
+#include <QVector>
 
 class CNumber;
 class HNumber;
@@ -52,6 +53,16 @@ public:
     bool isPositive() const;
     bool isNegative() const;
     bool isInteger() const;
+    bool isCollection() const;
+    bool isList() const;
+    bool isMatrix() const;
+    int rows() const;
+    int columns() const;
+    int elementCount() const;
+    QVector<Quantity> elements() const;
+    QVector<QVector<Quantity>> matrix() const;
+    static Quantity list(const QVector<Quantity>& elements);
+    static Quantity matrix(const QVector<QVector<Quantity>>& rows);
 
     bool hasUnit() const;
     CNumber unit() const;
@@ -119,6 +130,8 @@ private:
     CNumber* m_unit;
     QString m_unitName;
     Format m_format;
+    QVector<QVector<Quantity>> m_matrix;
+    bool m_collectionIsMatrix;
 };
 
 /*

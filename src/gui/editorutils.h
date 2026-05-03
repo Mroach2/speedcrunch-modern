@@ -501,6 +501,7 @@ inline bool isAllowedLeadingCharAtExpressionStart(const QChar& ch, bool autoAnsE
         return true;
     if (ch == QLatin1Char('~')
         || ch == MathDsl::GroupStart
+        || ch == MathDsl::ListStart
         || ch == MathDsl::UnitStart
         || ch == MathDsl::HexPrefixAl1
         || ch == MathDsl::CommentSep) {

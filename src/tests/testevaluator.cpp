@@ -753,6 +753,85 @@ void test_binary_arithmetic_operator_variants()
     CHECK_EVAL("1/(1/(1/(1/(1/(1/(25636/100000)-3)-1)-9)-12)-1)-48", "0");
 }
 
+void test_lists_and_matrices()
+{
+    CHECK_EVAL("{1;2;3;4;5}", "{1; 2; 3; 4; 5}");
+    CHECK_EVAL("mylist = {1; 2; 3; 4; 5}", "{1; 2; 3; 4; 5}");
+    CHECK_EVAL("average(mylist)", "3");
+    CHECK_EVAL("mean(mylist)", "3");
+    CHECK_EVAL("median(mylist)", "3");
+    CHECK_EVAL("stdevp(mylist)", "1.4142135623730950488");
+    CHECK_EVAL("stdevs(mylist)", "1.581138830084189666");
+    CHECK_EVAL("min(mylist)", "1");
+    CHECK_EVAL("max(mylist)", "5");
+    CHECK_EVAL("sum(mylist)", "15");
+    CHECK_EVAL("varp(mylist)", "2");
+    CHECK_EVAL("vars(mylist)", "2.5");
+    CHECK_EVAL("count(mylist)", "5");
+    CHECK_EVAL("shape(mylist)", "{5}");
+    CHECK_EVAL("{1;2;3} + {4;5;6}", "{5; 7; 9}");
+    CHECK_EVAL("{4;5;6} - {1;2;3}", "{3; 3; 3}");
+    CHECK_EVAL("2 * {1;2;3}", "{2; 4; 6}");
+    CHECK_EVAL("{2;4;6} / 2", "{1; 2; 3}");
+    CHECK_DISPLAY_INTERPRETED("2 * {1;2;3} + {4;5;6}", "2 × {1; 2; 3} + {4; 5; 6}");
+    CHECK_DISPLAY_INTERPRETED("2 × {1;2;3} + {4;5;6}", "2 × {1; 2; 3} + {4; 5; 6}");
+    CHECK_DISPLAY_INTERPRETED("{{1;2};{3;4}} × {{5;6};{7;8}}",
+                              "{{1; 2}; {3; 4}} × {{5; 6}; {7; 8}}");
+    CHECK_DISPLAY_INTERPRETED("2{1; cos(400 [gon]) + 1; 3} + {4; 5; 6}",
+                              QStringLiteral("2 × {1; cos(400")
+                                  + QString(MathDsl::QuantSp)
+                                  + QStringLiteral("[gon]) + 1; 3} + {4; 5; 6}"));
+    CHECK_EVAL("2 * {1;2;3} + {4;5;6}", "{6; 9; 12}");
+    CHECK_EVAL("2{1; cos(400 [gon]) + 1; 3} + {4; 5; 6}", "{6; 9; 12}");
+    CHECK_EVAL("dot({1;2;3}; {4;5;6})", "32");
+    CHECK_EVAL("cross({1;0;0}; {0;1;0})", "{0; 0; 1}");
+    CHECK_EVAL("norm({3; 4})", "5");
+
+    CHECK_EVAL("mat = {{1;2;3};{4;5;6}}", "{{1; 2; 3}; {4; 5; 6}}");
+    CHECK_EVAL("flatten(mat)", "{1; 2; 3; 4; 5; 6}");
+    CHECK_EVAL("sum(flatten(mat))", "21");
+    CHECK_EVAL("average(flatten(mat))", "3.5");
+    CHECK_EVAL("min(flatten(mat))", "1");
+    CHECK_EVAL("max(flatten(mat))", "6");
+    CHECK_EVAL("sum(mat)", "21");
+    CHECK_EVAL("average(mat)", "3.5");
+    CHECK_EVAL("count(mat)", "6");
+    CHECK_EVAL("rows(mat)", "2");
+    CHECK_EVAL("cols(mat)", "3");
+    CHECK_EVAL("shape(mat)", "{2; 3}");
+    CHECK_EVAL("transpose(mat)", "{{1; 4}; {2; 5}; {3; 6}}");
+    CHECK_EVAL("mat2 = {{7;8;9};{10;11;12}}", "{{7; 8; 9}; {10; 11; 12}}");
+    CHECK_EVAL("mat + mat2", "{{8; 10; 12}; {14; 16; 18}}");
+    CHECK_EVAL("2 * mat", "{{2; 4; 6}; {8; 10; 12}}");
+    CHECK_EVAL("mat / 2", "{{0.5; 1; 1.5}; {2; 2.5; 3}}");
+    CHECK_EVAL("norm({{1; 2}; {3; 4}})", "5.47722557505166113457");
+
+    CHECK_EVAL("A = {{1;2};{3;4}}", "{{1; 2}; {3; 4}}");
+    CHECK_EVAL("B = {{5;6};{7;8}}", "{{5; 6}; {7; 8}}");
+    CHECK_EVAL("A * B", "{{19; 22}; {43; 50}}");
+    CHECK_EVAL("det(A)", "-2");
+    CHECK_EVAL("inv(A)", "{{-2; 1}; {1.5; -0.5}}");
+    CHECK_EVAL("trace(A)", "5");
+    CHECK_EVAL("rank({{1; 2}; {2; 4}})", "1");
+    CHECK_EVAL("X = {{1;2}; {2;3}; {3;4}}", "{{1; 2}; {2; 3}; {3; 4}}");
+    CHECK_EVAL("covp(X)", "{{0.66666666666666666667; 0.66666666666666666667}; {0.66666666666666666667; 0.66666666666666666667}}");
+    CHECK_EVAL("covs(X)", "{{1; 1}; {1; 1}}");
+    CHECK_EVAL("corrp(X)", "{{1; 1}; {1; 1}}");
+    CHECK_EVAL("corrs(X)", "{{1; 1}; {1; 1}}");
+
+    CHECK_EVAL_FAIL("{{{1}}}");
+    CHECK_EVAL_FAIL("{{{1;2};{3;4}}}");
+    CHECK_EVAL_FAIL("{{1; {2; 3}}}");
+    CHECK_EVAL_FAIL("{{1;2};{3}}");
+    CHECK_EVAL_FAIL("var(1; 2)");
+    CHECK_EVAL_FAIL("stddev(1; 2)");
+    CHECK_EVAL_FAIL("cov(X)");
+    CHECK_EVAL_FAIL("corr(X)");
+    CHECK_EVAL_FAIL("{1[m]; 2[m]}");
+    CHECK_EVAL_FAIL("{1; 2}[m]");
+    CHECK_EVAL_FAIL("{1; 2} * [m]");
+}
+
 void test_units_conversion_parentheses()
 {
     // Check that parentheses are added in unit conversion results when needed.
@@ -2964,9 +3043,13 @@ void test_function_stat()
     CHECK_EVAL("GEOMEAN(1;1;1;1)", "1");
     CHECK_EVAL_FAIL("GEOMEAN(1;1;1;-1)");
 
-    CHECK_EVAL("VARIANCE(1;-1)", "1");
-    CHECK_EVAL("VARIANCE(5[metre]; 13[metre])", "16 metre²");
-    // for complex tests of VARIANCE see test_complex
+    CHECK_EVAL("VARP(1;-1)", "1");
+    CHECK_EVAL("VARS(1;-1)", "2");
+    CHECK_EVAL("VARP(5[metre]; 13[metre])", "16 metre²");
+    CHECK_EVAL("VARS(5[metre]; 13[metre])", "32 metre²");
+    CHECK_EVAL_FAIL("VARIANCE(1;-1)");
+    CHECK_EVAL_FAIL("VAR(1;-1)");
+    // for complex tests of VARP/VARS see test_complex
 
     CHECK_EVAL("int(rand())", "0");
     CHECK_EVAL("rand(0)", "0");
@@ -3673,9 +3756,11 @@ void test_complex()
     CHECK_EVAL("(1+1j)*(1+1j)", "2i");
 
 
-    CHECK_EVAL("VARIANCE(1j;-1j)", "1");
-    CHECK_EVAL("VARIANCE(1j;-1j;1;-1)", "1");
-    CHECK_EVAL("VARIANCE(2j;-2j;1;-1)", "2.5");
+    CHECK_EVAL("VARP(1j;-1j)", "1");
+    CHECK_EVAL("VARS(1j;-1j)", "2");
+    CHECK_EVAL("VARP(1j;-1j;1;-1)", "1");
+    CHECK_EVAL("VARP(2j;-2j;1;-1)", "2.5");
+    CHECK_EVAL("VARS(2j;-2j;1;-1)", "3.33333333333333333333");
 }
 
 void test_angle_mode(Settings* settings)
@@ -6392,7 +6477,7 @@ void test_session_history_limit()
         histEntries.append(entry);
     }
     json["speedcrunch"] = QString(SPEEDCRUNCH_VERSION);
-    json["hst"] = histEntries;
+    json["history"] = histEntries;
 
     Session loaded;
     loaded.deSerialize(json, false);
@@ -6418,7 +6503,7 @@ void test_session_history_limit()
         histWithCommentTail.append(entry);
     }
     jsonWithCommentTail["speedcrunch"] = QString(SPEEDCRUNCH_VERSION);
-    jsonWithCommentTail["hst"] = histWithCommentTail;
+    jsonWithCommentTail["history"] = histWithCommentTail;
 
     Session loadedWithCommentTail;
     loadedWithCommentTail.deSerialize(jsonWithCommentTail, false);
@@ -6462,7 +6547,7 @@ void test_session_deserialize_without_history()
 
     QJsonObject json;
     source.serialize(json);
-    json.remove("hst");
+    json.remove("history");
 
     Evaluator::instance()->setSession(&restored);
     restored.deSerialize(json, false);
@@ -7397,6 +7482,60 @@ void test_result_display_strips_unit_brackets_and_double_click_restores_canonica
         cerr << __FILE__ << "[" << __LINE__ << "]\tdouble-click restores canonical unit expression\t[NEW]" << endl
              << "\tSelected: " << selectedExpression.toUtf8().constData() << endl
              << "\tExpected: " << expectedSelectedExpression.toUtf8().constData() << endl;
+    }
+
+    session->clearHistory();
+}
+
+void test_result_display_double_click_selects_list_result()
+{
+    Session* session = const_cast<Session*>(eval->session());
+    session->clearHistory();
+    eval->setExpression(QStringLiteral("{1; 2; 3}"));
+    const Quantity value = eval->evalUpdateAns();
+    ++eval_total_tests;
+    if (!eval->error().isEmpty()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tevaluate list result display case\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+        session->clearHistory();
+        return;
+    }
+    session->addHistoryEntry(HistoryEntry(
+        QStringLiteral("{1; 2; 3}"),
+        value,
+        eval->interpretedExpression()));
+
+    TestableResultDisplay display;
+    display.resize(800, 600);
+    display.refresh();
+
+    QString selectedExpression;
+    QObject::connect(&display, &ResultDisplay::expressionSelected,
+                     [&selectedExpression](const QString& text) {
+                         selectedExpression = text;
+                     });
+
+    QTextCursor cursor(display.document()->findBlockByNumber(1));
+    display.setTextCursor(cursor);
+    const QPoint eventPos = display.pointForBlockStart(1);
+    QMouseEvent event(
+        QEvent::MouseButtonDblClick,
+        QPointF(eventPos),
+        QPointF(display.mapToGlobal(eventPos)),
+        Qt::LeftButton,
+        Qt::LeftButton,
+        Qt::NoModifier);
+    display.mouseDoubleClickEvent(&event);
+
+    ++eval_total_tests;
+    if (selectedExpression != QStringLiteral("{1; 2; 3}")) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tdouble-click selects list result\t[NEW]" << endl
+             << "\tSelected: " << selectedExpression.toUtf8().constData() << endl
+             << "\tExpected: {1; 2; 3}" << endl;
     }
 
     session->clearHistory();
@@ -8954,6 +9093,7 @@ int main(int argc, char* argv[])
     test_function_logic();
     test_function_discrete();
     test_function_simplified();
+    test_lists_and_matrices();
 
     test_auto_fix_parentheses();
     test_auto_fix_ans();
@@ -9000,6 +9140,7 @@ int main(int argc, char* argv[])
     test_result_display_mixed_per_term_time_conversions();
     test_result_display_mixed_per_term_time_conversions_in_sexagesimal_notation();
     test_result_display_strips_unit_brackets_and_double_click_restores_canonical_unit_expression();
+    test_result_display_double_click_selects_list_result();
     test_result_display_uses_base10_exponent_notation();
     test_result_display_omits_zero_power_of_ten_generically();
     test_result_display_double_click_preserves_compact_angle_suffix();

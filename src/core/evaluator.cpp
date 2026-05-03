@@ -32,6 +32,7 @@ static bool isIdentifierStart(QChar ch);
 static bool isIdentifierContinue(QChar ch);
 static QString superscriptDigitsToAscii(const QString& text);
 static bool normalizeUnsignedIntegerEquivalentDecimalText(QString& text);
+static QString rewriteListBracesToInternalCalls(const QString& text);
 
 #ifdef EVALUATOR_DEBUG
 #include <QDebug>
@@ -357,6 +358,18 @@ static bool s_isClosingUnitBracketToken(const Token& token)
            && token.text() == QString(MathDsl::UnitEnd);
 }
 
+static bool s_isOpeningListBraceToken(const Token& token)
+{
+    return token.asOperator() == Token::AssociationStart
+           && token.text() == QLatin1String("{");
+}
+
+static bool s_isClosingListBraceToken(const Token& token)
+{
+    return token.asOperator() == Token::AssociationEnd
+           && token.text() == QLatin1String("}");
+}
+
 static bool s_tokenSourceContainsExplicitUnitAttachment(const Token& token,
                                                         const QString& expression)
 {
@@ -404,6 +417,26 @@ static bool s_tryGetBuiltInUnitQuantity(const QString& identifier, Quantity* val
 static bool s_isBuiltInUnitIdentifier(const QString& identifier)
 {
     return s_builtInUnitLookup().contains(identifier);
+}
+
+static QString rewriteListBracesToInternalCalls(const QString& text)
+{
+    QString result;
+    result.reserve(text.size());
+    bool inComment = false;
+    for (int i = 0; i < text.size(); ++i) {
+        const QChar ch = text.at(i);
+        if (ch == MathDsl::CommentSep)
+            inComment = true;
+        if (!inComment && ch == MathDsl::ListStart) {
+            result += QStringLiteral("list(");
+        } else if (!inComment && ch == MathDsl::ListEnd) {
+            result += MathDsl::GroupEnd;
+        } else {
+            result += ch;
+        }
+    }
+    return result;
 }
 
 static bool s_isUserUnitLhsTokens(const Tokens& tokens)
@@ -860,6 +893,12 @@ static Token::Operator matchOperator(const QString& text)
             result = Token::AssociationStart;
             break;
         case MathDsl::UnitEnd.unicode():
+            result = Token::AssociationEnd;
+            break;
+        case MathDsl::ListStart.unicode():
+            result = Token::AssociationStart;
+            break;
+        case MathDsl::ListEnd.unicode():
             result = Token::AssociationEnd;
             break;
         case MathDsl::FactorOp.unicode():
@@ -3438,6 +3477,54 @@ static QString formatInterpretedExpressionForDisplayImpl(const QString& expressi
         if (!commentText.isEmpty())
             commentSuffix += QLatin1String(" ") + commentText;
     }
+    if (expressionPrefix.contains(MathDsl::ListStart)) {
+        QString out;
+        out.reserve(expressionPrefix.size() * 2);
+        bool pendingSpace = false;
+        for (int i = 0; i < expressionPrefix.size(); ++i) {
+            const QChar ch = expressionPrefix.at(i);
+            if (ch.isSpace()) {
+                pendingSpace = true;
+                continue;
+            }
+            if (ch == MathDsl::MulOpAl1 || ch == MathDsl::MulDotOp || ch == MathDsl::MulCrossOp) {
+                out = out.trimmed();
+                out += MathDsl::buildWrappedToken(MathDsl::MulCrossOp);
+                pendingSpace = false;
+                continue;
+            }
+            if (ch == MathDsl::AddOp
+                || ((ch == MathDsl::SubOpAl1 || ch == MathDsl::SubOp) && i > 0))
+            {
+                out = out.trimmed();
+                out += MathDsl::buildWrappedToken(ch == MathDsl::SubOp ? MathDsl::SubOpAl1 : ch);
+                pendingSpace = false;
+                continue;
+            }
+            if (ch == MathDsl::FunArgSep) {
+                out = out.trimmed();
+                out += QStringLiteral("; ");
+                pendingSpace = false;
+                continue;
+            }
+            if (ch == MathDsl::UnitStart
+                && !out.isEmpty()
+                && !out.back().isSpace()
+                && out.back() != MathDsl::ListStart
+                && out.back() != MathDsl::GroupStart) {
+                out += MathDsl::QuantSp;
+            }
+            if (pendingSpace && !out.isEmpty()
+                && !out.back().isSpace()
+                && out.back() != MathDsl::ListStart
+                && ch != MathDsl::ListEnd) {
+                out += QLatin1Char(' ');
+            }
+            out += ch;
+            pendingSpace = false;
+        }
+        return out.trimmed() + commentSuffix;
+    }
     const bool hasTrigFunction =
         RegExpPatterns::trigFunctionCall().match(expressionPrefix).hasMatch();
     const bool allowAggressiveSimplification =
@@ -4854,7 +4941,7 @@ void Evaluator::initializeAngleUnits()
 
 void Evaluator::setExpression(const QString& expr)
 {
-    m_expression = expr;
+    m_expression = rewriteListBracesToInternalCalls(expr);
     m_dirty = true;
     m_valid = false;
     m_error = QString();
@@ -5615,6 +5702,42 @@ void Evaluator::compile(const Tokens& tokens)
                 }
            }
 
+           // Rule for list or matrix literal last element: {arg} -> arg.
+           if (!ruleFound && syntaxStack.itemCount() >= 3) {
+               Token right = syntaxStack.top();
+               Token arg = syntaxStack.top(1);
+               Token left = syntaxStack.top(2);
+               if (s_isClosingListBraceToken(right)
+                   && arg.isOperand()
+                   && s_isOpeningListBraceToken(left))
+               {
+                   ruleFound = true;
+                   syntaxStack.reduce(3, MAX_PRECEDENCE);
+                   m_codes.append(Opcode(Opcode::List, argCount));
+#ifdef EVALUATOR_DEBUG
+                   dbg << "\tRule for list literal with "
+                       << argCount << " elements\n";
+#endif
+                   argCount = argStack.empty() ? 0 : argStack.pop();
+               }
+           }
+
+           // Are we entering a list literal?
+           if (!ruleFound && !argHandled && tokenType == Token::stxOperator
+                && syntaxStack.itemCount() >= 2)
+           {
+               Token arg = syntaxStack.top();
+               Token left = syntaxStack.top(1);
+               if (arg.isOperand()
+                   && s_isOpeningListBraceToken(left))
+               {
+                   ruleFound = true;
+                   argStack.push(argCount);
+                   argCount = 1;
+                   break;
+               }
+           }
+
            // Rule for postfix operators: Y POSTFIX -> Y.
            // Condition: Y is not an operator, POSTFIX is a postfix op.
            // Since we evaluate from left to right,
@@ -5719,7 +5842,9 @@ void Evaluator::compile(const Tokens& tokens)
                Token left = syntaxStack.top(2);
                if (y.isOperand()
                    && right.asOperator() == Token::AssociationEnd
-                   && left.asOperator() == Token::AssociationStart)
+                   && left.asOperator() == Token::AssociationStart
+                   && !s_isOpeningListBraceToken(left)
+                   && !s_isClosingListBraceToken(right))
                {
                    ruleFound = true;
                    syntaxStack.reduce(3, MAX_PRECEDENCE);
@@ -5802,6 +5927,33 @@ void Evaluator::compile(const Tokens& tokens)
 #ifdef EVALUATOR_DEBUG
                    dbg << "\tRule for function argument "
                        << argCount << " \n";
+#endif
+               }
+           }
+
+           // Rule for list literal elements. If token is ; or }:
+           // {arg1 ; arg2 -> {arg.
+           if (!ruleFound && syntaxStack.itemCount() >= 4
+               && token.isOperator()
+               && (token.asOperator() == Token::AssociationEnd
+                   || token.asOperator() == Token::ListSeparator))
+           {
+               Token arg2 = syntaxStack.top();
+               Token sep = syntaxStack.top(1);
+               Token arg1 = syntaxStack.top(2);
+               Token left = syntaxStack.top(3);
+               if (arg2.isOperand()
+                   && sep.asOperator() == Token::ListSeparator
+                   && arg1.isOperand()
+                   && s_isOpeningListBraceToken(left))
+               {
+                   ruleFound = true;
+                   argHandled = true;
+                   syntaxStack.reduce(3, MAX_PRECEDENCE);
+                   ++argCount;
+#ifdef EVALUATOR_DEBUG
+                   dbg << "\tRule for list literal element "
+                       << argCount << "\n";
 #endif
                }
            }
@@ -6488,6 +6640,18 @@ QString Evaluator::buildInterpretedExpressionFromOpcodes() const
             // Discard function reference placeholder.
             stack.takeLast();
 
+            if (functionName == QLatin1String("list")) {
+                stack.append({
+                    QString(MathDsl::ListStart) + arguments.join("; ") + QString(MathDsl::ListEnd),
+                    MAX_PRECEDENCE,
+                    Opcode::Nop,
+                    false,
+                    false,
+                    false
+                });
+                break;
+            }
+
             stack.append({
                 QStringLiteral("%1(%2)").arg(
                     UnicodeChars::normalizeRootFunctionAliasesForDisplay(functionName),
@@ -6495,6 +6659,23 @@ QString Evaluator::buildInterpretedExpressionFromOpcodes() const
                 MAX_PRECEDENCE,
                 Opcode::Nop,
                 true,
+                false,
+                false
+            });
+            break;
+        }
+        case Opcode::List: {
+            const int elementCount = static_cast<int>(opcode.index);
+            if (stack.count() < elementCount)
+                return QString();
+            QStringList elements;
+            for (int i = 0; i < elementCount; ++i)
+                elements.prepend(stack.takeLast().text);
+            stack.append({
+                QStringLiteral("{%1}").arg(elements.join("; ")),
+                MAX_PRECEDENCE,
+                Opcode::Nop,
+                false,
                 false,
                 false
             });
@@ -6856,6 +7037,20 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
                 val1 = constants.at(index);
                 pushStackValue(val1);
                 break;
+
+            case Opcode::List: {
+                if (stack.count() < index) {
+                    m_error = tr("invalid expression");
+                    return CMath::nan();
+                }
+                QVector<Quantity> elements;
+                for (; index; --index)
+                    elements.prepend(stack.pop().value);
+                val1 = Quantity::list(elements);
+                val1 = checkOperatorResult(val1);
+                pushStackValue(val1);
+                break;
+            }
 
             // Unary operation.
             case Opcode::Neg:
@@ -8470,6 +8665,9 @@ QString Evaluator::dump()
                 break;
             case Opcode::Function:
                 code = QString("Function (%1)").arg(m_codes.at(i).index);
+                break;
+            case Opcode::List:
+                code = QString("List (%1)").arg(m_codes.at(i).index);
                 break;
             case Opcode::Add:
                 code = "Add";

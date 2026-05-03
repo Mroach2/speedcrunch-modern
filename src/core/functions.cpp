@@ -48,6 +48,7 @@ static QString domainToDisplay(FunctionDomain domain)
     case FunctionDomain::Bitwise: return FunctionRepo::tr("Bitwise");
     case FunctionDomain::FloatingPoint: return FunctionRepo::tr("Floating point");
     case FunctionDomain::DateTime: return FunctionRepo::tr("Date & Time");
+    case FunctionDomain::LinearAlgebra: return FunctionRepo::tr("Linear algebra");
     }
     return QString();
 }
@@ -56,6 +57,11 @@ static QString domainToDisplay(FunctionDomain domain)
 #define FUNCTION_USAGE(ID, USAGE) find(#ID)->setUsage(QString::fromLatin1(USAGE));
 #define FUNCTION_USAGE_TR(ID, USAGE) find(#ID)->setUsage(USAGE);
 #define FUNCTION_NAME(ID, NAME) find(#ID)->setName(NAME)
+
+enum class StatisticalNormalization {
+    Population,
+    Sample
+};
 
 #define ENSURE_MINIMUM_ARGUMENT_COUNT(i) \
     if (args.count() < i) { \
@@ -242,6 +248,42 @@ static bool s_tryExtractForcedExponent(const Quantity& value, int* out)
     return true;
 }
 
+static Function::ArgumentList s_collectionElementsOrArgs(const Function::ArgumentList& args)
+{
+    if (args.count() == 1 && args.at(0).isCollection())
+        return args.at(0).elements();
+    return args;
+}
+
+static bool s_ensureOneCollectionArg(Function* f, const Function::ArgumentList& args, Quantity* collection)
+{
+    if (args.count() != 1 || !args.at(0).isCollection()) {
+        f->setError(OutOfDomain);
+        return false;
+    }
+    *collection = args.at(0);
+    return true;
+}
+
+static bool s_ensureMatrixArg(Function* f, const Function::ArgumentList& args, Quantity* matrix)
+{
+    if (!s_ensureOneCollectionArg(f, args, matrix) || !matrix->isMatrix()) {
+        f->setError(OutOfDomain);
+        return false;
+    }
+    return true;
+}
+
+static Quantity s_makeScalarList(const QVector<Quantity>& elements)
+{
+    return Quantity::list(elements);
+}
+
+static Quantity s_makeMatrix(const QVector<QVector<Quantity>>& rows)
+{
+    return Quantity::matrix(rows);
+}
+
 Quantity Function::exec(const Function::ArgumentList& args)
 {
     if (!m_ptr)
@@ -262,8 +304,28 @@ Quantity function_abs(Function* f, const Function::ArgumentList& args)
 Quantity function_average(Function* f, const Function::ArgumentList& args)
 {
     /* TODO : complex mode switch for this function */
-    ENSURE_MINIMUM_ARGUMENT_COUNT(2);
-    return std::accumulate(args.begin()+1, args.end(), *args.begin()) / Quantity(args.count());
+    const Function::ArgumentList values = s_collectionElementsOrArgs(args);
+    if (values.count() < 1 || (!args.at(0).isCollection() && values.count() < 2)) {
+        f->setError(InvalidParamCount);
+        return CMath::nan(InvalidParamCount);
+    }
+    return std::accumulate(values.begin()+1, values.end(), *values.begin()) / Quantity(values.count());
+}
+
+Quantity function_mean(Function* f, const Function::ArgumentList& args)
+{
+    return function_average(f, args);
+}
+
+Quantity function_list(Function* f, const Function::ArgumentList& args)
+{
+    ENSURE_MINIMUM_ARGUMENT_COUNT(1);
+    Quantity result = Quantity::list(args);
+    if (result.isNan()) {
+        f->setError(result.error() == DimensionMismatch ? DimensionMismatch : OutOfDomain);
+        return result;
+    }
+    return result;
 }
 
 Quantity function_absdev(Function* f, const Function::ArgumentList& args)
@@ -417,29 +479,60 @@ Quantity function_sqrt(Function* f, const Function::ArgumentList& args)
     return DMath::sqrt(args[0]);
 }
 
-Quantity function_variance(Function* f, const Function::ArgumentList& args)
+static Quantity s_variance(Function* f,
+                           const Function::ArgumentList& args,
+                           StatisticalNormalization normalization)
 {
-    ENSURE_MINIMUM_ARGUMENT_COUNT(2);
+    const Function::ArgumentList values = s_collectionElementsOrArgs(args);
+    const int divisor = normalization == StatisticalNormalization::Sample
+        ? values.count() - 1
+        : values.count();
+    if (divisor <= 0) {
+        f->setError(InvalidParamCount);
+        return CMath::nan(InvalidParamCount);
+    }
 
-    Quantity mean = function_average(f, args);
+    Quantity mean = function_average(f, values);
     if (mean.isNan())
         return mean;
 
-    Quantity acc(DMath::real(args[0] - mean)*DMath::real(args[0] - mean)
-            + DMath::imag(args[0] - mean)*DMath::imag(args[0] - mean));
-    for (int i = 1; i < args.count(); ++i) {
-        Quantity q(args[i] - mean);
+    Quantity acc(DMath::real(values[0] - mean)*DMath::real(values[0] - mean)
+            + DMath::imag(values[0] - mean)*DMath::imag(values[0] - mean));
+    for (int i = 1; i < values.count(); ++i) {
+        Quantity q(values[i] - mean);
         acc += DMath::real(q)*DMath::real(q) + DMath::imag(q)*DMath::imag(q);
     }
 
-    return acc / Quantity(args.count());
+    return acc / Quantity(divisor);
 }
 
-Quantity function_stddev(Function* f, const Function::ArgumentList& args)
+Quantity function_varp(Function* f, const Function::ArgumentList& args)
+{
+    return s_variance(f, args, StatisticalNormalization::Population);
+}
+
+Quantity function_vars(Function* f, const Function::ArgumentList& args)
+{
+    return s_variance(f, args, StatisticalNormalization::Sample);
+}
+
+static Quantity s_stdev(Function* f,
+                        const Function::ArgumentList& args,
+                        StatisticalNormalization normalization)
 {
     /* TODO : complex mode switch for this function */
-    ENSURE_MINIMUM_ARGUMENT_COUNT(2);
-    return DMath::sqrt(function_variance(f, args));
+    const Quantity variance = s_variance(f, args, normalization);
+    return variance.isNan() ? variance : DMath::sqrt(variance);
+}
+
+Quantity function_stdevp(Function* f, const Function::ArgumentList& args)
+{
+    return s_stdev(f, args, StatisticalNormalization::Population);
+}
+
+Quantity function_stdevs(Function* f, const Function::ArgumentList& args)
+{
+    return s_stdev(f, args, StatisticalNormalization::Sample);
 }
 
 Quantity function_cbrt(Function* f, const Function::ArgumentList& args)
@@ -784,40 +877,372 @@ Quantity function_turns(Function* f, const Function::ArgumentList& args)
 
 Quantity function_max(Function* f, const Function::ArgumentList& args)
 {
-    ENSURE_MINIMUM_ARGUMENT_COUNT(2);
-    ENSURE_REAL_ARGUMENTS()
-    ENSURE_SAME_DIMENSION()
-    return *std::max_element(args.begin(), args.end());
+    const Function::ArgumentList values = s_collectionElementsOrArgs(args);
+    if (values.count() < 1 || (!args.at(0).isCollection() && values.count() < 2)) {
+        f->setError(InvalidParamCount);
+        return CMath::nan(InvalidParamCount);
+    }
+    for (const Quantity& value : values) {
+        if (!value.isReal()) {
+            f->setError(OutOfDomain);
+            return CMath::nan();
+        }
+        if (!value.sameDimension(values.at(0)))
+            return DMath::nan(InvalidDimension);
+    }
+    return *std::max_element(values.begin(), values.end());
 }
 
 Quantity function_median(Function* f, const Function::ArgumentList& args)
 {
-    ENSURE_MINIMUM_ARGUMENT_COUNT(2);
-    ENSURE_REAL_ARGUMENTS()
-    ENSURE_SAME_DIMENSION()
+    const Function::ArgumentList values = s_collectionElementsOrArgs(args);
+    if (values.count() < 1 || (!args.at(0).isCollection() && values.count() < 2)) {
+        f->setError(InvalidParamCount);
+        return CMath::nan(InvalidParamCount);
+    }
+    for (const Quantity& value : values) {
+        if (!value.isReal()) {
+            f->setError(OutOfDomain);
+            return CMath::nan();
+        }
+        if (!value.sameDimension(values.at(0)))
+            return DMath::nan(InvalidDimension);
+    }
 
-    Function::ArgumentList sortedArgs = args;
+    Function::ArgumentList sortedArgs = values;
     std::sort(sortedArgs.begin(), sortedArgs.end());
 
-    if ((args.count() & 1) == 1)
-        return sortedArgs.at((args.count() - 1) / 2);
+    if ((values.count() & 1) == 1)
+        return sortedArgs.at((values.count() - 1) / 2);
 
-    const int centerLeft = args.count() / 2 - 1;
+    const int centerLeft = values.count() / 2 - 1;
     return (sortedArgs.at(centerLeft) + sortedArgs.at(centerLeft + 1)) / Quantity(2);
 }
 
 Quantity function_min(Function* f, const Function::ArgumentList& args)
 {
-    ENSURE_MINIMUM_ARGUMENT_COUNT(2);
-    ENSURE_REAL_ARGUMENTS()
-    ENSURE_SAME_DIMENSION()
-    return *std::min_element(args.begin(), args.end());
+    const Function::ArgumentList values = s_collectionElementsOrArgs(args);
+    if (values.count() < 1 || (!args.at(0).isCollection() && values.count() < 2)) {
+        f->setError(InvalidParamCount);
+        return CMath::nan(InvalidParamCount);
+    }
+    for (const Quantity& value : values) {
+        if (!value.isReal()) {
+            f->setError(OutOfDomain);
+            return CMath::nan();
+        }
+        if (!value.sameDimension(values.at(0)))
+            return DMath::nan(InvalidDimension);
+    }
+    return *std::min_element(values.begin(), values.end());
 }
 
 Quantity function_sum(Function* f, const Function::ArgumentList& args)
 {
-    ENSURE_MINIMUM_ARGUMENT_COUNT(2);
-    return std::accumulate(args.begin(), args.end(), Quantity(0));
+    const Function::ArgumentList values = s_collectionElementsOrArgs(args);
+    if (values.count() < 1 || (!args.at(0).isCollection() && values.count() < 2)) {
+        f->setError(InvalidParamCount);
+        return CMath::nan(InvalidParamCount);
+    }
+    return std::accumulate(values.begin(), values.end(), Quantity(0));
+}
+
+Quantity function_count(Function* f, const Function::ArgumentList& args)
+{
+    if (args.count() == 1 && args.at(0).isCollection())
+        return Quantity(args.at(0).elementCount());
+    ENSURE_MINIMUM_ARGUMENT_COUNT(1);
+    return Quantity(args.count());
+}
+
+Quantity function_flatten(Function* f, const Function::ArgumentList& args)
+{
+    Quantity matrix;
+    if (!s_ensureMatrixArg(f, args, &matrix))
+        return CMath::nan();
+    return s_makeScalarList(matrix.elements());
+}
+
+Quantity function_rows(Function* f, const Function::ArgumentList& args)
+{
+    Quantity matrix;
+    if (!s_ensureMatrixArg(f, args, &matrix))
+        return CMath::nan();
+    return Quantity(matrix.rows());
+}
+
+Quantity function_cols(Function* f, const Function::ArgumentList& args)
+{
+    Quantity matrix;
+    if (!s_ensureMatrixArg(f, args, &matrix))
+        return CMath::nan();
+    return Quantity(matrix.columns());
+}
+
+Quantity function_shape(Function* f, const Function::ArgumentList& args)
+{
+    Quantity value;
+    if (!s_ensureOneCollectionArg(f, args, &value))
+        return CMath::nan();
+    QVector<Quantity> dims;
+    dims.append(Quantity(value.isList() ? value.columns() : value.rows()));
+    if (value.isMatrix())
+        dims.append(Quantity(value.columns()));
+    return s_makeScalarList(dims);
+}
+
+Quantity function_transpose(Function* f, const Function::ArgumentList& args)
+{
+    Quantity matrix;
+    if (!s_ensureMatrixArg(f, args, &matrix))
+        return CMath::nan();
+    QVector<QVector<Quantity>> rows;
+    for (int c = 0; c < matrix.columns(); ++c) {
+        QVector<Quantity> row;
+        for (int r = 0; r < matrix.rows(); ++r)
+            row.append(matrix.matrix().at(r).at(c));
+        rows.append(row);
+    }
+    return s_makeMatrix(rows);
+}
+
+Quantity function_dot(Function* f, const Function::ArgumentList& args)
+{
+    ENSURE_ARGUMENT_COUNT(2);
+    if (!args.at(0).isList() || !args.at(1).isList()
+        || args.at(0).columns() != args.at(1).columns()) {
+        f->setError(OutOfDomain);
+        return CMath::nan();
+    }
+    Quantity result(0);
+    const QVector<Quantity> left = args.at(0).elements();
+    const QVector<Quantity> right = args.at(1).elements();
+    for (int i = 0; i < left.size(); ++i)
+        result += left.at(i) * right.at(i);
+    return result;
+}
+
+Quantity function_cross(Function* f, const Function::ArgumentList& args)
+{
+    ENSURE_ARGUMENT_COUNT(2);
+    if (!args.at(0).isList() || !args.at(1).isList()
+        || args.at(0).columns() != 3 || args.at(1).columns() != 3) {
+        f->setError(OutOfDomain);
+        return CMath::nan();
+    }
+    const QVector<Quantity> a = args.at(0).elements();
+    const QVector<Quantity> b = args.at(1).elements();
+    QVector<Quantity> result;
+    result << (a.at(1) * b.at(2) - a.at(2) * b.at(1));
+    result << (a.at(2) * b.at(0) - a.at(0) * b.at(2));
+    result << (a.at(0) * b.at(1) - a.at(1) * b.at(0));
+    return s_makeScalarList(result);
+}
+
+Quantity function_norm(Function* f, const Function::ArgumentList& args)
+{
+    Quantity value;
+    if (!s_ensureOneCollectionArg(f, args, &value))
+        return CMath::nan();
+    Quantity sumSquares(0);
+    for (const Quantity& element : value.elements())
+        sumSquares += element * element;
+    return DMath::sqrt(sumSquares);
+}
+
+Quantity function_trace(Function* f, const Function::ArgumentList& args)
+{
+    Quantity matrix;
+    if (!s_ensureMatrixArg(f, args, &matrix) || matrix.rows() != matrix.columns()) {
+        f->setError(OutOfDomain);
+        return CMath::nan();
+    }
+    Quantity result(0);
+    const auto rows = matrix.matrix();
+    for (int i = 0; i < matrix.rows(); ++i)
+        result += rows.at(i).at(i);
+    return result;
+}
+
+Quantity function_det(Function* f, const Function::ArgumentList& args)
+{
+    Quantity matrix;
+    if (!s_ensureMatrixArg(f, args, &matrix) || matrix.rows() != matrix.columns()) {
+        f->setError(OutOfDomain);
+        return CMath::nan();
+    }
+    QVector<QVector<Quantity>> a = matrix.matrix();
+    const int n = matrix.rows();
+    Quantity det(1);
+    int sign = 1;
+    for (int i = 0; i < n; ++i) {
+        int pivot = i;
+        while (pivot < n && a.at(pivot).at(i).isZero())
+            ++pivot;
+        if (pivot == n)
+            return Quantity(0);
+        if (pivot != i) {
+            std::swap(a[pivot], a[i]);
+            sign = -sign;
+        }
+        const Quantity pivotValue = a.at(i).at(i);
+        det *= pivotValue;
+        for (int r = i + 1; r < n; ++r) {
+            const Quantity factor = a.at(r).at(i) / pivotValue;
+            for (int c = i; c < n; ++c)
+                a[r][c] -= factor * a.at(i).at(c);
+        }
+    }
+    return sign < 0 ? -det : det;
+}
+
+Quantity function_inv(Function* f, const Function::ArgumentList& args)
+{
+    Quantity matrix;
+    if (!s_ensureMatrixArg(f, args, &matrix) || matrix.rows() != matrix.columns()) {
+        f->setError(OutOfDomain);
+        return CMath::nan();
+    }
+    QVector<QVector<Quantity>> a = matrix.matrix();
+    const int n = matrix.rows();
+    QVector<QVector<Quantity>> inv;
+    for (int r = 0; r < n; ++r) {
+        QVector<Quantity> row;
+        for (int c = 0; c < n; ++c)
+            row.append(Quantity(r == c ? 1 : 0));
+        inv.append(row);
+    }
+
+    for (int i = 0; i < n; ++i) {
+        int pivot = i;
+        while (pivot < n && a.at(pivot).at(i).isZero())
+            ++pivot;
+        if (pivot == n) {
+            f->setError(OutOfDomain);
+            return CMath::nan();
+        }
+        if (pivot != i) {
+            std::swap(a[pivot], a[i]);
+            std::swap(inv[pivot], inv[i]);
+        }
+        const Quantity pivotValue = a.at(i).at(i);
+        for (int c = 0; c < n; ++c) {
+            a[i][c] /= pivotValue;
+            inv[i][c] /= pivotValue;
+        }
+        for (int r = 0; r < n; ++r) {
+            if (r == i)
+                continue;
+            const Quantity factor = a.at(r).at(i);
+            for (int c = 0; c < n; ++c) {
+                a[r][c] -= factor * a.at(i).at(c);
+                inv[r][c] -= factor * inv.at(i).at(c);
+            }
+        }
+    }
+    return s_makeMatrix(inv);
+}
+
+Quantity function_rank(Function* f, const Function::ArgumentList& args)
+{
+    Quantity matrix;
+    if (!s_ensureMatrixArg(f, args, &matrix))
+        return CMath::nan();
+    QVector<QVector<Quantity>> a = matrix.matrix();
+    int rank = 0;
+    int row = 0;
+    for (int col = 0; col < matrix.columns() && row < matrix.rows(); ++col) {
+        int pivot = row;
+        while (pivot < matrix.rows() && a.at(pivot).at(col).isZero())
+            ++pivot;
+        if (pivot == matrix.rows())
+            continue;
+        if (pivot != row)
+            std::swap(a[pivot], a[row]);
+        const Quantity pivotValue = a.at(row).at(col);
+        for (int c = col; c < matrix.columns(); ++c)
+            a[row][c] /= pivotValue;
+        for (int r = 0; r < matrix.rows(); ++r) {
+            if (r == row)
+                continue;
+            const Quantity factor = a.at(r).at(col);
+            for (int c = col; c < matrix.columns(); ++c)
+                a[r][c] -= factor * a.at(row).at(c);
+        }
+        ++rank;
+        ++row;
+    }
+    return Quantity(rank);
+}
+
+static Quantity s_covarianceMatrix(Function* f,
+                                   const Function::ArgumentList& args,
+                                   bool normalize,
+                                   StatisticalNormalization normalization)
+{
+    Quantity matrix;
+    if (!s_ensureMatrixArg(f, args, &matrix) || matrix.rows() < 2) {
+        f->setError(OutOfDomain);
+        return CMath::nan();
+    }
+    const int divisor = normalization == StatisticalNormalization::Sample
+        ? matrix.rows() - 1
+        : matrix.rows();
+    if (divisor <= 0) {
+        f->setError(InvalidParamCount);
+        return CMath::nan(InvalidParamCount);
+    }
+    const auto data = matrix.matrix();
+    QVector<Quantity> means;
+    for (int c = 0; c < matrix.columns(); ++c) {
+        Quantity sum(0);
+        for (int r = 0; r < matrix.rows(); ++r)
+            sum += data.at(r).at(c);
+        means.append(sum / Quantity(matrix.rows()));
+    }
+    QVector<QVector<Quantity>> covRows;
+    for (int i = 0; i < matrix.columns(); ++i) {
+        QVector<Quantity> row;
+        for (int j = 0; j < matrix.columns(); ++j) {
+            Quantity acc(0);
+            for (int r = 0; r < matrix.rows(); ++r)
+                acc += (data.at(r).at(i) - means.at(i)) * (data.at(r).at(j) - means.at(j));
+            row.append(acc / Quantity(divisor));
+        }
+        covRows.append(row);
+    }
+    if (!normalize)
+        return s_makeMatrix(covRows);
+    QVector<QVector<Quantity>> corrRows;
+    for (int i = 0; i < matrix.columns(); ++i) {
+        QVector<Quantity> row;
+        for (int j = 0; j < matrix.columns(); ++j) {
+            const Quantity denom = DMath::sqrt(covRows.at(i).at(i) * covRows.at(j).at(j));
+            row.append(covRows.at(i).at(j) / denom);
+        }
+        corrRows.append(row);
+    }
+    return s_makeMatrix(corrRows);
+}
+
+Quantity function_covp(Function* f, const Function::ArgumentList& args)
+{
+    return s_covarianceMatrix(f, args, false, StatisticalNormalization::Population);
+}
+
+Quantity function_covs(Function* f, const Function::ArgumentList& args)
+{
+    return s_covarianceMatrix(f, args, false, StatisticalNormalization::Sample);
+}
+
+Quantity function_corrp(Function* f, const Function::ArgumentList& args)
+{
+    return s_covarianceMatrix(f, args, true, StatisticalNormalization::Population);
+}
+
+Quantity function_corrs(Function* f, const Function::ArgumentList& args)
+{
+    return s_covarianceMatrix(f, args, true, StatisticalNormalization::Sample);
 }
 
 Quantity function_summation(Function* f, const Function::ArgumentList& args)
@@ -1462,6 +1887,8 @@ void FunctionRepo::createFunctions()
     FUNCTION_INSERT(FunctionDomain::Aggregation, product);
     FUNCTION_INSERT(FunctionDomain::Aggregation, sum);
     FUNCTION_INSERT(FunctionDomain::Aggregation, summation);
+    FUNCTION_INSERT(FunctionDomain::Aggregation, count);
+    FUNCTION_INSERT(FunctionDomain::Aggregation, list);
 
     // Angle conversion.
     FUNCTION_INSERT(FunctionDomain::AngleConversion, degrees);
@@ -1589,10 +2016,30 @@ void FunctionRepo::createFunctions()
     // Statistics.
     FUNCTION_INSERT(FunctionDomain::Statistics, absdev);
     FUNCTION_INSERT(FunctionDomain::Statistics, average);
+    FUNCTION_INSERT(FunctionDomain::Statistics, mean);
     FUNCTION_INSERT(FunctionDomain::Statistics, geomean);
     FUNCTION_INSERT(FunctionDomain::Statistics, median);
-    FUNCTION_INSERT(FunctionDomain::Statistics, stddev);
-    FUNCTION_INSERT(FunctionDomain::Statistics, variance);
+    FUNCTION_INSERT(FunctionDomain::Statistics, stdevp);
+    FUNCTION_INSERT(FunctionDomain::Statistics, stdevs);
+    FUNCTION_INSERT(FunctionDomain::Statistics, varp);
+    FUNCTION_INSERT(FunctionDomain::Statistics, vars);
+
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, cols);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, corrp);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, corrs);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, covp);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, covs);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, cross);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, det);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, dot);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, flatten);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, inv);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, norm);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, rank);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, rows);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, shape);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, trace);
+    FUNCTION_INSERT(FunctionDomain::LinearAlgebra, transpose);
 
     // Trigonometry.
     FUNCTION_INSERT(FunctionDomain::Trigonometry, arccos);
@@ -1692,23 +2139,24 @@ const QStringList& FunctionRepo::domains() const
     static QStringList result;
     result = QStringList()
         << domainToDisplay(FunctionDomain::Arithmetic)
-        << domainToDisplay(FunctionDomain::Chemistry)
-        << domainToDisplay(FunctionDomain::Complex)
-        << domainToDisplay(FunctionDomain::Combinatorics)
-        << domainToDisplay(FunctionDomain::Probability)
-        << domainToDisplay(FunctionDomain::Statistics)
-        << domainToDisplay(FunctionDomain::Aggregation)
-        << domainToDisplay(FunctionDomain::Random)
-        << domainToDisplay(FunctionDomain::BaseConversion)
-        << domainToDisplay(FunctionDomain::NumberFormatting)
-        << domainToDisplay(FunctionDomain::IntegerArithmetic)
-        << domainToDisplay(FunctionDomain::SpecialFunctions)
-        << domainToDisplay(FunctionDomain::ExponentialLogarithmic)
-        << domainToDisplay(FunctionDomain::AngleConversion)
         << domainToDisplay(FunctionDomain::Trigonometry)
+        << domainToDisplay(FunctionDomain::ExponentialLogarithmic)
+        << domainToDisplay(FunctionDomain::Aggregation)
+        << domainToDisplay(FunctionDomain::Statistics)
+        << domainToDisplay(FunctionDomain::LinearAlgebra)
+        << domainToDisplay(FunctionDomain::Complex)
+        << domainToDisplay(FunctionDomain::AngleConversion)
+        << domainToDisplay(FunctionDomain::BaseConversion)
+        << domainToDisplay(FunctionDomain::IntegerArithmetic)
+        << domainToDisplay(FunctionDomain::NumberFormatting)
+        << domainToDisplay(FunctionDomain::Random)
+        << domainToDisplay(FunctionDomain::Probability)
+        << domainToDisplay(FunctionDomain::Combinatorics)
+        << domainToDisplay(FunctionDomain::DateTime)
         << domainToDisplay(FunctionDomain::Bitwise)
         << domainToDisplay(FunctionDomain::FloatingPoint)
-        << domainToDisplay(FunctionDomain::DateTime);
+        << domainToDisplay(FunctionDomain::SpecialFunctions)
+        << domainToDisplay(FunctionDomain::Chemistry);
     return result;
 }
 
@@ -1716,6 +2164,7 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
 {
     FUNCTION_USAGE(abs, "x");
     FUNCTION_USAGE(absdev, "x<sub>1</sub>; x<sub>2</sub>; ...");
+    FUNCTION_USAGE(list, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(arccos, "x");
     FUNCTION_USAGE(and, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(arcosh, "x");
@@ -1733,15 +2182,25 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(conj, "x");
     FUNCTION_USAGE(cos, "x");
     FUNCTION_USAGE(cosh, "x");
+    FUNCTION_USAGE(cols, "matrix");
+    FUNCTION_USAGE(corrp, "matrix");
+    FUNCTION_USAGE(corrs, "matrix");
+    FUNCTION_USAGE(count, "x<sub>1</sub>; x<sub>2</sub>; ...");
+    FUNCTION_USAGE(covp, "matrix");
+    FUNCTION_USAGE(covs, "matrix");
+    FUNCTION_USAGE(cross, "list; list");
     FUNCTION_USAGE(cot, "x");
     FUNCTION_USAGE(csc, "x");
     FUNCTION_USAGE(dec, "x");
     FUNCTION_USAGE(degrees, "x");
+    FUNCTION_USAGE(det, "matrix");
+    FUNCTION_USAGE(dot, "list; list");
     FUNCTION_USAGE(eng, "x [; exponent]");
     FUNCTION_USAGE(erf, "x");
     FUNCTION_USAGE(erfc, "x");
     FUNCTION_USAGE(exp, "x");
     FUNCTION_USAGE(floor, "x");
+    FUNCTION_USAGE(flatten, "matrix");
     FUNCTION_USAGE(frac, "x");
     FUNCTION_USAGE(gamma, "x");
     FUNCTION_USAGE(gcd, "n<sub>1</sub>; n<sub>2</sub>; ...");
@@ -1768,6 +2227,7 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(ieee754_quad_residual, "x");
     FUNCTION_USAGE(int, "x");
     FUNCTION_USAGE(imag, "x");
+    FUNCTION_USAGE(inv, "matrix");
     FUNCTION_USAGE(log2, "x");
     FUNCTION_USAGE(log10, "x");
     FUNCTION_USAGE(ln, "x");
@@ -1777,34 +2237,43 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(molmass, "formula");
     FUNCTION_USAGE(max, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(median, "x<sub>1</sub>; x<sub>2</sub>; ...");
+    FUNCTION_USAGE(mean, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(min, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(ncr, "x<sub>1</sub>; x<sub>2</sub>");
     FUNCTION_USAGE(not, "n");
     FUNCTION_USAGE(npr, "x<sub>1</sub>; x<sub>2</sub>");
     FUNCTION_USAGE(oct, "n");
     FUNCTION_USAGE(octpad, "n [; bits]");
+    FUNCTION_USAGE(norm, "list-or-matrix");
     FUNCTION_USAGE(or, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(popcount, "n");
     FUNCTION_USAGE(polar, "x");
     FUNCTION_USAGE(product, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(phase, "x");
     FUNCTION_USAGE(radians, "x");
+    FUNCTION_USAGE(rank, "matrix");
     FUNCTION_USAGE(real, "x");
     FUNCTION_USAGE(rat, "x");
     FUNCTION_USAGE(sci, "x");
     FUNCTION_USAGE(sec, "x)");
     FUNCTION_USAGE(sgn, "x");
+    FUNCTION_USAGE(rows, "matrix");
+    FUNCTION_USAGE(shape, "list-or-matrix");
     FUNCTION_USAGE(summation, "start; end; expression");
     FUNCTION_USAGE(sin, "x");
     FUNCTION_USAGE(sinh, "x");
     FUNCTION_USAGE(sqrt, "x");
-    FUNCTION_USAGE(stddev, "x<sub>1</sub>; x<sub>2</sub>; ...");
+    FUNCTION_USAGE(stdevp, "x<sub>1</sub>; x<sub>2</sub>; ...");
+    FUNCTION_USAGE(stdevs, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(sum, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(tan, "x");
     FUNCTION_USAGE(turns, "x");
     FUNCTION_USAGE(tanh, "x");
     FUNCTION_USAGE(trunc, "x");
-    FUNCTION_USAGE(variance, "x<sub>1</sub>; x<sub>2</sub>; ...");
+    FUNCTION_USAGE(trace, "matrix");
+    FUNCTION_USAGE(transpose, "matrix");
+    FUNCTION_USAGE(varp, "x<sub>1</sub>; x<sub>2</sub>; ...");
+    FUNCTION_USAGE(vars, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(xor, "x<sub>1</sub>; x<sub>2</sub>; ...");
 }
 
@@ -1844,6 +2313,7 @@ void FunctionRepo::setFunctionNames()
 {
     FUNCTION_NAME(abs, tr("Absolute Value"));
     FUNCTION_NAME(absdev, tr("Absolute Deviation"));
+    FUNCTION_NAME(list, tr("List Literal"));
     FUNCTION_NAME(arccos, tr("Arc Cosine"));
     FUNCTION_NAME(and, tr("Logical AND"));
     FUNCTION_NAME(arcosh, tr("Area Hyperbolic Cosine"));
@@ -1865,17 +2335,27 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(conj, tr("Complex Conjugate"));
     FUNCTION_NAME(cos, tr("Cosine"));
     FUNCTION_NAME(cosh, tr("Hyperbolic Cosine"));
+    FUNCTION_NAME(cols, tr("Matrix Column Count"));
+    FUNCTION_NAME(corrp, tr("Population Correlation Matrix (n)"));
+    FUNCTION_NAME(corrs, tr("Sample Correlation Matrix (n-1)"));
+    FUNCTION_NAME(count, tr("Count"));
+    FUNCTION_NAME(covp, tr("Population Covariance Matrix (n)"));
+    FUNCTION_NAME(covs, tr("Sample Covariance Matrix (n-1)"));
+    FUNCTION_NAME(cross, tr("Cross Product"));
     FUNCTION_NAME(cot, tr("Cotangent"));
     FUNCTION_NAME(csc, tr("Cosecant"));
     FUNCTION_NAME(datetime, tr("Convert Unix timestamp to Date"));
     FUNCTION_NAME(epoch, tr("Convert Date to Unix timestamp"));
     FUNCTION_NAME(dec, tr("Convert to Decimal Representation"));
     FUNCTION_NAME(degrees, tr("Degrees of Arc"));
+    FUNCTION_NAME(det, tr("Determinant"));
+    FUNCTION_NAME(dot, tr("Dot Product"));
     FUNCTION_NAME(eng, tr("Convert to Engineering Notation"));
     FUNCTION_NAME(erf, tr("Error Function"));
     FUNCTION_NAME(erfc, tr("Complementary Error Function"));
     FUNCTION_NAME(exp, tr("Exponential"));
     FUNCTION_NAME(floor, tr("Floor"));
+    FUNCTION_NAME(flatten, tr("Flatten Matrix"));
     FUNCTION_NAME(frac, tr("Fractional Part"));
     FUNCTION_NAME(gamma, tr("Extension of Factorials [= (x-1)!]"));
     FUNCTION_NAME(gcd, tr("Greatest Common Divisor"));
@@ -1891,6 +2371,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(idiv, tr("Integer Quotient"));
     FUNCTION_NAME(int, tr("Integer Part"));
     FUNCTION_NAME(imag, tr("Imaginary Part"));
+    FUNCTION_NAME(inv, tr("Inverse Matrix"));
     FUNCTION_NAME(ieee754_decode, tr("Decode IEEE-754 Binary Value"));
     FUNCTION_NAME(ieee754_encode, tr("Encode IEEE-754 Binary Value"));
     FUNCTION_NAME(ieee754_half_decode, tr("Decode 16-bit Half-Precision Value"));
@@ -1920,6 +2401,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(mask, tr("Mask to a bit size"));
     FUNCTION_NAME(max, tr("Maximum"));
     FUNCTION_NAME(median, tr("Median Value (50th Percentile)"));
+    FUNCTION_NAME(mean, tr("Mean"));
     FUNCTION_NAME(min, tr("Minimum"));
     FUNCTION_NAME(rand, tr("Random Decimal Number"));
     FUNCTION_NAME(randint, tr("Random Integer Number"));
@@ -1932,6 +2414,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(npr, tr("Permutation (Arrangement)"));
     FUNCTION_NAME(oct, tr("Convert to Octal Representation"));
     FUNCTION_NAME(octpad, tr("Convert to Padded Octal Representation"));
+    FUNCTION_NAME(norm, tr("Vector or Matrix Norm"));
     FUNCTION_NAME(or, tr("Logical OR"));
     FUNCTION_NAME(popcount, tr("Population Count (Hamming Weight)"));
     FUNCTION_NAME(phase, tr("Phase of Complex Number"));
@@ -1942,6 +2425,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(polar, tr("Convert to Polar Notation"));
     FUNCTION_NAME(product, tr("Product"));
     FUNCTION_NAME(radians, tr("Radians"));
+    FUNCTION_NAME(rank, tr("Matrix Rank"));
     FUNCTION_NAME(real, tr("Real Part"));
     FUNCTION_NAME(round, tr("Rounding"));
     FUNCTION_NAME(sci, tr("Convert to Scientific Notation"));
@@ -1949,18 +2433,24 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(shl, tr("Arithmetic Shift Left"));
     FUNCTION_NAME(shr, tr("Arithmetic Shift Right"));
     FUNCTION_NAME(sgn, tr("Signum"));
+    FUNCTION_NAME(rows, tr("Matrix Row Count"));
+    FUNCTION_NAME(shape, tr("List or Matrix Shape"));
     FUNCTION_NAME(summation, tr("Summation"));
     FUNCTION_NAME(sin, tr("Sine"));
     FUNCTION_NAME(sinh, tr("Hyperbolic Sine"));
     FUNCTION_NAME(sqrt, tr("Square Root"));
-    FUNCTION_NAME(stddev, tr("Standard Deviation (Square Root of Variance)"));
+    FUNCTION_NAME(stdevp, tr("Population Standard Deviation (n)"));
+    FUNCTION_NAME(stdevs, tr("Sample Standard Deviation (n-1)"));
     FUNCTION_NAME(sum, tr("Sum"));
     FUNCTION_NAME(tan, tr("Tangent"));
     FUNCTION_NAME(turns, tr("Turns"));
     FUNCTION_NAME(tanh, tr("Hyperbolic Tangent"));
     FUNCTION_NAME(trunc, tr("Truncation"));
+    FUNCTION_NAME(trace, tr("Matrix Trace"));
+    FUNCTION_NAME(transpose, tr("Transpose Matrix"));
     FUNCTION_NAME(unmask, tr("Sign-extend a value"));
-    FUNCTION_NAME(variance, tr("Variance"));
+    FUNCTION_NAME(varp, tr("Population Variance (n)"));
+    FUNCTION_NAME(vars, tr("Sample Variance (n-1)"));
     FUNCTION_NAME(xor, tr("Logical XOR"));
 }
 

@@ -198,29 +198,23 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
 
     Evaluator::instance()->initializeBuiltInVariables();
 
-    if (json.contains(QLatin1String(SessionJsonKeys::History))) {
-        QJsonArray hist_obj = json[QLatin1String(SessionJsonKeys::History)].toArray();
-        int n = hist_obj.size();
-        for (int i = 0; i < n; ++i)
-            addHistoryEntry(HistoryEntry(hist_obj[i].toObject()));
+    QJsonArray hist_obj = json[QLatin1String(SessionJsonKeys::History)].toArray();
+    int n = hist_obj.size();
+    for (int i = 0; i < n; ++i)
+        addHistoryEntry(HistoryEntry(hist_obj[i].toObject()));
+
+    QJsonArray var_obj = json[QLatin1String(SessionJsonKeys::Variables)].toArray();
+    n = var_obj.size();
+    for(int i=0; i<n; ++i) {
+        QJsonObject var = var_obj[i].toObject();
+        m_variables[var[QLatin1String(SessionJsonKeys::Variable::Id)].toString()].deSerialize(var);
     }
 
-    if (json.contains(QLatin1String(SessionJsonKeys::Variables))) {
-        QJsonArray var_obj = json[QLatin1String(SessionJsonKeys::Variables)].toArray();
-        int n = var_obj.size();
-        for(int i=0; i<n; ++i) {
-            QJsonObject var = var_obj[i].toObject();
-            m_variables[var[QLatin1String(SessionJsonKeys::Variable::Id)].toString()].deSerialize(var);
-        }
-    }
-
-    if (json.contains(QLatin1String(SessionJsonKeys::Functions))) {
-        QJsonArray func_obj = json[QLatin1String(SessionJsonKeys::Functions)].toArray();
-        int n = func_obj.size();
-        for(int i=0; i<n; ++i) {
-            UserFunction func(func_obj[i].toObject());
-            addUserFunction(func);
-        }
+    QJsonArray func_obj = json[QLatin1String(SessionJsonKeys::Functions)].toArray();
+    n = func_obj.size();
+    for(int i=0; i<n; ++i) {
+        UserFunction func(func_obj[i].toObject());
+        addUserFunction(func);
     }
 
     if (json.contains(QLatin1String(SessionJsonKeys::Units))) {

@@ -161,6 +161,150 @@ General
         molarity(0.50; 1.00)
         = 0.5 mol/L
 
+Lists and Matrices
+------------------
+
+.. versionadded:: 1.0
+
+Lists are written with braces and semicolon-separated elements. Matrices are
+written as a list of row lists. Only one-dimensional lists and two-dimensional
+matrices are supported::
+
+    mylist = {1; 2; 3; 4; 5}
+    mat = {{1; 2; 3}; {4; 5; 6}}
+
+The function-style notation ``list(...)`` is also accepted on input, for
+example ``list(1; 2; 3)`` is equivalent to ``{1; 2; 3}``.
+
+List and matrix results use the same spacing, for example ``{1; 2; 3}`` and
+``{{1; 2}; {3; 4}}``.
+
+List and matrix elements must be dimensionless. Units cannot be attached to
+individual elements or to a list or matrix as a whole.
+
+Supported arithmetic operations are elementwise addition and subtraction for
+same-shaped lists or matrices, scalar multiplication and division, and matrix
+multiplication for compatible matrices::
+
+    {1; 2; 3} + {4; 5; 6}
+    = {5; 7; 9}
+
+    2 * {{1; 2}; {3; 4}}
+    = {{2; 4}; {6; 8}}
+
+    {{1; 2}; {3; 4}} * {{5; 6}; {7; 8}}
+    = {{19; 22}; {43; 50}}
+
+The aggregation and statistics functions :func:`count`, :func:`sum`,
+:func:`min`, :func:`max`, :func:`average`, :func:`mean`, :func:`median`,
+:func:`varp`, :func:`vars`, :func:`stdevp`, and :func:`stdevs` accept a list or
+matrix as a single argument. Matrix inputs are flattened for these scalar
+statistics. The ``p`` variants use population normalization (``n``); the ``s``
+variants use sample normalization (``n-1``).
+
+:func:`covp`, :func:`covs`, :func:`corrp`, and :func:`corrs` treat matrices
+column-wise: rows are observations and columns are variables.
+
+.. function:: dot(list1; list2)
+
+    .. versionadded:: 1.0
+
+    Return the dot product of two equal-length lists.
+
+.. function:: cross(list1; list2)
+
+    .. versionadded:: 1.0
+
+    Return the cross product of two three-element lists.
+
+.. function:: norm(list-or-matrix)
+
+    .. versionadded:: 1.0
+
+    Return the Euclidean norm of a list, or the Frobenius norm of a matrix.
+
+.. function:: transpose(matrix)
+
+    .. versionadded:: 1.0
+
+    Return the transposed matrix.
+
+.. function:: det(matrix)
+
+    .. versionadded:: 1.0
+
+    Return the determinant of a square matrix.
+
+.. function:: inv(matrix)
+
+    .. versionadded:: 1.0
+
+    Return the inverse of a square matrix.
+
+.. function:: trace(matrix)
+
+    .. versionadded:: 1.0
+
+    Return the sum of the diagonal of a square matrix.
+
+.. function:: rank(matrix)
+
+    .. versionadded:: 1.0
+
+    Return the matrix rank.
+
+.. function:: covp(matrix)
+
+    .. versionadded:: 1.0
+
+    Return the population covariance matrix. Rows are observations and columns
+    are variables. This uses population normalization (``n``).
+
+.. function:: covs(matrix)
+
+    .. versionadded:: 1.0
+
+    Return the sample covariance matrix. Rows are observations and columns are
+    variables. This uses sample normalization (``n-1``).
+
+.. function:: corrp(matrix)
+
+    .. versionadded:: 1.0
+
+    Return the population Pearson correlation matrix. Rows are observations and
+    columns are variables. This is derived from :func:`covp`.
+
+.. function:: corrs(matrix)
+
+    .. versionadded:: 1.0
+
+    Return the sample Pearson correlation matrix. Rows are observations and
+    columns are variables. This is derived from :func:`covs`.
+
+.. function:: flatten(matrix)
+
+    .. versionadded:: 1.0
+
+    Return all matrix elements as a single list in row-major order.
+
+.. function:: rows(matrix)
+
+    .. versionadded:: 1.0
+
+    Return the row count.
+
+.. function:: cols(matrix)
+
+    .. versionadded:: 1.0
+
+    Return the column count.
+
+.. function:: shape(list-or-matrix)
+
+    .. versionadded:: 1.0
+
+    Return ``{n}`` for a list and ``{rows; cols}`` for a matrix.
+
 
 .. _trigonometric:
 

@@ -400,6 +400,7 @@ void TestEditorUi::allows_special_function_symbols_as_leading_chars()
         UnicodeChars::CubeRoot,
         UnicodeChars::LowLine,
         UnicodeChars::DollarSign,
+        MathDsl::ListStart,
         QChar(0x0436), // Ж
         QChar(0x03C0)  // π
     };
