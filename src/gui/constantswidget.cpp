@@ -10,6 +10,7 @@
 #include "core/mathdsl.h"
 
 #include <QEvent>
+#include <QResizeEvent>
 #include <QTimer>
 #include <QComboBox>
 #include <QHBoxLayout>
@@ -52,14 +53,27 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
     connect(m_domain, SIGNAL(activated(int)), SLOT(handleDomainChanged()));
     connect(m_subdomain, SIGNAL(activated(int)), SLOT(filter()));
 
-    QWidget* domainBox = new QWidget(this);
-    QHBoxLayout* domainLayout = new QHBoxLayout;
-    domainBox->setLayout(domainLayout);
-    domainLayout->addWidget(m_domainLabel);
-    domainLayout->addWidget(m_domain);
-    domainLayout->addWidget(m_subdomainLabel);
-    domainLayout->addWidget(m_subdomain);
-    domainLayout->setContentsMargins(0, 0, 0, 0);
+    m_domainBox = new QWidget(this);
+    m_domainLayout = new QHBoxLayout;
+    m_domainBox->setLayout(m_domainLayout);
+    m_domainLayout->setContentsMargins(0, 0, 0, 0);
+    m_domainLayout->setSpacing(6);
+
+    m_domainRow1 = new QWidget(this);
+    m_domainRow1Layout = new QHBoxLayout;
+    m_domainRow1->setLayout(m_domainRow1Layout);
+    m_domainRow1Layout->setContentsMargins(0, 0, 0, 0);
+    m_domainRow1Layout->setSpacing(6);
+    m_domainRow1Layout->addWidget(m_domainLabel);
+    m_domainRow1Layout->addWidget(m_domain);
+
+    m_domainRow2 = new QWidget(this);
+    m_domainRow2Layout = new QHBoxLayout;
+    m_domainRow2->setLayout(m_domainRow2Layout);
+    m_domainRow2Layout->setContentsMargins(0, 0, 0, 0);
+    m_domainRow2Layout->setSpacing(6);
+    m_domainRow2Layout->addWidget(m_subdomainLabel);
+    m_domainRow2Layout->addWidget(m_subdomain);
 
     m_label = new QLabel(this);
 
@@ -106,7 +120,7 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
     QVBoxLayout* layout = new QVBoxLayout;
     setLayout(layout);
     layout->setContentsMargins(3, 3, 3, 3);
-    layout->addWidget(domainBox);
+    layout->addWidget(m_domainBox);
     layout->addWidget(searchBox);
     layout->addWidget(m_list);
 
@@ -121,6 +135,7 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
     m_noMatchLabel->hide();
 
     retranslateText();
+    updateDomainLayout();
 
     setFocusProxy(m_filter);
 
@@ -175,6 +190,7 @@ void ConstantsWidget::retranslateText()
         titles << name << unit << value;
     m_list->setHeaderLabels(titles);
 
+    updateDomainLabelAlignment();
     updateList();
 }
 
@@ -347,4 +363,59 @@ void ConstantsWidget::changeEvent(QEvent* e)
     }
     else
         QWidget::changeEvent(e);
+}
+
+void ConstantsWidget::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+    updateDomainLayout();
+}
+
+void ConstantsWidget::updateDomainLayout()
+{
+    const int minInlineWidthByControls =
+        m_domainLabel->sizeHint().width() + m_domain->minimumSizeHint().width()
+        + m_subdomainLabel->sizeHint().width() + m_subdomain->minimumSizeHint().width()
+        + (m_domainLayout->spacing() * 3);
+    // Side docks are often still wide enough to satisfy minimum hints while visually cramped.
+    // Use both control hints and a practical width cap so right/left panes stack reliably.
+    const int practicalInlineWidth = 560;
+    const int availableWidth = m_domainBox->width() > 0 ? m_domainBox->width() : width();
+    const bool compact = availableWidth < std::max(minInlineWidthByControls, practicalInlineWidth);
+    if (m_domainLayoutInitialized && compact == m_isCompactDomainLayout)
+        return;
+
+    m_domainLayoutInitialized = true;
+    m_isCompactDomainLayout = compact;
+    while (QLayoutItem* item = m_domainLayout->takeAt(0))
+        delete item;
+
+    if (compact) {
+        QVBoxLayout* stacked = new QVBoxLayout;
+        stacked->setContentsMargins(0, 0, 0, 0);
+        stacked->setSpacing(4);
+        stacked->addWidget(m_domainRow1);
+        stacked->addWidget(m_domainRow2);
+        m_domainLayout->addLayout(stacked);
+    } else {
+        m_domainLayout->addWidget(m_domainRow1);
+        m_domainLayout->addWidget(m_domainRow2);
+    }
+
+    updateDomainLabelAlignment();
+}
+
+void ConstantsWidget::updateDomainLabelAlignment()
+{
+    if (m_isCompactDomainLayout) {
+        const int labelWidth = std::max(m_domainLabel->sizeHint().width(),
+                                        m_subdomainLabel->sizeHint().width());
+        m_domainLabel->setFixedWidth(labelWidth);
+        m_subdomainLabel->setFixedWidth(labelWidth);
+    } else {
+        m_domainLabel->setMinimumWidth(0);
+        m_domainLabel->setMaximumWidth(QWIDGETSIZE_MAX);
+        m_subdomainLabel->setMinimumWidth(0);
+        m_subdomainLabel->setMaximumWidth(QWIDGETSIZE_MAX);
+    }
 }

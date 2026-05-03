@@ -8,8 +8,10 @@
 #include <QWidget>
 
 class QComboBox;
+class QHBoxLayout;
 class QLabel;
 class QLineEdit;
+class QResizeEvent;
 class QTreeWidget;
 class QTreeWidgetItem;
 
@@ -41,8 +43,12 @@ protected slots:
 
 protected:
     virtual void changeEvent(QEvent*);
+    virtual void resizeEvent(QResizeEvent* event);
 
 private:
+    void updateDomainLayout();
+    void updateDomainLabelAlignment();
+
     Q_DISABLE_COPY(ConstantsWidget)
 
     QComboBox* m_domain;
@@ -54,6 +60,14 @@ private:
     QLabel* m_label;
     QTreeWidget* m_list;
     QLabel* m_noMatchLabel;
+    QWidget* m_domainBox;
+    QHBoxLayout* m_domainLayout;
+    QWidget* m_domainRow1;
+    QHBoxLayout* m_domainRow1Layout;
+    QWidget* m_domainRow2;
+    QHBoxLayout* m_domainRow2Layout;
+    bool m_isCompactDomainLayout = false;
+    bool m_domainLayoutInitialized = false;
 };
 
 #endif
