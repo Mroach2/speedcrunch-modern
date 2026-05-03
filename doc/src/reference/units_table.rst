@@ -622,6 +622,9 @@ Time
    * - ``week``
      - ``wk``
      - ``—``
+   * - ``century_julian``
+     - ``cy_jul``
+     - ``—``
    * - ``year_julian``
      - ``a_jul``
      - ``—``

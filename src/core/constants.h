@@ -43,8 +43,6 @@ enum class ConstantSubdomain {
     MolarMasses,
     Electronegativity,
     IonizationEnergy,
-    AstronomyGeneral,
-    AstronomyEarthRotationTimeIersConventions,
     AstronomyNominalIau2015,
     AstronomyCurrentBestEstimatesIauNsfa202604
 };

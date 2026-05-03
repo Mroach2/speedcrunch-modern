@@ -197,6 +197,7 @@ enum class UnitId {
     MillimetreOfMercury,
     Quad,
     Yard,
+    CenturyJulian,
     YearJulian,
     YearSidereal,
     YearTropical
@@ -454,6 +455,7 @@ public:
     static const Quantity day();
     static const Quantity week();
     static const Quantity century();
+    static const Quantity julian_century();
     static const Quantity julian_year();
     static const Quantity tropical_year();
     static const Quantity sidereal_year();

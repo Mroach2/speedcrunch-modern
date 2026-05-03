@@ -45,11 +45,11 @@
 */
 
 namespace UnitText {
-inline constexpr QStringView NewtonMetre{u"newton metre", 12};
-inline constexpr QStringView WattSecond{u"watt second", 11};
-inline constexpr QStringView VoltSquaredAmpere{u"volt² ampere", 12};
-inline constexpr QStringView JoulePerSquareMetre{u"joule / metre²", 14};
-inline constexpr QStringView JoulePerCubicMetre{u"joule / metre³", 14};
+    inline constexpr QStringView NewtonMetre{u"newton metre", 12};
+    inline constexpr QStringView WattSecond{u"watt second", 11};
+    inline constexpr QStringView VoltSquaredAmpere{u"volt² ampere", 12};
+    inline constexpr QStringView JoulePerSquareMetre{u"joule / metre²", 14};
+    inline constexpr QStringView JoulePerCubicMetre{u"joule / metre³", 14};
 } // namespace UnitText
 
 namespace UnitName {
@@ -186,6 +186,7 @@ namespace UnitName {
     inline const QString Weber = QStringLiteral("weber");
     inline const QString Week = QStringLiteral("week");
     inline const QString Yard = QStringLiteral("yard");
+    inline const QString CenturyJulian = QStringLiteral("century_julian");
     inline const QString YearJulian = QStringLiteral("year_julian");
     inline const QString YearSidereal = QStringLiteral("year_sidereal");
     inline const QString YearTropical = QStringLiteral("year_tropical");
@@ -325,6 +326,7 @@ namespace UnitSymbol {
     inline const QString Weber = QStringLiteral("Wb");
     inline const QString Week = QStringLiteral("wk");
     inline const QString Yard = QStringLiteral("yd");
+    inline const QString CenturyJulian = QStringLiteral("cy_jul");
     inline const QString YearJulian = QStringLiteral("a_jul");
     inline const QString YearSidereal = QStringLiteral("a_sid");
     inline const QString YearTropical = QStringLiteral("a_trop");
@@ -684,6 +686,7 @@ const QHash<UnitId, UnitSpec>& s_unitSpecs()
         {UnitId::MillimetreOfMercury, UnitSpec{UnitName::MillimetreOfMercury, QT_TR_NOOP("millimetre of mercury"), UnitSymbol::MillimetreOfMercury, {}, UnitFamily::Other, {UnitQuantity::Pressure}, NoSiPrefixes, &Units::millimetre_of_mercury}},
         {UnitId::Quad, UnitSpec{UnitName::Quad, QT_TR_NOOP("quad"), UnitSymbol::Quad, {}, UnitFamily::Other, {UnitQuantity::AmountOfHeat}, NoSiPrefixes, &Units::quad}},
         {UnitId::Yard, UnitSpec{UnitName::Yard, QT_TR_NOOP("yard"), UnitSymbol::Yard, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::yard}},
+        {UnitId::CenturyJulian, UnitSpec{UnitName::CenturyJulian, QT_TR_NOOP("Julian century"), UnitSymbol::CenturyJulian, {}, UnitFamily::Other, {UnitQuantity::Time}, NoSiPrefixes, &Units::julian_century}},
         {UnitId::YearJulian, UnitSpec{UnitName::YearJulian, QT_TR_NOOP("Julian year"), UnitSymbol::YearJulian, {}, UnitFamily::Other, {UnitQuantity::Time}, NoSiPrefixes, &Units::julian_year}},
         {UnitId::YearSidereal, UnitSpec{UnitName::YearSidereal, QT_TR_NOOP("sidereal year"), UnitSymbol::YearSidereal, {}, UnitFamily::Other, {UnitQuantity::Time}, NoSiPrefixes, &Units::sidereal_year}},
         {UnitId::YearTropical, UnitSpec{UnitName::YearTropical, QT_TR_NOOP("tropical year"), UnitSymbol::YearTropical, {}, UnitFamily::Other, {UnitQuantity::Time}, NoSiPrefixes, &Units::tropical_year}},
@@ -2377,6 +2380,7 @@ DEFINE_DERIVED_UNIT(hour, HNumber(60) * Units::minute())
 DEFINE_DERIVED_UNIT(day, HNumber(24) * Units::hour())
 DEFINE_DERIVED_UNIT(week, HNumber(7) * Units::day())
 DEFINE_DERIVED_UNIT(julian_year, HNumber("365.25") * Units::day())
+DEFINE_DERIVED_UNIT(julian_century, HNumber(100) * Units::julian_year())
 DEFINE_DERIVED_UNIT(tropical_year, HNumber("365.242190402") * Units::day()) // Approx.: changes over time due to Earth's precession.
 DEFINE_DERIVED_UNIT(sidereal_year, HNumber("365.256363004") * Units::day()) // http://hpiers.obspm.fr/eop-pc/models/constants.html
 

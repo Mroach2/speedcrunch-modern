@@ -815,6 +815,9 @@ void test_units_short_aliases_and_si_prefixes()
     CHECK_EVAL("[st] -> [stone]", "1 stone");
     CHECK_EVAL("[dsp] -> [dessert_spoon]", "1 dessert_spoon");
     CHECK_EVAL("[quad] -> [quad]", "1 quad");
+    CHECK_EVAL("[century_julian] -> [day]", "36525 day");
+    CHECK_EVAL("[cy_jul] -> [year_julian]", "100 year_julian");
+    CHECK_EVAL("[year_julian] -> [century_julian]", "0.01 century_julian");
     CHECK_EVAL("[fluid_ounce_imp] -> [fluid_ounce_imp]", "1 fluid_ounce_imp");
     CHECK_EVAL("[floz_imp] -> [fluid_ounce_imp]", "1 fluid_ounce_imp");
     CHECK_EVAL("[fluid_ounce_us] -> [fluid_ounce_us]", "1 fluid_ounce_us");

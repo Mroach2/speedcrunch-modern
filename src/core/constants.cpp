@@ -95,10 +95,6 @@ static QString subdomainToDisplay(ConstantSubdomain subdomain)
         return Constants::tr("Electronegativity");
     case ConstantSubdomain::IonizationEnergy:
         return Constants::tr("Ionization Energy");
-    case ConstantSubdomain::AstronomyGeneral:
-        return Constants::tr("General");
-    case ConstantSubdomain::AstronomyEarthRotationTimeIersConventions:
-        return Constants::tr("Earth Rotation & Time (IERS Conventions 2010)");
     case ConstantSubdomain::AstronomyNominalIau2015:
         return Constants::tr("Nominal Constants (IAU 2015)");
     case ConstantSubdomain::AstronomyCurrentBestEstimatesIauNsfa202604:
@@ -146,9 +142,6 @@ void Constants::Private::populate()
 
         Astronomy — Current Best Estimates (IAU NSFA 2026-04)
         https://iau-a3.gitlab.io/NSFA/NSFA_cbe
-
-        Astronomy — Earth Rotation & Time (IERS 2010)
-        https://www.iers.org/IERS/EN/DataProducts/Conventions/conventions
     */
 
     Constant constant;
@@ -553,70 +546,30 @@ void Constants::Private::populate()
     PUSH_CONSTANT(QT_TR_NOOP("Euler-Mascheroni constant (γ)"), "0.57721566490153286060651209008240243104215933593992", "");
 
     // Astronomy.
-    SET_CONSTANT_CONTEXT(ConstantDomain::Astronomy, ConstantSubdomain::AstronomyGeneral);
-    PUSH_CONSTANT(QT_TR_NOOP("astronomical unit (au)"), "149597870691", "m");
-    PUSH_CONSTANT(QT_TR_NOOP("light year (ly)"), "9.4607304725808e15", "m");
-    PUSH_CONSTANT(QT_TR_NOOP("parsec (pc)"), "3.08567802e16", "m");
-    PUSH_CONSTANT(QT_TR_NOOP("Gregorian year"), "365.2425", "day");
-    PUSH_CONSTANT(QT_TR_NOOP("Julian year"), "365.25", "day");
-    PUSH_CONSTANT(QT_TR_NOOP("sidereal year"), "365.2564", "day");
-    PUSH_CONSTANT(QT_TR_NOOP("tropical year"), "365.2422", "day");
-    PUSH_CONSTANT(QT_TR_NOOP("Earth mass"), "5.9736e24", "kg");
-    PUSH_CONSTANT(QT_TR_NOOP("mean Earth radius"), "6371000", "m");
-
-    SET_CONSTANT_CONTEXT(ConstantDomain::Astronomy, ConstantSubdomain::AstronomyGeneral);
-    PUSH_CONSTANT(QT_TR_NOOP("Sun mass"), "1.9891e30", "kg");
-    PUSH_CONSTANT(QT_TR_NOOP("Sun radius"), "6.96265e8", "m");
-    PUSH_CONSTANT(QT_TR_NOOP("Sun luminosity"), "3.827e26", "W");
-
-    const QString day = Constants::tr("day");
-    for (Constant& constant : list) {
-        if (constant.name == Constants::tr("Gregorian year")
-            || constant.name == Constants::tr("Julian year")
-            || constant.name == Constants::tr("sidereal year")
-            || constant.name == Constants::tr("tropical year")) {
-            constant.unit = day;
-        }
-    }
-
-    SET_CONSTANT_CONTEXT(ConstantDomain::Astronomy, ConstantSubdomain::AstronomyGeneral);
-    PUSH_CONSTANT(QT_TR_NOOP("Hubble constant (H₀)"), "67.4", "km·s⁻¹·Mpc⁻¹");
-
-    SET_CONSTANT_CONTEXT(ConstantDomain::Astronomy, ConstantSubdomain::AstronomyEarthRotationTimeIersConventions);
-    PUSH_CONSTANT(QT_TR_NOOP("Earth rotation rate"), "7.2921150e-5", "rad/s");
-    PUSH_CONSTANT(QT_TR_NOOP("nominal length of day"), "86400", "s");
-    PUSH_CONSTANT(QT_TR_NOOP("length of day variation"), "0.002", "s");
-    PUSH_CONSTANT(QT_TR_NOOP("maximum UT1−UTC difference"), "0.9", "s");
-    PUSH_CONSTANT(QT_TR_NOOP("general precession rate in longitude"), "50.29", "arcsec/year_julian");
-    PUSH_CONSTANT(QT_TR_NOOP("maximum nutation amplitude"), "9.2", "arcsec");
-    PUSH_CONSTANT(QT_TR_NOOP("maximum polar motion"), "0.3", "arcsec");
-
     SET_CONSTANT_CONTEXT(ConstantDomain::Astronomy, ConstantSubdomain::AstronomyNominalIau2015);
     PUSH_CONSTANT(QT_TR_NOOP("nominal solar radius"), "6.957e8", "m");
-    PUSH_CONSTANT(QT_TR_NOOP("nominal total solar irradiance"), "1361", "W·m⁻²");
+    PUSH_CONSTANT(QT_TR_NOOP("nominal solar total irradiance"), "1361", "W·m⁻²");
     PUSH_CONSTANT(QT_TR_NOOP("nominal solar luminosity"), "3.828e26", "W");
     PUSH_CONSTANT(QT_TR_NOOP("nominal solar effective temperature"), "5772", "K");
     PUSH_CONSTANT(QT_TR_NOOP("nominal solar mass parameter"), "1.3271244e20", "m³·s⁻²");
-    PUSH_CONSTANT(QT_TR_NOOP("nominal Earth equatorial radius"), "6.3781e6", "m");
-    PUSH_CONSTANT(QT_TR_NOOP("nominal Earth polar radius"), "6.3568e6", "m");
-    PUSH_CONSTANT(QT_TR_NOOP("nominal Earth mass parameter"), "3.986004e14", "m³·s⁻²");
-    PUSH_CONSTANT(QT_TR_NOOP("nominal Jupiter equatorial radius"), "7.1492e7", "m");
-    PUSH_CONSTANT(QT_TR_NOOP("nominal Jupiter polar radius"), "6.6854e7", "m");
-    PUSH_CONSTANT(QT_TR_NOOP("nominal Jupiter mass parameter"), "1.2668653e17", "m³·s⁻²");
-
+    PUSH_CONSTANT(QT_TR_NOOP("nominal terrestrial equatorial radius"), "6.3781e6", "m");
+    PUSH_CONSTANT(QT_TR_NOOP("nominal terrestrial polar radius"), "6.3568e6", "m");
+    PUSH_CONSTANT(QT_TR_NOOP("nominal terrestrial mass parameter"), "3.986004e14", "m³·s⁻²");
+    PUSH_CONSTANT(QT_TR_NOOP("nominal jovian equatorial radius"), "7.1492e7", "m");
+    PUSH_CONSTANT(QT_TR_NOOP("nominal jovian polar radius"), "6.6854e7", "m");
+    PUSH_CONSTANT(QT_TR_NOOP("nominal jovian mass parameter"), "1.2668653e17", "m³·s⁻²");
     SET_CONSTANT_CONTEXT(ConstantDomain::Astronomy, ConstantSubdomain::AstronomyCurrentBestEstimatesIauNsfa202604);
-    PUSH_CONSTANT(QT_TR_NOOP("constant of gravitation (G)"), "6.67428e-11", "m³·kg⁻¹·s⁻²");
-    PUSH_CONSTANT(QT_TR_NOOP("average value of 1−d(TCG)/d(TCB)"), "1.48082686741e-8", "");
+    PUSH_CONSTANT(QT_TR_NOOP("average value of one minus the rate of TCG relative to TCB"), "1.48082686741e-8", "");
     PUSH_CONSTANT(QT_TR_NOOP("solar mass parameter (TCB-compatible)"), "1.32712442099e20", "m³·s⁻²");
     PUSH_CONSTANT(QT_TR_NOOP("solar mass parameter (TDB-compatible)"), "1.32712440041e20", "m³·s⁻²");
     PUSH_CONSTANT(QT_TR_NOOP("equatorial radius of the Earth (TT-compatible)"), "6.3781366e6", "m");
-    PUSH_CONSTANT(QT_TR_NOOP("dynamical form factor (J₂)"), "1.0826359e-3", "");
-    PUSH_CONSTANT(QT_TR_NOOP("time rate of change in J₂"), "-3.0e-9", "cy⁻¹");
+    PUSH_CONSTANT(QT_TR_NOOP("dynamical form factor of the Earth"), "1.0826359e-3", "");
+    PUSH_CONSTANT(QT_TR_NOOP("time rate of change in the dynamical form factor of the Earth"), "-3.0e-9", "cy_jul⁻¹");
     PUSH_CONSTANT(QT_TR_NOOP("geocentric gravitational constant (TCB-compatible)"), "3.986004418e14", "m³·s⁻²");
     PUSH_CONSTANT(QT_TR_NOOP("geocentric gravitational constant (TT-compatible)"), "3.986004415e14", "m³·s⁻²");
     PUSH_CONSTANT(QT_TR_NOOP("geocentric gravitational constant (TDB-compatible)"), "3.986004356e14", "m³·s⁻²");
-    PUSH_CONSTANT(QT_TR_NOOP("potential of the geoid (Wₒ)"), "62636853.4", "m²·s⁻²");
-    PUSH_CONSTANT(QT_TR_NOOP("nominal mean angular velocity of the Earth (ω, TT-compatible)"), "7.292115e-5", "rad·s⁻¹");
+    PUSH_CONSTANT(QT_TR_NOOP("potential of the geoid"), "62636853.4", "m²·s⁻²");
+    PUSH_CONSTANT(QT_TR_NOOP("nominal mean angular velocity of the Earth (TT-compatible)"), "7.292115e-5", "rad·s⁻¹");
     PUSH_CONSTANT(QT_TR_NOOP("ratio mass of the Moon to the Earth"), "1.23000371e-2", "");
     PUSH_CONSTANT(QT_TR_NOOP("ratio of the mass of the Sun to Mercury"), "6.023657330e6", "");
     PUSH_CONSTANT(QT_TR_NOOP("ratio of the mass of the Sun to Venus"), "4.08523719e5", "");
@@ -630,7 +583,7 @@ void Constants::Private::populate()
     PUSH_CONSTANT(QT_TR_NOOP("ratio of the mass of (1) Ceres to the Sun"), "4.72e-10", "");
     PUSH_CONSTANT(QT_TR_NOOP("ratio of the mass of (2) Pallas to the Sun"), "1.03e-10", "");
     PUSH_CONSTANT(QT_TR_NOOP("ratio of the mass of (4) Vesta to the Sun"), "1.3026846e-10", "");
-    PUSH_CONSTANT(QT_TR_NOOP("obliquity of the ecliptic at J2000.0"), "8.4381406e4", "″");
+    PUSH_CONSTANT(QT_TR_NOOP("mean obliquity of the ecliptic at J2000.0"), "84381.406", "arcsec");
 
     domains << domainToDisplay(ConstantDomain::Mathematics)
             << domainToDisplay(ConstantDomain::PhysicsCodata2022)
@@ -702,10 +655,8 @@ QStringList Constants::subdomains(const QString& domain) const
     }
     if (domain == domainToDisplay(ConstantDomain::Astronomy)) {
         return QStringList{
-            subdomainToDisplay(ConstantSubdomain::AstronomyGeneral),
             subdomainToDisplay(ConstantSubdomain::AstronomyNominalIau2015),
             subdomainToDisplay(ConstantSubdomain::AstronomyCurrentBestEstimatesIauNsfa202604),
-            subdomainToDisplay(ConstantSubdomain::AstronomyEarthRotationTimeIersConventions),
         };
     }
     return QStringList();
