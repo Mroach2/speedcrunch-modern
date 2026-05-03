@@ -347,12 +347,19 @@ void ConstantsWidget::refreshSubdomains()
     if (chosenDomain == tr("All")) {
         m_subdomain->insertItem(0, tr("All"));
         m_subdomain->setCurrentIndex(0);
+        m_subdomainLabel->setVisible(true);
+        m_subdomain->setVisible(true);
         return;
     }
 
-    m_subdomain->addItems(Constants::instance()->subdomains(chosenDomain));
+    const QStringList subdomains = Constants::instance()->subdomains(chosenDomain);
+    m_subdomain->addItems(subdomains);
     m_subdomain->insertItem(0, tr("All"));
     m_subdomain->setCurrentIndex(0);
+
+    const bool hasConfiguredSubdomains = !subdomains.isEmpty();
+    m_subdomainLabel->setVisible(hasConfiguredSubdomains);
+    m_subdomain->setVisible(hasConfiguredSubdomains);
 }
 
 void ConstantsWidget::changeEvent(QEvent* e)
