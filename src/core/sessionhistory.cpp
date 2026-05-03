@@ -6,6 +6,7 @@
 #include "core/settings.h"
 #include "core/sessionjsonkeys.h"
 #include "math/cmath.h"
+#include <QDateTime>
 
 namespace {
 EvaluationContext contextFromCurrentSettings()
@@ -53,6 +54,11 @@ ResultLineContext deserializeResultLineContext(const QJsonObject& json)
     if (cplx.size() == 1)
         line.cplx = cplx.at(0).toLatin1();
     return line;
+}
+
+qint64 currentEditTimestampMs()
+{
+    return QDateTime::currentMSecsSinceEpoch();
 }
 }
 
@@ -129,24 +135,26 @@ HistoryEntry::HistoryEntry(const QJsonObject & json)
 }
 
 HistoryEntry::HistoryEntry(const QString & expr, const Quantity & num)
-    : m_expr(expr), m_result(num), m_ctx(contextFromCurrentSettings()), m_hasCtx(true)
+    : m_expr(expr), m_result(num), m_ctx(contextFromCurrentSettings()),
+      m_hasCtx(true), m_editTimestamp(currentEditTimestampMs())
 {
 }
 
 HistoryEntry::HistoryEntry(const QString & expr, const Quantity & num, const QString& interpretedExpr)
     : m_expr(expr), m_interpretedExpr(interpretedExpr), m_result(num),
-      m_ctx(contextFromCurrentSettings()), m_hasCtx(true)
+      m_ctx(contextFromCurrentSettings()), m_hasCtx(true), m_editTimestamp(currentEditTimestampMs())
 {
 }
 
 HistoryEntry::HistoryEntry(const QString & expr, const EvaluationContext& ctx)
-    : m_expr(expr), m_result(0), m_ctx(ctx), m_hasCtx(true)
+    : m_expr(expr), m_result(0), m_ctx(ctx), m_hasCtx(true), m_editTimestamp(currentEditTimestampMs())
 {
 }
 
 HistoryEntry::HistoryEntry(const QString & expr, const Quantity & num, const QString& interpretedExpr,
                            const EvaluationContext& ctx)
-    : m_expr(expr), m_interpretedExpr(interpretedExpr), m_result(num), m_ctx(ctx), m_hasCtx(true)
+    : m_expr(expr), m_interpretedExpr(interpretedExpr), m_result(num),
+      m_ctx(ctx), m_hasCtx(true), m_editTimestamp(currentEditTimestampMs())
 {
 }
 
@@ -168,6 +176,7 @@ QString HistoryEntry::interpretedExpr() const
 void HistoryEntry::setExpr(const QString & e)
 {
     m_expr = e;
+    m_editTimestamp = currentEditTimestampMs();
 }
 
 void HistoryEntry::setInterpretedExpr(const QString& e)
@@ -183,11 +192,17 @@ void HistoryEntry::setResult(const Quantity & n)
 void HistoryEntry::setContext(const EvaluationContext& ctx)
 {
     m_ctx = ctx;
+    m_editTimestamp = currentEditTimestampMs();
 }
 
 void HistoryEntry::setRenderedLines(const QStringList& lines)
 {
     m_renderedLines = lines;
+}
+
+void HistoryEntry::setEditTimestamp(qint64 timestamp)
+{
+    m_editTimestamp = timestamp;
 }
 
 void HistoryEntry::serialize(QJsonObject & json) const
@@ -200,6 +215,7 @@ void HistoryEntry::serialize(QJsonObject & json) const
     QJsonObject ctx;
     m_ctx.serialize(ctx);
     json[QLatin1String(SessionJsonKeys::HistoryEntry::Context)] = ctx;
+    json[QLatin1String(SessionJsonKeys::HistoryEntry::EditTimestamp)] = m_editTimestamp;
     if (!m_renderedLines.isEmpty()) {
         QJsonArray renderedLines;
         for (const QString& line : m_renderedLines)
@@ -225,6 +241,10 @@ void HistoryEntry::deSerialize(const QJsonObject & json)
         m_ctx.deSerialize(json[QLatin1String(SessionJsonKeys::HistoryEntry::Context)].toObject());
         m_hasCtx = true;
     }
+    if (json.contains(QLatin1String(SessionJsonKeys::HistoryEntry::EditTimestamp)))
+        m_editTimestamp = json[QLatin1String(SessionJsonKeys::HistoryEntry::EditTimestamp)].toVariant().toLongLong();
+    else
+        m_editTimestamp = currentEditTimestampMs();
 
     if (json.contains(QLatin1String(SessionJsonKeys::HistoryEntry::PrintedLines))) {
         const QJsonArray renderedLines = json[QLatin1String(SessionJsonKeys::HistoryEntry::PrintedLines)].toArray();
@@ -258,4 +278,9 @@ QStringList HistoryEntry::renderedLines() const
 bool HistoryEntry::hasRenderedLines() const
 {
     return !m_renderedLines.isEmpty();
+}
+
+qint64 HistoryEntry::editTimestamp() const
+{
+    return m_editTimestamp;
 }

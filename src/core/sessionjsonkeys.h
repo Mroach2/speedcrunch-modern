@@ -33,13 +33,14 @@
   "$defs": {
     "historyEntry": {
       "type": "object",
-      "required": ["xpr", "itp", "rst", "ctx"],
+      "required": ["xpr", "itp", "rst", "ctx", "edt"],
       "additionalProperties": false,
       "properties": {
         "xpr": { "type": "string" },
         "itp": { "type": "string" },
         "rst": { "$ref": "#/$defs/quantity" },
         "ctx": { "$ref": "#/$defs/evaluationContext" },
+        "edt": { "type": "integer" },
         "prt": {
           "type": "array",
           "items": { "type": "string" }
@@ -219,6 +220,7 @@ inline constexpr const char* Expression = "xpr";
 inline constexpr const char* InterpretedExpression = "itp";
 inline constexpr const char* Result = "rst";
 inline constexpr const char* Context = "ctx";
+inline constexpr const char* EditTimestamp = "edt";
 inline constexpr const char* PrintedLines = "prt";
 }
 

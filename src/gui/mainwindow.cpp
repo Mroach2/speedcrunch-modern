@@ -4847,6 +4847,7 @@ bool MainWindow::rebuildSessionFromEntries(const QList<HistoryEntry>& entries,
 
         const QString interpretedExpr = m_evaluator->interpretedExpression();
         HistoryEntry rebuiltEntry(currentExpr, result, interpretedExpr, entry.contextRef());
+        rebuiltEntry.setEditTimestamp(entry.editTimestamp());
         rebuiltEntry.setRenderedLines(renderedLinesForHistoryEntry(rebuiltEntry, m_settings));
         m_session->addHistoryEntry(rebuiltEntry);
     }

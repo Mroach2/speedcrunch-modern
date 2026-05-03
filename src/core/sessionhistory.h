@@ -11,6 +11,7 @@
 #include <QStringList>
 #include <QList>
 #include <QVector>
+#include <QtGlobal>
 
 #include "math/quantity.h"
 
@@ -44,6 +45,7 @@ private:
     EvaluationContext m_ctx;
     bool m_hasCtx = false;
     QStringList m_renderedLines;
+    qint64 m_editTimestamp = 0;
 public:
     HistoryEntry() : m_expr(""), m_result(0) {}
     HistoryEntry(const QJsonObject & json);
@@ -52,7 +54,9 @@ public:
     HistoryEntry(const QString & expr, const EvaluationContext& ctx);
     HistoryEntry(const QString & expr, const Quantity & num, const QString& interpretedExpr, const EvaluationContext& ctx);
     HistoryEntry(const HistoryEntry & other)
-        : m_expr(other.m_expr), m_interpretedExpr(other.m_interpretedExpr), m_result(other.m_result), m_ctx(other.m_ctx), m_hasCtx(other.m_hasCtx), m_renderedLines(other.m_renderedLines) {}
+        : m_expr(other.m_expr), m_interpretedExpr(other.m_interpretedExpr),
+          m_result(other.m_result), m_ctx(other.m_ctx), m_hasCtx(other.m_hasCtx),
+          m_renderedLines(other.m_renderedLines), m_editTimestamp(other.m_editTimestamp) {}
     HistoryEntry& operator=(const HistoryEntry& other) = default;    
 
     void setExpr(const QString & e);
@@ -60,6 +64,7 @@ public:
     void setResult(const Quantity & n);
     void setContext(const EvaluationContext& ctx);
     void setRenderedLines(const QStringList& lines);
+    void setEditTimestamp(qint64 timestamp);
 
     QString expr() const;
     QString interpretedExpr() const;
@@ -69,6 +74,7 @@ public:
     bool hasContext() const;
     QStringList renderedLines() const;
     bool hasRenderedLines() const;
+    qint64 editTimestamp() const;
 
     void serialize(QJsonObject & json) const;
     void deSerialize(const QJsonObject & json);
