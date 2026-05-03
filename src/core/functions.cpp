@@ -1297,21 +1297,25 @@ Quantity function_product(Function* f, const Function::ArgumentList& args)
 Quantity function_geomean(Function* f, const Function::ArgumentList& args)
 {
     /* TODO : complex mode switch for this function */
-    ENSURE_MINIMUM_ARGUMENT_COUNT(2);
+    const Function::ArgumentList values = s_collectionElementsOrArgs(args);
+    if (values.count() < 1 || (!args.at(0).isCollection() && values.count() < 2)) {
+        f->setError(InvalidParamCount);
+        return CMath::nan(InvalidParamCount);
+    }
 
-    Quantity result = std::accumulate(args.begin(), args.end(), Quantity(1),
+    Quantity result = std::accumulate(values.begin(), values.end(), Quantity(1),
         std::multiplies<Quantity>());
 
     if (result <= Quantity(0))
         return DMath::nan(OutOfDomain);
 
-    if (args.count() == 1)
+    if (values.count() == 1)
         return result;
 
-    if (args.count() == 2)
+    if (values.count() == 2)
         return DMath::sqrt(result);
 
-    return  DMath::raise(result, Quantity(1)/Quantity(args.count()));
+    return  DMath::raise(result, Quantity(1)/Quantity(values.count()));
 }
 
 Quantity function_dec(Function* f, const Function::ArgumentList& args)

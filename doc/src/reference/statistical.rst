@@ -23,6 +23,9 @@ General
 
     Computes the geometric mean of the arguments, defined by ``product(x1; x2; ...)^(1/n)`` where ``n`` is the number of arguments. All the arguments may each have a different dimension. The geometric mean is useful for comparing sets of quantities that are very different in order of magnitude and even possibly dimension.
 
+    A single list or matrix argument is also accepted. Matrix inputs are
+    flattened first.
+
 .. function:: median(x1; x2; ...)
 
     .. versionadded:: 1.0

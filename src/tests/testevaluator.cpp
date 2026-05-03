@@ -762,6 +762,7 @@ void test_lists_and_matrices()
     CHECK_EVAL("d", "{1; 2; 3; 4; 5}");
     CHECK_EVAL("average(mylist)", "3");
     CHECK_EVAL("mean(mylist)", "3");
+    CHECK_EVAL("geomean(mylist)", "2.60517108469735189233");
     CHECK_EVAL("median(mylist)", "3");
     CHECK_EVAL("absdev(mylist)", "1.2");
     CHECK_EVAL("mad(mylist)", "1");
@@ -800,6 +801,7 @@ void test_lists_and_matrices()
     CHECK_EVAL("max(flatten(mat))", "6");
     CHECK_EVAL("sum(mat)", "21");
     CHECK_EVAL("average(mat)", "3.5");
+    CHECK_EVAL("geomean(mat)", "2.99379516552390895491");
     CHECK_EVAL("absdev(mat)", "1.5");
     CHECK_EVAL("mad(mat)", "1.5");
     CHECK_EVAL("count(mat)", "6");
