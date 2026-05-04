@@ -68,5 +68,6 @@
         <file>color-schemes/Dracula.json</file>
         <file>color-schemes/Catppuccin Latte.json</file>
         <file>color-schemes/Catppuccin Macchiato.json</file>
+        <file>color-schemes/One Dark.json</file>
     </qresource>
 </RCC>
