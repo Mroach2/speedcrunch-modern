@@ -1402,123 +1402,143 @@ void Editor::checkSelectionAutoCalc()
 
 void Editor::doMatchingLeft()
 {
-    // Tokenize the expression.
     const int currentPosition = textCursor().position();
-
-    // Check for right par.
-    QString subtext = text().left(currentPosition);
-    Tokens tokens = m_evaluator->scan(subtext);
-    if (!tokens.valid() || tokens.count() < 1)
+    if (currentPosition <= 0)
         return;
-    Token lastToken = tokens.at(tokens.count() - 1);
+    const QString currentText = text();
+    const int closePos = currentPosition - 1;
+    if (closePos < 0 || closePos >= currentText.size())
+        return;
 
-    // Right par?
-    if (lastToken.type() == Token::stxClosePar
-        && lastToken.size() > 0
-        && (lastToken.pos() + lastToken.size()) == currentPosition) {
-        // Find the matching left par.
-        unsigned par = 1;
-        int matchPosition = -1;
-        int closeParPos = lastToken.pos() + lastToken.size() - 1;
+    const auto isOpen = [](QChar ch) {
+        return ch == MathDsl::GroupStart || ch == MathDsl::UnitStart || ch == MathDsl::ListStart;
+    };
+    const auto isClose = [](QChar ch) {
+        return ch == MathDsl::GroupEnd || ch == MathDsl::UnitEnd || ch == MathDsl::ListEnd;
+    };
+    const auto matchingOpen = [](QChar ch) {
+        if (ch == MathDsl::GroupEnd) return MathDsl::GroupStart;
+        if (ch == MathDsl::UnitEnd) return MathDsl::UnitStart;
+        if (ch == MathDsl::ListEnd) return MathDsl::ListStart;
+        return QChar();
+    };
 
-        for (int i = tokens.count() - 2; i >= 0 && par > 0; --i) {
-            Token matchToken = tokens.at(i);
-            switch (matchToken.type()) {
-                case Token::stxOpenPar : --par; break;
-                case Token::stxClosePar: ++par; break;
-                default:;
-            }
-            if (matchToken.size() > 0)
-                matchPosition = matchToken.pos() + matchToken.size() - 1;
+    const QChar closing = currentText.at(closePos);
+    if (!isClose(closing))
+        return;
+
+    QVector<QChar> expectedOpenStack;
+    expectedOpenStack.append(matchingOpen(closing));
+    int matchPos = -1;
+    for (int i = closePos - 1; i >= 0; --i) {
+        const QChar ch = currentText.at(i);
+        if (isClose(ch)) {
+            expectedOpenStack.append(matchingOpen(ch));
+            continue;
         }
-
-        if (par == 0 && matchPosition >= 0 && closeParPos >= 0) {
-            QTextEdit::ExtraSelection hilite1;
-            hilite1.cursor = textCursor();
-            hilite1.cursor.setPosition(matchPosition);
-            hilite1.cursor.setPosition(matchPosition + 1,
-                                       QTextCursor::KeepAnchor);
-            hilite1.format.setBackground(
-                m_highlighter->colorForRole(ColorScheme::Matched));
-
-            QTextEdit::ExtraSelection hilite2;
-            hilite2.cursor = textCursor();
-            hilite2.cursor.setPosition(closeParPos);
-            hilite2.cursor.setPosition(closeParPos + 1,
-                                       QTextCursor::KeepAnchor);
-            hilite2.format.setBackground(
-                m_highlighter->colorForRole(ColorScheme::Matched));
-
-            QList<QTextEdit::ExtraSelection> extras;
-            extras << hilite1;
-            extras << hilite2;
-            setExtraSelections(extras);
+        if (!isOpen(ch))
+            continue;
+        if (expectedOpenStack.isEmpty())
+            break;
+        if (ch == expectedOpenStack.last()) {
+            expectedOpenStack.removeLast();
+            if (expectedOpenStack.isEmpty()) {
+                matchPos = i;
+                break;
+            }
+        } else {
+            break;
         }
     }
+
+    if (matchPos < 0)
+        return;
+
+    QTextEdit::ExtraSelection hilite1;
+    hilite1.cursor = textCursor();
+    hilite1.cursor.setPosition(matchPos);
+    hilite1.cursor.setPosition(matchPos + 1, QTextCursor::KeepAnchor);
+    hilite1.format.setBackground(m_highlighter->colorForRole(ColorScheme::Matched));
+
+    QTextEdit::ExtraSelection hilite2;
+    hilite2.cursor = textCursor();
+    hilite2.cursor.setPosition(closePos);
+    hilite2.cursor.setPosition(closePos + 1, QTextCursor::KeepAnchor);
+    hilite2.format.setBackground(m_highlighter->colorForRole(ColorScheme::Matched));
+
+    QList<QTextEdit::ExtraSelection> extras;
+    extras << hilite1;
+    extras << hilite2;
+    setExtraSelections(extras);
 }
 
 void Editor::doMatchingRight()
 {
-    // Tokenize the expression.
     const int currentPosition = textCursor().position();
-
-    // Check for left par.
-    auto subtext = text().right(text().length() - currentPosition);
-    auto tokens = m_evaluator->scan(subtext);
-    if (!tokens.valid() || tokens.count() < 1)
+    const QString currentText = text();
+    if (currentPosition < 0 || currentPosition >= currentText.size())
         return;
-    auto firstToken = tokens.at(0);
+    const auto isOpen = [](QChar ch) {
+        return ch == MathDsl::GroupStart || ch == MathDsl::UnitStart || ch == MathDsl::ListStart;
+    };
+    const auto isClose = [](QChar ch) {
+        return ch == MathDsl::GroupEnd || ch == MathDsl::UnitEnd || ch == MathDsl::ListEnd;
+    };
+    const auto matchingClose = [](QChar ch) {
+        if (ch == MathDsl::GroupStart) return MathDsl::GroupEnd;
+        if (ch == MathDsl::UnitStart) return MathDsl::UnitEnd;
+        if (ch == MathDsl::ListStart) return MathDsl::ListEnd;
+        return QChar();
+    };
 
-    // Left par?
-    if (firstToken.type() == Token::stxOpenPar
-        && firstToken.size() > 0
-        && (firstToken.pos() + firstToken.size()) == 1)
-    {
-        // Find the matching right par.
-        unsigned par = 1;
-        int k = 0;
-        Token matchToken;
-        int matchPosition = -1;
-        int openParPos = firstToken.pos() + firstToken.size() - 1;
+    const int openPos = currentPosition;
+    const QChar opening = currentText.at(openPos);
+    if (!isOpen(opening))
+        return;
 
-        for (k = 1; k < tokens.count() && par > 0; ++k) {
-            const Token matchToken = tokens.at(k);
-            switch (matchToken.type()) {
-            case Token::stxOpenPar:
-                ++par;
-                break;
-            case Token::stxClosePar:
-                --par;
-                break;
-            default:;
-            }
-            if (matchToken.size() > 0)
-                matchPosition = matchToken.pos() + matchToken.size() - 1;
+    QVector<QChar> expectedCloseStack;
+    expectedCloseStack.append(matchingClose(opening));
+    int matchPos = -1;
+    for (int i = openPos + 1; i < currentText.size(); ++i) {
+        const QChar ch = currentText.at(i);
+        if (isOpen(ch)) {
+            expectedCloseStack.append(matchingClose(ch));
+            continue;
         }
-
-        if (par == 0 && matchPosition >= 0 && openParPos >= 0) {
-            QTextEdit::ExtraSelection hilite1;
-            hilite1.cursor = textCursor();
-            hilite1.cursor.setPosition(currentPosition+matchPosition);
-            hilite1.cursor.setPosition(currentPosition+matchPosition + 1,
-                                       QTextCursor::KeepAnchor);
-            hilite1.format.setBackground(
-                m_highlighter->colorForRole(ColorScheme::Matched));
-
-            QTextEdit::ExtraSelection hilite2;
-            hilite2.cursor = textCursor();
-            hilite2.cursor.setPosition(currentPosition+openParPos);
-            hilite2.cursor.setPosition(currentPosition+openParPos + 1,
-                                       QTextCursor::KeepAnchor);
-            hilite2.format.setBackground(
-                m_highlighter->colorForRole(ColorScheme::Matched));
-
-            QList<QTextEdit::ExtraSelection> extras;
-            extras << hilite1;
-            extras << hilite2;
-            setExtraSelections(extras);
+        if (!isClose(ch))
+            continue;
+        if (expectedCloseStack.isEmpty())
+            break;
+        if (ch == expectedCloseStack.last()) {
+            expectedCloseStack.removeLast();
+            if (expectedCloseStack.isEmpty()) {
+                matchPos = i;
+                break;
+            }
+        } else {
+            break;
         }
     }
+
+    if (matchPos < 0)
+        return;
+
+    QTextEdit::ExtraSelection hilite1;
+    hilite1.cursor = textCursor();
+    hilite1.cursor.setPosition(matchPos);
+    hilite1.cursor.setPosition(matchPos + 1, QTextCursor::KeepAnchor);
+    hilite1.format.setBackground(m_highlighter->colorForRole(ColorScheme::Matched));
+
+    QTextEdit::ExtraSelection hilite2;
+    hilite2.cursor = textCursor();
+    hilite2.cursor.setPosition(openPos);
+    hilite2.cursor.setPosition(openPos + 1, QTextCursor::KeepAnchor);
+    hilite2.format.setBackground(m_highlighter->colorForRole(ColorScheme::Matched));
+
+    QList<QTextEdit::ExtraSelection> extras;
+    extras << hilite1;
+    extras << hilite2;
+    setExtraSelections(extras);
 }
 
 
