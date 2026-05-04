@@ -69,5 +69,8 @@
         <file>color-schemes/Catppuccin Latte.json</file>
         <file>color-schemes/Catppuccin Macchiato.json</file>
         <file>color-schemes/One Dark.json</file>
+        <file>color-schemes/Monokai.json</file>
+        <file>color-schemes/GitHub Dark.json</file>
+        <file>color-schemes/GitHub light.json</file>
     </qresource>
 </RCC>
