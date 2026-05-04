@@ -1,10 +1,12 @@
 {
+    "list": "#657B83",
+    "unit": "#657B83",
     "cursor": "#DC322F",
     "number": "#657B83",
     "parens": "#002B36",
     "result": "#073642",
     "comment": "#93A1A1",
-    "matched": "#6C71C4",
+    "matched": "#CB4B16",
     "function": "#268BD2",
     "operator": "#B58900",
     "variable": "#859900",

@@ -1,4 +1,6 @@
 {
+  "list": "#d8dee9",
+  "unit": "#8fbcbb",
   "cursor": "#8c648c",
   "number": "#eceff4",
   "parens": "#88c0d0",
@@ -8,8 +10,6 @@
   "function": "#bf616a",
   "operator": "#ebcb8b",
   "variable": "#a3be8c",
-  "list": "#d8dee9",
-  "unit": "#8fbcbb",
   "scrollbar": "#ebcb8b",
   "separator": "#b48ead",
   "background": "#2e3440",
