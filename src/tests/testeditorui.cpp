@@ -453,6 +453,7 @@ void TestEditorUi::highlights_list_braces_as_parentheses()
     QJsonObject colors;
     colors.insert(QStringLiteral("number"), QStringLiteral("#111111"));
     colors.insert(QStringLiteral("parens"), QStringLiteral("#123456"));
+    colors.insert(QStringLiteral("list"), QStringLiteral("#123456"));
     colors.insert(QStringLiteral("operator"), QStringLiteral("#222222"));
     colors.insert(QStringLiteral("separator"), QStringLiteral("#333333"));
     highlighter.setColorScheme(ColorScheme(QJsonDocument(colors)));
