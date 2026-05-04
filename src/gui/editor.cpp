@@ -607,60 +607,6 @@ static bool isValidUnitExponentBase(const QChar& ch)
            || ch == MathDsl::UnitEnd;
 }
 
-static bool isAfterFunctionIdentifierWithOnlySpaces(Evaluator* evaluator,
-                                                     const QString& text,
-                                                     int cursorPosition)
-{
-    if (!evaluator)
-        return false;
-
-    const int safeCursorPosition = qBound(0, cursorPosition, text.size());
-    int i = safeCursorPosition - 1;
-    while (i >= 0 && text.at(i).isSpace())
-        --i;
-    if (i < 0)
-        return false;
-
-    int identifierEnd = i + 1;
-    while (i >= 0 && MathDsl::isSuperscriptPowerChar(text.at(i)))
-        --i;
-    if (i + 1 != identifierEnd)
-        identifierEnd = i + 1;
-
-    int identifierStart = identifierEnd - 1;
-    const auto isIdentifierChar = [](QChar ch) {
-        return ch.isLetterOrNumber() || ch == UnicodeChars::LowLine;
-    };
-    while (identifierStart >= 0 && isIdentifierChar(text.at(identifierStart)))
-        --identifierStart;
-    ++identifierStart;
-    if (identifierStart >= identifierEnd)
-        return false;
-
-    // Fast path: direct trailing identifier lookup at cursor boundary.
-    const QString trailingIdentifier = text.mid(identifierStart, identifierEnd - identifierStart);
-    if (FunctionRepo::instance()->find(trailingIdentifier)
-        || evaluator->hasUserFunction(trailingIdentifier)) {
-        return true;
-    }
-
-    const QString leftText = text.left(identifierEnd);
-    const Tokens leftTokens = evaluator->scan(leftText);
-    if (leftTokens.valid() && !leftTokens.isEmpty()) {
-        const Token lastToken = leftTokens.at(leftTokens.size() - 1);
-        if (lastToken.isIdentifier()
-            && lastToken.pos() + lastToken.size() == leftText.size()) {
-            const QString identifier = lastToken.text();
-            if (FunctionRepo::instance()->find(identifier)
-                || evaluator->hasUserFunction(identifier)) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
 static bool isInsideCommentFromQuestionMark(const QString& text, int cursorPosition)
 {
     const int safeCursorPosition = qBound(0, cursorPosition, text.size());
@@ -2622,38 +2568,12 @@ void Editor::keyPressEvent(QKeyEvent* event)
 
         QTextCursor cursor = textCursor();
         const int position = cursor.position();
-        const bool afterFunctionIdentifier = isAfterFunctionIdentifierWithOnlySpaces(
-            m_evaluator,
-            text(),
-            position);
-        QString implicitMulPrefix;
-        if (!afterFunctionIdentifier) {
-            if (squareBracketContext) {
-                const QChar prev = previousNonSpaceChar(text(), position);
-                const bool needsImplicitUnitMul =
-                    prev.isLetterOrNumber()
-                    || prev == MathDsl::GroupEnd
-                    || MathDsl::isSuperscriptPowerChar(prev);
-                if (needsImplicitUnitMul)
-                    implicitMulPrefix = QString(MathDsl::MulDotOp);
-            } else {
-                const QChar prev = previousNonSpaceChar(text(), position);
-                if (prev == MathDsl::UnitEnd || prev == MathDsl::GroupEnd) {
-                    implicitMulPrefix = MathDsl::buildWrappedToken(MathDsl::MulDotOp, MathDsl::MulDotWrapSp);
-                } else {
-                    implicitMulPrefix = implicitMulPrefixForTypedChar(MathDsl::GroupStart);
-                }
-            }
-        }
-
         const bool shouldAutoInsertGroupEnd = hasOnlySpacesToRight(text(), position);
         const QString insertedGroupStart = QString(MathDsl::GroupStart);
         const QString insertedGroupPair =
             QString(MathDsl::GroupStart) + QString(MathDsl::GroupEnd);
-        cursor.insertText(implicitMulPrefix + (shouldAutoInsertGroupEnd
-                                               ? insertedGroupPair
-                                               : insertedGroupStart));
-        cursor.setPosition(position + implicitMulPrefix.size() + 1);
+        cursor.insertText(shouldAutoInsertGroupEnd ? insertedGroupPair : insertedGroupStart);
+        cursor.setPosition(position + 1);
         setTextCursor(cursor);
         event->accept();
         return true;
