@@ -17,6 +17,8 @@ public:
         Cursor,
         Number,
         Parens,
+        List,
+        Unit,
         Result,
         Comment,
         Matched,

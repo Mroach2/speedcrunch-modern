@@ -253,6 +253,8 @@ QString colorSchemeRoleLabel(ColorScheme::Role role)
     case ColorScheme::Cursor: return QStringLiteral("cursor");
     case ColorScheme::Number: return QStringLiteral("number");
     case ColorScheme::Parens: return QStringLiteral("parens");
+    case ColorScheme::List: return QStringLiteral("list");
+    case ColorScheme::Unit: return QStringLiteral("unit");
     case ColorScheme::Result: return QStringLiteral("result");
     case ColorScheme::Comment: return QStringLiteral("comment");
     case ColorScheme::Matched: return QStringLiteral("matched");

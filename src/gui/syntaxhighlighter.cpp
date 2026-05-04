@@ -174,6 +174,8 @@ QVector<QPair<QString, ColorScheme::Role>> ColorScheme::roleNames()
         { QStringLiteral("cursor"), ColorScheme::Cursor },
         { QStringLiteral("number"), ColorScheme::Number },
         { QStringLiteral("parens"), ColorScheme::Parens },
+        { QStringLiteral("list"), ColorScheme::List },
+        { QStringLiteral("unit"), ColorScheme::Unit },
         { QStringLiteral("result"), ColorScheme::Result },
         { QStringLiteral("comment"), ColorScheme::Comment },
         { QStringLiteral("matched"), ColorScheme::Matched },
@@ -254,25 +256,28 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         case Token::stxUnknown:
             color = colorForRole(ColorScheme::Number);
             if (insideUnitBrackets)
-                color = colorForRole(ColorScheme::Parens);
+                color = colorForRole(ColorScheme::Unit);
             // TODO: color thousand separators differently? It might help troubleshooting issues
             break;
 
         case Token::stxOperator:
             color = colorForRole(ColorScheme::Operator);
             if (insideUnitBrackets)
-                color = colorForRole(ColorScheme::Parens);
+                color = colorForRole(ColorScheme::Unit);
             break;
 
         case Token::stxSep:
             color = colorForRole(ColorScheme::Separator);
             if (insideUnitBrackets)
-                color = colorForRole(ColorScheme::Parens);
+                color = colorForRole(ColorScheme::Unit);
             break;
 
         case Token::stxOpenPar:
         case Token::stxClosePar:
             color = colorForRole(ColorScheme::Parens);
+            if (token.text() == QString(MathDsl::UnitStart)
+                    || token.text() == QString(MathDsl::UnitEnd))
+                color = colorForRole(ColorScheme::Unit);
             break;
 
         case Token::stxIdentifier:
@@ -296,7 +301,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             break;
 
         case Token::stxUnitIdentifier:
-            color = colorForRole(ColorScheme::Parens);
+            color = colorForRole(ColorScheme::Unit);
             break;
 
         default:
@@ -312,14 +317,16 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             for (int j = 0; j < originalTokenText.size(); ++j) {
                 if (isSuperscriptExponentChar(originalTokenText.at(j)))
                     setFormat(token.pos() + j, 1, token.type() == Token::stxUnitIdentifier
-                        ? colorForRole(ColorScheme::Parens)
+                        ? colorForRole(ColorScheme::Unit)
                         : colorForRole(ColorScheme::Number));
             }
         }
 
-        if (token.type() == Token::stxOpenPar && token.text() == QLatin1String("["))
+        if (token.type() == Token::stxOpenPar
+                && token.text() == QString(MathDsl::UnitStart))
             ++unitBracketDepth;
-        else if (token.type() == Token::stxClosePar && token.text() == QLatin1String("]"))
+        else if (token.type() == Token::stxClosePar
+                && token.text() == QString(MathDsl::UnitEnd))
             unitBracketDepth = qMax(0, unitBracketDepth - 1);
 
         if (token.type() == Token::stxNumber && Settings::instance()->digitGrouping > 0) {
@@ -340,7 +347,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     for (int i = 0; i < text.size(); ++i) {
         const QChar ch = text.at(i);
         if (ch == MathDsl::ListStart || ch == MathDsl::ListEnd)
-            setFormat(i, 1, colorForRole(ColorScheme::Parens));
+            setFormat(i, 1, colorForRole(ColorScheme::List));
     }
 }
 

@@ -530,9 +530,10 @@ User Interface Settings
       application directory.
 
     Theme files use JSON and map role names to color values. Supported role names are:
-    ``cursor``, ``number``, ``parens``, ``result``, ``comment``, ``matched``,
+    ``cursor``, ``number``, ``parens``, ``list``, ``unit``, ``result``, ``comment``, ``matched``,
     ``function``, ``operator``, ``variable``, ``scrollbar``, ``separator``,
     ``background``, ``editorbackground``.
+    For the full schema, see :doc:`theme_json_schema`.
 
     .. versionadded:: 1.0
        The :menuselection:`Custom...` theme editor, including live preview and JSON import/export.

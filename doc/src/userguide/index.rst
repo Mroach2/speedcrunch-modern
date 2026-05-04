@@ -13,3 +13,4 @@ read in order or simply used to look up the details of a feature.
    syntax
    advanced
    interface
+   theme_json_schema
