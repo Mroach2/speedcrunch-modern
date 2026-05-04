@@ -1299,22 +1299,16 @@ Quantity Quantity::operator+(const Quantity& other) const
         if ((!isCollection() && (hasUnit() || hasDimension()))
             || (!other.isCollection() && (other.hasUnit() || other.hasDimension())))
             return DMath::nan(InvalidDimension);
-        const bool lhsCollection = isCollection();
-        const bool rhsCollection = other.isCollection();
-        if (lhsCollection && rhsCollection
-            && (rows() != other.rows() || columns() != other.columns()))
+        if (!isCollection() || !other.isCollection())
+            return DMath::nan(NotImplemented);
+        if (rows() != other.rows() || columns() != other.columns())
             return DMath::nan(DimensionMismatch);
 
-        const QVector<QVector<Quantity>> source =
-            lhsCollection ? m_matrix : other.m_matrix;
         QVector<QVector<Quantity>> resultRows;
-        for (int r = 0; r < source.size(); ++r) {
+        for (int r = 0; r < m_matrix.size(); ++r) {
             QVector<Quantity> row;
-            for (int c = 0; c < source.at(r).size(); ++c) {
-                const Quantity& left = lhsCollection ? m_matrix.at(r).at(c) : *this;
-                const Quantity& right = rhsCollection ? other.m_matrix.at(r).at(c) : other;
-                row.append(left + right);
-            }
+            for (int c = 0; c < m_matrix.at(r).size(); ++c)
+                row.append(m_matrix.at(r).at(c) + other.m_matrix.at(r).at(c));
             resultRows.append(row);
         }
         return resultRows.size() == 1 ? Quantity::list(resultRows.at(0)) : Quantity::matrix(resultRows);
@@ -1427,28 +1421,49 @@ Quantity Quantity::operator*(const Quantity& other) const
         if ((!isCollection() && (hasUnit() || hasDimension()))
             || (!other.isCollection() && (other.hasUnit() || other.hasDimension())))
             return DMath::nan(InvalidDimension);
-        if (isMatrix() && other.isMatrix()) {
-            if (columns() != other.rows())
+        if (isCollection() && other.isCollection()
+            && (isMatrix() || other.isMatrix())) {
+            const int lhsRows = isList() ? 1 : rows();
+            const int lhsColumns = columns();
+            const bool rhsListAsColumn = other.isList() && lhsColumns == other.columns();
+            const int rhsRows = other.isList()
+                ? (rhsListAsColumn ? other.columns() : 1)
+                : other.rows();
+            const int rhsColumns = other.isList()
+                ? (rhsListAsColumn ? 1 : other.columns())
+                : other.columns();
+            if (lhsColumns != rhsRows)
                 return DMath::nan(DimensionMismatch);
             QVector<QVector<Quantity>> resultRows;
-            for (int r = 0; r < rows(); ++r) {
+            for (int r = 0; r < lhsRows; ++r) {
                 QVector<Quantity> row;
-                for (int c = 0; c < other.columns(); ++c) {
+                for (int c = 0; c < rhsColumns; ++c) {
                     Quantity sum(0);
-                    for (int k = 0; k < columns(); ++k)
-                        sum += m_matrix.at(r).at(k) * other.m_matrix.at(k).at(c);
+                    for (int k = 0; k < lhsColumns; ++k) {
+                        const Quantity& left = isList()
+                            ? m_matrix.at(0).at(k)
+                            : m_matrix.at(r).at(k);
+                        const Quantity& right = other.isList()
+                            ? other.m_matrix.at(0).at(rhsListAsColumn ? k : c)
+                            : other.m_matrix.at(k).at(c);
+                        sum += left * right;
+                    }
                     row.append(sum);
                 }
                 resultRows.append(row);
+            }
+            if (resultRows.size() == 1) {
+                if (resultRows.at(0).size() == 1)
+                    return resultRows.at(0).at(0);
+                return Quantity::list(resultRows.at(0));
             }
             return Quantity::matrix(resultRows);
         }
 
         const bool lhsCollection = isCollection();
         const bool rhsCollection = other.isCollection();
-        if (lhsCollection && rhsCollection
-            && (rows() != other.rows() || columns() != other.columns()))
-            return DMath::nan(DimensionMismatch);
+        if (lhsCollection && rhsCollection)
+            return DMath::nan(NotImplemented);
         const QVector<QVector<Quantity>> source =
             lhsCollection ? m_matrix : other.m_matrix;
         QVector<QVector<Quantity>> resultRows;
@@ -1785,10 +1800,9 @@ Quantity Quantity::operator/(const Quantity& other) const
             || (!other.isCollection() && (other.hasUnit() || other.hasDimension())))
             return DMath::nan(InvalidDimension);
         if (other.isCollection() && !isCollection())
-            return DMath::nan(OutOfDomain);
-        if (isCollection() && other.isCollection()
-            && (rows() != other.rows() || columns() != other.columns()))
-            return DMath::nan(DimensionMismatch);
+            return DMath::nan(NotImplemented);
+        if (isCollection() && other.isCollection())
+            return DMath::nan(NotImplemented);
         QVector<QVector<Quantity>> resultRows;
         for (int r = 0; r < m_matrix.size(); ++r) {
             QVector<Quantity> row;

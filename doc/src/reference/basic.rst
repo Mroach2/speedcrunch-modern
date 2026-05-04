@@ -182,9 +182,16 @@ List and matrix results use the same spacing, for example ``{1; 2; 3}`` and
 List and matrix elements must be dimensionless. Units cannot be attached to
 individual elements or to a list or matrix as a whole.
 
-Supported arithmetic operations are elementwise addition and subtraction for
-same-shaped lists or matrices, scalar multiplication and division, and matrix
-multiplication for compatible matrices::
+Supported arithmetic operations are addition and subtraction between
+same-shaped lists or matrices, multiplication by a scalar on either side,
+division by a scalar on the right-hand side, and matrix multiplication for
+compatible matrices. In matrix multiplication, a list can be used as a row
+vector on the left when the right operand is a matrix. A list can also be used
+as a row vector on the right when the left operand is a one-column matrix.
+List-by-list multiplication is not supported. Matrix products with a single
+result element return that scalar directly. Scalar addition/subtraction, scalar
+divided by a list or matrix, elementwise multiplication, and elementwise
+division are not supported::
 
     {1; 2; 3} + {4; 5; 6}
     = {5; 7; 9}
@@ -192,8 +199,17 @@ multiplication for compatible matrices::
     2 * {{1; 2}; {3; 4}}
     = {{2; 4}; {6; 8}}
 
+    {1; 2; 3} / 2
+    = {0.5; 1; 1.5}
+
     {{1; 2}; {3; 4}} * {{5; 6}; {7; 8}}
     = {{19; 22}; {43; 50}}
+
+    {1; 2; 3} * {{1}; {2}; {3}}
+    = 14
+
+    {{1}; {2}; {3}} * {4; 5; 6}
+    = {{4; 5; 6}; {8; 10; 12}; {12; 15; 18}}
 
 The aggregation and statistics functions :func:`count`, :func:`sum`,
 :func:`min`, :func:`max`, :func:`average`, :func:`mean`, :func:`median`,

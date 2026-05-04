@@ -754,6 +754,9 @@ const Quantity& Evaluator::checkOperatorResult(const Quantity& n)
         m_error = Evaluator::tr("invalid dimension - operation might "
                                 "require dimensionless arguments");
         break;
+    case NotImplemented:
+        m_error = Evaluator::tr("operation is not defined for these arguments");
+        break;
     case EvalUnstable:
         m_error = Evaluator::tr("Computation aborted - encountered "
                                 "numerical instability");

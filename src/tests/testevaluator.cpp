@@ -757,6 +757,7 @@ void test_lists_and_matrices()
 {
     CHECK_EVAL("{1;2;3;4;5}", "{1; 2; 3; 4; 5}");
     CHECK_EVAL("mylist = {1; 2; 3; 4; 5}", "{1; 2; 3; 4; 5}");
+    CHECK_EVAL("l1 = {1; 2; 3}", "{1; 2; 3}");
     CHECK_EVAL("d = {1; 2; 3; 4; 5}", "{1; 2; 3; 4; 5}");
     CHECK_DISPLAY_INTERPRETED("d", "d");
     CHECK_EVAL("d", "{1; 2; 3; 4; 5}");
@@ -779,6 +780,28 @@ void test_lists_and_matrices()
     CHECK_EVAL("{4;5;6} - {1;2;3}", "{3; 3; 3}");
     CHECK_EVAL("2 * {1;2;3}", "{2; 4; 6}");
     CHECK_EVAL("{2;4;6} / 2", "{1; 2; 3}");
+    CHECK_EVAL("{1; 2; 3} * {{1}; {2}; {3}}", "14");
+    CHECK_EVAL("{4; 5; 6} * {{1}; {2}; {3}}", "32");
+    CHECK_EVAL("{7; 8} * {{9}; {10}}", "143");
+    CHECK_EVAL_FAIL("1 + l1");
+    CHECK_EVAL_FAIL("l1 + 1");
+    CHECK_EVAL_FAIL("1 + {1; 2; 3}");
+    CHECK_EVAL_FAIL("{1; 2; 3} + 1");
+    CHECK_EVAL_FAIL("1 - l1");
+    CHECK_EVAL_FAIL("l1 - 1");
+    CHECK_EVAL_FAIL("{1; 2} * {4; 5}");
+    CHECK_EVAL_FAIL("{1; 2; 3} * {2; 3; 4}");
+    CHECK_EVAL_FAIL("{1; 2; 3} / {2; 3; 4}");
+    CHECK_EVAL_FAIL("2 / {1; 2; 3}");
+    ++eval_total_tests;
+    eval->setExpression(QStringLiteral("2 / {1; 2; 3}"));
+    eval->evalUpdateAns();
+    if (!eval->error().contains(QStringLiteral("operation is not defined for these arguments"))) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tscalar divided by list error message\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+    }
     CHECK_DISPLAY_INTERPRETED("2 * {1;2;3} + {4;5;6}", "2 × {1; 2; 3} + {4; 5; 6}");
     CHECK_DISPLAY_INTERPRETED("2 × {1;2;3} + {4;5;6}", "2 × {1; 2; 3} + {4; 5; 6}");
     CHECK_DISPLAY_INTERPRETED("{{1;2};{3;4}} × {{5;6};{7;8}}",
@@ -813,6 +836,19 @@ void test_lists_and_matrices()
     CHECK_EVAL("mat + mat2", "{{8; 10; 12}; {14; 16; 18}}");
     CHECK_EVAL("2 * mat", "{{2; 4; 6}; {8; 10; 12}}");
     CHECK_EVAL("mat / 2", "{{0.5; 1; 1.5}; {2; 2.5; 3}}");
+    CHECK_EVAL("mat * {1; 2; 3}", "{{14}; {32}}");
+    CHECK_EVAL("{{1}; {2}; {3}} * {4; 5; 6}", "{{4; 5; 6}; {8; 10; 12}; {12; 15; 18}}");
+    CHECK_EVAL("{{1; 2; 3}; {4; 5; 6}} * {{7; 8}; {9; 10}; {11; 12}}", "{{58; 64}; {139; 154}}");
+    CHECK_EVAL("{{1; 2}; {3; 4}; {5; 6}} * {{7; 8; 9}; {10; 11; 12}}", "{{27; 30; 33}; {61; 68; 75}; {95; 106; 117}}");
+    CHECK_EVAL("{{2; 0}; {1; 3}} * {{4; 1}; {2; 2}}", "{{8; 2}; {10; 7}}");
+    CHECK_EVAL("{{1; 0; 2}; {-1; 3; 1}; {3; 1; 0}} * {{3; 1; 2}; {2; 1; 1}; {1; 0; 0}}", "{{5; 1; 2}; {4; 2; 1}; {11; 4; 7}}");
+    CHECK_EVAL("{{1; 2; 3; 4}; {5; 6; 7; 8}} * {{1; 0}; {0; 1}; {1; 0}; {0; 1}}", "{{4; 6}; {12; 14}}");
+    CHECK_EVAL("{{1; 2}; {3; 4}; {5; 6}; {7; 8}} * {{1; 0; 1; 0}; {0; 1; 0; 1}}", "{{1; 2; 1; 2}; {3; 4; 3; 4}; {5; 6; 5; 6}; {7; 8; 7; 8}}");
+    CHECK_EVAL("{{1; 2; 3}; {4; 5; 6}} * {{7}; {8}; {9}}", "{{50}; {122}}");
+    CHECK_EVAL("{1; 2; 3} * {{4; 5}; {6; 7}; {8; 9}}", "{40; 46}");
+    CHECK_EVAL("{{2}; {3}; {4}} * {5; 6; 7}", "{{10; 12; 14}; {15; 18; 21}; {20; 24; 28}}");
+    CHECK_EVAL_FAIL("{{1}; {2}} * {{4}; {5}}");
+    CHECK_EVAL("{{1; 2}; {3; 4}} * {{5; 6; 7}; {8; 9; 10}}", "{{21; 24; 27}; {47; 54; 61}}");
     CHECK_EVAL("norm({{1; 2}; {3; 4}})", "5.47722557505166113457");
 
     CHECK_EVAL("A = {{1;2};{3;4}}", "{{1; 2}; {3; 4}}");
