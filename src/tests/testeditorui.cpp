@@ -3112,7 +3112,10 @@ void TestEditorUi::completion_popup_uses_expected_icons_for_all_symbol_types()
     evaluator->unsetAllUserUnits();
     evaluator->unsetAllUserFunctions();
     evaluator->unsetVariable(QStringLiteral("icon_user_var"));
+    evaluator->unsetVariable(QStringLiteral("s"));
     evaluator->setExpression(QStringLiteral("icon_user_var = 7"));
+    QVERIFY(!evaluator->eval().isNan());
+    evaluator->setExpression(QStringLiteral("s = 9"));
     QVERIFY(!evaluator->eval().isNan());
     evaluator->setUserFunction(UserFunction(
         QStringLiteral("icon_user_func"),
@@ -3162,6 +3165,14 @@ void TestEditorUi::completion_popup_uses_expected_icons_for_all_symbol_types()
     popup = nullptr;
     QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
     QCOMPARE(s_popupSymbolForIdentifier(popup, QStringLiteral("icon_user_var")), QString::fromUtf8("👤 𝑥"));
+    popup->hide();
+
+    editor.setText(QStringLiteral("s"));
+    editor.setCursorPosition(editor.text().size());
+    QVERIFY(QMetaObject::invokeMethod(&editor, "triggerAutoComplete", Qt::DirectConnection));
+    popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QCOMPARE(s_popupSymbolForIdentifier(popup, QStringLiteral("s")), QString::fromUtf8("👤 𝑥"));
     popup->hide();
 
     editor.setText(QStringLiteral("[met"));

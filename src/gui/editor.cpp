@@ -3707,6 +3707,9 @@ void EditorCompletion::showCompletion(const QStringList& choices)
     const QSet<QString> builtInUnits(
         builtInUnitKeys.constBegin(),
         builtInUnitKeys.constEnd());
+    const bool unitContextAtCursor = isInsideUnmatchedSquareBracketContext(
+        m_editor->text(),
+        m_editor->textCursor().position());
 
     for (int i = 0; i < choices.count(); ++i) {
         const auto pair = choices.at(i).split(':');
@@ -3723,15 +3726,15 @@ void EditorCompletion::showCompletion(const QStringList& choices)
         // on every completion row.
         } else if (evaluator->hasUserFunction(identifier)) {
             typeSymbol = QString::fromUtf8("👤 ƒ");
+        } else if (!unitContextAtCursor && evaluator->hasVariable(identifier)) {
+            const auto variable = evaluator->getVariable(identifier);
+            if (variable.type() == Variable::BuiltIn)
+                typeSymbol = QString::fromUtf8("📏 𝑘");
         } else if (evaluator->hasUserUnit(identifier)) {
             typeSymbol = QString::fromUtf8("👤 𝒖");
         // O(1) membership check against precomputed built-in unit identifiers.
         } else if (builtInUnits.contains(identifier)) {
             typeSymbol = QString::fromUtf8("📚 𝒖");
-        } else if (evaluator->hasVariable(identifier)) {
-            const auto variable = evaluator->getVariable(identifier);
-            if (variable.type() == Variable::BuiltIn)
-                typeSymbol = QString::fromUtf8("📏 𝑘");
         }
 
         QStringList columns;
