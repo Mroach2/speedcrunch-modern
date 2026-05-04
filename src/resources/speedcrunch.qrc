@@ -63,5 +63,7 @@
         <file>color-schemes/Breeze Dark.json</file>
         <file>color-schemes/Black on White.json</file>
         <file>color-schemes/White on Black.json</file>
+        <file>color-schemes/Nord Dark.json</file>
+        <file>color-schemes/Nord Light.json</file>
     </qresource>
 </RCC>
