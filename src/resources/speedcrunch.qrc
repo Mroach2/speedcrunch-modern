@@ -65,5 +65,6 @@
         <file>color-schemes/White on Black.json</file>
         <file>color-schemes/Nord Dark.json</file>
         <file>color-schemes/Nord Light.json</file>
+        <file>color-schemes/Dracula.json</file>
     </qresource>
 </RCC>
