@@ -2388,14 +2388,14 @@ void MainWindow::clearHistory()
 void MainWindow::clearEditor()
 {
     m_widgets.editor->clear();
+    if (m_widgets.bitField)
+        m_widgets.bitField->clear();
     m_widgets.editor->setFocus();
 }
 
 void MainWindow::clearEditorAndBitfield()
 {
     clearEditor();
-    if (m_widgets.bitField)
-        m_widgets.bitField->clear();
 }
 
 void MainWindow::copyResultToClipboard()
@@ -4995,6 +4995,8 @@ void MainWindow::handleEditorTextChange()
     clearTextEditSelection(m_widgets.display);
     if (m_widgets.editor->text().trimmed().isEmpty()) {
         hideStateLabel();
+        if (m_widgets.bitField)
+            m_widgets.bitField->clear();
         return;
     }
 

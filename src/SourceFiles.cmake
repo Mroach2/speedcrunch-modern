@@ -26,6 +26,7 @@ gui/bookdock.h
 gui/constantswidget.h
 gui/customkeypaddialog.h
 gui/displayformatutils.h
+gui/dockliststyle.h
 gui/editor.h
 gui/functiontooltiputils.h
 gui/functionswidget.h
@@ -92,6 +93,7 @@ gui/bookdock.cpp
 gui/constantswidget.cpp
 gui/customkeypaddialog.cpp
 gui/displayformatutils.cpp
+gui/dockliststyle.cpp
 gui/editor.cpp
 gui/functiontooltiputils.cpp
 gui/functionswidget.cpp
@@ -184,6 +186,7 @@ core/sessionhistory.cpp
 core/variable.cpp
 core/numberformatter.cpp
 gui/displayformatutils.cpp
+gui/dockliststyle.cpp
 gui/functiontooltiputils.cpp
 gui/resultdisplay.cpp
 gui/syntaxhighlighter.cpp
@@ -348,6 +351,7 @@ core/sessionhistory.cpp
 core/variable.cpp
 core/numberformatter.cpp
 gui/displayformatutils.cpp
+gui/dockliststyle.cpp
 gui/functiontooltiputils.cpp
 gui/resultdisplay.cpp
 gui/syntaxhighlighter.cpp

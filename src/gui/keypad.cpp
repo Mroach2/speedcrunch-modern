@@ -248,6 +248,39 @@ QFont scaledFont(const QFont& base, int scalePercent)
     }
     return font;
 }
+
+QString keypadButtonStyleSheet()
+{
+    const QPalette palette = QApplication::palette();
+    const QColor border = palette.color(QPalette::Mid);
+    const QColor hoverBorder = palette.color(QPalette::Dark);
+    const QColor pressBorder = palette.color(QPalette::Shadow);
+    return QString::fromLatin1(
+        "QPushButton {"
+        " border: 1px solid %1;"
+        " background-color: %2;"
+        " color: %3;"
+        "}"
+        "QPushButton:hover {"
+        " border: 1px solid %4;"
+        " background-color: %5;"
+        " color: %6;"
+        "}"
+        "QPushButton:pressed {"
+        " border: 2px solid %7;"
+        " background-color: %8;"
+        " color: %9;"
+        "}")
+        .arg(border.name(),
+             palette.color(QPalette::Button).name(),
+             palette.color(QPalette::ButtonText).name(),
+             hoverBorder.name(),
+             palette.color(QPalette::Highlight).name(),
+             palette.color(QPalette::HighlightedText).name(),
+             pressBorder.name(),
+             palette.color(QPalette::Mid).name(),
+             palette.color(QPalette::ButtonText).name());
+}
 } // namespace
 
 Keypad::Keypad(LayoutMode layoutMode, QWidget* parent, int scalePercent)
@@ -359,20 +392,8 @@ void Keypad::createButtons()
     for (int i = 0; i < keyDescriptionsCount; ++i) {
         const KeyDescription* description = keyDescriptions + i;
         QPushButton* key = new QPushButton(description->label, this);
-        key->setStyleSheet(QString::fromLatin1(
-            "QPushButton {"
-            " border: 1px solid palette(mid);"
-            " background-color: palette(button);"
-            "}"
-            "QPushButton:hover {"
-            " border: 1px solid palette(dark);"
-            " background-color: palette(light);"
-            "}"
-            "QPushButton:pressed {"
-            " border: 2px solid palette(shadow);"
-            " background-color: palette(mid);"
-            "}"
-        ));
+        key->setCursor(Qt::PointingHandCursor);
+        key->setStyleSheet(keypadButtonStyleSheet());
         key->setFont(description->boldFont ? emphasizedBoldFont : boldFont);
         const QPair<QPushButton*, const KeyDescription*> hashValue(key, description);
         keys.insert(description->button, hashValue);
@@ -442,21 +463,9 @@ void Keypad::createCustomButtons()
 
     for (const auto& description : m_customButtons) {
         QPushButton* key = new QPushButton(description.label, this);
+        key->setCursor(Qt::PointingHandCursor);
         key->setFont(boldFont);
-        key->setStyleSheet(QString::fromLatin1(
-            "QPushButton {"
-            " border: 1px solid palette(mid);"
-            " background-color: palette(button);"
-            "}"
-            "QPushButton:hover {"
-            " border: 1px solid palette(dark);"
-            " background-color: palette(light);"
-            "}"
-            "QPushButton:pressed {"
-            " border: 2px solid palette(shadow);"
-            " background-color: palette(mid);"
-            "}"
-        ));
+        key->setStyleSheet(keypadButtonStyleSheet());
         QObject::connect(key, &QPushButton::clicked, this, [this, description]() {
             emit customButtonPressed(description.action, description.text);
         });

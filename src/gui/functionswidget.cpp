@@ -6,6 +6,7 @@
 
 #include "core/functions.h"
 #include "core/settings.h"
+#include "gui/dockliststyle.h"
 
 #include <QEvent>
 #include <QString>
@@ -36,11 +37,10 @@ FunctionsWidget::FunctionsWidget(QWidget* parent)
     m_functions->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_functions->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_functions->setColumnCount(2);
-    m_functions->setAlternatingRowColors(true);
     m_functions->setRootIsDecorated(false);
     m_functions->setEditTriggers(QTreeWidget::NoEditTriggers);
     m_functions->setSelectionBehavior(QTreeWidget::SelectRows);
-    m_functions->setCursor(QCursor(Qt::PointingHandCursor));
+    DockListStyle::apply(m_functions);
 
     m_noMatchLabel->setAlignment(Qt::AlignCenter);
     m_noMatchLabel->adjustSize();
@@ -146,9 +146,7 @@ void FunctionsWidget::updateList()
         m_noMatchLabel->hide();
         m_functions->sortItems(0, Qt::AscendingOrder);
     } else {
-        m_noMatchLabel->setGeometry(m_functions->geometry());
-        m_noMatchLabel->show();
-        m_noMatchLabel->raise();
+        DockListStyle::showCenteredNoMatchLabel(m_functions, m_noMatchLabel);
     }
 
     setUpdatesEnabled(true);

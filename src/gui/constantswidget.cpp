@@ -8,6 +8,7 @@
 #include "core/settings.h"
 #include "core/unicodechars.h"
 #include "core/mathdsl.h"
+#include "gui/dockliststyle.h"
 
 #include <QEvent>
 #include <QResizeEvent>
@@ -100,8 +101,7 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
     m_list->setMouseTracking(true);
     m_list->setEditTriggers(QTreeWidget::NoEditTriggers);
     m_list->setSelectionBehavior(QTreeWidget::SelectRows);
-    m_list->setAlternatingRowColors(true);
-    m_list->setCursor(QCursor(Qt::PointingHandCursor));
+    DockListStyle::apply(m_list);
 
     connect(m_list, SIGNAL(itemActivated(QTreeWidgetItem*, int)), SLOT(handleItem(QTreeWidgetItem*)));
     QShortcut* returnShortcut = new QShortcut(QKeySequence(Qt::Key_Return), this);
@@ -275,9 +275,7 @@ void ConstantsWidget::filter()
         m_noMatchLabel->hide();
         m_list->sortItems(0, Qt::AscendingOrder);
     } else {
-        m_noMatchLabel->setGeometry(m_list->geometry());
-        m_noMatchLabel->show();
-        m_noMatchLabel->raise();
+        DockListStyle::showCenteredNoMatchLabel(m_list, m_noMatchLabel);
     }
 
     setUpdatesEnabled(true);

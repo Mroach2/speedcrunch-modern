@@ -29,6 +29,8 @@ protected:
     void mouseReleaseEvent(QMouseEvent*);
 
 private:
+    void updateStyle();
+
     enum {
         // TODO: have this scale with screen DPI
         SizePixels = 20,

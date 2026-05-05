@@ -29,20 +29,31 @@ BitWidget::BitWidget(int bitPosition, QWidget* parent)
 
     setText(QString("%1").arg(bitPosition));
     setObjectName("BitWidget");
+    setCursor(Qt::PointingHandCursor);
+    setAttribute(Qt::WA_Hover, true);
+    updateStyle();
 }
 
 void BitWidget::setState(bool state)
 {
     if (state != m_state) {
         m_state = state;
-        QPalette palette = QApplication::palette();
-        setStyleSheet(
-            QString("QLabel { background-color : %1; color : %2; }")
-                .arg(palette.color(state ? QPalette::WindowText : QPalette::Window).name(),
-                     palette.color(state ? QPalette::Window : QPalette::WindowText).name())
-        );
+        updateStyle();
         update();
     }
+}
+
+void BitWidget::updateStyle()
+{
+    QPalette palette = QApplication::palette();
+    setStyleSheet(
+        QString("QLabel { background-color: %1; color: %2; }"
+                "QLabel:hover { background-color: %3; color: %4; }")
+            .arg(palette.color(m_state ? QPalette::WindowText : QPalette::Window).name(),
+                 palette.color(m_state ? QPalette::Window : QPalette::WindowText).name(),
+                 palette.color(QPalette::Highlight).name(),
+                 palette.color(QPalette::HighlightedText).name())
+    );
 }
 
 void BitWidget::mouseReleaseEvent(QMouseEvent*)
@@ -123,18 +134,22 @@ BitFieldWidget::BitFieldWidget(QWidget* parent) :
 
     m_resetButton = new QPushButton("0");
     m_resetButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    m_resetButton->setCursor(Qt::PointingHandCursor);
     connect(m_resetButton, SIGNAL(clicked()), this, SLOT(resetBits()));
 
     m_invertButton = new QPushButton("~");
     m_invertButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    m_invertButton->setCursor(Qt::PointingHandCursor);
     connect(m_invertButton, SIGNAL(clicked()), this, SLOT(invertBits()));
 
     m_shiftLeftButton = new QPushButton("<<");
     m_shiftLeftButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    m_shiftLeftButton->setCursor(Qt::PointingHandCursor);
     connect(m_shiftLeftButton, SIGNAL(clicked()), this, SLOT(shiftBitsLeft()));
 
     m_shiftRightButton = new QPushButton(">>");
     m_shiftRightButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    m_shiftRightButton->setCursor(Qt::PointingHandCursor);
     connect(m_shiftRightButton, SIGNAL(clicked()), this, SLOT(shiftBitsRight()));
 
     m_buttonsLayout = new QGridLayout;

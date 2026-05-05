@@ -7,6 +7,7 @@
 #include "core/evaluator.h"
 #include "core/mathdsl.h"
 #include "core/numberformatter.h"
+#include "gui/dockliststyle.h"
 
 #include <QEvent>
 #include <QHBoxLayout>
@@ -32,7 +33,6 @@ UserUnitListWidget::UserUnitListWidget(QWidget* parent)
     m_filterTimer->setInterval(500);
     m_filterTimer->setSingleShot(true);
 
-    m_userUnits->setAlternatingRowColors(true);
     m_userUnits->setAutoScroll(true);
     m_userUnits->setColumnCount(3);
     m_userUnits->setEditTriggers(QTreeWidget::NoEditTriggers);
@@ -41,7 +41,7 @@ UserUnitListWidget::UserUnitListWidget(QWidget* parent)
     m_userUnits->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_userUnits->setRootIsDecorated(false);
     m_userUnits->setSelectionBehavior(QTreeWidget::SelectRows);
-    m_userUnits->setCursor(QCursor(Qt::PointingHandCursor));
+    DockListStyle::apply(m_userUnits);
 
     m_noMatchLabel->setAlignment(Qt::AlignCenter);
     m_noMatchLabel->adjustSize();
@@ -151,9 +151,7 @@ void UserUnitListWidget::updateList()
         m_noMatchLabel->hide();
         m_userUnits->sortItems(0, Qt::AscendingOrder);
     } else {
-        m_noMatchLabel->setGeometry(m_userUnits->geometry());
-        m_noMatchLabel->show();
-        m_noMatchLabel->raise();
+        DockListStyle::showCenteredNoMatchLabel(m_userUnits, m_noMatchLabel);
     }
 
     setUpdatesEnabled(true);

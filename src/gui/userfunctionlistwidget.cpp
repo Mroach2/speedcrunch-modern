@@ -6,6 +6,7 @@
 
 #include "core/evaluator.h"
 #include "gui/displayformatutils.h"
+#include "gui/dockliststyle.h"
 #include "core/settings.h"
 #include "core/unicodechars.h"
 
@@ -33,7 +34,6 @@ UserFunctionListWidget::UserFunctionListWidget(QWidget* parent)
     m_filterTimer->setInterval(500);
     m_filterTimer->setSingleShot(true);
 
-    m_userFunctions->setAlternatingRowColors(true);
     m_userFunctions->setAutoScroll(true);
     m_userFunctions->setColumnCount(3);
     m_userFunctions->setEditTriggers(QTreeWidget::NoEditTriggers);
@@ -42,7 +42,7 @@ UserFunctionListWidget::UserFunctionListWidget(QWidget* parent)
     m_userFunctions->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_userFunctions->setRootIsDecorated(false);
     m_userFunctions->setSelectionBehavior(QTreeWidget::SelectRows);
-    m_userFunctions->setCursor(QCursor(Qt::PointingHandCursor));
+    DockListStyle::apply(m_userFunctions);
 
     m_noMatchLabel->setAlignment(Qt::AlignCenter);
     m_noMatchLabel->adjustSize();
@@ -150,9 +150,7 @@ void UserFunctionListWidget::updateList()
         m_noMatchLabel->hide();
         m_userFunctions->sortItems(0, Qt::AscendingOrder);
     } else {
-        m_noMatchLabel->setGeometry(m_userFunctions->geometry());
-        m_noMatchLabel->show();
-        m_noMatchLabel->raise();
+        DockListStyle::showCenteredNoMatchLabel(m_userFunctions, m_noMatchLabel);
     }
 
     setUpdatesEnabled(true);

@@ -7,6 +7,7 @@
 #include "core/evaluator.h"
 #include "core/numberformatter.h"
 #include "core/session.h"
+#include "gui/dockliststyle.h"
 
 #include <QAction>
 #include <QEvent>
@@ -27,10 +28,9 @@ HistoryWidget::HistoryWidget(QWidget *parent)
     : QWidget(parent)
     , m_list(new QListWidget(this))
 {
-    m_list->setAlternatingRowColors(true);
     m_list->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_list->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-    m_list->setCursor(QCursor(Qt::PointingHandCursor));
+    DockListStyle::apply(m_list);
     m_list->setContextMenuPolicy(Qt::CustomContextMenu);
 
     QVBoxLayout *layout = new QVBoxLayout;
