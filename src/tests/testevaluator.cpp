@@ -8293,34 +8293,41 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
                  << " and has no []" << endl;
         }
     };
-    auto checkStandaloneDegreeLiteralKeepsAutomaticDegreeOutput = [&]() {
+    auto checkSingleFieldAngleLiteralsKeepAutomaticDegreeOutput = [&]() {
         settings->angleUnit = 'd';
         settings->resultFormat = 'g';
         settings->simplifyResultExpressions = true;
         Evaluator::instance()->initializeAngleUnits();
 
-        const QString expressions[] = {
-            QStringLiteral("12 [deg]"),
-            QString::fromUtf8("12°")
+        struct Case {
+            QString expression;
+            QString expectedResultLine;
+        };
+        const Case cases[] = {
+            {QStringLiteral("12 [deg]"), QString::fromUtf8("= 12°")},
+            {QString::fromUtf8("12°"), QString::fromUtf8("= 12°")},
+            {QString::fromUtf8("12 [′]"), QString::fromUtf8("= 0.2°")},
+            {QStringLiteral("12 [arcmin]"), QString::fromUtf8("= 0.2°")},
+            {QString::fromUtf8("12′"), QString::fromUtf8("= 0.2°")}
         };
 
-        for (const QString& expr : expressions) {
+        for (const Case& tc : cases) {
             session->clearHistory();
-            eval->setExpression(expr);
+            eval->setExpression(tc.expression);
             const Quantity value = eval->evalUpdateAns();
 
             ++eval_total_tests;
             if (!eval->error().isEmpty()) {
                 ++eval_failed_tests;
                 ++eval_new_failed_tests;
-                cerr << __FILE__ << "[" << __LINE__ << "]\tresult display standalone degree literal output\t[NEW]" << endl
-                     << "\tExpression: " << expr.toUtf8().constData() << endl
+                cerr << __FILE__ << "[" << __LINE__ << "]\tresult display single-field angle literal output\t[NEW]" << endl
+                     << "\tExpression: " << tc.expression.toUtf8().constData() << endl
                      << "\tError: " << qPrintable(eval->error()) << endl;
                 continue;
             }
 
             session->addHistoryEntry(HistoryEntry(
-                expr,
+                tc.expression,
                 value,
                 eval->interpretedExpression()));
 
@@ -8330,14 +8337,13 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
 
             ++eval_total_tests;
             const QString resultLine = display.document()->findBlockByNumber(1).text();
-            const QString expected = QString::fromUtf8("= 12°");
-            if (resultLine != expected) {
+            if (resultLine != tc.expectedResultLine) {
                 ++eval_failed_tests;
                 ++eval_new_failed_tests;
-                cerr << __FILE__ << "[" << __LINE__ << "]\tresult display standalone degree literal output\t[NEW]" << endl
-                     << "\tExpression: " << expr.toUtf8().constData() << endl
+                cerr << __FILE__ << "[" << __LINE__ << "]\tresult display single-field angle literal output\t[NEW]" << endl
+                     << "\tExpression: " << tc.expression.toUtf8().constData() << endl
                      << "\tLine      : " << resultLine.toUtf8().constData() << endl
-                     << "\tExpected  : " << expected.toUtf8().constData() << endl;
+                     << "\tExpected  : " << tc.expectedResultLine.toUtf8().constData() << endl;
             }
         }
     };
@@ -8563,7 +8569,7 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
                          "result display angle suffix in turn mode");
     checkAngleModeSuffix('v', Units::angleModeUnitSymbol('v'), false,
                          "result display angle suffix in revolution mode");
-    checkStandaloneDegreeLiteralKeepsAutomaticDegreeOutput();
+    checkSingleFieldAngleLiteralsKeepAutomaticDegreeOutput();
     checkTrigOutputHasNoAngleSuffix('r',
                                     "result display trig output has no radian suffix");
     checkTrigOutputHasNoAngleSuffix('d',

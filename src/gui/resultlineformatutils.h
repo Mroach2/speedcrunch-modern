@@ -907,16 +907,9 @@ inline QString conversionTargetSuffixForDisplay(const QString& expression)
     return QStringLiteral(" \u2192 ") + target;
 }
 
-inline bool hasSexagesimalFieldsBeyondStandaloneDegrees(const QString& expression)
+inline bool hasCompoundSexagesimalFields(const QString& expression)
 {
     const QString trimmed = expression.trimmed();
-    if (trimmed.contains(UnicodeChars::Prime)
-        || trimmed.contains(UnicodeChars::DoublePrime)
-        || trimmed.contains(UnicodeChars::Apostrophe)
-        || trimmed.contains(UnicodeChars::QuotationMark)) {
-        return true;
-    }
-
     const QList<QChar> degreeMarkers = {
         UnicodeChars::DegreeSign,
         UnicodeChars::MasculineOrdinalIndicator,
@@ -928,7 +921,19 @@ inline bool hasSexagesimalFieldsBeyondStandaloneDegrees(const QString& expressio
             return !trimmed.mid(markerPos + 1).trimmed().isEmpty();
     }
 
-    return false;
+    int minuteSecondMarkerCount = 0;
+    const QList<QChar> minuteSecondMarkers = {
+        UnicodeChars::Prime,
+        UnicodeChars::DoublePrime,
+        UnicodeChars::Apostrophe,
+        UnicodeChars::QuotationMark
+    };
+    for (const QChar ch : trimmed) {
+        if (minuteSecondMarkers.contains(ch))
+            ++minuteSecondMarkerCount;
+    }
+
+    return minuteSecondMarkerCount > 1;
 }
 
 inline bool shouldPreserveDetailedStandaloneSexagesimalAngle(
@@ -939,7 +944,7 @@ inline bool shouldPreserveDetailedStandaloneSexagesimalAngle(
     return value.isDimensionless()
         && settings->angleUnit == 'd'
         && isStandaloneSexagesimalAngleLiteral(sourceExpression)
-        && hasSexagesimalFieldsBeyondStandaloneDegrees(sourceExpression)
+        && hasCompoundSexagesimalFields(sourceExpression)
         && !sourceExpression.contains(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp)
         && !sourceExpression.contains(MathDsl::TransOp);
 }
