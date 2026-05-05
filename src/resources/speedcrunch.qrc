@@ -78,5 +78,12 @@
         <file>color-schemes/Tokyo Night.json</file>
         <file>color-schemes/Rosé Pine Moon.json</file>
         <file>color-schemes/Rosé Pine Dawn.json</file>
+        <file>color-schemes/Carbonfox.json</file>
+        <file>color-schemes/Dawnfox.json</file>
+        <file>color-schemes/Dayfox.json</file>
+        <file>color-schemes/Duskfox.json</file>
+        <file>color-schemes/Nightfox.json</file>
+        <file>color-schemes/Nordfox.json</file>
+        <file>color-schemes/Terafox.json</file>
     </qresource>
 </RCC>
