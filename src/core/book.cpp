@@ -80,8 +80,6 @@ const auto makeIndexPage = []() -> QString
         LINK(geometry/cube, Book::tr("Cube")) BR
         LINK(geometry/cone, Book::tr("Cone")) BR
         LINK(geometry/cylinder, Book::tr("Cylinder")) BR
-        SECTION(Book::tr("Unit Conversions"))
-        LINK(units/temperature, Book::tr("Temperature")) BR
         SECTION(Book::tr("Electronics"))
         LINK(electronics/ohmslaw, Book::tr("Ohm's Law")) BR
         LINK(electronics/power, Book::tr("Power")) BR
@@ -399,24 +397,6 @@ const auto makeRFWavelengthPage = []() -> QString
         END;
 };
 
-const auto makeUnitsTemperaturePage = []() -> QString
-{
-    return
-        BEGIN
-        INDEX_LINK
-        TITLE(Book::tr("Temperature"))
-        FORMULA(Tf = 1.8 * Tc + 32, T<sub>f</sub> = 1.8 * T<sub>c</sub> + 32)
-        FORMULA(Tk = Tc + 273.15, T<sub>k</sub> = T<sub>c</sub> + 273.15)
-        FORMULA(Tc = (Tf - 32) / 1.8, T<sub>c</sub> = (T<sub>f</sub> - 32) / 1.8)
-        FORMULA(Tc = Tk - 273.15, T<sub>c</sub> = T<sub>k</sub> - 273.15)
-        TABLE
-        VARIABLE(T<sub>c</sub>) CAPTION(Book::tr("temperature") + QString::fromUtf8(" (°C)")) ROW
-        VARIABLE(T<sub>f</sub>) CAPTION(Book::tr("temperature") + QString::fromUtf8(" (°F)")) ROW
-        VARIABLE(T<sub>k</sub>) CAPTION(Book::tr("temperature") + " (K)")
-        _TABLE
-        END;
-};
-
 } // namespace
 
 void Book::createPages()
@@ -439,5 +419,4 @@ void Book::createPages()
     addPage("rf/propagation", +makeRFPropagationPage);
     addPage("rf/swr", +makeRFSWRPage);
     addPage("rf/wavelength", +makeRFWavelengthPage);
-    addPage("units/temperature", +makeUnitsTemperaturePage);
 }
