@@ -5,7 +5,8 @@ Widgets
 -------
 
 Apart from the main display, SpeedCrunch offers a number of extra panels, referred to as *widgets* here.
-They can be enabled and disabled via the :menuselection:`View` menu.
+Most of them are dockable panels that can be moved around the main window and enabled or disabled via the
+:menuselection:`View` menu.
 
 * Formula Book
     The formula book provides access to commonly used formulas and calculations. Simply insert
@@ -42,7 +43,7 @@ They can be enabled and disabled via the :menuselection:`View` menu.
     Double-click inserts ``[name]`` in the editor, and the context menu supports edit/delete operations.
 
 * Bit Field
-    The bit field widget is designed to make working with binary numbers easier. It shows a field of 64 squares,
+    The bit field dock is designed to make working with binary numbers easier. It shows a field of 64 squares,
     each representing a bit in the current result. Any bit can be toggled by clicking its square; the resulting
     number is automatically inserted into the editor. Additional buttons allow you to shift, invert and reset all the bits at once.
     While the mouse cursor is hovering over the bit field, scrolling the mouse wheel will also shift the bits.
@@ -590,7 +591,7 @@ Widgets and Docks
 * :kbd:`Control+5`
     Show/hide user functions widget.
 * :kbd:`Control+6`
-    Show/hide bit field widget.
+    Show/hide bit field dock.
 * :kbd:`Control+7`
     Show/hide history widget.
 * :kbd:`Control+8`

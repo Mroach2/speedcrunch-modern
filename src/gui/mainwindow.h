@@ -488,6 +488,7 @@ private:
         GenericDock<VariableListWidget>* variables;
         GenericDock<UserFunctionListWidget>* userFunctions;
         GenericDock<UserUnitListWidget>* userUnits;
+        GenericDock<BitFieldWidget>* bitField;
     } m_docks;
     QList<QDockWidget*> m_allDocks;
 

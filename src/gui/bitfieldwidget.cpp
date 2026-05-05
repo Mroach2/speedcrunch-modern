@@ -176,6 +176,16 @@ BitFieldWidget::BitFieldWidget(QWidget* parent) :
     this->updateFieldLayout();
 }
 
+QSize BitFieldWidget::minimumSizeHint() const
+{
+    QSize hint = QWidget::minimumSizeHint();
+    const int byteHeight = m_byteLayouts.isEmpty() ? 0 : m_byteLayouts.first()->sizeHint().height();
+    const int controlsHeight = m_buttonsLayout ? m_buttonsLayout->sizeHint().height() : 0;
+    const QMargins margins = contentsMargins() + m_mainLayout->contentsMargins();
+    hint.setHeight(qMax(byteHeight, controlsHeight) + margins.top() + margins.bottom());
+    return hint;
+}
+
 /** Update the bitfield layout based on the size of BitFieldWidget and its children.
  * This method should be called during initialization (but only after all the BitFieldWidget
  * members have been set) and every time the size of BitFieldWidget is changed.

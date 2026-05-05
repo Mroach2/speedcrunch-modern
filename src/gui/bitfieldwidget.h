@@ -46,13 +46,14 @@ class BitFieldWidget : public QWidget {
 
 public:
     explicit BitFieldWidget(QWidget* parent = 0);
+    QSize minimumSizeHint() const override;
 
 signals:
     void bitsChanged(const QString&);
 
 protected:
-    virtual void wheelEvent(QWheelEvent*);
-    virtual void resizeEvent(QResizeEvent*);
+    void wheelEvent(QWheelEvent*) override;
+    void resizeEvent(QResizeEvent*) override;
 
 public slots:
     void clear();

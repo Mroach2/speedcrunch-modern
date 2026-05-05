@@ -1503,9 +1503,13 @@ void MainWindow::createFixedWidgets()
 }
 
 void MainWindow::createBitField() {
-    m_widgets.bitField = new BitFieldWidget(m_widgets.root);
-    m_layouts.root->addWidget(m_widgets.bitField);
-    m_widgets.bitField->show();
+    m_docks.bitField = new GenericDock<BitFieldWidget>("MainWindow", QT_TR_NOOP("Bitfield"), this);
+    m_docks.bitField->setObjectName("BitfieldDock");
+    m_docks.bitField->installEventFilter(this);
+    m_docks.bitField->setAllowedAreas(Qt::AllDockWidgetAreas);
+    m_widgets.bitField = m_docks.bitField->widget();
+
+    addTabifiedDock(m_docks.bitField, false);
     m_widgets.display->verticalScrollBar()->setValue(m_widgets.display->verticalScrollBar()->maximum());
     connect(m_widgets.bitField, SIGNAL(bitsChanged(const QString&)), SLOT(handleBitsChanged(const QString&)));
     m_settings->bitfieldVisible = true;
@@ -2300,6 +2304,7 @@ MainWindow::MainWindow()
     m_docks.variables = 0;
     m_docks.userFunctions = 0;
     m_docks.userUnits = 0;
+    m_docks.bitField = 0;
 
     m_status.angleUnit = 0;
     m_status.angleUnitSection = 0;
@@ -3661,6 +3666,14 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
         return false;
     }
 
+    if (o == m_docks.bitField) {
+        if (e->type() == QEvent::Close) {
+            deleteBitField();
+            return true;
+        }
+        return false;
+    }
+
     if (o == m_docks.constants) {
         if (e->type() == QEvent::Close) {
             deleteConstantsDock();
@@ -3754,11 +3767,14 @@ void MainWindow::deleteStatusBar()
 
 void MainWindow::deleteBitField()
 {
-    m_widgets.bitField->hide();
-    m_layouts.root->removeWidget(m_widgets.bitField);
+    if (!m_docks.bitField)
+        return;
+
     disconnect(m_widgets.bitField);
-    m_widgets.bitField->deleteLater();
+    deleteDock(m_docks.bitField);
+    m_docks.bitField = nullptr;
     m_widgets.bitField = 0;
+    m_actions.viewBitfield->setChecked(false);
     m_settings->bitfieldVisible = false;
 }
 
