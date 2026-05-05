@@ -39,6 +39,18 @@ static QString constantExpression(const Constant& constant)
             .arg(constant.value, QString(MathDsl::QuantSp), unit);
 }
 
+static QString displayValue(const Constant& constant)
+{
+    if (constant.domainType != ConstantDomain::Mathematics)
+        return constant.value;
+
+    const int dotPos = constant.value.indexOf(MathDsl::DotSep);
+    if (dotPos < 0)
+        return constant.value;
+
+    return constant.value.left(qMin(constant.value.length(), dotPos + 16));
+}
+
 ConstantsWidget::ConstantsWidget(QWidget* parent)
     : QWidget(parent)
 {
@@ -210,9 +222,10 @@ void ConstantsWidget::filter()
     for (int k = 0; k < clist.count(); ++k) {
         QStringList str;
         str << clist.at(k).name;
+        const QString value = displayValue(clist.at(k));
         QString radCh = (radixChar != MathDsl::DotSep) ?
-            QString(clist.at(k).value).replace(MathDsl::DotSep, radixChar)
-            : clist.at(k).value;
+            QString(value).replace(MathDsl::DotSep, radixChar)
+            : value;
 
         if (layoutDirection() == Qt::RightToLeft) {
             QString normalizedUnit = clist.at(k).unit;
