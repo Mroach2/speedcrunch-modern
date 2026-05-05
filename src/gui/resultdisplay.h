@@ -107,6 +107,8 @@ protected:
     QRect cancelGlyphBadgeRectForEditingIndex() const;
     void updateHoverHighlightSelection();
     void markHistoryBlockIndexCacheDirty();
+    void markSimplifiedExpressionBlock(int blockNumber);
+    void markSimplifiedExpressionBlocks();
     void ensureHistoryBlockIndexCache() const;
 
 private:

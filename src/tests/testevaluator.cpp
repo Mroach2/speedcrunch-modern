@@ -19,8 +19,11 @@
 #include "tests/testcommon.h"
 
 #include <QApplication>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QMouseEvent>
 #include <QTextBlock>
+#include <QTextLayout>
 
 #include <string>
 #include <iostream>
@@ -7149,6 +7152,402 @@ void test_result_display_adds_normalized_sexagesimal_simplification_line()
     settings->simplifyResultExpressions = oldSimplifyResultExpressions;
 }
 
+void test_result_display_highlights_simplified_expression_line()
+{
+    Settings* settings = Settings::instance();
+    const bool oldSyntaxHighlighting = settings->syntaxHighlighting;
+    const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+    const QString oldColorScheme = settings->colorScheme;
+    const QString oldCustomColorSchemeJson = settings->customColorSchemeJson;
+    const char oldAngleUnit = settings->angleUnit;
+
+    settings->syntaxHighlighting = true;
+    settings->simplifyResultExpressions = true;
+    settings->angleUnit = 'd';
+    Evaluator::instance()->initializeAngleUnits();
+
+    QJsonObject colors;
+    colors.insert(QStringLiteral("number"), QStringLiteral("#101010"));
+    colors.insert(QStringLiteral("function"), QStringLiteral("#123456"));
+    colors.insert(QStringLiteral("operator"), QStringLiteral("#654321"));
+    colors.insert(QStringLiteral("result"), QStringLiteral("#abcdef"));
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+
+    eval->setExpression(QStringLiteral("2 * cos(pi) * sin(pi) * cos(pi)"));
+    const Quantity value = eval->evalUpdateAns();
+
+    ++eval_total_tests;
+    if (!eval->error().isEmpty()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\thighlight simplified expression line setup\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+    } else {
+        Session* session = const_cast<Session*>(eval->session());
+        session->clearHistory();
+        session->addHistoryEntry(HistoryEntry(
+            QStringLiteral("2 * cos(pi) * sin(pi) * cos(pi)"),
+            value,
+            eval->interpretedExpression()));
+
+        TestableResultDisplay display;
+        display.resize(800, 600);
+        display.refresh();
+        display.rehighlight();
+
+        auto colorAt = [](const QTextBlock& block, int position) {
+            const auto formats = block.layout()->formats();
+            for (const QTextLayout::FormatRange& range : formats) {
+                if (position >= range.start && position < range.start + range.length)
+                    return range.format.foreground().color();
+            }
+            return QColor();
+        };
+
+        const QTextBlock simplifiedBlock = display.document()->findBlockByNumber(1);
+        const QTextBlock resultBlock = display.document()->findBlockByNumber(2);
+        const int simplifiedFunctionPos = simplifiedBlock.text().indexOf(QString::fromUtf8("cos²"));
+        const int simplifiedExponentPos = simplifiedBlock.text().indexOf(QString::fromUtf8("²"));
+        const int resultTextPos = resultBlock.text().startsWith(QStringLiteral("= ")) ? 2 : 1;
+
+        ++eval_total_tests;
+        const QColor simplifiedFunctionColor = colorAt(simplifiedBlock, simplifiedFunctionPos);
+        if (simplifiedFunctionPos < 0 || simplifiedFunctionColor != QColor(QStringLiteral("#123456"))) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tsimplified expression line uses syntax highlighting\t[NEW]" << endl
+                 << "\tLine : " << simplifiedBlock.text().toUtf8().constData() << endl
+                 << "\tColor: " << simplifiedFunctionColor.name().toUtf8().constData() << endl;
+        }
+
+        ++eval_total_tests;
+        const QColor simplifiedExponentColor = colorAt(simplifiedBlock, simplifiedExponentPos);
+        if (simplifiedExponentPos < 0 || simplifiedExponentColor != QColor(QStringLiteral("#101010"))) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tsimplified expression function exponent uses number highlighting\t[NEW]" << endl
+                 << "\tLine : " << simplifiedBlock.text().toUtf8().constData() << endl
+                 << "\tColor: " << simplifiedExponentColor.name().toUtf8().constData() << endl;
+        }
+
+        ++eval_total_tests;
+        const QColor resultColor = colorAt(resultBlock, resultTextPos);
+        if (resultColor != QColor(QStringLiteral("#abcdef"))) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tformatted result line keeps result highlighting\t[NEW]" << endl
+                 << "\tLine : " << resultBlock.text().toUtf8().constData() << endl
+                 << "\tColor: " << resultColor.name().toUtf8().constData() << endl;
+        }
+
+        session->clearHistory();
+    }
+
+    settings->syntaxHighlighting = oldSyntaxHighlighting;
+    settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    settings->colorScheme = oldColorScheme;
+    settings->customColorSchemeJson = oldCustomColorSchemeJson;
+    settings->angleUnit = oldAngleUnit;
+    Evaluator::instance()->initializeAngleUnits();
+}
+
+void test_result_display_highlights_primary_result_with_extra_result_line()
+{
+    Settings* settings = Settings::instance();
+    const bool oldSyntaxHighlighting = settings->syntaxHighlighting;
+    const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+    const QString oldColorScheme = settings->colorScheme;
+    const QString oldCustomColorSchemeJson = settings->customColorSchemeJson;
+    const bool oldMultipleResultLinesEnabled = settings->multipleResultLinesEnabled;
+    const bool oldSecondaryResultEnabled = settings->secondaryResultEnabled;
+    const char oldAlternativeResultFormat = settings->alternativeResultFormat;
+    const int oldSecondaryResultPrecision = settings->secondaryResultPrecision;
+    const bool oldComplexNumbers = settings->complexNumbers;
+    const bool oldSecondaryComplexNumbers = settings->secondaryComplexNumbers;
+    const char oldSecondaryResultFormatComplex = settings->secondaryResultFormatComplex;
+
+    settings->syntaxHighlighting = true;
+    settings->simplifyResultExpressions = true;
+    settings->multipleResultLinesEnabled = true;
+    settings->secondaryResultEnabled = true;
+    settings->alternativeResultFormat = 'b';
+    settings->secondaryResultPrecision = -1;
+    settings->complexNumbers = false;
+    settings->secondaryComplexNumbers = false;
+    settings->secondaryResultFormatComplex = 'c';
+
+    QJsonObject colors;
+    colors.insert(QStringLiteral("number"), QStringLiteral("#101010"));
+    colors.insert(QStringLiteral("operator"), QStringLiteral("#654321"));
+    colors.insert(QStringLiteral("result"), QStringLiteral("#abcdef"));
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+
+    Session* session = const_cast<Session*>(eval->session());
+    session->clearHistory();
+    session->addHistoryEntry(HistoryEntry(QStringLiteral("12 + 1212"), Quantity(1224)));
+
+    TestableResultDisplay display;
+    display.resize(800, 600);
+    display.refresh();
+    display.rehighlight();
+
+    auto colorAt = [](const QTextBlock& block, int position) {
+        const auto formats = block.layout()->formats();
+        for (const QTextLayout::FormatRange& range : formats) {
+            if (position >= range.start && position < range.start + range.length)
+                return range.format.foreground().color();
+        }
+        return QColor();
+    };
+
+    const QTextBlock primaryResultBlock = display.document()->findBlockByNumber(1);
+    const QTextBlock secondaryResultBlock = display.document()->findBlockByNumber(2);
+
+    ++eval_total_tests;
+    const QColor primaryResultColor = colorAt(primaryResultBlock, 2);
+    if (primaryResultColor != QColor(QStringLiteral("#abcdef"))) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tprimary result keeps result highlighting with extra result line\t[NEW]" << endl
+             << "\tLine : " << primaryResultBlock.text().toUtf8().constData() << endl
+             << "\tColor: " << primaryResultColor.name().toUtf8().constData() << endl;
+    }
+
+    ++eval_total_tests;
+    const QColor secondaryResultColor = colorAt(secondaryResultBlock, 2);
+    if (secondaryResultColor != QColor(QStringLiteral("#abcdef"))) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tsecondary result keeps result highlighting\t[NEW]" << endl
+             << "\tLine : " << secondaryResultBlock.text().toUtf8().constData() << endl
+             << "\tColor: " << secondaryResultColor.name().toUtf8().constData() << endl;
+    }
+
+    session->clearHistory();
+    settings->syntaxHighlighting = oldSyntaxHighlighting;
+    settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    settings->colorScheme = oldColorScheme;
+    settings->customColorSchemeJson = oldCustomColorSchemeJson;
+    settings->multipleResultLinesEnabled = oldMultipleResultLinesEnabled;
+    settings->secondaryResultEnabled = oldSecondaryResultEnabled;
+    settings->alternativeResultFormat = oldAlternativeResultFormat;
+    settings->secondaryResultPrecision = oldSecondaryResultPrecision;
+    settings->complexNumbers = oldComplexNumbers;
+    settings->secondaryComplexNumbers = oldSecondaryComplexNumbers;
+    settings->secondaryResultFormatComplex = oldSecondaryResultFormatComplex;
+}
+
+void test_result_display_highlights_primary_sexagesimal_result_with_extra_result_line()
+{
+    Settings* settings = Settings::instance();
+    const bool oldSyntaxHighlighting = settings->syntaxHighlighting;
+    const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+    const QString oldColorScheme = settings->colorScheme;
+    const QString oldCustomColorSchemeJson = settings->customColorSchemeJson;
+    const bool oldMultipleResultLinesEnabled = settings->multipleResultLinesEnabled;
+    const bool oldSecondaryResultEnabled = settings->secondaryResultEnabled;
+    const char oldResultFormat = settings->resultFormat;
+    const char oldAlternativeResultFormat = settings->alternativeResultFormat;
+    const int oldResultPrecision = settings->resultPrecision;
+    const int oldSecondaryResultPrecision = settings->secondaryResultPrecision;
+    const bool oldComplexNumbers = settings->complexNumbers;
+    const bool oldSecondaryComplexNumbers = settings->secondaryComplexNumbers;
+    const char oldResultFormatComplex = settings->resultFormatComplex;
+    const char oldSecondaryResultFormatComplex = settings->secondaryResultFormatComplex;
+
+    settings->syntaxHighlighting = true;
+    settings->simplifyResultExpressions = true;
+    settings->multipleResultLinesEnabled = true;
+    settings->secondaryResultEnabled = true;
+    settings->resultFormat = 's';
+    settings->alternativeResultFormat = 'h';
+    settings->resultPrecision = -1;
+    settings->secondaryResultPrecision = -1;
+    settings->complexNumbers = false;
+    settings->secondaryComplexNumbers = false;
+    settings->resultFormatComplex = 'c';
+    settings->secondaryResultFormatComplex = 'c';
+
+    QJsonObject colors;
+    colors.insert(QStringLiteral("number"), QStringLiteral("#101010"));
+    colors.insert(QStringLiteral("operator"), QStringLiteral("#654321"));
+    colors.insert(QStringLiteral("result"), QStringLiteral("#abcdef"));
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+
+    Session* session = const_cast<Session*>(eval->session());
+    session->clearHistory();
+    session->addHistoryEntry(HistoryEntry(QStringLiteral("12"), Quantity(12)));
+
+    TestableResultDisplay display;
+    display.resize(800, 600);
+    display.refresh();
+    display.rehighlight();
+
+    auto colorAt = [](const QTextBlock& block, int position) {
+        const auto formats = block.layout()->formats();
+        for (const QTextLayout::FormatRange& range : formats) {
+            if (position >= range.start && position < range.start + range.length)
+                return range.format.foreground().color();
+        }
+        return QColor();
+    };
+
+    const QTextBlock sexagesimalResultBlock = display.document()->findBlockByNumber(1);
+    const QTextBlock hexResultBlock = display.document()->findBlockByNumber(2);
+
+    ++eval_total_tests;
+    const QColor sexagesimalResultColor = colorAt(sexagesimalResultBlock, 2);
+    if (sexagesimalResultColor != QColor(QStringLiteral("#abcdef"))) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tprimary sexagesimal result keeps result highlighting with extra result line\t[NEW]" << endl
+             << "\tLine : " << sexagesimalResultBlock.text().toUtf8().constData() << endl
+             << "\tColor: " << sexagesimalResultColor.name().toUtf8().constData() << endl;
+    }
+
+    ++eval_total_tests;
+    const QColor hexResultColor = colorAt(hexResultBlock, 2);
+    if (hexResultColor != QColor(QStringLiteral("#abcdef"))) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\textra hex result keeps result highlighting after sexagesimal result\t[NEW]" << endl
+             << "\tLine : " << hexResultBlock.text().toUtf8().constData() << endl
+             << "\tColor: " << hexResultColor.name().toUtf8().constData() << endl;
+    }
+
+    session->clearHistory();
+    settings->syntaxHighlighting = oldSyntaxHighlighting;
+    settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    settings->colorScheme = oldColorScheme;
+    settings->customColorSchemeJson = oldCustomColorSchemeJson;
+    settings->multipleResultLinesEnabled = oldMultipleResultLinesEnabled;
+    settings->secondaryResultEnabled = oldSecondaryResultEnabled;
+    settings->resultFormat = oldResultFormat;
+    settings->alternativeResultFormat = oldAlternativeResultFormat;
+    settings->resultPrecision = oldResultPrecision;
+    settings->secondaryResultPrecision = oldSecondaryResultPrecision;
+    settings->complexNumbers = oldComplexNumbers;
+    settings->secondaryComplexNumbers = oldSecondaryComplexNumbers;
+    settings->resultFormatComplex = oldResultFormatComplex;
+    settings->secondaryResultFormatComplex = oldSecondaryResultFormatComplex;
+}
+
+void test_result_display_highlights_primary_radian_result_with_pi_factor_line()
+{
+    Settings* settings = Settings::instance();
+    const bool oldSyntaxHighlighting = settings->syntaxHighlighting;
+    const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+    const QString oldColorScheme = settings->colorScheme;
+    const QString oldCustomColorSchemeJson = settings->customColorSchemeJson;
+    const bool oldMultipleResultLinesEnabled = settings->multipleResultLinesEnabled;
+    const bool oldSecondaryResultEnabled = settings->secondaryResultEnabled;
+    const char oldAngleUnit = settings->angleUnit;
+    const char oldResultFormat = settings->resultFormat;
+    const char oldAlternativeResultFormat = settings->alternativeResultFormat;
+    const int oldResultPrecision = settings->resultPrecision;
+    const int oldSecondaryResultPrecision = settings->secondaryResultPrecision;
+    const bool oldComplexNumbers = settings->complexNumbers;
+    const bool oldSecondaryComplexNumbers = settings->secondaryComplexNumbers;
+    const char oldResultFormatComplex = settings->resultFormatComplex;
+    const char oldSecondaryResultFormatComplex = settings->secondaryResultFormatComplex;
+
+    settings->syntaxHighlighting = true;
+    settings->simplifyResultExpressions = true;
+    settings->multipleResultLinesEnabled = true;
+    settings->secondaryResultEnabled = true;
+    settings->angleUnit = 'r';
+    settings->resultFormat = 'g';
+    settings->alternativeResultFormat = 'p';
+    settings->resultPrecision = -1;
+    settings->secondaryResultPrecision = -1;
+    settings->complexNumbers = false;
+    settings->secondaryComplexNumbers = false;
+    settings->resultFormatComplex = 'c';
+    settings->secondaryResultFormatComplex = 'c';
+    Evaluator::instance()->initializeAngleUnits();
+
+    QJsonObject colors;
+    colors.insert(QStringLiteral("number"), QStringLiteral("#101010"));
+    colors.insert(QStringLiteral("operator"), QStringLiteral("#654321"));
+    colors.insert(QStringLiteral("result"), QStringLiteral("#abcdef"));
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+
+    eval->setExpression(QString::fromUtf8("12°"));
+    const Quantity value = eval->evalUpdateAns();
+
+    ++eval_total_tests;
+    if (!eval->error().isEmpty()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tevaluate radian pi-factor display case\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+    } else {
+        Session* session = const_cast<Session*>(eval->session());
+        session->clearHistory();
+        session->addHistoryEntry(HistoryEntry(QString::fromUtf8("12°"), value, eval->interpretedExpression()));
+
+        TestableResultDisplay display;
+        display.resize(800, 600);
+        display.refresh();
+        display.rehighlight();
+
+        auto colorAt = [](const QTextBlock& block, int position) {
+            const auto formats = block.layout()->formats();
+            for (const QTextLayout::FormatRange& range : formats) {
+                if (position >= range.start && position < range.start + range.length)
+                    return range.format.foreground().color();
+            }
+            return QColor();
+        };
+
+        const QTextBlock radianResultBlock = display.document()->findBlockByNumber(1);
+        const QTextBlock piFactorResultBlock = display.document()->findBlockByNumber(2);
+
+        ++eval_total_tests;
+        const QColor radianResultColor = colorAt(radianResultBlock, 2);
+        if (radianResultColor != QColor(QStringLiteral("#abcdef"))) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tprimary radian result keeps result highlighting with pi-factor result line\t[NEW]" << endl
+                 << "\tLine : " << radianResultBlock.text().toUtf8().constData() << endl
+                 << "\tColor: " << radianResultColor.name().toUtf8().constData() << endl;
+        }
+
+        ++eval_total_tests;
+        const QColor piFactorResultColor = colorAt(piFactorResultBlock, 2);
+        if (piFactorResultColor != QColor(QStringLiteral("#abcdef"))) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tpi-factor result keeps result highlighting\t[NEW]" << endl
+                 << "\tLine : " << piFactorResultBlock.text().toUtf8().constData() << endl
+                 << "\tColor: " << piFactorResultColor.name().toUtf8().constData() << endl;
+        }
+
+        session->clearHistory();
+    }
+
+    settings->syntaxHighlighting = oldSyntaxHighlighting;
+    settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    settings->colorScheme = oldColorScheme;
+    settings->customColorSchemeJson = oldCustomColorSchemeJson;
+    settings->multipleResultLinesEnabled = oldMultipleResultLinesEnabled;
+    settings->secondaryResultEnabled = oldSecondaryResultEnabled;
+    settings->angleUnit = oldAngleUnit;
+    settings->resultFormat = oldResultFormat;
+    settings->alternativeResultFormat = oldAlternativeResultFormat;
+    settings->resultPrecision = oldResultPrecision;
+    settings->secondaryResultPrecision = oldSecondaryResultPrecision;
+    settings->complexNumbers = oldComplexNumbers;
+    settings->secondaryComplexNumbers = oldSecondaryComplexNumbers;
+    settings->resultFormatComplex = oldResultFormatComplex;
+    settings->secondaryResultFormatComplex = oldSecondaryResultFormatComplex;
+    Evaluator::instance()->initializeAngleUnits();
+}
+
 void test_result_display_adds_normalized_sexagesimal_simplification_line_for_arithmetic()
 {
     Settings* settings = Settings::instance();
@@ -9182,6 +9581,10 @@ int main(int argc, char* argv[])
     test_preserve_brackets_for_displayed_conversion_target_without_source_hint();
     test_result_display_preserves_conversion_target_brackets();
     test_result_display_adds_normalized_sexagesimal_simplification_line();
+    test_result_display_highlights_simplified_expression_line();
+    test_result_display_highlights_primary_result_with_extra_result_line();
+    test_result_display_highlights_primary_sexagesimal_result_with_extra_result_line();
+    test_result_display_highlights_primary_radian_result_with_pi_factor_line();
     test_result_display_adds_normalized_sexagesimal_simplification_line_for_arithmetic();
     test_result_display_preserves_fractional_seconds_in_normalized_sexagesimal_line();
     test_result_display_normalized_sexagesimal_line_with_time_conversion_target();

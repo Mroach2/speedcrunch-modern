@@ -8,8 +8,14 @@
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QSyntaxHighlighter>
+#include <QTextBlockUserData>
 
 class QPlainTextEdit;
+
+class SyntaxHighlightBlockData : public QTextBlockUserData {
+public:
+    bool highlightResultExpressionSyntax = false;
+};
 
 class ColorScheme {
 public:

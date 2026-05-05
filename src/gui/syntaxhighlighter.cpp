@@ -232,29 +232,122 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     if (!Settings::instance()->syntaxHighlighting)
         return;
 
+    const SyntaxHighlightBlockData* blockData =
+        dynamic_cast<SyntaxHighlightBlockData*>(currentBlockUserData());
+
     if (text.startsWith(QLatin1String("="))) {
         setFormat(0, 1, colorForRole(ColorScheme::Operator));
-        setFormat(1, text.length(), colorForRole(ColorScheme::Result));
-        if (Settings::instance()->digitGrouping > 0) {
-            // Use token-based grouping for result lines as well, so
-            // integer-only grouping works when lexer splits around radix chars.
-            const Tokens tokens = Evaluator::instance()->scan(text);
-            for (int i = 0; i < tokens.count(); ++i) {
-                const Token& token = tokens.at(i);
-                if (token.type() != Token::stxNumber)
-                    continue;
+        const int expressionOffset = text.startsWith(QLatin1String("= ")) ? 2 : 1;
+        const QString expressionText = text.mid(expressionOffset);
+        const bool highlightResultExpressionSyntax =
+            blockData && blockData->highlightResultExpressionSyntax;
 
-                if (Settings::instance()->digitGroupingIntegerPartOnly
-                        && i > 0
-                        && !tokens.at(i - 1).text().isEmpty()
-                        && (tokens.at(i - 1).type() == Token::stxSep
-                            || tokens.at(i - 1).type() == Token::stxOperator)
-                        && Evaluator::isRadixChar(tokens.at(i - 1).text().at(0).unicode())) {
-                    continue;
+        if (!highlightResultExpressionSyntax) {
+            setFormat(1, text.length(), colorForRole(ColorScheme::Result));
+            if (Settings::instance()->digitGrouping > 0) {
+                // Use token-based grouping for result lines as well, so
+                // integer-only grouping works when lexer splits around radix chars.
+                const Tokens tokens = Evaluator::instance()->scan(text);
+                for (int i = 0; i < tokens.count(); ++i) {
+                    const Token& token = tokens.at(i);
+                    if (token.type() != Token::stxNumber)
+                        continue;
+
+                    if (Settings::instance()->digitGroupingIntegerPartOnly
+                            && i > 0
+                            && !tokens.at(i - 1).text().isEmpty()
+                            && (tokens.at(i - 1).type() == Token::stxSep
+                                || tokens.at(i - 1).type() == Token::stxOperator)
+                            && Evaluator::isRadixChar(tokens.at(i - 1).text().at(0).unicode())) {
+                        continue;
+                    }
+
+                    groupDigits(text, token.pos(), token.size());
                 }
-
-                groupDigits(text, token.pos(), token.size());
             }
+            return;
+        }
+
+        setFormat(expressionOffset, text.length() - expressionOffset, colorForRole(ColorScheme::Number));
+
+        int questionMarkIndex = expressionText.indexOf(MathDsl::CommentSep);
+        if (questionMarkIndex != -1)
+            setFormat(expressionOffset + questionMarkIndex, expressionText.length() - questionMarkIndex, colorForRole(ColorScheme::Comment));
+
+        const QString normalizedExpressionText = textNormalizedForHighlighting(expressionText);
+        Tokens tokens = Evaluator::instance()->scan(normalizedExpressionText);
+        int unitBracketDepth = 0;
+        for (int i = 0; i < tokens.count(); ++i) {
+            const Token& token = tokens.at(i);
+            const QString tokenText = token.text().toLower();
+            QStringList functionNames = FunctionRepo::instance()->getIdentifiers();
+            QColor color;
+            const bool insideUnitBrackets = unitBracketDepth > 0;
+
+            switch (token.type()) {
+            case Token::stxNumber:
+            case Token::stxUnknown:
+                color = colorForRole(insideUnitBrackets ? ColorScheme::Unit : ColorScheme::Number);
+                break;
+            case Token::stxOperator:
+                color = colorForRole(insideUnitBrackets ? ColorScheme::Unit : ColorScheme::Operator);
+                break;
+            case Token::stxSep:
+                color = colorForRole(insideUnitBrackets ? ColorScheme::Unit : ColorScheme::Separator);
+                break;
+            case Token::stxOpenPar:
+            case Token::stxClosePar:
+                color = colorForRole(ColorScheme::Parens);
+                if (token.text() == QString(MathDsl::UnitStart) || token.text() == QString(MathDsl::UnitEnd))
+                    color = colorForRole(ColorScheme::Unit);
+                break;
+            case Token::stxIdentifier:
+                color = colorForRole(ColorScheme::Variable);
+                if (Evaluator::instance()->hasUserFunction(token.text())
+                    || functionNames.contains(tokenText, Qt::CaseInsensitive))
+                    color = colorForRole(ColorScheme::Function);
+                else if (i + 1 < tokens.count()
+                         && tokens.at(i + 1).type() == Token::stxOpenPar
+                         && token.pos() >= 0
+                         && token.pos() + token.size() <= expressionText.size()) {
+                    const QString originalTokenText = expressionText.mid(token.pos(), token.size());
+                    if (hasSuperscriptExponent(originalTokenText)) {
+                        const QString baseName = stripTrailingAsciiDigits(token.text());
+                        if (Evaluator::instance()->hasUserFunction(baseName)
+                            || functionNames.contains(baseName.toLower(), Qt::CaseInsensitive)) {
+                            color = colorForRole(ColorScheme::Function);
+                        }
+                    }
+                }
+                break;
+            case Token::stxUnitIdentifier:
+                color = colorForRole(ColorScheme::Unit);
+                break;
+            default:
+                break;
+            }
+
+            if (color.isValid())
+                setFormat(expressionOffset + token.pos(), token.size(), color);
+            if ((token.type() == Token::stxIdentifier
+                 || token.type() == Token::stxUnitIdentifier)
+                    && token.pos() >= 0
+                    && token.pos() + token.size() <= expressionText.size()) {
+                const QString originalTokenText = expressionText.mid(token.pos(), token.size());
+                for (int j = 0; j < originalTokenText.size(); ++j) {
+                    if (isSuperscriptExponentChar(originalTokenText.at(j)))
+                        setFormat(expressionOffset + token.pos() + j, 1,
+                            token.type() == Token::stxUnitIdentifier
+                                ? colorForRole(ColorScheme::Unit)
+                                : colorForRole(ColorScheme::Number));
+                }
+            }
+
+            if (token.text() == QString(MathDsl::UnitStart))
+                ++unitBracketDepth;
+            else if (token.text() == QString(MathDsl::UnitEnd))
+                unitBracketDepth = qMax(0, unitBracketDepth - 1);
+
         }
         return;
     }

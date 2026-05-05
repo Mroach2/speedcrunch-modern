@@ -220,6 +220,27 @@ QString formattedExpressionForDisplay(const HistoryEntry& entry)
         entry.interpretedExpr());
 }
 
+QString simplifiedExpressionLineForDisplay(const HistoryEntry& entry)
+{
+    const QString simplifiedLine = ResultLineFormatUtils::simplifiedExpressionLineForDisplay(
+        entry.interpretedExpr(),
+        entry.expr(),
+        Settings::instance()->simplifyResultExpressions);
+    return simplifiedLine.isEmpty() ? QString() : QStringLiteral("= ") + simplifiedLine;
+}
+
+bool isSimplifiedExpressionRenderLine(const QStringList& renderedLines, int lineIndex, const QString& simplifiedLine)
+{
+    if (lineIndex <= 0 || lineIndex >= renderedLines.size())
+        return false;
+
+    const QString line = renderedLines.at(lineIndex);
+    if (!line.startsWith(QLatin1String("= ")))
+        return false;
+
+    return !simplifiedLine.isEmpty() && line == simplifiedLine;
+}
+
 QStringList renderedHistoryLinesForDisplay(const HistoryEntry& entry)
 {
     if (entry.hasRenderedLines())
@@ -373,8 +394,13 @@ void ResultDisplay::append(const QString& expression, Quantity& value,
         ctx.round = settings->resultRoundingMode;
         const HistoryEntry entry(expression, value, interpretedExpression, ctx);
         const QStringList resultLines = formatResultLines(entry);
-        for (const QString& line : resultLines)
+        const QString simplifiedLine = simplifiedExpressionLineForDisplay(entry);
+        for (int i = 0; i < resultLines.size(); ++i) {
+            const QString& line = resultLines.at(i);
             appendPlainText(line);
+            if (isSimplifiedExpressionRenderLine(QStringList({ formattedExpressionForDisplay(entry) }) + resultLines, i + 1, simplifiedLine))
+                markSimplifiedExpressionBlock(document()->lastBlock().blockNumber());
+        }
     }
     appendPlainText(QLatin1String(""));
     markHistoryBlockIndexCacheDirty();
@@ -460,8 +486,13 @@ void ResultDisplay::refresh()
         clearHoverFeedback();
         const HistoryEntry& lastEntry = session->historyEntryAtRef(historyCount - 1);
         const QStringList renderedLines = renderedHistoryLinesForDisplay(lastEntry);
-        for (const QString& line : renderedLines)
+        const QString simplifiedLine = simplifiedExpressionLineForDisplay(lastEntry);
+        for (int i = 0; i < renderedLines.size(); ++i) {
+            const QString& line = renderedLines.at(i);
             appendPlainText(line);
+            if (isSimplifiedExpressionRenderLine(renderedLines, i, simplifiedLine))
+                markSimplifiedExpressionBlock(document()->lastBlock().blockNumber());
+        }
         appendPlainText(QLatin1String(""));
         m_count = historyCount;
         m_firstDisplayedHistoryIndex = firstDisplayedHistoryIndex;
@@ -484,6 +515,7 @@ void ResultDisplay::refresh()
     }
 
     setPlainText(allLines.join(QLatin1String("\n")));
+    markSimplifiedExpressionBlocks();
     verticalScrollBar()->setValue(previousScrollValue);
 
     markHistoryBlockIndexCacheDirty();
@@ -531,6 +563,7 @@ void ResultDisplay::refreshLastHistoryEntry()
     cursor.setPosition(startBlock.position());
     cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
     cursor.insertText(updatedLines.join(QLatin1String("\n")));
+    markSimplifiedExpressionBlocks();
     markHistoryBlockIndexCacheDirty();
     updateHoverHighlightSelection();
     updateScrollToBottomButtonVisibility();
@@ -1369,6 +1402,43 @@ void ResultDisplay::updateHoverHighlightSelection()
 void ResultDisplay::markHistoryBlockIndexCacheDirty()
 {
     m_historyBlockIndexCacheDirty = true;
+}
+
+void ResultDisplay::markSimplifiedExpressionBlock(int blockNumber)
+{
+    QTextBlock block = document()->findBlockByNumber(blockNumber);
+    if (!block.isValid())
+        return;
+
+    auto data = new SyntaxHighlightBlockData;
+    data->highlightResultExpressionSyntax = true;
+    block.setUserData(data);
+    m_highlighter->rehighlightBlock(block);
+}
+
+void ResultDisplay::markSimplifiedExpressionBlocks()
+{
+    const Session* session = Evaluator::instance()->session();
+    const int historySize = session->historySize();
+    const int firstDisplayedHistoryIndex = firstDisplayedHistoryIndexForCount(historySize);
+
+    QTextBlock block = document()->firstBlock();
+    for (int i = firstDisplayedHistoryIndex; i < historySize && block.isValid(); ++i) {
+        const HistoryEntry& entry = session->historyEntryAtRef(i);
+        const QStringList renderedLines = renderedHistoryLinesForDisplay(entry);
+        const QString simplifiedLine = simplifiedExpressionLineForDisplay(entry);
+        int lineIndex = 0;
+
+        while (block.isValid()) {
+            const QString blockText = block.text();
+            if (isSimplifiedExpressionRenderLine(renderedLines, lineIndex, simplifiedLine))
+                markSimplifiedExpressionBlock(block.blockNumber());
+            block = block.next();
+            ++lineIndex;
+            if (blockText.isEmpty())
+                break;
+        }
+    }
 }
 
 void ResultDisplay::ensureHistoryBlockIndexCache() const
