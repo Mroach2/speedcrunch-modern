@@ -8293,6 +8293,54 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
                  << " and has no []" << endl;
         }
     };
+    auto checkStandaloneDegreeLiteralKeepsAutomaticDegreeOutput = [&]() {
+        settings->angleUnit = 'd';
+        settings->resultFormat = 'g';
+        settings->simplifyResultExpressions = true;
+        Evaluator::instance()->initializeAngleUnits();
+
+        const QString expressions[] = {
+            QStringLiteral("12 [deg]"),
+            QString::fromUtf8("12°")
+        };
+
+        for (const QString& expr : expressions) {
+            session->clearHistory();
+            eval->setExpression(expr);
+            const Quantity value = eval->evalUpdateAns();
+
+            ++eval_total_tests;
+            if (!eval->error().isEmpty()) {
+                ++eval_failed_tests;
+                ++eval_new_failed_tests;
+                cerr << __FILE__ << "[" << __LINE__ << "]\tresult display standalone degree literal output\t[NEW]" << endl
+                     << "\tExpression: " << expr.toUtf8().constData() << endl
+                     << "\tError: " << qPrintable(eval->error()) << endl;
+                continue;
+            }
+
+            session->addHistoryEntry(HistoryEntry(
+                expr,
+                value,
+                eval->interpretedExpression()));
+
+            TestableResultDisplay display;
+            display.resize(800, 600);
+            display.refresh();
+
+            ++eval_total_tests;
+            const QString resultLine = display.document()->findBlockByNumber(1).text();
+            const QString expected = QString::fromUtf8("= 12°");
+            if (resultLine != expected) {
+                ++eval_failed_tests;
+                ++eval_new_failed_tests;
+                cerr << __FILE__ << "[" << __LINE__ << "]\tresult display standalone degree literal output\t[NEW]" << endl
+                     << "\tExpression: " << expr.toUtf8().constData() << endl
+                     << "\tLine      : " << resultLine.toUtf8().constData() << endl
+                     << "\tExpected  : " << expected.toUtf8().constData() << endl;
+            }
+        }
+    };
     auto checkTrigOutputHasNoAngleSuffix = [&](char angleUnit, const char* label) {
         settings->angleUnit = angleUnit;
         Evaluator::instance()->initializeAngleUnits();
@@ -8515,6 +8563,7 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
                          "result display angle suffix in turn mode");
     checkAngleModeSuffix('v', Units::angleModeUnitSymbol('v'), false,
                          "result display angle suffix in revolution mode");
+    checkStandaloneDegreeLiteralKeepsAutomaticDegreeOutput();
     checkTrigOutputHasNoAngleSuffix('r',
                                     "result display trig output has no radian suffix");
     checkTrigOutputHasNoAngleSuffix('d',

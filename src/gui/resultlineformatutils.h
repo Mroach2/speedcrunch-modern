@@ -907,13 +907,39 @@ inline QString conversionTargetSuffixForDisplay(const QString& expression)
     return QStringLiteral(" \u2192 ") + target;
 }
 
-inline bool shouldPreserveStandaloneSexagesimalAngle(const QString& sourceExpression,
-                                                      const Quantity& value,
-                                                      const Settings* settings)
+inline bool hasSexagesimalFieldsBeyondStandaloneDegrees(const QString& expression)
+{
+    const QString trimmed = expression.trimmed();
+    if (trimmed.contains(UnicodeChars::Prime)
+        || trimmed.contains(UnicodeChars::DoublePrime)
+        || trimmed.contains(UnicodeChars::Apostrophe)
+        || trimmed.contains(UnicodeChars::QuotationMark)) {
+        return true;
+    }
+
+    const QList<QChar> degreeMarkers = {
+        UnicodeChars::DegreeSign,
+        UnicodeChars::MasculineOrdinalIndicator,
+        UnicodeChars::RingOperator
+    };
+    for (const QChar marker : degreeMarkers) {
+        const int markerPos = trimmed.indexOf(marker);
+        if (markerPos >= 0)
+            return !trimmed.mid(markerPos + 1).trimmed().isEmpty();
+    }
+
+    return false;
+}
+
+inline bool shouldPreserveDetailedStandaloneSexagesimalAngle(
+    const QString& sourceExpression,
+    const Quantity& value,
+    const Settings* settings)
 {
     return value.isDimensionless()
         && settings->angleUnit == 'd'
         && isStandaloneSexagesimalAngleLiteral(sourceExpression)
+        && hasSexagesimalFieldsBeyondStandaloneDegrees(sourceExpression)
         && !sourceExpression.contains(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp)
         && !sourceExpression.contains(MathDsl::TransOp);
 }
@@ -1242,7 +1268,7 @@ inline QString formatNumericResultLine(const Quantity& value,
                                        const Settings* settings)
 {
     if (!expressionUsesTrigFunction(sourceExpression, interpretedExpression)
-        && shouldPreserveStandaloneSexagesimalAngle(
+        && shouldPreserveDetailedStandaloneSexagesimalAngle(
             sourceExpression, value, settings)) {
         resultFormat = 's';
     }
