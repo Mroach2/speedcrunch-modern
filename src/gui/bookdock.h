@@ -16,8 +16,12 @@ class TextBrowser : public QTextBrowser {
     Q_OBJECT
 public:
     TextBrowser(QWidget* parent) : QTextBrowser(parent) { }
+signals:
+    void paletteStyleChanged();
 public slots:
-    virtual void setSource(const QUrl&) { }
+    void setSource(const QUrl&) { }
+protected:
+    void changeEvent(QEvent*) override;
 };
 
 class BookDock : public QDockWidget {
@@ -35,16 +39,21 @@ public slots:
     QString currentPage() const;
 
 protected:
-    virtual void changeEvent(QEvent*);
+    void changeEvent(QEvent*) override;
 
 private slots:
     void handleAnchorClick(const QUrl&);
+    void refreshCurrentPage();
 
 private:
+    QString applyPaletteStyle(const QString& content) const;
+    void updatePaletteStyle();
+
     Q_DISABLE_COPY(BookDock)
     Book* m_book;
     TextBrowser* m_browser;
     QString m_currentPage;
+    bool m_refreshingPaletteStyle = false;
 };
 
 #endif // GUI_BOOKDOCK_H

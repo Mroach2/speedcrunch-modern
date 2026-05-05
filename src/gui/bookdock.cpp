@@ -11,6 +11,7 @@
 #include "core/mathdsl.h"
 
 #include <QEvent>
+#include <QPalette>
 #include <QRegularExpression>
 #include <QTextBrowser>
 #include <QVBoxLayout>
@@ -59,6 +60,17 @@ QString formatFormulaForEditorInsertion(const QString& text)
 
     return formatted;
 }
+
+} // namespace
+
+void TextBrowser::changeEvent(QEvent* event)
+{
+    QTextBrowser::changeEvent(event);
+    if (event->type() == QEvent::PaletteChange
+        || event->type() == QEvent::ApplicationPaletteChange
+        || event->type() == QEvent::StyleChange) {
+        emit paletteStyleChanged();
+    }
 }
 
 BookDock::BookDock(QWidget* parent)
@@ -72,8 +84,11 @@ BookDock::BookDock(QWidget* parent)
     m_browser->setLineWrapMode(QTextEdit::NoWrap);
     m_browser->setOpenLinks(false);
     m_browser->setOpenExternalLinks(false);
+    m_browser->setAutoFillBackground(true);
+    updatePaletteStyle();
 
     connect(m_browser, SIGNAL(anchorClicked(const QUrl&)), SLOT(handleAnchorClick(const QUrl&)));
+    connect(m_browser, SIGNAL(paletteStyleChanged()), SLOT(refreshCurrentPage()));
 
     bookLayout->addWidget(m_browser);
     widget->setLayout(bookLayout);
@@ -113,7 +128,7 @@ void BookDock::openPage(const QUrl& url)
     const QString page = url.toString().isEmpty() ? QStringLiteral("index") : url.toString();
     QString content = m_book->getPageContent(page);
     if (!content.isNull())
-        m_browser->setHtml(content);
+        m_browser->setHtml(applyPaletteStyle(content));
     m_currentPage = page;
 }
 
@@ -122,18 +137,66 @@ void BookDock::retranslateText()
     setWindowTitle(tr("Formula Book"));
     QString content = m_book->getCurrentPageContent();
     if (!content.isNull())
-        m_browser->setHtml(content);
+        m_browser->setHtml(applyPaletteStyle(content));
 }
 
 void BookDock::changeEvent(QEvent* event)
 {
-    if (event->type() == QEvent::LanguageChange)
+    if (event->type() == QEvent::LanguageChange) {
         retranslateText();
-    else
+    } else if (event->type() == QEvent::PaletteChange
+               || event->type() == QEvent::ApplicationPaletteChange
+               || event->type() == QEvent::StyleChange) {
+        refreshCurrentPage();
+    } else {
         QDockWidget::changeEvent(event);
+    }
 }
 
 QString BookDock::currentPage() const
 {
     return m_currentPage.isEmpty() ? QStringLiteral("index") : m_currentPage;
+}
+
+void BookDock::refreshCurrentPage()
+{
+    if (m_refreshingPaletteStyle)
+        return;
+
+    m_refreshingPaletteStyle = true;
+    updatePaletteStyle();
+    const QString content = m_book->getCurrentPageContent();
+    if (!content.isNull())
+        m_browser->setHtml(applyPaletteStyle(content));
+    m_refreshingPaletteStyle = false;
+}
+
+QString BookDock::applyPaletteStyle(const QString& content) const
+{
+    const QPalette palette = m_browser->palette();
+    const QString style = QStringLiteral(
+        "<style>"
+        "body { background-color: %1; color: %2; }"
+        "a:link, a:visited { color: %3; }"
+        ".page-link a:link, .page-link a:visited { color: %2; }"
+        ".formula a:link, .formula a:visited { color: %3; }"
+        "</style>")
+        .arg(palette.color(QPalette::Base).name(),
+             palette.color(QPalette::Text).name(),
+             palette.color(QPalette::Link).name());
+
+    QString styledContent = content;
+    const int headEnd = styledContent.indexOf(QStringLiteral("</head>"), 0, Qt::CaseInsensitive);
+    if (headEnd >= 0)
+        styledContent.insert(headEnd, style);
+    return styledContent;
+}
+
+void BookDock::updatePaletteStyle()
+{
+    QPalette palette = this->palette();
+    palette.setColor(QPalette::Base, palette.color(QPalette::Window));
+    palette.setColor(QPalette::Text, palette.color(QPalette::WindowText));
+    m_browser->setPalette(palette);
+    m_browser->viewport()->setPalette(palette);
 }
