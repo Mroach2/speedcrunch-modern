@@ -4817,9 +4817,9 @@ void test_display_interpreted_spacing()
             + QStringLiteral("1")
             + divide
             + QStringLiteral("(1")
-            + dotSpaced
+            + times
             + QStringLiteral("(2³)")
-            + dotSpaced
+            + times
             + QStringLiteral("3)")
             + minus
             + QStringLiteral("2^(12!)")
@@ -4830,9 +4830,9 @@ void test_display_interpreted_spacing()
         QStringLiteral("1")
             + divide
             + QStringLiteral("(1")
-            + dotSpaced
+            + times
             + QStringLiteral("(2³)")
-            + dotSpaced
+            + times
             + QStringLiteral("3)"));
     CHECK_DISPLAY_INTERPRETED(
         QStringLiteral("2^123"),

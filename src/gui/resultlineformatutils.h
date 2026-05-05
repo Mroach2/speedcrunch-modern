@@ -458,6 +458,132 @@ inline QString foldRepeatedAdditiveTermsForDisplay(const QString& text)
         s.remove(QRegularExpression(QStringLiteral("\\s+")));
         return s;
     };
+    auto isNumericPowerLiteralRange = [](const Tokens& parsed, int start, int end, const auto& self) -> bool {
+        if (start < 0 || end >= parsed.size() || start > end)
+            return false;
+
+        // Strip unary prefix.
+        while (start <= end) {
+            const Token::Operator op = parsed.at(start).asOperator();
+            if (op == Token::Addition || op == Token::Subtraction || op == Token::BitwiseLogicalNOT) {
+                ++start;
+                continue;
+            }
+            break;
+        }
+        // Strip postfix operators.
+        while (start <= end) {
+            const Token::Operator op = parsed.at(end).asOperator();
+            if (op == Token::Percent || op == Token::Factorial) {
+                --end;
+                continue;
+            }
+            break;
+        }
+        if (start > end)
+            return false;
+
+        // Single numeric token (covers rendered superscript numbers too).
+        if (start == end && parsed.at(start).isNumber())
+            return true;
+
+        // Unwrap one full parenthesized layer.
+        if (parsed.at(start).asOperator() == Token::AssociationStart
+            && parsed.at(end).asOperator() == Token::AssociationEnd) {
+            int depth = 0;
+            bool enclosesWholeRange = true;
+            for (int i = start; i <= end; ++i) {
+                const Token::Operator op = parsed.at(i).asOperator();
+                if (op == Token::AssociationStart)
+                    ++depth;
+                else if (op == Token::AssociationEnd)
+                    --depth;
+                if (depth == 0 && i < end) {
+                    enclosesWholeRange = false;
+                    break;
+                }
+            }
+            if (enclosesWholeRange)
+                return self(parsed, start + 1, end - 1, self);
+        }
+
+        // Accept numeric powers recursively: a^b where both sides are numeric literals/powers.
+        int exponentOp = -1;
+        int depth = 0;
+        for (int i = start; i <= end; ++i) {
+            const Token::Operator op = parsed.at(i).asOperator();
+            if (op == Token::AssociationStart) {
+                ++depth;
+                continue;
+            }
+            if (op == Token::AssociationEnd) {
+                --depth;
+                continue;
+            }
+            if (depth == 0 && op == Token::Exponentiation) {
+                if (exponentOp >= 0)
+                    return false;
+                exponentOp = i;
+            }
+        }
+        if (exponentOp <= start || exponentOp >= end)
+            return false;
+
+        return self(parsed, start, exponentOp - 1, self)
+            && self(parsed, exponentOp + 1, end, self);
+    };
+    auto isNumericLiteralOrPowerLiteral = [&isNumericPowerLiteralRange](const QString& factorText) {
+        auto isWholeWrappedByParentheses = [](const QString& text) {
+            if (text.size() < 2 || text.at(0) != MathDsl::GroupStart || text.at(text.size() - 1) != MathDsl::GroupEnd)
+                return false;
+            int depth = 0;
+            for (int i = 0; i < text.size(); ++i) {
+                const QChar ch = text.at(i);
+                if (ch == MathDsl::GroupStart)
+                    ++depth;
+                else if (ch == MathDsl::GroupEnd)
+                    --depth;
+                if (depth == 0 && i < text.size() - 1)
+                    return false;
+            }
+            return depth == 0;
+        };
+        auto isDisplayedNumericPowerLiteralText = [&isWholeWrappedByParentheses](QString text) {
+            text = text.trimmed();
+            while (isWholeWrappedByParentheses(text))
+                text = text.mid(1, text.size() - 2).trimmed();
+            if (text.isEmpty())
+                return false;
+            bool hasDigit = false;
+            for (const QChar& ch : text) {
+                if (ch.isDigit()) {
+                    hasDigit = true;
+                    continue;
+                }
+                if (MathDsl::isSuperscriptPowerChar(ch))
+                    continue;
+                if (ch == MathDsl::PowOp
+                    || ch == MathDsl::AddOp
+                    || ch == MathDsl::SubOp
+                    || ch == MathDsl::SubOpAl1
+                    || ch == QLatin1Char('.')
+                    || ch == QLatin1Char(','))
+                {
+                    continue;
+                }
+                return false;
+            }
+            return hasDigit;
+        };
+
+        if (isDisplayedNumericPowerLiteralText(factorText))
+            return true;
+
+        const Tokens parsed = Evaluator::instance()->scan(factorText);
+        if (!parsed.valid() || parsed.isEmpty())
+            return false;
+        return isNumericPowerLiteralRange(parsed, 0, parsed.size() - 1, isNumericPowerLiteralRange);
+    };
 
     QHash<QString, double> coeffByKey;
     QHash<QString, QString> displayByKey;
@@ -534,11 +660,17 @@ inline QString foldRepeatedAdditiveTermsForDisplay(const QString& text)
 
         QString term = base;
         if (std::abs(magnitude - 1.0) >= 1e-12) {
+            const QChar mulOp = isNumericLiteralOrPowerLiteral(base)
+                ? MathDsl::MulCrossOp
+                : MathDsl::MulDotOp;
+            const QChar mulWrap = (mulOp == MathDsl::MulCrossOp)
+                ? MathDsl::MulCrossWrapSp
+                : MathDsl::MulDotWrapSp;
             // Keep coefficient*term rendering on the same DSL-wrapped spacing
             // path used by display formatting, so mixed-alias inputs do not
             // regress to compact "4·x" while other paths show "4 · x".
             term = formatCoeff(magnitude)
-                + MathDsl::buildWrappedToken(MathDsl::MulDotOp, MathDsl::MulDotWrapSp)
+                + MathDsl::buildWrappedToken(mulOp, mulWrap)
                 + base;
         }
 

@@ -1328,8 +1328,77 @@ static bool isIntegerNumericLiteralOperandForDisplay(const Tokens& tokens,
     return false;
 }
 
+static bool isNumericPowerLiteralOperandForDisplay(const Tokens& tokens,
+                                                   int rangeStart,
+                                                   int rangeEnd)
+{
+    if (rangeStart < 0 || rangeEnd >= tokens.size() || rangeStart > rangeEnd)
+        return false;
+
+    int start = rangeStart;
+    int end = rangeEnd;
+
+    if (tokens.at(start).asOperator() == Token::AssociationStart
+        && tokens.at(end).asOperator() == Token::AssociationEnd) {
+        int depth = 0;
+        bool enclosesWholeRange = true;
+        for (int i = start; i <= end; ++i) {
+            const Token::Operator op = tokens.at(i).asOperator();
+            if (op == Token::AssociationStart)
+                ++depth;
+            else if (op == Token::AssociationEnd)
+                --depth;
+            if (depth == 0 && i < end) {
+                enclosesWholeRange = false;
+                break;
+            }
+        }
+        if (enclosesWholeRange)
+            return isNumericPowerLiteralOperandForDisplay(tokens, start + 1, end - 1);
+    }
+
+    int exponentOp = -1;
+    int depth = 0;
+    for (int i = start; i <= end; ++i) {
+        const Token::Operator op = tokens.at(i).asOperator();
+        if (op == Token::AssociationStart) {
+            ++depth;
+            continue;
+        }
+        if (op == Token::AssociationEnd) {
+            --depth;
+            continue;
+        }
+        if (depth == 0 && op == Token::Exponentiation) {
+            if (exponentOp >= 0)
+                return false;
+            exponentOp = i;
+        }
+    }
+
+    if (exponentOp <= start || exponentOp >= end)
+        return false;
+
+    const bool baseIsNumericLiteral =
+        isStandaloneNumericLiteralOperandForDisplay(tokens, start, exponentOp - 1)
+        || isNumericPowerLiteralOperandForDisplay(tokens, start, exponentOp - 1);
+    const bool exponentIsNumericLiteral =
+        isStandaloneNumericLiteralOperandForDisplay(tokens, exponentOp + 1, end)
+        || isNumericPowerLiteralOperandForDisplay(tokens, exponentOp + 1, end);
+    return baseIsNumericLiteral && exponentIsNumericLiteral;
+}
+
+static bool isHardcodedNumericLiteralOperandForDisplay(const Tokens& tokens,
+                                                       int rangeStart,
+                                                       int rangeEnd)
+{
+    return isStandaloneNumericLiteralOperandForDisplay(tokens, rangeStart, rangeEnd)
+        || isNumericPowerLiteralOperandForDisplay(tokens, rangeStart, rangeEnd);
+}
+
 static bool isHardcodedNumericOperandOnLeftOfMultiplicationForDisplay(const Tokens& tokens,
-                                                                      int mulIndex)
+                                                                      int mulIndex,
+                                                                      bool includeNumericPowers)
 {
     if (mulIndex <= 0 || mulIndex >= tokens.size())
         return false;
@@ -1391,8 +1460,13 @@ static bool isHardcodedNumericOperandOnLeftOfMultiplicationForDisplay(const Toke
     {
         QString baseText = tokens.at(start - 2).text();
         normalizeUnsignedIntegerEquivalentDecimalText(baseText);
-        if (baseText == QLatin1String("10")
-            && isIntegerNumericLiteralOperandForDisplay(tokens, start, end)) {
+        const bool hasIntegerExponent = isIntegerNumericLiteralOperandForDisplay(tokens, start, end);
+        const bool canTreatAsNumericPower =
+            includeNumericPowers
+            ? isHardcodedNumericLiteralOperandForDisplay(tokens, start, end)
+            : hasIntegerExponent;
+        if ((baseText == QLatin1String("10") && hasIntegerExponent)
+            || (includeNumericPowers && canTreatAsNumericPower)) {
             start -= 2;
         }
     }
@@ -1406,11 +1480,14 @@ static bool isHardcodedNumericOperandOnLeftOfMultiplicationForDisplay(const Toke
         }
     }
 
-    return isStandaloneNumericLiteralOperandForDisplay(tokens, start, end);
+    return includeNumericPowers
+        ? isHardcodedNumericLiteralOperandForDisplay(tokens, start, end)
+        : isStandaloneNumericLiteralOperandForDisplay(tokens, start, end);
 }
 
 static bool isHardcodedNumericOperandOnRightOfMultiplicationForDisplay(const Tokens& tokens,
-                                                                       int mulIndex)
+                                                                       int mulIndex,
+                                                                       bool includeNumericPowers)
 {
     if (mulIndex < 0 || mulIndex >= tokens.size() - 1)
         return false;
@@ -1483,10 +1560,6 @@ static bool isHardcodedNumericOperandOnRightOfMultiplicationForDisplay(const Tok
     if (end + 1 < tokens.size() && tokens.at(end + 1).asOperator() == Token::Exponentiation) {
         if (start != end || !tokens.at(start).isNumber())
             return false;
-        QString baseText = tokens.at(start).text();
-        normalizeUnsignedIntegerEquivalentDecimalText(baseText);
-        if (baseText != QLatin1String("10"))
-            return false;
 
         const int exponentStart = end + 2;
         if (exponentStart >= tokens.size())
@@ -1514,10 +1587,21 @@ static bool isHardcodedNumericOperandOnRightOfMultiplicationForDisplay(const Tok
             exponentEnd = groupEnd;
         }
 
-        return isIntegerNumericLiteralOperandForDisplay(tokens, exponentStart, exponentEnd);
+        const bool hasIntegerExponent =
+            isIntegerNumericLiteralOperandForDisplay(tokens, exponentStart, exponentEnd);
+        if (includeNumericPowers)
+            return isHardcodedNumericLiteralOperandForDisplay(tokens, start, exponentEnd);
+
+        QString baseText = tokens.at(start).text();
+        normalizeUnsignedIntegerEquivalentDecimalText(baseText);
+        if (baseText != QLatin1String("10"))
+            return false;
+        return hasIntegerExponent;
     }
 
-    return isStandaloneNumericLiteralOperandForDisplay(tokens, start, end);
+    return includeNumericPowers
+        ? isHardcodedNumericLiteralOperandForDisplay(tokens, start, end)
+        : isStandaloneNumericLiteralOperandForDisplay(tokens, start, end);
 }
 
 static bool isUnsignedDecimalIntegerText(const QString& text)
@@ -2977,8 +3061,8 @@ static QString simplifyRepeatedBasesInMultiplicativeTermForDisplay(const QString
         }
         if (!positiveFactors.isEmpty()) {
             if (!result.isEmpty())
-                result += MathDsl::MulDotOp;
-            result += positiveFactors.join(QString(MathDsl::MulDotOp));
+                result += MathDsl::MulOpAl1;
+            result += positiveFactors.join(QString(MathDsl::MulOpAl1));
         }
         for (const QString& factor : negativeFactors) {
             if (result.isEmpty())
@@ -4232,9 +4316,11 @@ static QString formatInterpretedExpressionForDisplayImpl(const QString& expressi
 
         if (op == Token::Multiplication) {
             const bool hasNumericLiteralLhs =
-                isHardcodedNumericOperandOnLeftOfMultiplicationForDisplay(tokens, i);
+                isHardcodedNumericOperandOnLeftOfMultiplicationForDisplay(
+                    tokens, i, true);
             const bool hasNumericLiteralRhs =
-                isHardcodedNumericOperandOnRightOfMultiplicationForDisplay(tokens, i);
+                isHardcodedNumericOperandOnRightOfMultiplicationForDisplay(
+                    tokens, i, true);
             const QChar mulSign = (hasNumericLiteralLhs && hasNumericLiteralRhs)
                 ? MathDsl::MulCrossOp
                 : MathDsl::MulDotOp;
@@ -6429,8 +6515,13 @@ QString Evaluator::buildInterpretedExpressionFromOpcodes() const
         if (opcodeType == Opcode::Mul && !isImplicitMultiplication) {
             static const QRegularExpression s_scientificPowerOfTenRE(
                 QStringLiteral(R"(^10\^(?:[−-]?\d+|\([−-]?\d+\))$)"));
+            const bool keepLeftNumericPowerUnwrappedBeforeAtomicNumber =
+                left.rootOpcode == Opcode::Pow
+                && left.isNumericOnly
+                && rightIsAtomicNumericForGrouping;
             if (left.rootOpcode == Opcode::Pow
                 && !left.isLiteralSymbol
+                && !keepLeftNumericPowerUnwrappedBeforeAtomicNumber
                 && !s_scientificPowerOfTenRE.match(leftText).hasMatch()
                 && !isWrappedInOuterParentheses(leftText))
             {
@@ -6485,11 +6576,14 @@ QString Evaluator::buildInterpretedExpressionFromOpcodes() const
             && leftIsAtomicNumeric
             && rightIsAtomicNumeric;
         static const QRegularExpression s_endsWithDigitRE(QStringLiteral(R"([0-9]$)"));
+        static const QRegularExpression s_endsWithDigitOrSuperscriptRE(
+            QStringLiteral(R"([0-9⁰¹²³⁴⁵⁶⁷⁸⁹]$)"));
         const bool isNumericBoundaryTimesNumber =
             opcodeType == Opcode::Mul
             && !isImplicitMultiplication
             && rightIsAtomicNumeric
-            && s_endsWithDigitRE.match(leftText).hasMatch();
+            && (s_endsWithDigitRE.match(leftText).hasMatch()
+                || s_endsWithDigitOrSuperscriptRE.match(leftText).hasMatch());
         const bool isLiteralSymbolMultiplication =
             opcodeType == Opcode::Mul
             && !isNumberTimesNumber

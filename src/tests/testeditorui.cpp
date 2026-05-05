@@ -100,6 +100,7 @@ private slots:
     void tooltip_shows_interpreted_expression_for_non_trig_sexagesimal_expression();
     void tooltip_shows_simplified_line_for_repeated_trig_with_degree_sign();
     void tooltip_shows_simplified_line_for_mixed_revolution_aliases();
+    void tooltip_uses_cross_for_literal_number_products_in_simplified_line();
     void tooltip_keeps_quantsp_before_degree_celsius();
     void tooltip_handles_affine_temperature_units_without_arrow_and_with_conversion();
     void tooltip_shows_selection_result_when_selecting_with_shift_arrows();
@@ -2912,6 +2913,55 @@ void TestEditorUi::tooltip_shows_simplified_line_for_mixed_revolution_aliases()
     settings->resultFormat = oldResultFormat;
     settings->simplifyResultExpressions = oldSimplify;
     Evaluator::instance()->initializeAngleUnits();
+}
+
+void TestEditorUi::tooltip_uses_cross_for_literal_number_products_in_simplified_line()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    Settings* settings = Settings::instance();
+    const char oldResultFormat = settings->resultFormat;
+    const bool oldSimplify = settings->simplifyResultExpressions;
+    settings->resultFormat = 'f';
+    settings->simplifyResultExpressions = true;
+
+    QSignalSpy spy(&editor, SIGNAL(autoCalcMessageAvailable(const QString&)));
+
+    editor.setText(QStringLiteral("pi*2^(-2)*pi+3*4*3"));
+    editor.setCursorPosition(editor.text().size());
+    editor.refreshAutoCalc();
+    QCoreApplication::processEvents();
+
+    QVERIFY(!spy.isEmpty());
+    const QString message = spy.takeLast().at(0).toString();
+    const bool hasParenthesizedPowerTerm =
+        message.contains(QString::fromUtf8("= π² · (2⁻²) + (3²) × 4"));
+    const bool hasUnparenthesizedPowerTerm =
+        message.contains(QString::fromUtf8("= π² · (2⁻²) + 3² × 4"));
+    QVERIFY2(hasParenthesizedPowerTerm || hasUnparenthesizedPowerTerm,
+             qPrintable(QStringLiteral("Expected cross between literal numbers in simplified line, got: %1").arg(message)));
+
+    QSignalSpy interpretedSpy(&editor, SIGNAL(autoCalcMessageAvailable(const QString&)));
+    editor.setText(QStringLiteral("pi*2^(-2)*pi+3^2*4"));
+    editor.setCursorPosition(editor.text().size());
+    editor.refreshAutoCalc();
+    QCoreApplication::processEvents();
+
+    QVERIFY(!interpretedSpy.isEmpty());
+    const QString interpretedMessage = interpretedSpy.takeLast().at(0).toString();
+    const bool interpretedHasParenthesizedPowerTerm =
+        interpretedMessage.contains(QString::fromUtf8("π · (2⁻²) · π + (3²) × 4"));
+    const bool interpretedHasUnparenthesizedPowerTerm =
+        interpretedMessage.contains(QString::fromUtf8("π · (2⁻²) · π + 3² × 4"));
+    QVERIFY2(interpretedHasParenthesizedPowerTerm || interpretedHasUnparenthesizedPowerTerm,
+             qPrintable(QStringLiteral("Expected interpreted line to use cross for numeric-literal product, got: %1")
+                 .arg(interpretedMessage)));
+
+    settings->resultFormat = oldResultFormat;
+    settings->simplifyResultExpressions = oldSimplify;
 }
 
 void TestEditorUi::tooltip_keeps_quantsp_before_degree_celsius()
