@@ -465,7 +465,9 @@ static bool canEndUnitConversionLeftOperand(const QChar& ch)
         || ch == MathDsl::GroupEnd
         || ch == MathDsl::UnitEnd
         || ch == MathDsl::Deg
-        || ch == UnicodeChars::MasculineOrdinalIndicator;
+        || ch == UnicodeChars::MasculineOrdinalIndicator
+        || ch == UnicodeChars::Prime
+        || ch == UnicodeChars::DoublePrime;
 }
 
 static bool isBlockingBinaryOperator(const QChar& ch)

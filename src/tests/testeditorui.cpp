@@ -916,20 +916,28 @@ void TestEditorUi::converts_double_minus_sequence_to_unit_conversion_after_mascu
     QVERIFY(QTest::qWaitForWindowExposed(&editor));
     editor.setFocus();
 
-    editor.setText(QString::fromUtf8("12º"));
-    editor.setCursorPosition(editor.text().size());
-    QTest::keyClick(&editor, Qt::Key_Minus, Qt::NoModifier);
-    QTest::keyClick(&editor, Qt::Key_Minus, Qt::NoModifier);
-
-    const QString actual = editor.document()->toRawText();
-    const QString expected =
-        QString::fromUtf8("12°")
-        + QString(MathDsl::SubWrapSp)
+    const QString conversion =
+        QString(MathDsl::SubWrapSp)
         + QString(MathDsl::TransOp)
         + QString(MathDsl::SubWrapSp)
         + QStringLiteral("[]");
-    QCOMPARE(actual, expected);
-    QCOMPARE(editor.textCursor().position(), actual.size() - 1);
+    const QPair<QString, QString> cases[] = {
+        {QString::fromUtf8("12º"), QString::fromUtf8("12°") + conversion},
+        {QString::fromUtf8("23°"), QString::fromUtf8("23°") + conversion},
+        {QString::fromUtf8("23′"), QString::fromUtf8("23′") + conversion},
+        {QString::fromUtf8("23″"), QString::fromUtf8("23″") + conversion}
+    };
+
+    for (const auto& tc : cases) {
+        editor.setText(tc.first);
+        editor.setCursorPosition(editor.text().size());
+        QTest::keyClick(&editor, Qt::Key_Minus, Qt::NoModifier);
+        QTest::keyClick(&editor, Qt::Key_Minus, Qt::NoModifier);
+
+        const QString actual = editor.document()->toRawText();
+        QCOMPARE(actual, tc.second);
+        QCOMPARE(editor.textCursor().position(), actual.size() - 1);
+    }
 }
 
 void TestEditorUi::inserts_unit_conversion_with_placeholder_when_typing_arrow_symbol()
