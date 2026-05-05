@@ -7096,6 +7096,44 @@ void test_result_display_preserves_conversion_target_brackets()
     session->clearHistory();
 }
 
+void test_result_display_preserves_converted_sexagesimal_expression_line()
+{
+    Settings* settings = Settings::instance();
+    const char oldAngleUnit = settings->angleUnit;
+    settings->angleUnit = 'r';
+    Evaluator::instance()->initializeAngleUnits();
+
+    const QString expression = QString::fromUtf8("179°59′59″ → [rad]");
+    eval->setExpression(expression);
+    eval->evalUpdateAns();
+
+    ++eval_total_tests;
+    if (!eval->error().isEmpty()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tevaluate converted sexagesimal expression display\t[NEW]" << endl
+             << "\tError: " << qPrintable(eval->error()) << endl;
+    } else {
+        const QString displayed = ResultLineFormatUtils::formattedExpressionLineForDisplay(
+            expression,
+            eval->interpretedExpression());
+        const QString expected = QString::fromUtf8("179°59′59″ → [rad]");
+
+        ++eval_total_tests;
+        if (displayed != expected) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tpreserve converted sexagesimal expression line\t[NEW]" << endl
+                 << "\tDisplayed  : " << displayed.toUtf8().constData() << endl
+                 << "\tExpected   : " << expected.toUtf8().constData() << endl
+                 << "\tInterpreted: " << eval->interpretedExpression().toUtf8().constData() << endl;
+        }
+    }
+
+    settings->angleUnit = oldAngleUnit;
+    Evaluator::instance()->initializeAngleUnits();
+}
+
 void test_result_display_adds_normalized_sexagesimal_simplification_line()
 {
     Settings* settings = Settings::instance();
@@ -9635,6 +9673,7 @@ int main(int argc, char* argv[])
     test_preserve_brackets_for_displayed_conversion_target();
     test_preserve_brackets_for_displayed_conversion_target_without_source_hint();
     test_result_display_preserves_conversion_target_brackets();
+    test_result_display_preserves_converted_sexagesimal_expression_line();
     test_result_display_adds_normalized_sexagesimal_simplification_line();
     test_result_display_highlights_simplified_expression_line();
     test_result_display_highlights_primary_result_with_extra_result_line();

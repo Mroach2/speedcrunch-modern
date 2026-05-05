@@ -773,9 +773,53 @@ inline QString simplifiedExpressionLineForDisplay(const QString& interpretedExpr
     return foldRepeatedAdditiveTermsForDisplay(simplifiedDisplay);
 }
 
+inline QString conversionTargetSuffixForDisplay(const QString& expression)
+{
+    const int asciiArrowPos = expression.lastIndexOf(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp);
+    const int unicodeArrowPos = expression.lastIndexOf(MathDsl::TransOp);
+
+    int arrowPos = -1;
+    int arrowWidth = 0;
+    if (asciiArrowPos >= 0 && asciiArrowPos >= unicodeArrowPos) {
+        arrowPos = asciiArrowPos;
+        arrowWidth = 2;
+    } else if (unicodeArrowPos >= 0) {
+        arrowPos = unicodeArrowPos;
+        arrowWidth = 1;
+    }
+
+    if (arrowPos < 0)
+        return QString();
+
+    const QString target = expression.mid(arrowPos + arrowWidth).trimmed();
+    if (target.isEmpty())
+        return QString();
+
+    return QStringLiteral(" \u2192 ") + target;
+}
+
 inline QString formattedExpressionLineForDisplay(const QString& sourceExpression,
                                                  const QString& interpretedExpression)
 {
+    const QString sourceConversionTargetSuffix =
+        conversionTargetSuffixForDisplay(sourceExpression);
+    if (!sourceConversionTargetSuffix.isEmpty()) {
+        const int asciiArrowPos =
+            sourceExpression.lastIndexOf(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp);
+        const int unicodeArrowPos = sourceExpression.lastIndexOf(MathDsl::TransOp);
+        const int arrowPos = qMax(asciiArrowPos, unicodeArrowPos);
+        const QString sourceLeft = sourceExpression.left(arrowPos).trimmed();
+        const bool preserveConvertedStandaloneSexagesimalAngle =
+            isStandaloneSexagesimalAngleLiteral(sourceLeft)
+            && !sourceLeft.contains(MathDsl::UnitStart)
+            && !sourceLeft.contains(MathDsl::UnitEnd);
+        if (preserveConvertedStandaloneSexagesimalAngle) {
+            return DisplayFormatUtils::applyDigitGroupingForDisplay(
+                UnicodeChars::normalizePiForDisplay(sourceLeft))
+                + sourceConversionTargetSuffix;
+        }
+    }
+
     const bool preserveStandaloneSexagesimalAngle =
         isStandaloneSexagesimalAngleLiteral(sourceExpression)
         && !sourceExpression.contains(MathDsl::UnitStart)
@@ -880,31 +924,6 @@ inline bool isPureTimeQuantity(const Quantity& value)
     return it != dimension.constEnd()
         && it->numerator() == 1
         && it->denominator() == 1;
-}
-
-inline QString conversionTargetSuffixForDisplay(const QString& expression)
-{
-    const int asciiArrowPos = expression.lastIndexOf(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp);
-    const int unicodeArrowPos = expression.lastIndexOf(MathDsl::TransOp);
-
-    int arrowPos = -1;
-    int arrowWidth = 0;
-    if (asciiArrowPos >= 0 && asciiArrowPos >= unicodeArrowPos) {
-        arrowPos = asciiArrowPos;
-        arrowWidth = 2;
-    } else if (unicodeArrowPos >= 0) {
-        arrowPos = unicodeArrowPos;
-        arrowWidth = 1;
-    }
-
-    if (arrowPos < 0)
-        return QString();
-
-    const QString target = expression.mid(arrowPos + arrowWidth).trimmed();
-    if (target.isEmpty())
-        return QString();
-
-    return QStringLiteral(" \u2192 ") + target;
 }
 
 inline bool hasCompoundSexagesimalFields(const QString& expression)
