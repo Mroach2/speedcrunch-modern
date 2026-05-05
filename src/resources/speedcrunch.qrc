@@ -72,5 +72,7 @@
         <file>color-schemes/Monokai.json</file>
         <file>color-schemes/GitHub Dark.json</file>
         <file>color-schemes/GitHub light.json</file>
+        <file>color-schemes/Gruvbox Dark.json</file>
+        <file>color-schemes/Gruvbox Light.json</file>
     </qresource>
 </RCC>
