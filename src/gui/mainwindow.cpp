@@ -1185,11 +1185,11 @@ void MainWindow::createMenus()
 
     m_menus.display = m_menus.settings->addMenu("");
     m_menus.colorScheme = m_menus.display->addMenu("");
+    m_menus.colorScheme->addAction(m_actions.settingsDisplayColorSchemeCustom);
+    m_menus.colorScheme->addSeparator();
     const auto schemes = m_actions.settingsDisplayColorSchemes;
     for (auto& action : schemes)
         m_menus.colorScheme->addAction(action);
-    m_menus.colorScheme->addSeparator();
-    m_menus.colorScheme->addAction(m_actions.settingsDisplayColorSchemeCustom);
     m_menus.display->addAction(m_actions.settingsDisplayFont);
     m_menus.display->addSeparator();
     m_menus.display->addAction(m_actions.settingsBehaviorSyntaxHighlighting);
@@ -2531,14 +2531,16 @@ void MainWindow::showCustomThemeDialog()
     QPlainTextEdit* preview = new QPlainTextEdit(&dialog);
     preview->setReadOnly(true);
     preview->setPlainText(
-        QStringLiteral("2+2*5\n"
-                       "3^4 + 2^10\n"
-                       "sin(pi/6) + cos(pi/3)\n"
-                       "distance=42[km]\n"
-                       "speed=distance/1.5[h]\n"
-                       "f(x)=x^2+2*x+1\n"
-                       "f(ans) ? quadratic sample\n"
-                       "= 256"));
+        QStringLiteral("cos(2 · π + (3 / 2) · π)\n"
+                       "= 0.98512127610111389784\n"
+                       "\n"
+                       "average({1;2;3;4;5}) ? Calculate the average of the list\n"
+                       "= 3\n"
+                       "\n"
+                       "distance = 42 [km] + 195 [m] → [km] ? Marathon distance\n"
+                       "= 42.195 km"
+                    )
+                );
     auto previewHighlighter = new SyntaxHighlighter(preview);
     layout->addWidget(preview);
 
