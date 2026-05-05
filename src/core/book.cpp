@@ -54,8 +54,12 @@
 #define LINK(link,text) "<span class=\"page-link\"><a href=\""#link"\">"+text+"</a></span>"
 #define TITLE(s) "<h1>"+(s)+"</h1><div>"
 #define SUBTITLE(s) "<h2>"#s+"</h2><div>"
+// Clickable formula without a unit block.
 #define FORMULA(link,text) "<span class=\"formula\"><a href=\"formula:"#link"\">"#text"</a></span><br />"
-#define FORMULA_UNIT(link,text,unit) "<span class=\"formula\"><a href=\"formula:"#link"\">"#text"</a></span> <span class=\"unit\">"#unit"</span><br />"
+// Clickable formula with the same unit text used for editor insertion and display.
+#define FORMULA_UNIT(link,text,unit) "<span class=\"formula\"><a href=\"formula:"#link" ["#unit"]\">"#text"</a></span> <span class=\"unit\">"#unit"</span><br />"
+// Clickable formula with editor unit text displayed "as" separate HTML unit markup.
+#define FORMULA_UNIT_AS(link,text,unit,displayUnit) "<span class=\"formula\"><a href=\"formula:"#link" ["#unit"]\">"#text"</a></span> <span class=\"unit\">"#displayUnit"</span><br />"
 #define TABLE "<table><tr>"
 #define ROW "</tr><tr>"
 #define _TABLE "</div></tr></table>"
@@ -314,12 +318,12 @@ const auto makeRFAntennasPage = []() -> QString
         BEGIN
         INDEX_LINK
         TITLE(Book::tr("Radio Frequency"))
-        FORMULA_UNIT(Pd = Pin / (4 * π * r%5e2), Pd = P<sub>in</sub> / (4&middot;π&middot;r<sup>2</sup>), W&middot;m<sup>-2</sup>)
-        FORMULA_UNIT(E = sqrt(Pd * 120 * π), E = &radic;(P<sub>d</sub>&middot;120&middot;π), V&middot;m<sup>-1</sup>)
-        FORMULA_UNIT(E = sqrt((Pin * 120 * π) / (4 * π * r%5e2)), E = &radic;[(P<sub>in</sub>&middot;120&middot;π) / (4&middot;π&middot;r<sup>2</sup>)], V&middot;m<sup>-1</sup>)
-        FORMULA_UNIT(E = sqrt(30 * Pin) / r, E = &radic;(30&middot;P<sub>in</sub>) / r, V&middot;m<sup>-1</sup>)
-        FORMULA_UNIT(Ed = E * sqrt(D), Ed = E&middot;&radic;D, V&middot;m<sup>-1</sup>)
-        FORMULA_UNIT(Edp = E * sqrt(1.64), Edp = E&middot;&radic;1.64, V&middot;m<sup>-1</sup>)
+        FORMULA_UNIT_AS(Pd = Pin / (4 * π * r%5e2), Pd = P<sub>in</sub> / (4&middot;π&middot;r<sup>2</sup>), W/m%5e2, W&middot;m<sup>-2</sup>)
+        FORMULA_UNIT_AS(E = sqrt(Pd * 120 * π), E = &radic;(P<sub>d</sub>&middot;120&middot;π), V/m, V&middot;m<sup>-1</sup>)
+        FORMULA_UNIT_AS(E = sqrt((Pin * 120 * π) / (4 * π * r%5e2)), E = &radic;[(P<sub>in</sub>&middot;120&middot;π) / (4&middot;π&middot;r<sup>2</sup>)], V/m, V&middot;m<sup>-1</sup>)
+        FORMULA_UNIT_AS(E = sqrt(30 * Pin) / r, E = &radic;(30&middot;P<sub>in</sub>) / r, V/m, V&middot;m<sup>-1</sup>)
+        FORMULA_UNIT_AS(Ed = E * sqrt(D), Ed = E&middot;&radic;D, V/m, V&middot;m<sup>-1</sup>)
+        FORMULA_UNIT_AS(Edp = E * sqrt(1.64), Edp = E&middot;&radic;1.64, V/m, V&middot;m<sup>-1</sup>)
         END;
 };
 
@@ -345,9 +349,9 @@ const auto makeRFPropagationPage = []() -> QString
         INDEX_LINK
         TITLE(Book::tr("Velocity of Propagation (coax)"))
         SUBTITLE(V<sub>p</sub> = c / &radic;e<sub>r</sub>)
-        FORMULA_UNIT(Vp = 3e8 / sqrt(er), V<sub>p</sub> = 3e8 / &radic;e<sub>r</sub>, m&middot;s<sup>-1</sup>)
-        FORMULA_UNIT(Vp = 299792458 / sqrt(er), V<sub>p</sub> = 299792458 / &radic;e<sub>r</sub>, m&middot;s<sup>-1</sup>)
-        FORMULA_UNIT(Vp = 983571056.43045 / sqrt(er), V<sub>p</sub> = 983571056.43045 / &radic;e<sub>r</sub>, ft&middot;s<sup>-1</sup>)
+        FORMULA_UNIT_AS(Vp = 3e8 / sqrt(er), V<sub>p</sub> = 3e8 / &radic;e<sub>r</sub>, m/s, m&middot;s<sup>-1</sup>)
+        FORMULA_UNIT_AS(Vp = 299792458 / sqrt(er), V<sub>p</sub> = 299792458 / &radic;e<sub>r</sub>, m/s, m&middot;s<sup>-1</sup>)
+        FORMULA_UNIT_AS(Vp = 983571056.43045 / sqrt(er), V<sub>p</sub> = 983571056.43045 / &radic;e<sub>r</sub>, ft/s, ft&middot;s<sup>-1</sup>)
         TABLE
         VARIABLE(c) CAPTION(Book::tr("speed of light")) ROW
         VARIABLE(e) CAPTION(Book::tr("dielectric constant")) ROW
@@ -365,8 +369,8 @@ const auto makeRFSWRPage = []() -> QString
         FORMULA(r = (SWR-1) / (SWR+1), &rho; = (SWR - 1) / (SWR + 1))
         FORMULA(r = (Z-1) / (Z+1), &rho; = (Z - 1) / (Z + 1))
         FORMULA_UNIT(Z = (1+r) / (1-r), Z = (1 + &rho;) / (1 - &rho;), &Omega;)
-        FORMULA_UNIT(RL = -20 * log(r), R<sub>L</sub> = -20&middot;log(&rho;), dB)
-        FORMULA_UNIT(RL = -20 * log((SWR-1)/(SWR+1)), R<sub>L</sub> = -20&middot;log[(SWR - 1) / (SWR + 1)], dB)
+        FORMULA(RL = -20 * log(r), R<sub>L</sub> = -20&middot;log(&rho;))
+        FORMULA(RL = -20 * log((SWR-1)/(SWR+1)), R<sub>L</sub> = -20&middot;log[(SWR - 1) / (SWR + 1)])
         FORMULA_UNIT(Pr = Pin * r%5e2, P<sub>r</sub> = P<sub>in</sub>&middot;&rho;<sup>2</sup>, W)
         FORMULA_UNIT(Pt = Pin * (1-r%5e2), P<sub>t</sub> = P<sub>in</sub>&middot;(1-&rho;<sup>2</sup>), W)
         TABLE
