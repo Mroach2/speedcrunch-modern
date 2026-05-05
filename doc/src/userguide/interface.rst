@@ -502,23 +502,29 @@ Editing
 User Interface Settings
 +++++++++++++++++++++++
 
-* :menuselection:`Settings --> Appearance --> Theme`
-    Select a theme. Built-in themes are listed first, followed by
-    :menuselection:`Custom...`.
+* :menuselection:`Settings --> Appearance --> Theme...`
+    Open the theme dialog. Themes are listed in :guilabel:`Light Themes` and
+    :guilabel:`Dark Themes` groups. Selecting a theme updates the preview
+    immediately; :guilabel:`Apply` applies the selected or customized theme
+    without closing the dialog.
 
-    The :menuselection:`Custom...` entry opens the custom theme editor, where each
-    supported color role can be adjusted and previewed. The preview box is read-only
-    and includes representative expressions (numbers, exponents, functions, variables,
-    units, comments, and result lines) so changes are visible immediately.
+    The :guilabel:`Preview` area shows representative result-display and
+    editor content so that the syntax-highlighting, result, background,
+    editor-background, and scrollbar roles are visible while editing.
 
-    The custom editor includes:
+    The :guilabel:`Colors` area provides per-role color selection buttons showing
+    both the ``#RRGGBB`` value and the actual color. Changing any color creates a
+    custom theme based on the current selection.
 
-    * per-role color selection buttons showing both the ``#RRGGBB`` value and the
-      actual color;
-    * :guilabel:`Import...` to load a theme from a JSON file;
-    * :guilabel:`Export...` to save the current custom theme as JSON.
+    The dialog also includes:
 
-    When the dialog opens, it initializes from the currently selected theme.
+    * :guilabel:`Import...` to copy a theme JSON file into SpeedCrunch's
+      user theme directory and refresh the theme lists;
+    * :guilabel:`Export...` to save the current theme as JSON in the same user
+      theme directory.
+
+    Import and export refuse theme names that collide with built-in themes.
+    Import asks for confirmation before overwriting an existing custom theme.
 
     SpeedCrunch also supports loading additional theme files from the following
     directory:
@@ -537,7 +543,7 @@ User Interface Settings
     For the full schema, see :doc:`theme_json_schema`.
 
     .. versionadded:: 1.0
-       The :menuselection:`Custom...` theme editor, including live preview and JSON import/export.
+       The :menuselection:`Theme...` dialog, including live preview and JSON import/export.
 * :menuselection:`Settings --> Appearance --> Font`
     Select the font to use for the expression editor and result display.
 * :menuselection:`Settings --> Appearance --> Syntax Highlighting`

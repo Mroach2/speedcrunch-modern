@@ -78,6 +78,32 @@ static const QVector<QString> colorSchemeSearchPaths()
     return searchPaths;
 }
 
+QVector<QString> ColorScheme::fileSystemSearchPaths()
+{
+    QVector<QString> paths;
+    const auto searchPaths = colorSchemeSearchPaths();
+    for (const auto& path : searchPaths) {
+        if (!path.startsWith(QLatin1Char(':')))
+            paths.append(path);
+    }
+    return paths;
+}
+
+bool ColorScheme::isBuiltInName(const QString& name)
+{
+    return loadFromFile(QStringLiteral(":/color-schemes/%1.%2").arg(name, COLOR_SCHEME_EXTENSION)).isValid();
+}
+
+QString ColorScheme::filePathForName(const QString& name)
+{
+    for (const auto& path : colorSchemeSearchPaths()) {
+        const QString fileName = QString("%1/%2.%3").arg(path, name, COLOR_SCHEME_EXTENSION);
+        if (loadFromFile(fileName).isValid())
+            return fileName;
+    }
+    return QString();
+}
+
 QColor getFallbackColor(ColorScheme::Role role)
 {
     switch (role) {
@@ -145,12 +171,9 @@ ColorScheme ColorScheme::loadFromFile(const QString& path)
 
 ColorScheme ColorScheme::loadByName(const QString& name)
 {
-    for (auto& path : colorSchemeSearchPaths()) {
-        auto fileName = QString("%1/%2.%3").arg(path, name, COLOR_SCHEME_EXTENSION);
-        auto colorScheme = loadFromFile(fileName);
-        if (colorScheme.isValid())
-            return colorScheme;
-    }
+    const QString fileName = filePathForName(name);
+    if (!fileName.isEmpty())
+        return loadFromFile(fileName);
     return ColorScheme();
 }
 

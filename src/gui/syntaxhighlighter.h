@@ -38,6 +38,9 @@ public:
     QJsonObject toJsonObject() const;
 
     static QStringList enumerate();
+    static bool isBuiltInName(const QString& name);
+    static QVector<QString> fileSystemSearchPaths();
+    static QString filePathForName(const QString& name);
     static ColorScheme loadFromFile(const QString& path);
     static ColorScheme loadByName(const QString& name);
     static ColorScheme fromJsonObject(const QJsonObject& object);

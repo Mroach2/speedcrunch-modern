@@ -72,6 +72,7 @@
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
+#include <QListWidget>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -80,6 +81,7 @@
 #include <QPushButton>
 #include <QScreen>
 #include <QGuiApplication>
+#include <QSignalBlocker>
 #include <QSpinBox>
 #include <QStandardPaths>
 #include <QScrollBar>
@@ -91,7 +93,6 @@
 #include <QJsonDocument>
 
 #include <algorithm>
-
 #ifdef Q_OS_WIN32
 #include "windows.h"
 #include <shlobj.h>
@@ -280,6 +281,21 @@ void updateColorButtonStyle(QPushButton* button, const QColor& color)
     button->setText(color.name());
     button->setStyleSheet(QStringLiteral("QPushButton { background-color: %1; color: %2; }")
                               .arg(color.name(), textColor));
+}
+
+enum class ColorSchemeFilter {
+    Dark,
+    Light
+};
+
+bool colorSchemeMatchesFilter(const ColorScheme& scheme, ColorSchemeFilter filter)
+{
+    const QColor background = scheme.colorForRole(ColorScheme::Background);
+    const int brightness = qRound(0.299 * background.red()
+        + 0.587 * background.green()
+        + 0.114 * background.blue());
+
+    return filter == ColorSchemeFilter::Dark ? brightness < 128 : brightness >= 128;
 }
 
 static void typeTextThroughEditorInputRules(Editor* editor, const QString& text)
@@ -654,7 +670,6 @@ void MainWindow::createActions()
     m_actions.settingsBehaviorAutoResultToClipboard->setCheckable(true);
     m_actions.settingsBehaviorSimplifyResultExpressions->setCheckable(true);
     m_actions.settingsResultFormatComplexDisabled->setCheckable(true);
-    m_actions.settingsDisplayColorSchemeCustom->setCheckable(true);
     m_actions.settingsRadixCharComma->setCheckable(true);
     m_actions.settingsRadixCharDefault->setCheckable(true);
     m_actions.settingsRadixCharDot->setCheckable(true);
@@ -981,7 +996,7 @@ void MainWindow::setActionsText()
     m_actions.settingsImaginaryUnitI->setText(MainWindow::tr("Imaginary Unit &i"));
     m_actions.settingsImaginaryUnitJ->setText(MainWindow::tr("Imaginary Unit &j"));
     m_actions.settingsDisplayFont->setText(MainWindow::tr("&Font..."));
-    m_actions.settingsDisplayColorSchemeCustom->setText(MainWindow::tr("&Custom..."));
+    m_actions.settingsDisplayColorSchemeCustom->setText(MainWindow::tr("&Theme..."));
     m_actions.settingsLanguage->setText(MainWindow::tr("&Language..."));
 
     m_actions.helpManual->setText(MainWindow::tr("User &Manual"));
@@ -1184,12 +1199,7 @@ void MainWindow::createMenus()
     menuBar()->addMenu(m_menus.settings);
 
     m_menus.display = m_menus.settings->addMenu("");
-    m_menus.colorScheme = m_menus.display->addMenu("");
-    m_menus.colorScheme->addAction(m_actions.settingsDisplayColorSchemeCustom);
-    m_menus.colorScheme->addSeparator();
-    const auto schemes = m_actions.settingsDisplayColorSchemes;
-    for (auto& action : schemes)
-        m_menus.colorScheme->addAction(action);
+    m_menus.display->addAction(m_actions.settingsDisplayColorSchemeCustom);
     m_menus.display->addAction(m_actions.settingsDisplayFont);
     m_menus.display->addSeparator();
     m_menus.display->addAction(m_actions.settingsBehaviorSyntaxHighlighting);
@@ -1330,7 +1340,6 @@ void MainWindow::setMenusText()
     m_menus.history->setTitle(MainWindow::tr("&History"));
     m_menus.historySaving->setTitle(MainWindow::tr("History &Saving"));
     m_menus.display->setTitle(MainWindow::tr("&Appearance"));
-    m_menus.colorScheme->setTitle(MainWindow::tr("Theme"));
     m_menus.help->setTitle(MainWindow::tr("&Help"));
 }
 
@@ -1897,18 +1906,11 @@ void MainWindow::createFixedConnections()
     connect(this, SIGNAL(resultRoundingModeChanged()), m_widgets.editor, SLOT(refreshAutoCalc()));
     connect(this, SIGNAL(colorSchemeChanged()), m_widgets.display, SLOT(rehighlight()));
     connect(this, SIGNAL(colorSchemeChanged()), m_widgets.editor, SLOT(rehighlight()));
-    connect(m_actionGroups.colorScheme, &QActionGroup::hovered, this, &MainWindow::applyColorSchemeFromAction);
-    connect(m_menus.colorScheme, &QMenu::aboutToHide, this, &MainWindow::revertColorScheme);
-    connect(m_menus.colorScheme, &QMenu::aboutToShow, this, &MainWindow::saveColorSchemeToRevert);
     connect(this, SIGNAL(syntaxHighlightingChanged()), m_widgets.display, SLOT(rehighlight()));
     connect(this, SIGNAL(syntaxHighlightingChanged()), m_widgets.editor, SLOT(rehighlight()));
 
     connect(m_actions.settingsDisplayFont, SIGNAL(triggered()), SLOT(showFontDialog()));
     connect(m_actions.settingsDisplayColorSchemeCustom, SIGNAL(triggered()), SLOT(showCustomThemeDialog()));
-
-    const auto schemes = m_actions.settingsDisplayColorSchemes;
-    for (auto& action : schemes) // TODO: Use Qt 5.7's qAsConst();
-        connect(action, SIGNAL(triggered()), SLOT(applySelectedColorScheme()));
 
     connect(this, SIGNAL(languageChanged()), SLOT(retranslateText()));
 }
@@ -2489,47 +2491,48 @@ void MainWindow::setResultPrecisionCustom()
     checkInitialResultPrecision();
 }
 
-void MainWindow::applySelectedColorScheme()
-{
-    m_settings->colorScheme = m_actionGroups.colorScheme->checkedAction()->data().toString();
-    m_actions.settingsDisplayColorSchemeCustom->setChecked(false);
-    emit colorSchemeChanged();
-}
-
-void MainWindow::applyColorSchemeFromAction(QAction* action)
-{
-    m_settings->colorScheme = action->data().toString();
-    m_actions.settingsDisplayColorSchemeCustom->setChecked(false);
-    emit colorSchemeChanged();
-}
-
-void MainWindow::saveColorSchemeToRevert()
-{
-    m_colorSchemeToRevert = m_settings->colorScheme;
-    m_customColorSchemeJsonToRevert = m_settings->customColorSchemeJson;
-}
-
-void MainWindow::revertColorScheme()
-{
-    m_settings->colorScheme = m_colorSchemeToRevert;
-    m_settings->customColorSchemeJson = m_customColorSchemeJsonToRevert;
-    m_actions.settingsDisplayColorSchemeCustom->setChecked(m_settings->colorScheme == QLatin1String("Custom"));
-    emit colorSchemeChanged();
-}
-
 void MainWindow::showCustomThemeDialog()
 {
     QDialog dialog(this);
-    dialog.setWindowTitle(tr("Custom Theme"));
-    dialog.setMinimumSize(720, 560);
+    dialog.setWindowTitle(tr("Theme"));
 
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
-    layout->addWidget(new QLabel(
-        tr("Customize every theme color role. Import or export theme files in JSON format."),
-        &dialog));
 
-    QPlainTextEdit* preview = new QPlainTextEdit(&dialog);
+    QWidget* themeWidget = new QWidget(&dialog);
+    QHBoxLayout* themeLayout = new QHBoxLayout(themeWidget);
+    themeLayout->setContentsMargins(0, 0, 0, 0);
+    themeLayout->setSpacing(10);
+
+    QGroupBox* lightThemesGroup = new QGroupBox(tr("Light Themes"), themeWidget);
+    QVBoxLayout* lightThemesLayout = new QVBoxLayout(lightThemesGroup);
+    QListWidget* lightThemeList = new QListWidget(lightThemesGroup);
+    lightThemesLayout->addWidget(lightThemeList);
+    themeLayout->addWidget(lightThemesGroup);
+
+    QGroupBox* darkThemesGroup = new QGroupBox(tr("Dark Themes"), themeWidget);
+    QVBoxLayout* darkThemesLayout = new QVBoxLayout(darkThemesGroup);
+    QListWidget* darkThemeList = new QListWidget(darkThemesGroup);
+    darkThemesLayout->addWidget(darkThemeList);
+    themeLayout->addWidget(darkThemesGroup);
+    layout->addWidget(themeWidget);
+
+    QGroupBox* previewGroup = new QGroupBox(tr("Preview"), &dialog);
+    QVBoxLayout* previewGroupLayout = new QVBoxLayout(previewGroup);
+
+    QWidget* previewWidget = new QWidget(previewGroup);
+    QVBoxLayout* previewLayout = new QVBoxLayout(previewWidget);
+    previewLayout->setContentsMargins(0, 0, 0, 0);
+    previewLayout->setSpacing(0);
+
+    QWidget* mainPreviewWidget = new QWidget(previewWidget);
+    QHBoxLayout* mainPreviewLayout = new QHBoxLayout(mainPreviewWidget);
+    mainPreviewLayout->setContentsMargins(0, 0, 0, 0);
+    mainPreviewLayout->setSpacing(0);
+    QPlainTextEdit* preview = new QPlainTextEdit(mainPreviewWidget);
     preview->setReadOnly(true);
+    preview->setFrameShape(QFrame::NoFrame);
+    preview->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    preview->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     preview->setPlainText(
         QStringLiteral("cos(2 · π + (3 / 2) · π)\n"
                        "= 0.98512127610111389784\n"
@@ -2542,15 +2545,46 @@ void MainWindow::showCustomThemeDialog()
                     )
                 );
     auto previewHighlighter = new SyntaxHighlighter(preview);
-    layout->addWidget(preview);
+    QWidget* previewScrollbarTrack = new QWidget(mainPreviewWidget);
+    const int previewScrollbarWidth = m_widgets.display
+        ? m_widgets.display->verticalScrollBar()->sizeHint().width()
+        : previewScrollbarTrack->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+    previewScrollbarTrack->setFixedWidth(previewScrollbarWidth);
+    QVBoxLayout* previewScrollbarLayout = new QVBoxLayout(previewScrollbarTrack);
+    previewScrollbarLayout->setContentsMargins(0, 0, 0, 0);
+    previewScrollbarLayout->setSpacing(0);
+    QWidget* previewScrollbar = new QWidget(previewScrollbarTrack);
+    previewScrollbar->setFixedHeight(28);
+    previewScrollbarLayout->addWidget(previewScrollbar);
+    previewScrollbarLayout->addStretch();
+    mainPreviewLayout->addWidget(preview);
+    mainPreviewLayout->addWidget(previewScrollbarTrack);
+    previewLayout->addWidget(mainPreviewWidget);
 
-    QWidget* rolesWidget = new QWidget(&dialog);
-    QGridLayout* roleLayout = new QGridLayout(rolesWidget);
-    roleLayout->setContentsMargins(0, 0, 0, 0);
+    QPlainTextEdit* editorPreview = new QPlainTextEdit(previewWidget);
+    editorPreview->setReadOnly(true);
+    editorPreview->setFrameShape(QFrame::NoFrame);
+    editorPreview->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    editorPreview->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    editorPreview->setPlainText(QStringLiteral("sqrt(144) + sin(π / 2)"));
+    editorPreview->setFixedHeight(m_widgets.editor ? m_widgets.editor->height() : editorPreview->sizeHint().height());
+    auto editorPreviewHighlighter = new SyntaxHighlighter(editorPreview);
+    previewLayout->addWidget(editorPreview);
+    previewGroupLayout->addWidget(previewWidget);
+    layout->addWidget(previewGroup);
+
+    QGroupBox* rolesGroup = new QGroupBox(tr("Colors"), &dialog);
+    QGridLayout* roleLayout = new QGridLayout(rolesGroup);
     roleLayout->setHorizontalSpacing(10);
     roleLayout->setVerticalSpacing(6);
-    layout->addWidget(rolesWidget);
+    layout->addWidget(rolesGroup);
+    QWidget* rolesWidget = rolesGroup;
 
+    QStringList schemeNames = ColorScheme::enumerate();
+    QString selectedSchemeName = m_settings->colorScheme == QLatin1String("Custom")
+        ? QString()
+        : m_settings->colorScheme;
+    bool isCustomScheme = selectedSchemeName.isEmpty();
     auto currentScheme = ColorScheme::loadByName(m_settings->colorScheme);
     if (!currentScheme.isValid()) {
         const QJsonDocument customDoc = QJsonDocument::fromJson(m_settings->customColorSchemeJson.toUtf8());
@@ -2567,48 +2601,166 @@ void MainWindow::showCustomThemeDialog()
         colorsByRole.insert(roleEntry.second, currentScheme.colorForRole(roleEntry.second));
 
     QMap<ColorScheme::Role, QPushButton*> roleButtons;
-    const auto applyPreview = [&colorsByRole, preview, previewHighlighter]() {
+    const auto applyColorsToControls = [&colorsByRole, &roleButtons, roleEntries]() {
+        for (const auto& roleEntry : roleEntries)
+            updateColorButtonStyle(roleButtons.value(roleEntry.second), colorsByRole.value(roleEntry.second));
+    };
+    const auto setColorsFromScheme = [&colorsByRole, roleEntries](const ColorScheme& scheme) {
+        for (const auto& roleEntry : roleEntries)
+            colorsByRole[roleEntry.second] = scheme.colorForRole(roleEntry.second);
+    };
+    const auto applyPreview = [&colorsByRole, preview, previewHighlighter, previewScrollbarTrack, previewScrollbar, editorPreview, editorPreviewHighlighter]() {
         QJsonObject object;
         const auto roles = ColorScheme::roleNames();
         for (const auto& roleEntry : roles)
             object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
         const ColorScheme scheme = ColorScheme::fromJsonObject(object);
         previewHighlighter->setColorScheme(ColorScheme::fromJsonObject(scheme.toJsonObject()));
+        editorPreviewHighlighter->setColorScheme(ColorScheme::fromJsonObject(scheme.toJsonObject()));
         QPalette palette = preview->palette();
         palette.setColor(QPalette::Base, scheme.colorForRole(ColorScheme::Background));
         preview->setPalette(palette);
         previewHighlighter->rehighlight();
+        previewScrollbarTrack->setStyleSheet(QStringLiteral("background-color: %1;")
+                                                 .arg(scheme.colorForRole(ColorScheme::Background).name()));
+
+        QPalette editorPalette = editorPreview->palette();
+        editorPalette.setColor(QPalette::Base, scheme.colorForRole(ColorScheme::EditorBackground));
+        editorPalette.setColor(QPalette::Text, scheme.colorForRole(ColorScheme::Number));
+        editorPreview->setPalette(editorPalette);
+        editorPreviewHighlighter->rehighlight();
+        previewScrollbar->setStyleSheet(QStringLiteral("background-color: %1;")
+                                            .arg(scheme.colorForRole(ColorScheme::ScrollBar).name()));
+    };
+    const auto updateThemeListHeight = [](QListWidget* list) {
+        const int visibleRows = qMin(list->count(), 7);
+        const int rowHeight = list->sizeHintForRow(0) > 0 ? list->sizeHintForRow(0) : list->fontMetrics().height() + 6;
+        list->setMaximumHeight(rowHeight * visibleRows + list->frameWidth() * 2);
+    };
+    const auto populateThemeList = [&](QListWidget* list, ColorSchemeFilter filter) {
+        const QSignalBlocker blocker(list);
+        list->clear();
+        for (const auto& schemeName : schemeNames) {
+            const ColorScheme scheme = ColorScheme::loadByName(schemeName);
+            if (!scheme.isValid() || !colorSchemeMatchesFilter(scheme, filter))
+                continue;
+            auto item = new QListWidgetItem(schemeName, list);
+            item->setData(Qt::UserRole, schemeName);
+            if (schemeName == selectedSchemeName)
+                list->setCurrentItem(item);
+        }
+        updateThemeListHeight(list);
+    };
+    const auto showSelectedTheme = [&](QListWidget* list) {
+        if (selectedSchemeName.isEmpty())
+            return false;
+        for (int row = 0; row < list->count(); ++row) {
+            QListWidgetItem* item = list->item(row);
+            if (item->data(Qt::UserRole).toString() != selectedSchemeName)
+                continue;
+            list->setCurrentItem(item);
+            item->setSelected(true);
+            list->scrollToItem(item, QAbstractItemView::PositionAtTop);
+            list->setFocus(Qt::OtherFocusReason);
+            return true;
+        }
+        return false;
+    };
+    const auto populateThemeLists = [&]() {
+        schemeNames = ColorScheme::enumerate();
+        populateThemeList(lightThemeList, ColorSchemeFilter::Light);
+        populateThemeList(darkThemeList, ColorSchemeFilter::Dark);
+        if (showSelectedTheme(lightThemeList))
+            darkThemeList->clearSelection();
+        else if (showSelectedTheme(darkThemeList))
+            lightThemeList->clearSelection();
     };
 
-    int row = 0;
+    int roleIndex = 0;
+    constexpr int roleRowsPerColumn = 5;
     for (const auto& roleEntry : roleEntries) {
         const ColorScheme::Role role = roleEntry.second;
         QLabel* roleLabel = new QLabel(colorSchemeRoleLabel(role), rolesWidget);
         QPushButton* colorButton = new QPushButton(rolesWidget);
         updateColorButtonStyle(colorButton, colorsByRole.value(role));
         roleButtons.insert(role, colorButton);
-        roleLayout->addWidget(roleLabel, row, 0);
-        roleLayout->addWidget(colorButton, row, 1);
+        const int row = roleIndex % roleRowsPerColumn;
+        const int column = (roleIndex / roleRowsPerColumn) * 2;
+        roleLayout->addWidget(colorButton, row, column);
+        roleLayout->addWidget(roleLabel, row, column + 1);
         connect(colorButton, &QPushButton::clicked, &dialog, [&, role]() {
             const QColor initial = colorsByRole.value(role);
             const QColor chosen = QColorDialog::getColor(initial, &dialog, tr("Select color for %1").arg(colorSchemeRoleLabel(role)));
             if (!chosen.isValid())
                 return;
             colorsByRole[role] = chosen;
+            selectedSchemeName.clear();
+            isCustomScheme = true;
+            lightThemeList->clearSelection();
+            darkThemeList->clearSelection();
             updateColorButtonStyle(roleButtons.value(role), chosen);
             applyPreview();
         });
-        ++row;
+        ++roleIndex;
     }
 
     applyPreview();
+    populateThemeLists();
+    QTimer::singleShot(0, &dialog, populateThemeLists);
+
+    const auto handleThemeSelection = [&](QListWidget* otherList, QListWidgetItem* current) {
+        if (!current)
+            return;
+        const QSignalBlocker blocker(otherList);
+        otherList->clearSelection();
+        otherList->setCurrentItem(nullptr);
+        const QString schemeName = current->data(Qt::UserRole).toString();
+        const ColorScheme scheme = ColorScheme::loadByName(schemeName);
+        if (!scheme.isValid())
+            return;
+        selectedSchemeName = schemeName;
+        isCustomScheme = false;
+        setColorsFromScheme(scheme);
+        applyColorsToControls();
+        applyPreview();
+    };
+    connect(lightThemeList, &QListWidget::currentItemChanged, &dialog, [&](QListWidgetItem* current) {
+        handleThemeSelection(darkThemeList, current);
+    });
+    connect(darkThemeList, &QListWidget::currentItemChanged, &dialog, [&](QListWidgetItem* current) {
+        handleThemeSelection(lightThemeList, current);
+    });
 
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    QPushButton* applyButton = buttons->addButton(QDialogButtonBox::Apply);
     QPushButton* importButton = buttons->addButton(tr("Import..."), QDialogButtonBox::ActionRole);
     QPushButton* exportButton = buttons->addButton(tr("Export..."), QDialogButtonBox::ActionRole);
     layout->addWidget(buttons);
     connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    const auto applyCurrentTheme = [&]() {
+        if (isCustomScheme || selectedSchemeName.isEmpty()) {
+            QJsonObject object;
+            for (const auto& roleEntry : roleEntries)
+                object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
+            m_settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(object).toJson(QJsonDocument::Compact));
+            m_settings->colorScheme = QStringLiteral("Custom");
+        } else {
+            m_settings->colorScheme = selectedSchemeName;
+        }
+        m_actions.settingsDisplayColorSchemeCustom->setChecked(m_settings->colorScheme == QLatin1String("Custom"));
+        emit colorSchemeChanged();
+    };
+    connect(applyButton, &QPushButton::clicked, this, applyCurrentTheme);
+
+    const auto writableColorSchemesPath = [&]() {
+        const auto colorSchemePaths = ColorScheme::fileSystemSearchPaths();
+        const QString path = colorSchemePaths.isEmpty() ? QString() : colorSchemePaths.constFirst();
+        if (!path.isEmpty())
+            QDir().mkpath(path);
+        return path;
+    };
 
     connect(importButton, &QPushButton::clicked, this, [&, roleEntries]() {
         const QString filePath = QFileDialog::getOpenFileName(
@@ -2627,21 +2779,93 @@ void MainWindow::showCustomThemeDialog()
             QMessageBox::critical(this, tr("Error"), tr("Invalid theme file."));
             return;
         }
+        const QFileInfo importFileInfo(filePath);
+        const QString themeName = importFileInfo.completeBaseName();
+        if (ColorScheme::isBuiltInName(themeName)) {
+            QMessageBox::critical(
+                this,
+                tr("Error"),
+                tr("Can't import theme \"%1\" because it conflicts with a built-in theme.")
+                    .arg(themeName));
+            return;
+        }
+        const QString colorSchemesPath = writableColorSchemesPath();
+        if (colorSchemesPath.isEmpty()) {
+            QMessageBox::critical(this, tr("Error"), tr("Can't find a writable theme folder."));
+            return;
+        }
+        const QString destinationPath = QDir(colorSchemesPath).filePath(themeName + QLatin1String(".json"));
+        if (QFileInfo::exists(destinationPath)) {
+            const QMessageBox::StandardButton answer = QMessageBox::question(
+                this,
+                tr("Overwrite Theme"),
+                tr("A custom theme named \"%1\" already exists. Do you want to overwrite it?")
+                    .arg(themeName),
+                QMessageBox::Yes | QMessageBox::No,
+                QMessageBox::No);
+            if (answer != QMessageBox::Yes)
+                return;
+            const QFileInfo destinationFileInfo(destinationPath);
+            if (destinationFileInfo.absoluteFilePath() != importFileInfo.absoluteFilePath()
+                    && !QFile::remove(destinationPath)) {
+                QMessageBox::critical(this, tr("Error"), tr("Can't overwrite theme file %1").arg(destinationPath));
+                return;
+            }
+        }
+        if (QFileInfo(destinationPath).absoluteFilePath() != importFileInfo.absoluteFilePath()
+                && !QFile::copy(filePath, destinationPath)) {
+            QMessageBox::critical(this, tr("Error"), tr("Can't copy theme file to %1").arg(destinationPath));
+            return;
+        }
         for (const auto& roleEntry : roleEntries) {
             const QColor color = importedScheme.colorForRole(roleEntry.second);
             colorsByRole[roleEntry.second] = color;
             updateColorButtonStyle(roleButtons.value(roleEntry.second), color);
         }
+        selectedSchemeName = themeName;
+        isCustomScheme = false;
+        populateThemeLists();
         applyPreview();
     });
     connect(exportButton, &QPushButton::clicked, this, [&, roleEntries]() {
+        QString colorSchemesPath;
+        if (!selectedSchemeName.isEmpty()) {
+            const QString selectedSchemePath = ColorScheme::filePathForName(selectedSchemeName);
+            if (!selectedSchemePath.startsWith(QLatin1Char(':'))) {
+                const QFileInfo selectedSchemeInfo(selectedSchemePath);
+                if (selectedSchemeInfo.exists())
+                    colorSchemesPath = selectedSchemeInfo.absolutePath();
+            }
+        }
+        const auto colorSchemePaths = ColorScheme::fileSystemSearchPaths();
+        if (colorSchemesPath.isEmpty()) {
+            for (const auto& path : colorSchemePaths) {
+                if (QDir(path).exists()) {
+                    colorSchemesPath = path;
+                    break;
+                }
+            }
+        }
+        if (colorSchemesPath.isEmpty() && !colorSchemePaths.isEmpty())
+            colorSchemesPath = colorSchemePaths.constFirst();
+        if (!colorSchemesPath.isEmpty())
+            QDir().mkpath(colorSchemesPath);
         QString filePath = QFileDialog::getSaveFileName(
-            this, tr("Export Theme"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+            this, tr("Export Theme"), colorSchemesPath,
             tr("Theme file (*.json);;All files (*)"));
         if (filePath.isEmpty())
             return;
         if (!filePath.endsWith(QLatin1String(".json"), Qt::CaseInsensitive))
             filePath += QLatin1String(".json");
+        const QFileInfo exportFileInfo(filePath);
+        if (ColorScheme::isBuiltInName(exportFileInfo.completeBaseName())) {
+            QMessageBox::critical(
+                this,
+                tr("Error"),
+                tr("Can't export theme as \"%1\" because it conflicts with a built-in theme.")
+                    .arg(exportFileInfo.completeBaseName()));
+            return;
+        }
         QFile file(filePath);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
             QMessageBox::critical(this, tr("Error"), tr("Can't write to file %1").arg(filePath));
@@ -2651,20 +2875,23 @@ void MainWindow::showCustomThemeDialog()
         for (const auto& roleEntry : roleEntries)
             object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
         file.write(QJsonDocument(object).toJson(QJsonDocument::Indented));
+        file.close();
+        const ColorScheme exportedScheme = ColorScheme::loadFromFile(filePath);
+        if (exportedScheme.isValid()) {
+            selectedSchemeName = exportFileInfo.completeBaseName();
+            isCustomScheme = false;
+            populateThemeLists();
+        }
     });
+
+    dialog.setFixedSize(dialog.sizeHint().expandedTo(QSize(720, 560)));
 
     if (dialog.exec() != QDialog::Accepted) {
         m_actions.settingsDisplayColorSchemeCustom->setChecked(m_settings->colorScheme == QLatin1String("Custom"));
         return;
     }
 
-    QJsonObject object;
-    for (const auto& roleEntry : roleEntries)
-        object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
-    m_settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(object).toJson(QJsonDocument::Compact));
-    m_settings->colorScheme = QStringLiteral("Custom");
-    m_actions.settingsDisplayColorSchemeCustom->setChecked(true);
-    emit colorSchemeChanged();
+    applyCurrentTheme();
 }
 
 void MainWindow::selectEditorExpression()
