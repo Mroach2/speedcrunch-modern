@@ -85,5 +85,11 @@
         <file>color-schemes/Nightfox.json</file>
         <file>color-schemes/Nordfox.json</file>
         <file>color-schemes/Terafox.json</file>
+        <file>color-schemes/Sonokai Default.json</file>
+        <file>color-schemes/Sonokai Atlantis.json</file>
+        <file>color-schemes/Sonokai Andromeda.json</file>
+        <file>color-schemes/Sonokai Shusia.json</file>
+        <file>color-schemes/Sonokai Maia.json</file>
+        <file>color-schemes/Sonokai Espresso.json</file>
     </qresource>
 </RCC>

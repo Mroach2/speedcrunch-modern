@@ -1,0 +1,17 @@
+{
+  "list": "#e2e2e3",
+  "unit": "#7f8490",
+  "cursor": "#7f8490",
+  "number": "#e7c664",
+  "parens": "#595f6f",
+  "result": "#9ed072",
+  "comment": "#7f8490",
+  "matched": "#354157",
+  "function": "#76cce0",
+  "operator": "#f39660",
+  "variable": "#b39df3",
+  "scrollbar": "#414550",
+  "separator": "#3b3e48",
+  "background": "#222327",
+  "editorbackground": "#2c2e34"
+}
