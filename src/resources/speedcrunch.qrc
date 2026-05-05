@@ -76,5 +76,7 @@
         <file>color-schemes/Gruvbox Light.json</file>
         <file>color-schemes/Tokyo Day.json</file>
         <file>color-schemes/Tokyo Night.json</file>
+        <file>color-schemes/Rosé Pine Moon.json</file>
+        <file>color-schemes/Rosé Pine Dawn.json</file>
     </qresource>
 </RCC>
