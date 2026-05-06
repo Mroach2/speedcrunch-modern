@@ -16,6 +16,7 @@ Schema
      "type": "object",
      "additionalProperties": false,
      "required": [
+       "scheme",
        "cursor",
        "number",
        "parens",
@@ -33,12 +34,13 @@ Schema
        "editorbackground"
      ],
      "properties": {
+       "scheme": { "const": 1, "description": "Theme schema version" },
        "cursor": { "$ref": "#/$defs/color" },
-     "number": { "$ref": "#/$defs/color" },
-     "parens": { "$ref": "#/$defs/color" },
-     "list": { "$ref": "#/$defs/color" },
-     "unit": { "$ref": "#/$defs/color" },
-     "result": { "$ref": "#/$defs/color" },
+       "number": { "$ref": "#/$defs/color" },
+       "parens": { "$ref": "#/$defs/color" },
+       "list": { "$ref": "#/$defs/color" },
+       "unit": { "$ref": "#/$defs/color" },
+       "result": { "$ref": "#/$defs/color" },
        "comment": { "$ref": "#/$defs/color" },
        "matched": { "$ref": "#/$defs/color" },
        "function": { "$ref": "#/$defs/color" },
@@ -74,6 +76,7 @@ The following example is fictitious and provided only as a usage example:
 .. code-block:: json
 
    {
+     "scheme": 1,
      "cursor": "#F4C430",
      "number": "#6ED3FF",
      "parens": "#C8A2C8",

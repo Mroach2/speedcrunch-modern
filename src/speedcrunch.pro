@@ -65,6 +65,7 @@ macx {
 
 HEADERS += core/book.h \
            core/constants.h \
+           core/colorscheme.h \
            core/evaluator.h \
            core/functions.h \
            core/session.h \
@@ -133,6 +134,7 @@ HEADERS += core/book.h \
 SOURCES += main.cpp \
            core/book.cpp \
            core/constants.cpp \
+           core/colorscheme.cpp \
            core/evaluator.cpp \
            core/functions.cpp \
            core/mathdsl.cpp \

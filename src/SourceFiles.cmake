@@ -5,6 +5,7 @@ resources/speedcrunch.qrc
 set(speedcrunch_HEADERS
 core/book.h
 core/constants.h
+core/colorscheme.h
 core/evaluator.h
 core/functions.h
 core/manualserver.h
@@ -73,6 +74,7 @@ set(speedcrunch_SOURCES
 main.cpp
 core/book.cpp
 core/constants.cpp
+core/colorscheme.cpp
 core/evaluator.cpp
 core/functions.cpp
 core/mathdsl.cpp
@@ -175,6 +177,7 @@ gui/syntaxhighlighter.h
 
 set(testevaluator_SOURCES
 core/constants.cpp
+core/colorscheme.cpp
 core/evaluator.cpp
 core/functions.cpp
 core/mathdsl.cpp
@@ -296,6 +299,7 @@ tests/testdmath.cpp
 
 set(testeditorui_SOURCES
 core/constants.cpp
+core/colorscheme.cpp
 core/evaluator.cpp
 core/functions.cpp
 core/mathdsl.cpp
@@ -340,6 +344,7 @@ tests/testeditorui.cpp
 
 set(testdockswidgetsui_SOURCES
 core/constants.cpp
+core/colorscheme.cpp
 core/evaluator.cpp
 core/functions.cpp
 core/mathdsl.cpp
