@@ -103,6 +103,7 @@ constexpr const char* kFeedbackUrl = "https://www.speedcrunch.org/issues.html";
 constexpr const char* kCommunityUrl = "https://groups.google.com/group/speedcrunch/";
 constexpr const char* kFacebookGroupUrl = "https://www.facebook.com/groups/1783793218546797";
 constexpr const char* kNewsUrl = "http://speedcrunch.blogspot.com/";
+constexpr const char* kSourceUrl = "https://www.speedcrunch.org/source.html";
 constexpr const char* kDonateUrl = "https://www.speedcrunch.org/donate.html";
 
 EvaluationContext currentEvaluationContext(const Settings* settings)
@@ -622,6 +623,7 @@ void MainWindow::createActions()
     m_actions.helpCommunity = new QAction(this);
     m_actions.helpFacebookGroup = new QAction(this);
     m_actions.helpNews = new QAction(this);
+    m_actions.helpSource = new QAction(this);
     m_actions.helpDonate = new QAction(this);
     m_actions.helpAbout = new QAction(this);
     m_actions.contextHelp = new QAction(this);
@@ -1006,6 +1008,7 @@ void MainWindow::setActionsText()
     m_actions.helpCommunity->setText(MainWindow::tr("Google Group"));
     m_actions.helpFacebookGroup->setText(MainWindow::tr("Facebook &Group"));
     m_actions.helpNews->setText(MainWindow::tr("&Blogspot"));
+    m_actions.helpSource->setText(MainWindow::tr("Source Code"));
     m_actions.helpDonate->setText(MainWindow::tr("&Donate"));
     m_actions.helpAbout->setText(MainWindow::tr("About &SpeedCrunch"));
 }
@@ -1304,13 +1307,15 @@ void MainWindow::createMenus()
     m_menus.help->addAction(m_actions.helpManual);
     m_menus.help->addAction(m_actions.contextHelp);
     m_menus.help->addSeparator();
-    m_menus.help->addAction(m_actions.helpFeedback);
     m_menus.help->addAction(m_actions.helpCommunity);
     m_menus.help->addAction(m_actions.helpFacebookGroup);
     m_menus.help->addAction(m_actions.helpNews);
     m_menus.help->addSeparator();
-    m_menus.help->addAction(m_actions.helpUpdates);
+    m_menus.help->addAction(m_actions.helpFeedback);
+    m_menus.help->addAction(m_actions.helpSource);
     m_menus.help->addAction(m_actions.helpDonate);
+    m_menus.help->addSeparator();
+    m_menus.help->addAction(m_actions.helpUpdates);
     m_menus.help->addAction(m_actions.helpAbout);
 
     addActions(menuBar()->actions());
@@ -1853,6 +1858,7 @@ void MainWindow::createFixedConnections()
     connect(m_actions.helpCommunity, SIGNAL(triggered()), SLOT(openCommunityURL()));
     connect(m_actions.helpFacebookGroup, SIGNAL(triggered()), SLOT(openFacebookGroupURL()));
     connect(m_actions.helpNews, SIGNAL(triggered()), SLOT(openNewsURL()));
+    connect(m_actions.helpSource, SIGNAL(triggered()), SLOT(openSourceURL()));
     connect(m_actions.helpDonate, SIGNAL(triggered()), SLOT(openDonateURL()));
     connect(m_actions.helpAbout, SIGNAL(triggered()), SLOT(showAboutDialog()));
 
@@ -4559,6 +4565,11 @@ void MainWindow::checkForUpdates()
 void MainWindow::openFeedbackURL()
 {
     QDesktopServices::openUrl(QUrl(QString::fromLatin1(kFeedbackUrl)));
+}
+
+void MainWindow::openSourceURL()
+{
+    QDesktopServices::openUrl(QUrl(QString::fromLatin1(kSourceUrl)));
 }
 
 void MainWindow::openCommunityURL()

@@ -109,6 +109,7 @@ private slots:
     void openCommunityURL();
     void openFacebookGroupURL();
     void openNewsURL();
+    void openSourceURL();
     void openDonateURL();
     void retranslateText();
     void saveSessionDialog();
@@ -407,6 +408,7 @@ private:
         QAction* helpCommunity;
         QAction* helpFacebookGroup;
         QAction* helpNews;
+        QAction* helpSource;
         QAction* helpDonate;
         QAction* helpAbout;
         QAction* contextHelp;
