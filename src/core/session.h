@@ -26,11 +26,13 @@ private:
     VariableContainer m_variables;
     FunctionContainer m_userFunctions;
     UnitContainer m_userUnits;
+    QString m_name;
+    QString m_editorText;
     int physicalHistoryIndex(int logicalIndex) const;
     void normalizeHistoryOrder();
 
 public:
-    Session() {}
+    Session();
     Session(QJsonObject & json);
     Session& operator=(const Session&) = default;
 
@@ -39,6 +41,10 @@ public:
 
     void serialize(QJsonObject &json) const;
     int deSerialize(const QJsonObject & json, bool merge);
+    QString name() const { return m_name; }
+    void setName(const QString& name);
+    QString editorText() const { return m_editorText; }
+    void setEditorText(const QString& text) { m_editorText = text; }
 
 
     void addVariable(const Variable & var);

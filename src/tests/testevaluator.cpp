@@ -6628,6 +6628,7 @@ void test_session_deserialize_without_history()
                                 "Saved variable"));
     source.addUserFunction(UserFunction("persistedFunc", QStringList() << "x", "x+1"));
     source.addHistoryEntry(HistoryEntry("1+1", Quantity(2)));
+    source.setEditorText("2+2");
 
     QJsonObject json;
     source.serialize(json);
@@ -6642,8 +6643,9 @@ void test_session_deserialize_without_history()
     const bool hasVarDescription = restored.hasVariable("persistedVar")
         && restored.getVariable("persistedVar").description() == "Saved variable";
     const bool hasFunc = restored.hasUserFunction("persistedFunc");
+    const bool hasEditorText = restored.editorText() == "2+2";
     const bool hasNoHistory = restored.historyToList().isEmpty();
-    if (!hasVar || !hasVarDescription || !hasFunc || !hasNoHistory) {
+    if (!hasVar || !hasVarDescription || !hasFunc || !hasEditorText || !hasNoHistory) {
         ++eval_failed_tests;
         ++eval_new_failed_tests;
         cerr << __FILE__ << "[" << __LINE__ << "]\tsession deserialize without history keeps vars/functions\t[NEW]" << endl;

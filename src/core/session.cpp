@@ -109,6 +109,17 @@ static void trimHistory(QList<HistoryEntry>& history)
     history.remove(0, history.size() - limit);
 }
 
+Session::Session()
+    : m_name(QLatin1String(SessionJsonKeys::SessionValueMain))
+{
+}
+
+Session::Session(QJsonObject& json)
+    : Session()
+{
+    deSerialize(json, false);
+}
+
 int Session::physicalHistoryIndex(int logicalIndex) const
 {
     const int size = m_history.size();
@@ -135,7 +146,10 @@ void Session::serialize(QJsonObject &json) const
 {
     json[QLatin1String(SessionJsonKeys::SchemaVersion)] = SessionJsonKeys::SchemaVersionValue;
     json[QLatin1String(SessionJsonKeys::SpeedCrunch)] = QString(SPEEDCRUNCH_VERSION);
-    json[QLatin1String(SessionJsonKeys::Session)] = QLatin1String(SessionJsonKeys::SessionValueMain);
+    json[QLatin1String(SessionJsonKeys::Session)] = m_name.isEmpty()
+        ? QLatin1String(SessionJsonKeys::SessionValueMain)
+        : m_name;
+    json[QLatin1String(SessionJsonKeys::Editor)] = m_editorText;
 
     // history
     QJsonArray hist_entries;
@@ -194,7 +208,12 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
         m_variables.clear();
         m_userFunctions.clear();
         m_userUnits.clear();
+        m_editorText.clear();
     }
+    if (!merge)
+        setName(json[QLatin1String(SessionJsonKeys::Session)].toString());
+    if (!merge)
+        m_editorText = json[QLatin1String(SessionJsonKeys::Editor)].toString();
 
     Evaluator::instance()->initializeBuiltInVariables();
 
@@ -261,6 +280,14 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
     }
 
     return version==SPEEDCRUNCH_VERSION;
+}
+
+void Session::setName(const QString& name)
+{
+    const QString trimmed = name.trimmed();
+    m_name = trimmed.isEmpty()
+        ? QLatin1String(SessionJsonKeys::SessionValueMain)
+        : trimmed;
 }
 
 void Session::addVariable(const Variable &var)

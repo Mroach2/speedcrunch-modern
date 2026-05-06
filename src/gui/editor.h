@@ -42,6 +42,7 @@ public:
     char radixChar() const;
     void setAutoCalcEnabled(bool);
     void setAutoCompletionEnabled(bool);
+    void setCustomCursorVisible(bool visible);
     void setHistoryArrowNavigationEnabled(bool enabled);
     void setCursorPosition(int pos);
     void setText(const QString&);
@@ -122,6 +123,7 @@ private:
     QString m_savedCurrentEditor;
     int m_currentHistoryIndex;
     QTimer* m_matchingTimer;
+    bool m_customCursorVisible;
     bool m_shouldPaintCustomCursor;
     bool m_historyArrowNavigationEnabled;
     bool m_pendingDeadCaretPreedit = false;

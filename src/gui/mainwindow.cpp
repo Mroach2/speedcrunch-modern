@@ -11,6 +11,7 @@
 #include "core/regexpatterns.h"
 #include "core/settings.h"
 #include "core/session.h"
+#include "core/sessionjsonkeys.h"
 #include "core/startupdefinitions.h"
 #include "core/unicodechars.h"
 #include "core/variable.h"
@@ -34,6 +35,7 @@
 #include "gui/manualwindow.h"
 #include "gui/numberformatdialog.h"
 #include "gui/notationandprecisiondialog.h"
+#include "gui/splittertreeutils.h"
 #include "core/manualserver.h"
 #include "gui/resultdisplay.h"
 #include "gui/resultlineformatutils.h"
@@ -60,10 +62,15 @@
 #include <QDesktopServices>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QDrag>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
 #include <QComboBox>
 #include <QColorDialog>
+#include <QDir>
 #include <QFile>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QFormLayout>
 #include <QFont>
 #include <QFontDialog>
@@ -77,22 +84,34 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QMimeData>
+#include <QPainter>
 #include <QPlainTextEdit>
+#include <QPointer>
+#include <QDropEvent>
 #include <QPushButton>
 #include <QScreen>
 #include <QGuiApplication>
+#include <QShortcut>
 #include <QSignalBlocker>
 #include <QSpinBox>
+#include <QSplitter>
+#include <QStackedWidget>
 #include <QStandardPaths>
 #include <QScrollBar>
 #include <QStatusBar>
 #include <QStyle>
+#include <QTabBar>
+#include <QToolButton>
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QWidgetAction>
+#include <QJsonArray>
 #include <QJsonDocument>
 
 #include <algorithm>
+#include <functional>
+#include <limits>
 #ifdef Q_OS_WIN32
 #include "windows.h"
 #include <shlobj.h>
@@ -105,6 +124,192 @@ constexpr const char* kFacebookGroupUrl = "https://www.facebook.com/groups/17837
 constexpr const char* kNewsUrl = "http://speedcrunch.blogspot.com/";
 constexpr const char* kSourceUrl = "https://www.speedcrunch.org/source.html";
 constexpr const char* kDonateUrl = "https://www.speedcrunch.org/donate.html";
+
+QString sessionsPath()
+{
+    return QDir(Settings::getDataPath()).filePath(QStringLiteral("sessions"));
+}
+
+bool ensureSessionsPath()
+{
+    QDir dir;
+    return dir.mkpath(sessionsPath());
+}
+
+bool directoryIsEmpty(const QString& path)
+{
+    const QDir dir(path);
+    return !dir.exists()
+        || dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot).isEmpty();
+}
+
+QString normalizedSessionName(QString name)
+{
+    name = name.trimmed();
+    return name.isEmpty()
+        ? QLatin1String(SessionJsonKeys::SessionValueMain)
+        : name;
+}
+
+bool hasCurrentSessionSchema(const QByteArray& data)
+{
+    const QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (!doc.isObject())
+        return false;
+
+    const QJsonValue schema = doc.object().value(QLatin1String(SessionJsonKeys::SchemaVersion));
+    return schema.isDouble() && schema.toInt() == SessionJsonKeys::SchemaVersionValue;
+}
+
+bool readValidSessionJson(const QString& filePath, QJsonObject* json)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+
+    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    if (!doc.isObject())
+        return false;
+
+    const QJsonObject object = doc.object();
+    const QJsonValue schema = object.value(QLatin1String(SessionJsonKeys::SchemaVersion));
+    if (!schema.isDouble() || schema.toInt() != SessionJsonKeys::SchemaVersionValue)
+        return false;
+
+    const QString name = object.value(QLatin1String(SessionJsonKeys::Session)).toString().trimmed();
+    if (name.isEmpty())
+        return false;
+
+    if (json != nullptr)
+        *json = object;
+    return true;
+}
+
+void migrateLegacyHistoryIfNeeded()
+{
+    const QDir dataDir(Settings::getDataPath());
+    const QString legacyPath = dataDir.filePath(QStringLiteral("history.json"));
+    QFile legacyFile(legacyPath);
+    if (!legacyFile.exists())
+        return;
+
+    const QString sessionDirPath = sessionsPath();
+    const QFileInfo sessionDirInfo(sessionDirPath);
+    const bool shouldMigrate = !sessionDirInfo.exists()
+        || (sessionDirInfo.isDir() && directoryIsEmpty(sessionDirPath));
+    if (!shouldMigrate)
+        return;
+
+    if (!legacyFile.open(QIODevice::ReadOnly))
+        return;
+
+    const QByteArray data = legacyFile.readAll();
+    legacyFile.close();
+    if (!hasCurrentSessionSchema(data))
+        return;
+
+    if (!ensureSessionsPath())
+        return;
+
+    QFile mainSession(QDir(sessionDirPath).filePath(QStringLiteral("main.json")));
+    if (!mainSession.open(QIODevice::WriteOnly))
+        return;
+
+    if (mainSession.write(data) != data.size())
+        return;
+
+    mainSession.close();
+    legacyFile.remove();
+}
+
+QString sessionFileBaseName(QString sessionName)
+{
+    sessionName = normalizedSessionName(sessionName);
+
+    QString safeName;
+    safeName.reserve(sessionName.size());
+    for (const QChar ch : sessionName) {
+        if (ch.isLetterOrNumber() || ch == QLatin1Char('-') || ch == QLatin1Char('_') || ch == QLatin1Char(' '))
+            safeName.append(ch);
+        else
+            safeName.append(QLatin1Char('_'));
+    }
+
+    const QString trimmedSafeName = safeName.trimmed();
+    return trimmedSafeName.isEmpty()
+        ? QLatin1String(SessionJsonKeys::SessionValueMain)
+        : trimmedSafeName;
+}
+
+QString sessionFilePath(const QString& sessionName)
+{
+    ensureSessionsPath();
+    return QDir(sessionsPath()).filePath(sessionFileBaseName(sessionName) + QLatin1String(".json"));
+}
+
+bool loadedSessionNameExists(const QHash<QString, Session*>& sessions, const QString& name)
+{
+    for (const QString& existingName : sessions.keys()) {
+        if (existingName.compare(name, Qt::CaseInsensitive) == 0)
+            return true;
+    }
+    return false;
+}
+
+QString firstAvailableUntitledSessionName(const QHash<QString, Session*>& sessions)
+{
+    for (int number = 1; number < std::numeric_limits<int>::max(); ++number) {
+        const QString name = QStringLiteral("Untitled-%1").arg(number);
+        if (!loadedSessionNameExists(sessions, name) && !QFileInfo::exists(sessionFilePath(name)))
+            return name;
+    }
+
+    return QStringLiteral("Untitled");
+}
+
+int untitledSessionNumber(const QString& name)
+{
+    static const QString prefix = QStringLiteral("Untitled-");
+    if (!name.startsWith(prefix, Qt::CaseInsensitive))
+        return -1;
+
+    bool ok = false;
+    const int number = name.mid(prefix.size()).toInt(&ok);
+    return ok && number > 0 ? number : -1;
+}
+
+bool isReusableUntitledSession(const Session* session)
+{
+    if (session == nullptr || !session->historyIsEmpty())
+        return false;
+
+    const QList<Variable> variables = session->variablesToList();
+    for (const Variable& variable : variables) {
+        if (variable.type() != Variable::BuiltIn)
+            return false;
+    }
+
+    return session->UserFunctionsToList().isEmpty()
+        && session->userUnitsToList().isEmpty();
+}
+
+QJsonObject sessionLayoutEntry(const QString& name, const QPair<int, int>& viewportAnchor, int scrollValue)
+{
+    QJsonObject entry;
+    entry.insert(QStringLiteral("name"), name);
+    entry.insert(QStringLiteral("file"), QString(sessionFileBaseName(name) + QLatin1String(".json")));
+    if (viewportAnchor.first >= 0 || scrollValue >= 0) {
+        QJsonObject scroll;
+        if (viewportAnchor.first >= 0) {
+            scroll.insert(QStringLiteral("block"), viewportAnchor.first);
+            scroll.insert(QStringLiteral("offset"), viewportAnchor.second);
+        }
+        if (scrollValue >= 0)
+            scroll.insert(QStringLiteral("value"), scrollValue);
+        entry.insert(QStringLiteral("scroll"), scroll);
+    }
+    return entry;
+}
 
 EvaluationContext currentEvaluationContext(const Settings* settings)
 {
@@ -280,8 +485,12 @@ void updateColorButtonStyle(QPushButton* button, const QColor& color)
     const QString textColor = brightness >= 160 ? QStringLiteral("#111111") : QStringLiteral("#f5f5f5");
 
     button->setText(color.name());
-    button->setStyleSheet(QStringLiteral("QPushButton { background-color: %1; color: %2; }")
-                              .arg(color.name(), textColor));
+    button->setStyleSheet(QStringLiteral(R"(
+        QPushButton {
+            background-color: %1;
+            color: %2;
+        }
+    )").arg(color.name(), textColor));
 }
 
 enum class ColorSchemeFilter {
@@ -297,6 +506,18 @@ bool colorSchemeMatchesFilter(const ColorScheme& scheme, ColorSchemeFilter filte
         + 0.114 * background.blue());
 
     return filter == ColorSchemeFilter::Dark ? brightness < 128 : brightness >= 128;
+}
+
+QColor splitterHandleColorForScheme(const QString& colorSchemeName)
+{
+    const ColorScheme scheme = ColorScheme::loadByName(colorSchemeName);
+    const QColor background = scheme.isValid()
+        ? scheme.colorForRole(ColorScheme::Background)
+        : QApplication::palette().color(QPalette::Base);
+    const int factor = 200;
+    return background.lightnessF() >= 0.5
+        ? background.darker(factor)
+        : background.lighter(factor);
 }
 
 static void typeTextThroughEditorInputRules(Editor* editor, const QString& text)
@@ -339,6 +560,601 @@ struct AssignmentTarget {
     bool isUnit = false;
     bool valid = false;
 };
+
+int& activeSessionTabDragCount()
+{
+    static int count = 0;
+    return count;
+}
+
+QList<QPointer<QWidget>>& panesPendingSessionTabDragDeletion()
+{
+    static QList<QPointer<QWidget>> panes;
+    return panes;
+}
+
+void flushPanesPendingSessionTabDragDeletion()
+{
+    if (activeSessionTabDragCount() > 0)
+        return;
+
+    QList<QPointer<QWidget>> panes = panesPendingSessionTabDragDeletion();
+    panesPendingSessionTabDragDeletion().clear();
+    for (const QPointer<QWidget>& pane : panes) {
+        if (pane != nullptr)
+            pane->deleteLater();
+    }
+}
+
+void deletePaneAfterSessionTabDrag(QWidget* pane)
+{
+    if (pane == nullptr)
+        return;
+
+    pane->hide();
+    pane->setParent(nullptr);
+    if (activeSessionTabDragCount() > 0) {
+        panesPendingSessionTabDragDeletion().append(QPointer<QWidget>(pane));
+        return;
+    }
+
+    pane->deleteLater();
+}
+
+class SessionTabDragGuard {
+public:
+    SessionTabDragGuard()
+    {
+        ++activeSessionTabDragCount();
+    }
+
+    ~SessionTabDragGuard()
+    {
+        --activeSessionTabDragCount();
+        flushPanesPendingSessionTabDragDeletion();
+    }
+};
+
+class SessionTabBar : public QTabBar {
+public:
+    explicit SessionTabBar(QWidget* parent = nullptr)
+        : QTabBar(parent)
+    {
+        setAcceptDrops(true);
+        setDrawBase(false);
+        setElideMode(Qt::ElideRight);
+        setExpanding(true);
+        setMouseTracking(true);
+        setMovable(true);
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        setUsesScrollButtons(false);
+        setContextMenuPolicy(Qt::CustomContextMenu);
+        applyStyle(QColor());
+    }
+
+    void applyStyle(const QColor& selectedText)
+    {
+        const QColor fg = selectedText.isValid()
+            ? selectedText
+            : palette().color(QPalette::WindowText);
+
+            setStyleSheet(QStringLiteral(R"(
+                QTabBar::tab {
+                    border: 1px solid palette(mid);
+                    border-radius: 0px;
+                    padding: 5px 12px 5px 12px;
+                    margin: 0px;
+                }
+
+                QTabBar::tab:selected {
+                    border-radius: 0px;
+                    color: %2;
+                }
+
+                QToolButton {
+                    background: transparent;
+                    border: none;
+                    padding: 0px;
+                    margin: 0px;
+                }
+
+                QToolButton:hover,
+                QToolButton:pressed {
+                    background: transparent;
+                    border: none;
+                }
+            )").arg(fg.name()));
+    }
+
+    std::function<void(const QString&, const QPoint&)> tabContextMenuRequested;
+    std::function<void(SessionTabBar*, const QString&, int)> sessionTabDropped;
+    std::function<void(const QString&)> tabCloseRequested;
+
+    void refreshCloseButtons()
+    {
+        for (int i = 0; i < count(); ++i) {
+            const bool showButton = i == currentIndex() || i == m_hoveredTabIndex;
+            QWidget* existingButton = tabButton(i, QTabBar::RightSide);
+            QToolButton* closeButton = qobject_cast<QToolButton*>(existingButton);
+            if (closeButton == nullptr) {
+                closeButton = new QToolButton(this);
+                closeButton->setAutoRaise(false);
+                closeButton->setCursor(Qt::PointingHandCursor);
+                closeButton->setFocusPolicy(Qt::NoFocus);
+                closeButton->setText(QStringLiteral("×"));
+                closeButton->setStyleSheet(QStringLiteral(R"(
+                    QToolButton {
+                        background: transparent;
+                        border: none;
+                        margin: 3px 3px 3px 0px;
+                        padding: 0px;
+                        min-width: 18px;
+                        max-width: 18px;
+                        min-height: 18px;
+                        max-height: 18px;
+                        border-radius: 9px;
+                        font-weight: 400;
+                        text-align: center;
+                    }
+
+                    QToolButton:hover {
+                        background: rgba(127, 127, 127, 96);
+                    }
+
+                    QToolButton:pressed {
+                        background: rgba(127, 127, 127, 192);
+                    }
+                )"));
+                closeButton->setToolTip(tr("Close Session"));
+                QFont closeFont = closeButton->font();
+                closeFont.setBold(false);
+                closeFont.setPixelSize(qMax(11, fontMetrics().height() - 5));
+                closeButton->setFont(closeFont);
+                const int buttonExtent = qMax(16, fontMetrics().height() + 1);
+                closeButton->setFixedSize(buttonExtent, buttonExtent);
+                setTabButton(i, QTabBar::RightSide, closeButton);
+                connect(closeButton, &QToolButton::clicked, this, [this, closeButton]() {
+                    int tabIndex = -1;
+                    for (int i = 0; i < count(); ++i) {
+                        if (tabButton(i, QTabBar::RightSide) == closeButton) {
+                            tabIndex = i;
+                            break;
+                        }
+                    }
+                    if (tabIndex >= 0 && tabCloseRequested)
+                        tabCloseRequested(tabText(tabIndex));
+                });
+            }
+            closeButton->setVisible(showButton);
+        }
+    }
+
+protected:
+    void contextMenuEvent(QContextMenuEvent* event) override
+    {
+        const int index = tabAt(event->pos());
+        if (index >= 0) {
+            setCurrentIndex(index);
+            if (tabContextMenuRequested)
+                tabContextMenuRequested(tabText(index), event->globalPos());
+            event->accept();
+            return;
+        }
+
+        QTabBar::contextMenuEvent(event);
+    }
+
+    void mousePressEvent(QMouseEvent* event) override
+    {
+        if (event->button() == Qt::LeftButton) {
+            m_dragStartPos = event->pos();
+            m_dragTabIndex = tabAt(event->pos());
+            m_dragSessionName = m_dragTabIndex >= 0 ? tabText(m_dragTabIndex) : QString();
+        }
+
+        QTabBar::mousePressEvent(event);
+        refreshCloseButtons();
+    }
+
+    void mouseMoveEvent(QMouseEvent* event) override
+    {
+        const int hoveredTabIndex = tabAt(event->pos());
+        if (m_hoveredTabIndex != hoveredTabIndex) {
+            m_hoveredTabIndex = hoveredTabIndex;
+            refreshCloseButtons();
+        }
+        setCursor(hoveredTabIndex >= 0 ? Qt::PointingHandCursor : Qt::ArrowCursor);
+
+        const bool isDraggingTab = (event->buttons() & Qt::LeftButton)
+            && m_dragTabIndex >= 0
+            && (event->pos() - m_dragStartPos).manhattanLength() >= QApplication::startDragDistance();
+        if (!isDraggingTab) {
+            QTabBar::mouseMoveEvent(event);
+            refreshCloseButtons();
+            return;
+        }
+        if (!shouldStartCrossBarDrag(event->pos())) {
+            QMouseEvent clampedEvent(event->type(),
+                                     clampTabDragPos(event->pos()),
+                                     event->globalPosition(),
+                                     event->button(),
+                                     event->buttons(),
+                                     event->modifiers());
+            QTabBar::mouseMoveEvent(&clampedEvent);
+            refreshCloseButtons();
+            return;
+        }
+
+        QMimeData* mime = new QMimeData();
+        mime->setData(QStringLiteral("application/x-speedcrunch-session-tab"),
+                      m_dragSessionName.toUtf8());
+
+        QDrag* drag = new QDrag(this);
+        drag->setMimeData(mime);
+        const int currentDragIndex = qMax(0, indexOfDragSession());
+        drag->setPixmap(grab(tabRect(currentDragIndex)));
+        const QPoint clampedPos = clampTabDragPos(event->pos());
+        drag->setHotSpot(clampedPos - tabRect(currentDragIndex).topLeft());
+        QPointer<SessionTabBar> self(this);
+        SessionTabDragGuard dragGuard;
+        drag->exec(Qt::MoveAction);
+        if (self == nullptr)
+            return;
+        m_dragTabIndex = -1;
+        m_dragSessionName.clear();
+        m_dropIndicatorIndex = -1;
+        update();
+    }
+
+    void dragEnterEvent(QDragEnterEvent* event) override
+    {
+        if (event->mimeData()->hasFormat(QStringLiteral("application/x-speedcrunch-session-tab"))) {
+            updateDropIndicator(event->position().toPoint());
+            event->acceptProposedAction();
+        }
+    }
+
+    void dragMoveEvent(QDragMoveEvent* event) override
+    {
+        if (event->mimeData()->hasFormat(QStringLiteral("application/x-speedcrunch-session-tab"))) {
+            updateDropIndicator(event->position().toPoint());
+            event->acceptProposedAction();
+        }
+    }
+
+    void dragLeaveEvent(QDragLeaveEvent* event) override
+    {
+        m_dropIndicatorIndex = -1;
+        update();
+        QTabBar::dragLeaveEvent(event);
+    }
+
+    void dropEvent(QDropEvent* event) override
+    {
+        const QMimeData* mime = event->mimeData();
+        if (!mime->hasFormat(QStringLiteral("application/x-speedcrunch-session-tab")))
+            return;
+
+        const QString sessionName = QString::fromUtf8(
+            mime->data(QStringLiteral("application/x-speedcrunch-session-tab")));
+        SessionTabBar* sourceTabBar = dynamic_cast<SessionTabBar*>(event->source());
+        int targetIndex = tabAt(event->position().toPoint());
+        if (targetIndex < 0)
+            targetIndex = count();
+
+        if (sessionTabDropped)
+            sessionTabDropped(sourceTabBar, sessionName, targetIndex);
+        m_dropIndicatorIndex = -1;
+        update();
+        event->acceptProposedAction();
+    }
+
+    void leaveEvent(QEvent* event) override
+    {
+        m_hoveredTabIndex = -1;
+        setCursor(Qt::ArrowCursor);
+        refreshCloseButtons();
+        QTabBar::leaveEvent(event);
+    }
+
+    void paintEvent(QPaintEvent* event) override
+    {
+        QTabBar::paintEvent(event);
+        if (m_dropIndicatorIndex < 0)
+            return;
+
+        int x = width() - 1;
+        if (m_dropIndicatorIndex < count())
+            x = tabRect(m_dropIndicatorIndex).left();
+        else if (count() > 0)
+            x = tabRect(count() - 1).right() + 1;
+
+        QPainter painter(this);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setPen(QPen(palette().highlight().color(), 2));
+        painter.drawLine(QPoint(x, 4), QPoint(x, height() - 4));
+    }
+
+private:
+    void updateDropIndicator(const QPoint& pos)
+    {
+        int index = tabAt(clampDropPos(pos));
+        if (index < 0) {
+            if (count() > 0 && pos.x() < tabRect(0).left())
+                index = 0;
+            else
+                index = count();
+        }
+        if (index < 0)
+            index = count();
+        else if (clampDropPos(pos).x() > tabRect(index).center().x())
+            ++index;
+
+        if (m_dropIndicatorIndex != index) {
+            m_dropIndicatorIndex = index;
+            update();
+        }
+    }
+
+    bool shouldStartCrossBarDrag(const QPoint& pos) const
+    {
+        if (count() == 0)
+            return true;
+
+        return pos.y() < 0
+            || pos.y() >= height()
+            || pos.x() < tabRect(0).left() - QApplication::startDragDistance()
+            || pos.x() > tabRect(count() - 1).right() + QApplication::startDragDistance();
+    }
+
+    QPoint clampTabDragPos(const QPoint& pos) const
+    {
+        if (count() == 0)
+            return pos;
+
+        return QPoint(qBound(tabRect(0).left(), pos.x(), tabRect(count() - 1).right()),
+                      qBound(0, pos.y(), height() - 1));
+    }
+
+    QPoint clampDropPos(const QPoint& pos) const
+    {
+        if (count() == 0)
+            return pos;
+
+        return QPoint(qBound(tabRect(0).left(), pos.x(), tabRect(count() - 1).right()),
+                      qBound(0, pos.y(), height() - 1));
+    }
+
+    QPoint m_dragStartPos;
+    int m_dragTabIndex = -1;
+    int m_hoveredTabIndex = -1;
+    int m_dropIndicatorIndex = -1;
+    QString m_dragSessionName;
+
+    int indexOfDragSession() const
+    {
+        for (int i = 0; i < count(); ++i) {
+            if (tabText(i) == m_dragSessionName)
+                return i;
+        }
+        return m_dragTabIndex;
+    }
+};
+
+enum class PaneDropZone {
+    Center,
+    Top,
+    Bottom,
+    Left,
+    Right
+};
+
+class SessionPane : public QWidget {
+public:
+    explicit SessionPane(QWidget* parent = nullptr)
+        : QWidget(parent)
+    {
+        setAcceptDrops(true);
+        m_overlay = new QWidget(this);
+        m_overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
+        m_overlay->setStyleSheet(QStringLiteral("background: rgba(0, 0, 0, 80);"));
+        m_overlay->hide();
+    }
+
+    std::function<void(SessionTabBar*, const QString&, const QPoint&)> sessionTabDroppedOnPane;
+    std::function<bool(SessionTabBar*)> shouldShowOverlayForDrag;
+    void setOverlayAreaWidget(QWidget* widget)
+    {
+        m_overlayAreaWidget = widget;
+    }
+
+    PaneDropZone dropZoneForPanePosition(const QPoint& panePos) const
+    {
+        return dropZoneForPosition(panePos);
+    }
+
+    void watchDropTarget(QWidget* widget)
+    {
+        if (widget == nullptr)
+            return;
+        widget->installEventFilter(this);
+        widget->setAcceptDrops(true);
+    }
+
+protected:
+    void dragEnterEvent(QDragEnterEvent* event) override
+    {
+        if (acceptSessionTabDrag(event))
+            return;
+        QWidget::dragEnterEvent(event);
+    }
+
+    void dragMoveEvent(QDragMoveEvent* event) override
+    {
+        if (acceptSessionTabDrag(event, event->position().toPoint()))
+            return;
+        QWidget::dragMoveEvent(event);
+    }
+
+    void dropEvent(QDropEvent* event) override
+    {
+        if (handleSessionTabDrop(event, event->position().toPoint()))
+            return;
+        QWidget::dropEvent(event);
+    }
+
+    void dragLeaveEvent(QDragLeaveEvent* event) override
+    {
+        hideOverlay();
+        QWidget::dragLeaveEvent(event);
+    }
+
+    bool eventFilter(QObject* watched, QEvent* event) override
+    {
+        QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+        if (watchedWidget == nullptr)
+            return QWidget::eventFilter(watched, event);
+
+        if (event->type() == QEvent::DragEnter) {
+            QDragEnterEvent* dragEvent = static_cast<QDragEnterEvent*>(event);
+            return acceptSessionTabDrag(dragEvent);
+        }
+        if (event->type() == QEvent::DragMove) {
+            QDragMoveEvent* dragEvent = static_cast<QDragMoveEvent*>(event);
+            return acceptSessionTabDrag(dragEvent, watchedWidget->mapTo(this, dragEvent->position().toPoint()));
+        }
+        if (event->type() == QEvent::Drop) {
+            QDropEvent* dropEvent = static_cast<QDropEvent*>(event);
+            return handleSessionTabDrop(dropEvent, watchedWidget->mapTo(this, dropEvent->position().toPoint()));
+        }
+        if (event->type() == QEvent::DragLeave) {
+            hideOverlay();
+            return false;
+        }
+
+        return QWidget::eventFilter(watched, event);
+    }
+
+private:
+    bool acceptSessionTabDrag(QDragMoveEvent* event, const QPoint& panePos = QPoint())
+    {
+        if (!event->mimeData()->hasFormat(QStringLiteral("application/x-speedcrunch-session-tab")))
+            return false;
+        SessionTabBar* sourceTabBar = dynamic_cast<SessionTabBar*>(event->source());
+        if (shouldShowOverlayForDrag && !shouldShowOverlayForDrag(sourceTabBar)) {
+            hideOverlay();
+            event->acceptProposedAction();
+            return true;
+        }
+        updateOverlay(panePos.isNull() ? event->position().toPoint() : panePos);
+        event->acceptProposedAction();
+        return true;
+    }
+
+    bool handleSessionTabDrop(QDropEvent* event, const QPoint& panePos)
+    {
+        const QMimeData* mime = event->mimeData();
+        if (!mime->hasFormat(QStringLiteral("application/x-speedcrunch-session-tab")))
+            return false;
+
+        const QString sessionName = QString::fromUtf8(
+            mime->data(QStringLiteral("application/x-speedcrunch-session-tab")));
+        SessionTabBar* sourceTabBar = dynamic_cast<SessionTabBar*>(event->source());
+        if (sourceTabBar == nullptr || sessionName.isEmpty())
+            return false;
+
+        hideOverlay();
+        if (sessionTabDroppedOnPane)
+            sessionTabDroppedOnPane(sourceTabBar, sessionName, panePos);
+        event->acceptProposedAction();
+        return true;
+    }
+
+    void updateOverlay(const QPoint& panePos)
+    {
+        if (m_overlay == nullptr)
+            return;
+
+        m_overlay->setGeometry(overlayRect(dropZoneForPosition(panePos)));
+        m_overlay->raise();
+        m_overlay->show();
+    }
+
+    void hideOverlay()
+    {
+        if (m_overlay != nullptr)
+            m_overlay->hide();
+    }
+
+    PaneDropZone dropZoneForPosition(const QPoint& panePos) const
+    {
+        const QPointF pos(panePos);
+        const QRect rect = overlayBounds();
+        const QPointF center(rect.center());
+        const QPointF top(rect.left() + rect.width() / 2.0, rect.top());
+        const QPointF bottom(rect.left() + rect.width() / 2.0, rect.bottom());
+        const QPointF left(rect.left(), rect.top() + rect.height() / 2.0);
+        const QPointF right(rect.right(), rect.top() + rect.height() / 2.0);
+
+        const auto distanceSquared = [&pos](const QPointF& point) {
+            const QPointF delta = pos - point;
+            return delta.x() * delta.x() + delta.y() * delta.y();
+        };
+
+        PaneDropZone zone = PaneDropZone::Center;
+        qreal bestDistance = distanceSquared(center);
+        const auto consider = [&bestDistance, &zone, &distanceSquared](PaneDropZone candidate, const QPointF& point) {
+            const qreal distance = distanceSquared(point);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                zone = candidate;
+            }
+        };
+        consider(PaneDropZone::Top, top);
+        consider(PaneDropZone::Bottom, bottom);
+        consider(PaneDropZone::Left, left);
+        consider(PaneDropZone::Right, right);
+        return zone;
+    }
+
+    QRect overlayRect(PaneDropZone zone) const
+    {
+        const QRect rect = overlayBounds();
+        switch (zone) {
+        case PaneDropZone::Center:
+            return rect;
+        case PaneDropZone::Top:
+            return QRect(rect.left(), rect.top(), rect.width(), rect.height() / 2);
+        case PaneDropZone::Bottom:
+            return QRect(rect.left(), rect.top() + rect.height() / 2, rect.width(), rect.height() - rect.height() / 2);
+        case PaneDropZone::Left:
+            return QRect(rect.left(), rect.top(), rect.width() / 2, rect.height());
+        case PaneDropZone::Right:
+            return QRect(rect.left() + rect.width() / 2, rect.top(), rect.width() - rect.width() / 2, rect.height());
+        }
+        return rect;
+    }
+
+    QRect overlayBounds() const
+    {
+        if (m_overlayAreaWidget == nullptr)
+            return this->rect();
+
+        const QPoint topLeft = m_overlayAreaWidget->mapTo(this, QPoint(0, 0));
+        return QRect(topLeft, m_overlayAreaWidget->size());
+    }
+
+    QWidget* m_overlay = nullptr;
+    QWidget* m_overlayAreaWidget = nullptr;
+};
+
+QWidget* paneWidgetForDisplay(ResultDisplay* display)
+{
+    QWidget* widget = display;
+    while (widget != nullptr && !qobject_cast<QSplitter*>(widget->parentWidget()))
+        widget = widget->parentWidget();
+    return widget;
+}
 
 bool splitUserFunctionDescriptionForImport(const QString& expression,
                                            QString* expressionWithoutDescription)
@@ -1484,20 +2300,23 @@ void MainWindow::createFixedWidgets()
     m_layouts.root->setSpacing(0);
     m_layouts.root->setContentsMargins(0, 0, 0, 0);
 
-    QHBoxLayout* displayLayout = new QHBoxLayout();
-    displayLayout->setSpacing(0);
-    m_widgets.display = new ResultDisplay(m_widgets.root);
-    m_widgets.display->setFrameStyle(QFrame::NoFrame);
-    displayLayout->addWidget(m_widgets.display);
-    m_layouts.root->addLayout(displayLayout);
+    m_widgets.splitContainer = new QSplitter(Qt::Horizontal, m_widgets.root);
+    m_widgets.splitContainer->setObjectName(QStringLiteral("MainSplitContainer"));
+    m_widgets.splitContainer->setChildrenCollapsible(false);
+    m_widgets.splitContainer->setHandleWidth(1);
+    updateSplitterStyleSheet();
+    m_layouts.root->addWidget(m_widgets.splitContainer, 1);
 
-    QHBoxLayout* editorLayout = new QHBoxLayout();
-    editorLayout->setSpacing(0);
-    m_widgets.editor = new Editor(m_widgets.root);
+    m_widgets.display = new ResultDisplay();
+    m_widgets.display->setFrameStyle(QFrame::NoFrame);
+    m_widgets.editor = new Editor();
     m_widgets.editor->setFrameStyle(QFrame::NoFrame);
     m_widgets.editor->setFocus();
-    editorLayout->addWidget(m_widgets.editor);
-    m_layouts.root->addLayout(editorLayout);
+    m_widgets.editor->installEventFilter(this);
+    m_widgets.splitContainer->addWidget(createEditorDisplayPane(m_widgets.display, m_widgets.editor));
+    m_paneSessionNames.insert(m_widgets.display, m_session ? m_session->name() : QString());
+    m_paneSessionTabs.insert(m_widgets.display, QStringList(m_session ? m_session->name() : QString()));
+    m_widgets.display->setSession(m_session);
 
     m_widgets.state = new QLabel(this);
     m_widgets.state->setPalette(QToolTip::palette());
@@ -1508,12 +2327,1001 @@ void MainWindow::createFixedWidgets()
     m_widgets.stateCloseButton->setFocusPolicy(Qt::NoFocus);
     m_widgets.stateCloseButton->setFlat(true);
     m_widgets.stateCloseButton->setToolTip(tr("Close preview"));
-    m_widgets.stateCloseButton->setStyleSheet(QStringLiteral(
-        "QPushButton{border:none;background:transparent;padding:0;margin:0;outline:none;}"
-        "QPushButton:hover{background:transparent;}"
-        "QPushButton:pressed{background:transparent;}"));
+    m_widgets.stateCloseButton->setStyleSheet(QStringLiteral(R"(
+        QPushButton {
+            border: none;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            outline: none;
+        }
+
+        QPushButton:hover {
+            background: transparent;
+        }
+
+        QPushButton:pressed {
+            background: transparent;
+        }
+    )"));
     connect(m_widgets.stateCloseButton, &QPushButton::clicked, this, &MainWindow::hideStateLabel);
     m_widgets.state->hide();
+}
+
+QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* editor)
+{
+    SessionPane* pane = new SessionPane(m_widgets.splitContainer);
+    QVBoxLayout* layout = new QVBoxLayout(pane);
+    layout->setSpacing(0);
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    SessionTabBar* tabBar = new SessionTabBar(pane);
+    tabBar->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    QWidget* tabBarRow = new QWidget(pane);
+    QHBoxLayout* tabBarRowLayout = new QHBoxLayout(tabBarRow);
+    tabBarRowLayout->setSpacing(0);
+    tabBarRowLayout->setContentsMargins(0, 0, 0, 0);
+    tabBarRowLayout->addWidget(tabBar);
+    tabBarRowLayout->addStretch(1);
+
+    QStackedWidget* stack = new QStackedWidget(pane);
+    QWidget* page = new QWidget(stack);
+    QVBoxLayout* pageLayout = new QVBoxLayout(page);
+    pageLayout->setSpacing(0);
+    pageLayout->setContentsMargins(0, 0, 0, 0);
+    pageLayout->addWidget(display);
+    pageLayout->addWidget(editor);
+    stack->addWidget(page);
+
+    layout->addWidget(tabBarRow);
+    layout->addWidget(stack, 1);
+
+    m_paneTabBars.insert(display, tabBar);
+    m_tabBarDisplays.insert(tabBar, display);
+
+    connect(tabBar, &QTabBar::currentChanged, this, [this, tabBar, display](int index) {
+        if (index < 0)
+            return;
+        switchPaneToSession(display, tabBar->tabText(index));
+        tabBar->refreshCloseButtons();
+    });
+    connect(tabBar, &QTabBar::tabMoved, this, [this, tabBar, display](int, int) {
+        QStringList names;
+        for (int i = 0; i < tabBar->count(); ++i)
+            names.append(tabBar->tabText(i));
+        m_paneSessionTabs.insert(display, names);
+        saveSessionLayout(false);
+    });
+    connect(tabBar, &QTabBar::tabBarDoubleClicked, this, [this, tabBar, display, editor](int index) {
+        if (index < 0 || index >= tabBar->count())
+            return;
+        setActiveEditorDisplayPane(display, editor);
+        switchPaneToSession(display, tabBar->tabText(index));
+        showRenameSessionDialog();
+    });
+    tabBar->tabContextMenuRequested = [this, display, editor](const QString& sessionName, const QPoint& globalPos) {
+        switchPaneToSession(display, sessionName);
+
+        QMenu menu(this);
+        QAction* newSessionAction = menu.addAction(tr("New Session"));
+        QAction* openSessionAction = menu.addAction(tr("Open Session"));
+        menu.addSeparator();
+        QAction* splitLeftAction = menu.addAction(tr("Split Left"));
+        QAction* splitRightAction = menu.addAction(tr("Split Right"));
+        QAction* splitUpAction = menu.addAction(tr("Split Up"));
+        QAction* splitDownAction = menu.addAction(tr("Split Down"));
+        menu.addSeparator();
+        menu.addAction(tr("Import Session"));
+        menu.addAction(tr("Export Session"));
+        menu.addSeparator();
+        QAction* duplicateSessionAction = menu.addAction(tr("Duplicate Session"));
+        QAction* renameSessionAction = menu.addAction(tr("Rename Session"));
+        QAction* clearSessionAction = menu.addAction(tr("Clear Session"));
+        QAction* deleteSessionAction = menu.addAction(tr("Delete Session"));
+        QAction* closeSessionAction = menu.addAction(tr("Close Session"));
+        QAction* closePaneAction = menu.addAction(tr("Close Pane"));
+
+        QAction* selectedAction = menu.exec(globalPos);
+        if (selectedAction == nullptr)
+            return;
+
+        setActiveEditorDisplayPane(display, editor);
+        if (selectedAction == newSessionAction)
+            showNewSessionDialog();
+        else if (selectedAction == openSessionAction)
+            showOpenSessionDialog();
+        else if (selectedAction == duplicateSessionAction)
+            showDuplicateSessionDialog();
+        else if (selectedAction == splitLeftAction)
+            splitActivePaneLeft();
+        else if (selectedAction == splitRightAction)
+            splitActivePaneRight();
+        else if (selectedAction == splitUpAction)
+            splitActivePaneUp();
+        else if (selectedAction == splitDownAction)
+            splitActivePaneDown();
+        else if (selectedAction == renameSessionAction)
+            showRenameSessionDialog();
+        else if (selectedAction == clearSessionAction)
+            clearSession();
+        else if (selectedAction == closeSessionAction)
+            closeCurrentSession();
+        else if (selectedAction == closePaneAction)
+            closeCurrentPane();
+        else if (selectedAction == deleteSessionAction)
+            deleteCurrentSession();
+    };
+    tabBar->sessionTabDropped = [this, tabBar](SessionTabBar* sourceTabBar, const QString& sessionName, int targetIndex) {
+        moveSessionTab(sourceTabBar, tabBar, sessionName, targetIndex);
+    };
+    tabBar->tabCloseRequested = [this, display](const QString& sessionName) {
+        switchPaneToSession(display, sessionName);
+        closeCurrentSession();
+    };
+    pane->sessionTabDroppedOnPane = [this, display](SessionTabBar* sourceTabBar, const QString& sessionName, const QPoint& panePos) {
+        moveSessionTabToPane(sourceTabBar, display, sessionName, panePos);
+    };
+    pane->shouldShowOverlayForDrag = [this, display](SessionTabBar* sourceTabBar) {
+        ResultDisplay* sourceDisplay = tabBarDisplay(sourceTabBar);
+        if (sourceDisplay == nullptr || sourceDisplay != display)
+            return true;
+        return paneSessionNames(sourceDisplay).size() > 1;
+    };
+    pane->watchDropTarget(stack);
+    pane->setOverlayAreaWidget(stack);
+    pane->watchDropTarget(page);
+    pane->watchDropTarget(display);
+    pane->watchDropTarget(display->viewport());
+    pane->watchDropTarget(editor);
+    pane->watchDropTarget(editor->viewport());
+
+    return pane;
+}
+
+void MainWindow::setActiveEditorDisplayPane(ResultDisplay* display, Editor* editor)
+{
+    if (display == nullptr || editor == nullptr)
+        return;
+    if (m_widgets.display == display && m_widgets.editor == editor) {
+        updatePaneEditorCursorVisibility();
+        return;
+    }
+
+    captureEditorTextInCurrentSession();
+    m_widgets.display = display;
+    m_widgets.editor = editor;
+    m_copyWidget = editor;
+
+    const QString sessionName = m_paneSessionNames.value(display);
+    Session* paneSession = m_loadedSessions.value(sessionName, nullptr);
+    if (paneSession != nullptr && paneSession != m_session)
+        activateSession(paneSession);
+    updatePaneEditorCursorVisibility();
+}
+
+void MainWindow::configureEditorDisplayPane(ResultDisplay* display, Editor* editor)
+{
+    if (display == nullptr || editor == nullptr)
+        return;
+
+    editor->installEventFilter(this);
+
+    connect(editor, &Editor::textChanged, this, [this, display, editor]() {
+        setActiveEditorDisplayPane(display, editor);
+    });
+    connect(editor, &Editor::returnPressed, this, [this, display, editor]() {
+        setActiveEditorDisplayPane(display, editor);
+        evaluateEditorExpression();
+    });
+    connect(editor, &Editor::escapePressed, this, [this, display, editor]() {
+        setActiveEditorDisplayPane(display, editor);
+        handleEditorEscapePressed();
+    });
+    connect(editor, &Editor::selectionChanged, this, [this, display, editor]() {
+        setActiveEditorDisplayPane(display, editor);
+        handleEditorSelectionChange();
+    });
+    connect(editor, &Editor::autoCalcDisabled, this, &MainWindow::hideStateLabel);
+    connect(editor, &Editor::autoCalcMessageAvailable, this, &MainWindow::handleAutoCalcMessageAvailable);
+    connect(editor, &Editor::autoCalcQuantityAvailable, this, &MainWindow::handleAutoCalcQuantityAvailable);
+    connect(editor, &Editor::shiftDownPressed, this, &MainWindow::decreaseDisplayFontPointSize);
+    connect(editor, &Editor::shiftUpPressed, this, &MainWindow::increaseDisplayFontPointSize);
+    connect(editor, &Editor::controlPageUpPressed, display, &ResultDisplay::scrollToTop);
+    connect(editor, &Editor::controlPageDownPressed, display, &ResultDisplay::scrollToBottom);
+    connect(editor, &Editor::shiftPageUpPressed, display, &ResultDisplay::scrollLineUp);
+    connect(editor, &Editor::shiftPageDownPressed, display, &ResultDisplay::scrollLineDown);
+    connect(editor, &Editor::pageUpPressed, display, &ResultDisplay::scrollPageUp);
+    connect(editor, &Editor::pageDownPressed, display, &ResultDisplay::scrollPageDown);
+    connect(editor, &Editor::textChanged, this, &MainWindow::handleEditorTextChange);
+    connect(editor, &Editor::copyAvailable, this, &MainWindow::handleCopyAvailable);
+    connect(editor, &Editor::copySequencePressed, this, &MainWindow::copy);
+    connect(this, &MainWindow::historyChanged, editor, &Editor::updateHistory);
+
+    connect(display, &ResultDisplay::clicked, this, [this, display, editor]() {
+        setActiveEditorDisplayPane(display, editor);
+        hideStateLabel();
+    });
+    connect(display, &ResultDisplay::copyAvailable, this, &MainWindow::handleCopyAvailable);
+    connect(display, &ResultDisplay::expressionSelected, this, [this, display, editor](const QString& text) {
+        setActiveEditorDisplayPane(display, editor);
+        insertTextIntoEditor(text);
+    });
+    connect(display, &ResultDisplay::editHistoryEntryRequested, this, &MainWindow::startHistoryEntryEdit);
+    connect(display, &ResultDisplay::editHistoryEntryContextRequested, this, &MainWindow::editHistoryEntryContext);
+    connect(display, &ResultDisplay::cancelHistoryEditRequested, this, &MainWindow::cancelHistoryEntryEdit);
+    connect(display, &ResultDisplay::removeHistoryEntryRequested, this, &MainWindow::removeHistoryEntryAt);
+    connect(display, &ResultDisplay::removeHistoryEntriesAboveRequested, this, &MainWindow::removeHistoryEntriesAbove);
+    connect(display, &ResultDisplay::removeHistoryEntriesBelowRequested, this, &MainWindow::removeHistoryEntriesBelow);
+    connect(display, &ResultDisplay::newSessionRequested, this, &MainWindow::showNewSessionDialog);
+    connect(display, &ResultDisplay::openSessionRequested, this, &MainWindow::showOpenSessionDialog);
+    connect(display, &ResultDisplay::duplicateSessionRequested, this, &MainWindow::showDuplicateSessionDialog);
+    connect(display, &ResultDisplay::splitLeftRequested, this, &MainWindow::splitActivePaneLeft);
+    connect(display, &ResultDisplay::splitRightRequested, this, &MainWindow::splitActivePaneRight);
+    connect(display, &ResultDisplay::splitUpRequested, this, &MainWindow::splitActivePaneUp);
+    connect(display, &ResultDisplay::splitDownRequested, this, &MainWindow::splitActivePaneDown);
+    connect(display, &ResultDisplay::renameSessionRequested, this, &MainWindow::showRenameSessionDialog);
+    connect(display, &ResultDisplay::clearSessionRequested, this, &MainWindow::clearSession);
+    connect(display, &ResultDisplay::closeSessionRequested, this, &MainWindow::closeCurrentSession);
+    connect(display, &ResultDisplay::closePaneRequested, this, &MainWindow::closeCurrentPane);
+    connect(display, &ResultDisplay::deleteSessionRequested, this, &MainWindow::deleteCurrentSession);
+    connect(display, &ResultDisplay::loadedSessionsMenuRequested, this, &MainWindow::showLoadedSessionsMenu);
+    connect(display, &ResultDisplay::selectionChanged, this, [this, display, editor]() {
+        setActiveEditorDisplayPane(display, editor);
+        handleDisplaySelectionChange();
+    });
+    connect(display, &ResultDisplay::shiftWheelUp, this, &MainWindow::increaseDisplayFontPointSize);
+    connect(display, &ResultDisplay::shiftWheelDown, this, &MainWindow::decreaseDisplayFontPointSize);
+    connect(display, &ResultDisplay::controlWheelUp, this, &MainWindow::increaseDisplayFontPointSize);
+    connect(display, &ResultDisplay::controlWheelDown, this, &MainWindow::decreaseDisplayFontPointSize);
+    connect(display, &ResultDisplay::shiftControlWheelDown, this, &MainWindow::decreaseOpacity);
+    connect(display, &ResultDisplay::shiftControlWheelUp, this, &MainWindow::increaseOpacity);
+    connect(this, &MainWindow::historyChanged, display, &ResultDisplay::refresh);
+    connect(this, &MainWindow::radixCharacterChanged, display, &ResultDisplay::refresh);
+    connect(this, &MainWindow::radixCharacterChanged, editor, &Editor::refreshAutoCalc);
+    connect(this, &MainWindow::angleUnitChanged, editor, &Editor::refreshAutoCalc);
+    connect(this, &MainWindow::complexNumbersChanged, display, &ResultDisplay::refreshLastHistoryEntry);
+    connect(this, &MainWindow::complexNumbersChanged, editor, &Editor::refreshAutoCalc);
+    connect(this, &MainWindow::resultFormatChanged, display, &ResultDisplay::refreshLastHistoryEntry);
+    connect(this, &MainWindow::resultFormatChanged, editor, &Editor::refreshAutoCalc);
+    connect(this, &MainWindow::resultPrecisionChanged, display, &ResultDisplay::refreshLastHistoryEntry);
+    connect(this, &MainWindow::resultPrecisionChanged, editor, &Editor::refreshAutoCalc);
+    connect(this, &MainWindow::resultRoundingModeChanged, display, &ResultDisplay::refreshLastHistoryEntry);
+    connect(this, &MainWindow::resultRoundingModeChanged, editor, &Editor::refreshAutoCalc);
+    connect(this, &MainWindow::colorSchemeChanged, display, &ResultDisplay::rehighlight);
+    connect(this, &MainWindow::colorSchemeChanged, editor, &Editor::rehighlight);
+    connect(this, &MainWindow::syntaxHighlightingChanged, display, &ResultDisplay::rehighlight);
+    connect(this, &MainWindow::syntaxHighlightingChanged, editor, &Editor::rehighlight);
+}
+
+void MainWindow::splitActivePane(Qt::Orientation orientation, bool insertAfter)
+{
+    if (m_widgets.splitContainer == nullptr || m_widgets.display == nullptr || m_widgets.editor == nullptr)
+        return;
+
+    QWidget* activePane = paneWidgetForDisplay(m_widgets.display);
+    QSplitter* parentSplitter = qobject_cast<QSplitter*>(activePane ? activePane->parentWidget() : nullptr);
+    if (parentSplitter == nullptr)
+        return;
+
+    const int activeIndex = parentSplitter->indexOf(activePane);
+    if (activeIndex < 0)
+        return;
+    const QList<int> parentSizesBefore = parentSplitter->sizes();
+    const int activeSize = activeIndex < parentSizesBefore.size()
+        ? parentSizesBefore.at(activeIndex)
+        : qMax(1, orientation == Qt::Horizontal ? activePane->width() : activePane->height());
+
+    ResultDisplay* display = new ResultDisplay();
+    display->setFrameStyle(QFrame::NoFrame);
+    display->setFont(m_widgets.display->font());
+    display->setHoverHighlightEnabled(m_settings->hoverHighlightResults);
+    display->setLoadedSessionCount(1);
+    display->rehighlight();
+
+    Editor* editor = new Editor();
+    editor->setFrameStyle(QFrame::NoFrame);
+    editor->setFont(m_widgets.editor->font());
+    editor->setAutoCalcEnabled(m_settings->autoCalc);
+    editor->setAutoCompletionEnabled(m_settings->autoCompletion);
+    editor->rehighlight();
+
+    Session* newSession = createUntitledSession(false);
+    editor->setText(QString());
+    editor->setCursorPosition(editor->text().size());
+
+    QWidget* pane = createEditorDisplayPane(display, editor);
+    configureEditorDisplayPane(display, editor);
+
+    QSplitter* targetSplitter = parentSplitter;
+    if (parentSplitter->orientation() != orientation) {
+        QSplitter* nestedSplitter = new QSplitter(orientation);
+        nestedSplitter->setChildrenCollapsible(false);
+        nestedSplitter->setHandleWidth(1);
+        nestedSplitter->setStyleSheet(m_widgets.splitContainer->styleSheet());
+        activePane->setParent(nullptr);
+        parentSplitter->insertWidget(activeIndex, nestedSplitter);
+        if (insertAfter) {
+            nestedSplitter->addWidget(activePane);
+            nestedSplitter->addWidget(pane);
+        } else {
+            nestedSplitter->addWidget(pane);
+            nestedSplitter->addWidget(activePane);
+        }
+        targetSplitter = nestedSplitter;
+        if (parentSizesBefore.size() == parentSplitter->count())
+            parentSplitter->setSizes(parentSizesBefore);
+    } else {
+        const int insertIndex = insertAfter ? activeIndex + 1 : activeIndex;
+        parentSplitter->insertWidget(insertIndex, pane);
+    }
+    if (newSession != nullptr)
+        m_paneSessionNames.insert(display, newSession->name());
+    if (newSession != nullptr)
+        m_paneSessionTabs.insert(display, QStringList(newSession->name()));
+    display->setSession(newSession);
+
+    const int firstHalf = qMax(1, activeSize / 2);
+    const int secondHalf = qMax(1, activeSize - firstHalf);
+    if (targetSplitter == parentSplitter) {
+        QList<int> sizes = parentSizesBefore;
+        if (activeIndex < sizes.size()) {
+            sizes[activeIndex] = insertAfter ? firstHalf : secondHalf;
+            sizes.insert(insertAfter ? activeIndex + 1 : activeIndex,
+                         insertAfter ? secondHalf : firstHalf);
+            if (sizes.size() == targetSplitter->count())
+                targetSplitter->setSizes(sizes);
+        }
+    } else {
+        targetSplitter->setSizes(insertAfter
+            ? QList<int>({ firstHalf, secondHalf })
+            : QList<int>({ firstHalf, secondHalf }));
+    }
+
+    display->refresh();
+    editor->updateHistory();
+    editor->refreshAutoCalc();
+    updatePaneLoadedSessionCounts();
+    setActiveEditorDisplayPane(display, editor);
+    saveSessionLayout();
+}
+
+void MainWindow::splitActivePaneLeft()
+{
+    splitActivePane(Qt::Horizontal, false);
+}
+
+void MainWindow::splitActivePaneRight()
+{
+    splitActivePane(Qt::Horizontal, true);
+}
+
+void MainWindow::splitActivePaneUp()
+{
+    splitActivePane(Qt::Vertical, false);
+}
+
+void MainWindow::splitActivePaneDown()
+{
+    splitActivePane(Qt::Vertical, true);
+}
+
+void MainWindow::activateNextChild()
+{
+    if (m_widgets.display == nullptr)
+        return;
+
+    QTabBar* currentTabBar = displayTabBar(m_widgets.display);
+    if (currentTabBar != nullptr && currentTabBar->count() > 0) {
+        const int currentIndex = currentTabBar->currentIndex();
+        if (currentIndex >= 0 && currentIndex + 1 < currentTabBar->count()) {
+            currentTabBar->setCurrentIndex(currentIndex + 1);
+            return;
+        }
+    }
+
+    const QList<ResultDisplay*> displays = splitPaneDisplays();
+    const int currentPaneIndex = displays.indexOf(m_widgets.display);
+    if (currentPaneIndex < 0 || currentPaneIndex + 1 >= displays.size())
+        return;
+
+    ResultDisplay* nextDisplay = displays.at(currentPaneIndex + 1);
+    QWidget* page = nextDisplay->parentWidget();
+    Editor* nextEditor = page ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+    if (nextEditor == nullptr)
+        return;
+
+    setActiveEditorDisplayPane(nextDisplay, nextEditor);
+    const QString sessionName = m_paneSessionNames.value(nextDisplay);
+    if (!sessionName.isEmpty())
+        switchPaneToSession(nextDisplay, sessionName);
+}
+
+void MainWindow::activatePreviousChild()
+{
+    if (m_widgets.display == nullptr)
+        return;
+
+    QTabBar* currentTabBar = displayTabBar(m_widgets.display);
+    if (currentTabBar != nullptr && currentTabBar->count() > 0) {
+        const int currentIndex = currentTabBar->currentIndex();
+        if (currentIndex > 0) {
+            currentTabBar->setCurrentIndex(currentIndex - 1);
+            return;
+        }
+    }
+
+    const QList<ResultDisplay*> displays = splitPaneDisplays();
+    const int currentPaneIndex = displays.indexOf(m_widgets.display);
+    if (currentPaneIndex <= 0)
+        return;
+
+    ResultDisplay* previousDisplay = displays.at(currentPaneIndex - 1);
+    QWidget* page = previousDisplay->parentWidget();
+    Editor* previousEditor = page ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+    if (previousEditor == nullptr)
+        return;
+
+    setActiveEditorDisplayPane(previousDisplay, previousEditor);
+    const QString sessionName = m_paneSessionNames.value(previousDisplay);
+    if (!sessionName.isEmpty())
+        switchPaneToSession(previousDisplay, sessionName);
+}
+
+Session* MainWindow::createUntitledSession(bool activateCreatedSession)
+{
+    Session* recycledSession = nullptr;
+    int recycledNumber = std::numeric_limits<int>::max();
+    for (auto it = m_loadedSessions.constBegin(); it != m_loadedSessions.constEnd(); ++it) {
+        const QString name = it.key();
+        const int number = untitledSessionNumber(name);
+        if (number <= 0 || number >= recycledNumber)
+            continue;
+        if (!isReusableUntitledSession(it.value()))
+            continue;
+
+        bool alreadyAttachedToPane = false;
+        for (auto paneIt = m_paneSessionTabs.constBegin(); paneIt != m_paneSessionTabs.constEnd(); ++paneIt) {
+            if (paneIt.value().contains(name, Qt::CaseInsensitive)) {
+                alreadyAttachedToPane = true;
+                break;
+            }
+        }
+        if (alreadyAttachedToPane)
+            continue;
+
+        recycledSession = it.value();
+        recycledNumber = number;
+    }
+
+    if (recycledSession != nullptr) {
+        if (activateCreatedSession)
+            activateSession(recycledSession);
+        return recycledSession;
+    }
+
+    const QString name = firstAvailableUntitledSessionName(m_loadedSessions);
+    Session* session = new Session();
+    session->setName(name);
+    m_loadedSessions.insert(name, session);
+    updatePaneLoadedSessionCounts();
+
+    Session* previousSession = m_session;
+    if (activateCreatedSession) {
+        activateSession(session);
+    } else {
+        m_session = session;
+        m_evaluator->setSession(m_session);
+        m_evaluator->initializeBuiltInVariables();
+    }
+    applyStartupUserDefinitions();
+    m_conditions.autoAns = false;
+    if (!activateCreatedSession) {
+        m_session = previousSession;
+        m_evaluator->setSession(m_session);
+        if (m_session != nullptr)
+            m_evaluator->initializeBuiltInVariables();
+    }
+    return session;
+}
+
+QList<ResultDisplay*> MainWindow::splitPaneDisplays() const
+{
+    QList<ResultDisplay*> displays;
+    if (m_widgets.splitContainer == nullptr)
+        return displays;
+
+    const auto collectDisplays = [&displays](QWidget* widget, const auto& collectDisplaysRef) -> void {
+        if (widget == nullptr)
+            return;
+        if (ResultDisplay* display = qobject_cast<ResultDisplay*>(widget)) {
+            displays.append(display);
+            return;
+        }
+        if (QSplitter* splitter = qobject_cast<QSplitter*>(widget)) {
+            for (int i = 0; i < splitter->count(); ++i)
+                collectDisplaysRef(splitter->widget(i), collectDisplaysRef);
+            return;
+        }
+        const QList<ResultDisplay*> childDisplays = widget->findChildren<ResultDisplay*>();
+        for (ResultDisplay* display : childDisplays)
+            displays.append(display);
+    };
+    collectDisplays(m_widgets.splitContainer, collectDisplays);
+    return displays;
+}
+
+QList<Editor*> MainWindow::splitPaneEditors() const
+{
+    QList<Editor*> editors;
+    for (ResultDisplay* display : splitPaneDisplays()) {
+        QWidget* pane = display->parentWidget();
+        if (Editor* editor = pane ? pane->findChild<Editor*>() : nullptr)
+            editors.append(editor);
+    }
+    return editors;
+}
+
+QStringList MainWindow::paneSessionNames(ResultDisplay* display) const
+{
+    QStringList names = m_paneSessionTabs.value(display);
+    if (names.isEmpty()) {
+        const QString activeName = m_paneSessionNames.value(display);
+        if (!activeName.isEmpty())
+            names.append(activeName);
+    }
+    return names;
+}
+
+void MainWindow::addSessionToActivePane(const QString& name)
+{
+    if (m_widgets.display == nullptr || name.isEmpty())
+        return;
+
+    QStringList names = paneSessionNames(m_widgets.display);
+    if (!names.contains(name, Qt::CaseInsensitive))
+        names.append(name);
+    m_paneSessionTabs.insert(m_widgets.display, names);
+    m_paneSessionNames.insert(m_widgets.display, name);
+    updatePaneLoadedSessionCounts();
+    updatePaneTabBars();
+}
+
+ResultDisplay* MainWindow::tabBarDisplay(QTabBar* tabBar) const
+{
+    return m_tabBarDisplays.value(tabBar, nullptr);
+}
+
+QTabBar* MainWindow::displayTabBar(ResultDisplay* display) const
+{
+    return m_paneTabBars.value(display, nullptr);
+}
+
+void MainWindow::switchPaneToSession(ResultDisplay* display, const QString& name)
+{
+    if (m_shutdownStateSaved)
+        return;
+    if (display == nullptr || name.isEmpty())
+        return;
+    if (!m_paneTabBars.contains(display))
+        return;
+
+    Session* session = m_loadedSessions.value(name, nullptr);
+    if (session == nullptr)
+        return;
+
+    QWidget* page = display->parentWidget();
+    Editor* editor = page ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+    if (editor == nullptr)
+        return;
+
+    setActiveEditorDisplayPane(display, editor);
+    activateSession(session);
+    updatePaneTabBars();
+}
+
+void MainWindow::moveSessionTab(QTabBar* sourceTabBar, QTabBar* targetTabBar, const QString& name, int targetIndex)
+{
+    if (m_shutdownStateSaved)
+        return;
+    ResultDisplay* sourceDisplay = tabBarDisplay(sourceTabBar);
+    ResultDisplay* targetDisplay = tabBarDisplay(targetTabBar);
+    if (sourceDisplay == nullptr || targetDisplay == nullptr || name.isEmpty())
+        return;
+    if (!m_loadedSessions.contains(name))
+        return;
+
+    QStringList sourceNames = paneSessionNames(sourceDisplay);
+    if (!sourceNames.contains(name, Qt::CaseInsensitive))
+        return;
+    QStringList targetNames = paneSessionNames(targetDisplay);
+    if (sourceDisplay == targetDisplay) {
+        const int sourceIndex = sourceNames.indexOf(name);
+        sourceNames.removeAll(name);
+        if (sourceIndex >= 0 && sourceIndex < targetIndex)
+            --targetIndex;
+        sourceNames.insert(qBound(0, targetIndex, sourceNames.size()), name);
+        m_paneSessionTabs.insert(sourceDisplay, sourceNames);
+        updatePaneTabBars();
+        saveSessionLayout(false);
+        return;
+    }
+
+    sourceNames.removeAll(name);
+    if (!targetNames.contains(name, Qt::CaseInsensitive))
+        targetNames.insert(qBound(0, targetIndex, targetNames.size()), name);
+
+    if (sourceNames.isEmpty()) {
+        if (splitPaneDisplays().size() > 1) {
+            m_paneSessionTabs.insert(targetDisplay, targetNames);
+            m_paneSessionNames.insert(targetDisplay, name);
+            removePaneForDisplay(sourceDisplay);
+            switchPaneToSession(targetDisplay, name);
+            updatePaneLoadedSessionCounts();
+            updatePaneTabBars();
+            saveSessionLayout(false);
+            return;
+        }
+
+        Session* replacement = createUntitledSession(false);
+        if (replacement != nullptr)
+            sourceNames.append(replacement->name());
+    }
+
+    m_paneSessionTabs.insert(sourceDisplay, sourceNames);
+    if (m_paneSessionNames.value(sourceDisplay).compare(name, Qt::CaseInsensitive) == 0) {
+        m_paneSessionNames.insert(sourceDisplay, sourceNames.first());
+        if (Session* sourceSession = m_loadedSessions.value(sourceNames.first(), nullptr)) {
+            sourceDisplay->setSession(sourceSession);
+            sourceDisplay->refresh();
+            QWidget* page = sourceDisplay->parentWidget();
+            if (Editor* sourceEditor = page ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr) {
+                sourceEditor->setText(sourceSession->editorText());
+                sourceEditor->setCursorPosition(sourceEditor->text().size());
+                sourceEditor->updateHistory();
+                sourceEditor->refreshAutoCalc();
+            }
+        }
+    }
+    m_paneSessionTabs.insert(targetDisplay, targetNames);
+    m_paneSessionNames.insert(targetDisplay, name);
+
+    switchPaneToSession(targetDisplay, name);
+    updatePaneLoadedSessionCounts();
+    updatePaneTabBars();
+    saveSessionLayout(false);
+}
+
+void MainWindow::removeSessionTabFromPane(ResultDisplay* display, const QString& name, bool closePaneIfEmpty)
+{
+    if (display == nullptr || name.isEmpty())
+        return;
+
+    QStringList names = paneSessionNames(display);
+    if (!names.contains(name, Qt::CaseInsensitive))
+        return;
+
+    names.removeAll(name);
+    if (names.isEmpty()) {
+        if (closePaneIfEmpty) {
+            removePaneForDisplay(display);
+            return;
+        }
+
+        Session* replacement = createUntitledSession(false);
+        if (replacement != nullptr)
+            names.append(replacement->name());
+    }
+
+    m_paneSessionTabs.insert(display, names);
+    if (m_paneSessionNames.value(display).compare(name, Qt::CaseInsensitive) == 0) {
+        m_paneSessionNames.insert(display, names.first());
+        if (Session* session = m_loadedSessions.value(names.first(), nullptr)) {
+            display->setSession(session);
+            display->refresh();
+            QWidget* page = display->parentWidget();
+            if (Editor* editor = page ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr) {
+                editor->setText(session->editorText());
+                editor->setCursorPosition(editor->text().size());
+                editor->updateHistory();
+                editor->refreshAutoCalc();
+            }
+        }
+    }
+}
+
+void MainWindow::removePaneForDisplay(ResultDisplay* display)
+{
+    QWidget* pane = paneWidgetForDisplay(display);
+    if (display == nullptr || pane == nullptr)
+        return;
+
+    const QList<ResultDisplay*> displays = splitPaneDisplays();
+    if (displays.size() <= 1)
+        return;
+
+    ResultDisplay* nextDisplay = nullptr;
+    const int displayIndex = displays.indexOf(display);
+    if (displayIndex >= 0 && displayIndex + 1 < displays.size())
+        nextDisplay = displays.at(displayIndex + 1);
+    else if (displayIndex > 0)
+        nextDisplay = displays.at(displayIndex - 1);
+    else {
+        for (ResultDisplay* candidate : displays) {
+            if (candidate != display) {
+                nextDisplay = candidate;
+                break;
+            }
+        }
+    }
+    if (nextDisplay == nullptr)
+        return;
+
+    Editor* nextEditor = nextDisplay->parentWidget()
+        ? nextDisplay->parentWidget()->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly)
+        : nullptr;
+    if (nextEditor == nullptr)
+        return;
+
+    QTabBar* tabBar = displayTabBar(display);
+    m_paneSessionNames.remove(display);
+    m_paneSessionTabs.remove(display);
+    m_paneTabBars.remove(display);
+    if (tabBar != nullptr)
+        m_tabBarDisplays.remove(tabBar);
+
+    if (m_widgets.display == display) {
+        m_widgets.display = nextDisplay;
+        m_widgets.editor = nextEditor;
+        m_copyWidget = nextEditor;
+        if (Session* nextSession = m_loadedSessions.value(m_paneSessionNames.value(nextDisplay), nullptr))
+            activateSession(nextSession);
+    }
+
+    // Tab drags run a nested event loop. Defer physical pane destruction until
+    // the drag unwinds so source/target widgets cannot disappear mid-event.
+    deletePaneAfterSessionTabDrag(pane);
+    normalizeSplitContainerTree();
+}
+
+void MainWindow::moveSessionTabToPane(QTabBar* sourceTabBar, ResultDisplay* targetDisplay, const QString& name, const QPoint& panePos)
+{
+    if (sourceTabBar == nullptr || targetDisplay == nullptr || name.isEmpty())
+        return;
+
+    QWidget* targetPane = paneWidgetForDisplay(targetDisplay);
+    if (targetPane == nullptr)
+        return;
+    PaneDropZone zone = PaneDropZone::Center;
+    if (SessionPane* sessionPane = dynamic_cast<SessionPane*>(targetPane))
+        zone = sessionPane->dropZoneForPanePosition(panePos);
+
+    switch (zone) {
+    case PaneDropZone::Center:
+        if (ResultDisplay* sourceDisplay = tabBarDisplay(sourceTabBar)) {
+            if (sourceDisplay == targetDisplay) {
+                return;
+            } else {
+                QStringList targetNames = paneSessionNames(targetDisplay);
+                if (!targetNames.contains(name, Qt::CaseInsensitive))
+                    targetNames.append(name);
+                m_paneSessionTabs.insert(targetDisplay, targetNames);
+                m_paneSessionNames.insert(targetDisplay, name);
+                removeSessionTabFromPane(sourceDisplay, name, true);
+                switchPaneToSession(targetDisplay, name);
+                updatePaneLoadedSessionCounts();
+                saveSessionLayout(false);
+            }
+        }
+        break;
+    case PaneDropZone::Top:
+        splitPaneWithSession(sourceTabBar, targetDisplay, name, Qt::Vertical, false);
+        break;
+    case PaneDropZone::Bottom:
+        splitPaneWithSession(sourceTabBar, targetDisplay, name, Qt::Vertical, true);
+        break;
+    case PaneDropZone::Left:
+        splitPaneWithSession(sourceTabBar, targetDisplay, name, Qt::Horizontal, false);
+        break;
+    case PaneDropZone::Right:
+        splitPaneWithSession(sourceTabBar, targetDisplay, name, Qt::Horizontal, true);
+        break;
+    }
+}
+
+void MainWindow::splitPaneWithSession(QTabBar* sourceTabBar, ResultDisplay* targetDisplay, const QString& name, Qt::Orientation orientation, bool insertAfter)
+{
+    ResultDisplay* sourceDisplay = tabBarDisplay(sourceTabBar);
+    Session* session = m_loadedSessions.value(name, nullptr);
+    if (sourceDisplay == nullptr || targetDisplay == nullptr || session == nullptr)
+        return;
+
+    QStringList sourceNames = paneSessionNames(sourceDisplay);
+    if (!sourceNames.contains(name, Qt::CaseInsensitive))
+        return;
+
+    QWidget* activePane = paneWidgetForDisplay(targetDisplay);
+    QSplitter* parentSplitter = qobject_cast<QSplitter*>(activePane ? activePane->parentWidget() : nullptr);
+    if (parentSplitter == nullptr)
+        return;
+
+    Editor* targetEditor = targetDisplay->parentWidget()
+        ? targetDisplay->parentWidget()->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly)
+        : nullptr;
+    if (targetEditor == nullptr)
+        return;
+
+    const int activeIndex = parentSplitter->indexOf(activePane);
+    if (activeIndex < 0)
+        return;
+    const QList<int> parentSizesBefore = parentSplitter->sizes();
+    const int activeSize = activeIndex < parentSizesBefore.size()
+        ? parentSizesBefore.at(activeIndex)
+        : qMax(1, orientation == Qt::Horizontal ? activePane->width() : activePane->height());
+
+    ResultDisplay* display = new ResultDisplay();
+    display->setFrameStyle(QFrame::NoFrame);
+    display->setFont(targetDisplay->font());
+    display->setHoverHighlightEnabled(m_settings->hoverHighlightResults);
+    display->setLoadedSessionCount(1);
+    display->rehighlight();
+
+    Editor* editor = new Editor();
+    editor->setFrameStyle(QFrame::NoFrame);
+    editor->setFont(targetEditor->font());
+    editor->setAutoCalcEnabled(m_settings->autoCalc);
+    editor->setAutoCompletionEnabled(m_settings->autoCompletion);
+    editor->setText(session->editorText());
+    editor->setCursorPosition(editor->text().size());
+    editor->rehighlight();
+
+    QWidget* pane = createEditorDisplayPane(display, editor);
+    configureEditorDisplayPane(display, editor);
+
+    QSplitter* targetSplitter = parentSplitter;
+    if (parentSplitter->orientation() != orientation) {
+        QSplitter* nestedSplitter = new QSplitter(orientation);
+        nestedSplitter->setChildrenCollapsible(false);
+        nestedSplitter->setHandleWidth(1);
+        nestedSplitter->setStyleSheet(m_widgets.splitContainer->styleSheet());
+        activePane->setParent(nullptr);
+        parentSplitter->insertWidget(activeIndex, nestedSplitter);
+        if (insertAfter) {
+            nestedSplitter->addWidget(activePane);
+            nestedSplitter->addWidget(pane);
+        } else {
+            nestedSplitter->addWidget(pane);
+            nestedSplitter->addWidget(activePane);
+        }
+        targetSplitter = nestedSplitter;
+        if (parentSizesBefore.size() == parentSplitter->count())
+            parentSplitter->setSizes(parentSizesBefore);
+    } else {
+        const int insertIndex = insertAfter ? activeIndex + 1 : activeIndex;
+        parentSplitter->insertWidget(insertIndex, pane);
+    }
+
+    m_paneSessionNames.insert(display, name);
+    m_paneSessionTabs.insert(display, QStringList(name));
+    display->setSession(session);
+
+    const int firstHalf = qMax(1, activeSize / 2);
+    const int secondHalf = qMax(1, activeSize - firstHalf);
+    if (targetSplitter == parentSplitter) {
+        QList<int> sizes = parentSizesBefore;
+        if (activeIndex < sizes.size()) {
+            sizes[activeIndex] = insertAfter ? firstHalf : secondHalf;
+            sizes.insert(insertAfter ? activeIndex + 1 : activeIndex,
+                         insertAfter ? secondHalf : firstHalf);
+            if (sizes.size() == targetSplitter->count())
+                targetSplitter->setSizes(sizes);
+        }
+    } else {
+        targetSplitter->setSizes(QList<int>({ firstHalf, secondHalf }));
+    }
+
+    display->refresh();
+    editor->updateHistory();
+    editor->refreshAutoCalc();
+    removeSessionTabFromPane(sourceDisplay, name, true);
+    updatePaneLoadedSessionCounts();
+    setActiveEditorDisplayPane(display, editor);
+    updatePaneTabBars();
+    saveSessionLayout(false);
+}
+
+void MainWindow::updatePaneLoadedSessionCounts()
+{
+    const bool multiplePanes = splitPaneDisplays().size() > 1;
+    for (ResultDisplay* display : splitPaneDisplays()) {
+        display->setLoadedSessionCount(paneSessionNames(display).size());
+        display->setCloseSessionEnabled(multiplePanes || paneSessionNames(display).size() > 1);
+    }
+    updatePaneTabBars();
+}
+
+void MainWindow::updatePaneEditorCursorVisibility()
+{
+    for (Editor* editor : splitPaneEditors())
+        editor->setCustomCursorVisible(editor == m_widgets.editor);
+}
+
+void MainWindow::updatePaneTabBars()
+{
+    const QList<ResultDisplay*> displays = splitPaneDisplays();
+    const bool singlePaneSingleTab = displays.size() == 1 && paneSessionNames(displays.first()).size() == 1;
+    const ColorScheme scheme = ColorScheme::loadByName(m_settings ? m_settings->colorScheme : QString());
+    const QColor activeTabText = scheme.isValid()
+        ? scheme.colorForRole(ColorScheme::Number)
+        : palette().color(QPalette::WindowText);
+    for (ResultDisplay* display : displays) {
+        QTabBar* tabBar = displayTabBar(display);
+        if (tabBar == nullptr)
+            continue;
+        static_cast<SessionTabBar*>(tabBar)->applyStyle(activeTabText);
+
+        const QSignalBlocker blocker(tabBar);
+        while (tabBar->count() > 0)
+            tabBar->removeTab(0);
+        const QStringList names = paneSessionNames(display);
+        for (const QString& name : names)
+            tabBar->addTab(name);
+
+        const int activeIndex = names.indexOf(m_paneSessionNames.value(display));
+        tabBar->setCurrentIndex(activeIndex >= 0 ? activeIndex : 0);
+        // tabBar->setUsesScrollButtons(names.size() > 4);
+        tabBar->setVisible(!singlePaneSingleTab);
+        static_cast<SessionTabBar*>(tabBar)->refreshCloseButtons();
+    }
+    updateSessionWindowTitle();
+}
+
+void MainWindow::updateSessionWindowTitle()
+{
+    const QList<ResultDisplay*> displays = splitPaneDisplays();
+    if (displays.size() == 1) {
+        const QStringList names = paneSessionNames(displays.first());
+        if (names.size() == 1) {
+            setWindowTitle(tr("SpeedCrunch - %1").arg(names.first()));
+            return;
+        }
+    }
+
+    setWindowTitle(QStringLiteral("SpeedCrunch"));
+}
+
+void MainWindow::normalizeSplitContainerTree()
+{
+    normalizeSplitterTree(m_widgets.splitContainer);
+}
+
+void MainWindow::updateSplitterStyleSheet()
+{
+    if (m_widgets.splitContainer == nullptr)
+        return;
+
+    const QColor handle = splitterHandleColorForScheme(m_settings ? m_settings->colorScheme : QString());
+    const QString styleSheet = QStringLiteral("QSplitter::handle { background: %1; }").arg(handle.name());
+    const auto applyStyle = [&styleSheet](QSplitter* splitter, const auto& applyStyleRef) -> void {
+        if (splitter == nullptr)
+            return;
+        splitter->setStyleSheet(styleSheet);
+        for (int i = 0; i < splitter->count(); ++i) {
+            if (QSplitter* childSplitter = qobject_cast<QSplitter*>(splitter->widget(i)))
+                applyStyleRef(childSplitter, applyStyleRef);
+        }
+    };
+    applyStyle(m_widgets.splitContainer, applyStyle);
+}
+
+void MainWindow::refreshPaneThemes()
+{
+    for (ResultDisplay* display : splitPaneDisplays())
+        display->rehighlight();
+    for (Editor* editor : splitPaneEditors())
+        editor->rehighlight();
+    updatePaneTabBars();
+    updateSplitterStyleSheet();
 }
 
 void MainWindow::createBitField() {
@@ -1571,7 +3379,8 @@ void MainWindow::createKeypad()
     m_layouts.keypad->addStretch();
     m_layouts.keypad->addWidget(m_widgets.keypad);
     m_layouts.keypad->addStretch();
-    m_layouts.root->addLayout(m_layouts.keypad);
+    m_widgets.keypad->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    m_layouts.root->addLayout(m_layouts.keypad, 0);
 
     m_widgets.keypad->show();
     m_settings->keypadVisible = true;
@@ -1744,6 +3553,24 @@ void MainWindow::deleteDock(QDockWidget* dock)
 
 void MainWindow::createFixedConnections()
 {
+    ResultDisplay* initialDisplay = m_widgets.display;
+    Editor* initialEditor = m_widgets.editor;
+    connect(initialEditor, &Editor::textChanged, this, [this, initialDisplay, initialEditor]() {
+        setActiveEditorDisplayPane(initialDisplay, initialEditor);
+    });
+    connect(initialEditor, &Editor::selectionChanged, this, [this, initialDisplay, initialEditor]() {
+        setActiveEditorDisplayPane(initialDisplay, initialEditor);
+    });
+    connect(initialDisplay, &ResultDisplay::clicked, this, [this, initialDisplay, initialEditor]() {
+        setActiveEditorDisplayPane(initialDisplay, initialEditor);
+    });
+    connect(initialDisplay, &ResultDisplay::selectionChanged, this, [this, initialDisplay, initialEditor]() {
+        setActiveEditorDisplayPane(initialDisplay, initialEditor);
+    });
+    connect(this, &MainWindow::colorSchemeChanged, this, &MainWindow::updateSplitterStyleSheet);
+    connect(this, &MainWindow::colorSchemeChanged, this, &MainWindow::refreshPaneThemes);
+    connect(this, &MainWindow::syntaxHighlightingChanged, this, &MainWindow::refreshPaneThemes);
+
     connect(m_actions.sessionExportHtml, SIGNAL(triggered()), SLOT(exportHtml()));
     connect(m_actions.sessionExportPlainText, SIGNAL(triggered()), SLOT(exportPlainText()));
     connect(m_actions.sessionImport, SIGNAL(triggered()), SLOT(showSessionImportDialog()));
@@ -1890,6 +3717,19 @@ void MainWindow::createFixedConnections()
     connect(m_widgets.display, SIGNAL(removeHistoryEntryRequested(int)), SLOT(removeHistoryEntryAt(int)));
     connect(m_widgets.display, SIGNAL(removeHistoryEntriesAboveRequested(int)), SLOT(removeHistoryEntriesAbove(int)));
     connect(m_widgets.display, SIGNAL(removeHistoryEntriesBelowRequested(int)), SLOT(removeHistoryEntriesBelow(int)));
+    connect(m_widgets.display, SIGNAL(newSessionRequested()), SLOT(showNewSessionDialog()));
+    connect(m_widgets.display, SIGNAL(openSessionRequested()), SLOT(showOpenSessionDialog()));
+    connect(m_widgets.display, SIGNAL(duplicateSessionRequested()), SLOT(showDuplicateSessionDialog()));
+    connect(m_widgets.display, SIGNAL(splitLeftRequested()), SLOT(splitActivePaneLeft()));
+    connect(m_widgets.display, SIGNAL(splitRightRequested()), SLOT(splitActivePaneRight()));
+    connect(m_widgets.display, SIGNAL(splitUpRequested()), SLOT(splitActivePaneUp()));
+    connect(m_widgets.display, SIGNAL(splitDownRequested()), SLOT(splitActivePaneDown()));
+    connect(m_widgets.display, SIGNAL(renameSessionRequested()), SLOT(showRenameSessionDialog()));
+    connect(m_widgets.display, SIGNAL(clearSessionRequested()), SLOT(clearSession()));
+    connect(m_widgets.display, SIGNAL(closeSessionRequested()), SLOT(closeCurrentSession()));
+    connect(m_widgets.display, SIGNAL(closePaneRequested()), SLOT(closeCurrentPane()));
+    connect(m_widgets.display, SIGNAL(deleteSessionRequested()), SLOT(deleteCurrentSession()));
+    connect(m_widgets.display, SIGNAL(loadedSessionsMenuRequested(const QPoint&)), SLOT(showLoadedSessionsMenu(const QPoint&)));
     connect(m_widgets.display, SIGNAL(selectionChanged()), SLOT(handleDisplaySelectionChange()));
     connect(m_widgets.display, SIGNAL(shiftWheelUp()), SLOT(increaseDisplayFontPointSize()));
     connect(m_widgets.display, SIGNAL(shiftWheelDown()), SLOT(decreaseDisplayFontPointSize()));
@@ -1919,6 +3759,25 @@ void MainWindow::createFixedConnections()
     connect(m_actions.settingsDisplayColorSchemeCustom, SIGNAL(triggered()), SLOT(showCustomThemeDialog()));
 
     connect(this, SIGNAL(languageChanged()), SLOT(retranslateText()));
+
+    const auto bindStandardKey = [this](QKeySequence::StandardKey key, const std::function<void()>& handler) {
+        const QList<QKeySequence> bindings = QKeySequence::keyBindings(key);
+        for (const QKeySequence& sequence : bindings) {
+            QShortcut* shortcut = new QShortcut(sequence, this);
+            connect(shortcut, &QShortcut::activated, this, handler);
+        }
+    };
+    bindStandardKey(QKeySequence::AddTab, [this]() { showNewSessionDialog(); });
+    bindStandardKey(QKeySequence::NextChild, [this]() { activateNextChild(); });
+    bindStandardKey(QKeySequence::PreviousChild, [this]() { activatePreviousChild(); });
+    bindStandardKey(QKeySequence::Open, [this]() { showOpenSessionDialog(); });
+    bindStandardKey(QKeySequence::Close, [this]() { closeCurrentSession(); });
+    bindStandardKey(QKeySequence::Quit, [this]() { close(); });
+
+    QShortcut* splitRightShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+\\")), this);
+    connect(splitRightShortcut, &QShortcut::activated, this, &MainWindow::splitActivePaneRight);
+    QShortcut* splitDownShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+\\")), this);
+    connect(splitDownShortcut, &QShortcut::activated, this, &MainWindow::splitActivePaneDown);
 }
 
 void MainWindow::applySettings()
@@ -2121,10 +3980,13 @@ void MainWindow::applySettings()
 
     QFont font;
     font.fromString(m_settings->displayFont);
-    m_widgets.display->setFont(font);
-    m_widgets.editor->setFont(font);
+    for (ResultDisplay* display : splitPaneDisplays())
+        display->setFont(font);
+    for (Editor* editor : splitPaneEditors())
+        editor->setFont(font);
 
-    m_widgets.display->verticalScrollBar()->setValue(m_widgets.display->verticalScrollBar()->maximum());
+    if (m_widgets.display != nullptr)
+        m_widgets.display->verticalScrollBar()->setValue(m_widgets.display->verticalScrollBar()->maximum());
 
     const auto schemes = m_actions.settingsDisplayColorSchemes;
     bool colorSchemeMatched = false;
@@ -2136,8 +3998,9 @@ void MainWindow::applySettings()
     }
     m_actions.settingsDisplayColorSchemeCustom->setChecked(!colorSchemeMatched
                                                            && m_settings->colorScheme == QLatin1String("Custom"));
+    updateSplitterStyleSheet();
 
-    if (m_widgets.display->isEmpty())
+    if (m_widgets.display != nullptr && m_widgets.display->isEmpty())
         QTimer::singleShot(0, this, SLOT(showReadyMessage()));
 }
 
@@ -2261,13 +4124,16 @@ void MainWindow::saveSettings()
     if (m_widgets.manual)
         m_settings->manualWindowGeometry = m_settings->windowPositionSave ? m_widgets.manual->saveGeometry() : QByteArray();
     m_settings->windowState = saveState();
-    m_settings->displayFont = m_widgets.display->font().toString();
+    if (m_widgets.display != nullptr)
+        m_settings->displayFont = m_widgets.display->font().toString();
 
     m_settings->save();
 }
 
 void MainWindow::saveSession(QString & fname, bool saveHistory)
 {
+    captureEditorTextInCurrentSession();
+
     QFile file(fname);
     if (!file.open(QIODevice::WriteOnly)) {
         return;
@@ -2277,11 +4143,201 @@ void MainWindow::saveSession(QString & fname, bool saveHistory)
     QJsonObject json;
     m_session->serialize(json);
     if (!saveHistory)
-        json.remove(QLatin1String("history"));
+        json.remove(QLatin1String(SessionJsonKeys::History));
     QJsonDocument doc(json);
     file.write(doc.toJson(QJsonDocument::Compact));
 
     file.close();
+}
+
+void MainWindow::saveSessionLayout(bool captureCurrentViewport)
+{
+    if (captureCurrentViewport && m_session != nullptr && m_widgets.display != nullptr) {
+        m_sessionViewportAnchors.insert(m_session->name(), m_widgets.display->viewportTopAnchor());
+        QScrollBar* bar = m_widgets.display->verticalScrollBar();
+        const int scrollValue = bar->value() == bar->maximum()
+            ? std::numeric_limits<int>::max()
+            : bar->value();
+        m_sessionScrollValues.insert(m_session->name(), scrollValue);
+    }
+
+    QStringList sessionNames;
+    for (ResultDisplay* display : splitPaneDisplays()) {
+        const QStringList names = paneSessionNames(display);
+        for (const QString& name : names) {
+            if (!name.isEmpty() && !sessionNames.contains(name, Qt::CaseInsensitive))
+                sessionNames.append(name);
+        }
+    }
+    if (sessionNames.isEmpty())
+        sessionNames = m_loadedSessions.keys();
+    sessionNames.sort(Qt::CaseInsensitive);
+
+    QJsonArray tabs;
+    for (const QString& name : sessionNames)
+        tabs.append(sessionLayoutEntry(name,
+                                       m_sessionViewportAnchors.value(name, qMakePair(-1, 0)),
+                                       m_sessionScrollValues.value(name, -1)));
+
+    const auto layoutNodeForWidget = [this](QWidget* widget, const auto& layoutNodeForWidgetRef) -> QJsonObject {
+        QJsonObject node;
+        if (widget == nullptr)
+            return node;
+
+        if (QSplitter* splitter = qobject_cast<QSplitter*>(widget)) {
+            QJsonArray children;
+            for (int i = 0; i < splitter->count(); ++i) {
+                const QJsonObject child = layoutNodeForWidgetRef(splitter->widget(i), layoutNodeForWidgetRef);
+                if (!child.isEmpty())
+                    children.append(child);
+            }
+
+            QJsonArray sizes;
+            for (int size : splitter->sizes())
+                sizes.append(size);
+
+            node.insert(QStringLiteral("type"), QStringLiteral("split"));
+            node.insert(QStringLiteral("orientation"),
+                        splitter->orientation() == Qt::Horizontal
+                            ? QStringLiteral("horizontal")
+                            : QStringLiteral("vertical"));
+            node.insert(QStringLiteral("sizes"), sizes);
+            node.insert(QStringLiteral("children"), children);
+            return node;
+        }
+
+        ResultDisplay* display = widget->findChild<ResultDisplay*>();
+        if (display == nullptr)
+            return node;
+
+        const QString paneSessionName = m_paneSessionNames.value(display);
+        QJsonArray paneTabs;
+        const QStringList paneNames = paneSessionNames(display);
+        for (const QString& name : paneNames) {
+            paneTabs.append(sessionLayoutEntry(name,
+                                               m_sessionViewportAnchors.value(name, qMakePair(-1, 0)),
+                                               m_sessionScrollValues.value(name, -1)));
+        }
+
+        node.insert(QStringLiteral("type"), QStringLiteral("pane"));
+        node.insert(QStringLiteral("active"), paneSessionName);
+        node.insert(QStringLiteral("tabs"), paneTabs);
+        return node;
+    };
+
+    QJsonObject root;
+    const QList<ResultDisplay*> displays = splitPaneDisplays();
+    if (m_widgets.splitContainer != nullptr && displays.size() > 1) {
+        root = layoutNodeForWidget(m_widgets.splitContainer, layoutNodeForWidget);
+        root.insert(QStringLiteral("active"), m_session ? m_session->name() : QString());
+        root.insert(QStringLiteral("tabs"), tabs);
+    } else {
+        root.insert(QStringLiteral("type"), QStringLiteral("tabs"));
+        root.insert(QStringLiteral("active"), m_session ? m_session->name() : QString());
+        root.insert(QStringLiteral("tabs"), tabs);
+    }
+
+    QJsonObject window;
+    window.insert(QStringLiteral("id"), QStringLiteral("main"));
+    window.insert(QStringLiteral("active"), true);
+    window.insert(QStringLiteral("root"), root);
+
+    QJsonObject layout;
+    layout.insert(QStringLiteral("scheme"), 1);
+    layout.insert(QStringLiteral("kind"), QStringLiteral("session-layout"));
+    layout.insert(QStringLiteral("activeWindow"), QStringLiteral("main"));
+    layout.insert(QStringLiteral("windows"), QJsonArray({ window }));
+
+    m_settings->sessionLayoutJson = QString::fromUtf8(
+        QJsonDocument(layout).toJson(QJsonDocument::Compact));
+    m_settings->saveSessionLayoutJson();
+}
+
+void MainWindow::activateSession(Session* session)
+{
+    if (session == nullptr)
+        return;
+
+    if (m_session != nullptr
+            && m_session != session
+            && (m_widgets.display == nullptr || m_paneSessionNames.value(m_widgets.display) == m_session->name())) {
+        captureEditorTextInCurrentSession();
+        m_sessionViewportAnchors.insert(m_session->name(), m_widgets.display->viewportTopAnchor());
+        QScrollBar* bar = m_widgets.display->verticalScrollBar();
+        const int scrollValue = bar->value() == bar->maximum()
+            ? std::numeric_limits<int>::max()
+            : bar->value();
+        m_sessionScrollValues.insert(m_session->name(), scrollValue);
+    }
+
+    m_session = session;
+    m_evaluator->setSession(m_session);
+    m_evaluator->initializeBuiltInVariables();
+    if (m_widgets.display != nullptr)
+        m_widgets.display->setSession(m_session);
+    if (m_widgets.display != nullptr)
+        m_paneSessionNames.insert(m_widgets.display, m_session->name());
+    if (m_widgets.display != nullptr)
+        addSessionToActivePane(m_session->name());
+    m_pendingHistoryEditIndex = -1;
+    if (m_widgets.display != nullptr)
+        m_widgets.display->setEditingHistoryIndex(-1);
+    if (m_widgets.editor != nullptr)
+        m_widgets.editor->setHistoryArrowNavigationEnabled(true);
+    restoreEditorTextFromCurrentSession();
+    emit historyChanged();
+    emit variablesChanged();
+    emit functionsChanged();
+    emit unitsChanged();
+    if (m_widgets.display == nullptr) {
+        m_conditions.autoAns = !m_session->historyIsEmpty();
+        updatePaneEditorCursorVisibility();
+        return;
+    }
+
+    m_widgets.display->viewport()->update();
+    const QPair<int, int> anchor = m_sessionViewportAnchors.value(m_session->name(), qMakePair(-1, 0));
+    const int scrollValue = m_sessionScrollValues.value(m_session->name(), -1);
+    if (anchor.first >= 0) {
+        m_widgets.display->restoreViewportTopAnchor(anchor);
+        QTimer::singleShot(0, this, [this, anchor]() {
+            m_widgets.display->restoreViewportTopAnchor(anchor);
+        });
+    }
+    if (scrollValue >= 0) {
+        m_widgets.display->restoreScrollValue(scrollValue);
+        QTimer::singleShot(0, this, [this, scrollValue]() {
+            m_widgets.display->restoreScrollValue(scrollValue);
+        });
+    }
+    m_conditions.autoAns = !m_session->historyIsEmpty();
+    updatePaneEditorCursorVisibility();
+}
+
+void MainWindow::captureEditorTextInCurrentSession()
+{
+    if (m_session == nullptr || m_widgets.editor == nullptr)
+        return;
+
+    m_session->setEditorText(m_widgets.editor->text());
+}
+
+void MainWindow::restoreEditorTextFromCurrentSession()
+{
+    if (m_session == nullptr || m_widgets.editor == nullptr)
+        return;
+
+    m_widgets.editor->setText(m_session->editorText());
+    m_widgets.editor->setCursorPosition(m_widgets.editor->text().size());
+    if (m_widgets.editor->text().trimmed().isEmpty() && m_widgets.bitField)
+        m_widgets.bitField->clear();
+    else
+        m_widgets.editor->refreshAutoCalc();
+    QTimer::singleShot(0, this, [this]() {
+        if (m_widgets.editor)
+            m_widgets.editor->refreshAutoCalc();
+    });
+    m_widgets.editor->setFocus();
 }
 
 MainWindow::MainWindow()
@@ -2289,6 +4345,7 @@ MainWindow::MainWindow()
 {
 
     m_session = new Session();
+    m_loadedSessions.insert(m_session->name(), m_session);
     m_constants = Constants::instance();
     m_evaluator = Evaluator::instance();
     m_functions = FunctionRepo::instance();
@@ -2334,6 +4391,7 @@ MainWindow::MainWindow()
 
     createUi();
     applySettings();
+    updatePaneLoadedSessionCounts();
 
     if (!m_settings->hasNumberFormatStyleSetting)
         QTimer::singleShot(0, this, SLOT(showNumberFormatDialog()));
@@ -2364,7 +4422,8 @@ MainWindow::~MainWindow()
         deleteFunctionsDock();
     if (m_docks.history)
         deleteHistoryDock();
-    delete m_session;
+    qDeleteAll(m_loadedSessions);
+    m_session = nullptr;
 }
 
 void MainWindow::showAboutDialog()
@@ -2379,13 +4438,16 @@ void MainWindow::clearHistory()
     if (m_session->historyIsEmpty())
         return;
 
-    const QMessageBox::StandardButton confirmation = QMessageBox::question(
-        this,
-        tr("Clear History"),
-        tr("Are you sure you want to clear the calculation history?"),
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::No);
-    if (confirmation != QMessageBox::Yes)
+    QMessageBox confirmation(this);
+    confirmation.setIcon(QMessageBox::Question);
+    confirmation.setWindowTitle(tr("Clear History"));
+    confirmation.setText(tr("Are you sure you want to clear the calculation history?"));
+    confirmation.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    confirmation.setDefaultButton(QMessageBox::No);
+    confirmation.setEscapeButton(QMessageBox::No);
+    QShortcut clearHistoryEscape(QKeySequence(Qt::Key_Escape), &confirmation);
+    connect(&clearHistoryEscape, &QShortcut::activated, &confirmation, &QMessageBox::reject);
+    if (confirmation.exec() != QMessageBox::Yes)
         return;
 
     m_session->clearHistory();
@@ -2396,6 +4458,585 @@ void MainWindow::clearHistory()
     emit historyChanged();
 
     m_conditions.autoAns = false;
+}
+
+void MainWindow::clearSession()
+{
+    if (m_session->historyIsEmpty()
+            && m_session->variablesToList().isEmpty()
+            && m_session->UserFunctionsToList().isEmpty()
+            && m_session->userUnitsToList().isEmpty()) {
+        return;
+    }
+
+    QMessageBox confirmation(this);
+    confirmation.setIcon(QMessageBox::Question);
+    confirmation.setWindowTitle(tr("Clear History"));
+    confirmation.setText(tr("Are you sure you want to clear the calculation history?"));
+    confirmation.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    confirmation.setDefaultButton(QMessageBox::No);
+    confirmation.setEscapeButton(QMessageBox::No);
+    QShortcut clearSessionEscape(QKeySequence(Qt::Key_Escape), &confirmation);
+    connect(&clearSessionEscape, &QShortcut::activated, &confirmation, &QMessageBox::reject);
+    if (confirmation.exec() != QMessageBox::Yes)
+        return;
+
+    m_session->clearHistory();
+    m_session->clearVariables();
+    m_session->clearUserFunctions();
+    m_session->clearUserUnits();
+    m_pendingHistoryEditIndex = -1;
+    m_widgets.display->setEditingHistoryIndex(-1);
+    m_widgets.editor->setHistoryArrowNavigationEnabled(true);
+    clearEditorAndBitfield();
+    m_evaluator->initializeBuiltInVariables();
+    applyStartupUserDefinitions();
+    emit historyChanged();
+    emit variablesChanged();
+    emit functionsChanged();
+    emit unitsChanged();
+
+    m_conditions.autoAns = false;
+    if (m_settings->historySaving == Settings::HistorySavingContinuously)
+        saveSessionToDefaultPath();
+}
+
+void MainWindow::showNewSessionDialog()
+{
+    createUntitledSession();
+    saveSessionLayout(false);
+}
+
+void MainWindow::showOpenSessionDialog()
+{
+    migrateLegacyHistoryIfNeeded();
+    ensureSessionsPath();
+
+    struct SessionFileEntry {
+        QString name;
+        QString path;
+        QJsonObject json;
+    };
+    QList<SessionFileEntry> entries;
+
+    const QDir dir(sessionsPath());
+    const QFileInfoList files = dir.entryInfoList(QStringList(QStringLiteral("*.json")),
+                                                  QDir::Files | QDir::Readable,
+                                                  QDir::Name | QDir::IgnoreCase);
+    for (const QFileInfo& fileInfo : files) {
+        QJsonObject json;
+        if (!readValidSessionJson(fileInfo.absoluteFilePath(), &json))
+            continue;
+
+        SessionFileEntry entry;
+        entry.name = normalizedSessionName(json.value(QLatin1String(SessionJsonKeys::Session)).toString());
+        entry.path = fileInfo.absoluteFilePath();
+        entry.json = json;
+        entries.append(entry);
+    }
+
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("Open Session"));
+    QVBoxLayout* layout = new QVBoxLayout(&dialog);
+    QListWidget* list = new QListWidget(&dialog);
+    for (int i = 0; i < entries.size(); ++i) {
+        QListWidgetItem* item = new QListWidgetItem(entries.at(i).name, list);
+        item->setData(Qt::UserRole, i);
+        if (m_session != nullptr && entries.at(i).name == m_session->name())
+            item->setSelected(true);
+    }
+    layout->addWidget(list);
+
+    QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Open | QDialogButtonBox::Cancel, &dialog);
+    QPushButton* openButton = buttons->button(QDialogButtonBox::Open);
+    openButton->setEnabled(list->currentItem() != nullptr);
+    layout->addWidget(buttons);
+
+    connect(list, &QListWidget::currentItemChanged, &dialog, [openButton](QListWidgetItem* current) {
+        openButton->setEnabled(current != nullptr);
+    });
+    connect(list, &QListWidget::itemDoubleClicked, &dialog, [&dialog](QListWidgetItem*) {
+        dialog.accept();
+    });
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (list->count() > 0 && list->currentItem() == nullptr)
+        list->setCurrentRow(0);
+    list->setFocus();
+
+    if (dialog.exec() != QDialog::Accepted || list->currentItem() == nullptr)
+        return;
+
+    const int entryIndex = list->currentItem()->data(Qt::UserRole).toInt();
+    if (entryIndex < 0 || entryIndex >= entries.size())
+        return;
+
+    const SessionFileEntry entry = entries.at(entryIndex);
+    Session* selectedSession = m_loadedSessions.value(entry.name, nullptr);
+    if (selectedSession == nullptr) {
+        selectedSession = new Session();
+        m_evaluator->setSession(selectedSession);
+        selectedSession->deSerialize(entry.json, false);
+        selectedSession->setName(entry.name);
+        m_loadedSessions.insert(entry.name, selectedSession);
+        updatePaneLoadedSessionCounts();
+    } else if (selectedSession == m_session) {
+        m_evaluator->setSession(selectedSession);
+        selectedSession->deSerialize(entry.json, false);
+        selectedSession->setName(entry.name);
+    }
+
+    if (selectedSession != m_session && m_settings->historySaving == Settings::HistorySavingContinuously)
+        saveSessionToDefaultPath();
+
+    activateSession(selectedSession);
+    saveSessionLayout(false);
+}
+
+void MainWindow::showDuplicateSessionDialog()
+{
+    if (m_session == nullptr)
+        return;
+
+    captureEditorTextInCurrentSession();
+
+    const QString originalName = normalizedSessionName(m_session->name());
+    while (true) {
+        bool accepted = false;
+        const QString enteredName = QInputDialog::getText(
+            this,
+            tr("Duplicate Session"),
+            tr("Session name:"),
+            QLineEdit::Normal,
+            originalName + QStringLiteral(" (copy)"),
+            &accepted).trimmed();
+        if (!accepted)
+            return;
+
+        const QString name = normalizedSessionName(enteredName);
+        if (loadedSessionNameExists(m_loadedSessions, name) || QFileInfo::exists(sessionFilePath(name))) {
+            QMessageBox::warning(this,
+                                 tr("Duplicate Session"),
+                                 tr("A session named %1 already exists.").arg(name));
+            continue;
+        }
+
+        QJsonObject duplicateJson;
+        m_session->serialize(duplicateJson);
+        duplicateJson.insert(QLatin1String(SessionJsonKeys::Session), name);
+
+        const QString duplicatePath = sessionFilePath(name);
+        QFile duplicateFile(duplicatePath);
+        if (!duplicateFile.open(QIODevice::WriteOnly)) {
+            QMessageBox::warning(this,
+                                 tr("Duplicate Session"),
+                                 tr("Could not create session file %1.").arg(duplicatePath));
+            continue;
+        }
+
+        const QByteArray data = QJsonDocument(duplicateJson).toJson(QJsonDocument::Compact);
+        if (duplicateFile.write(data) != data.size()) {
+            duplicateFile.close();
+            QFile::remove(duplicatePath);
+            QMessageBox::warning(this,
+                                 tr("Duplicate Session"),
+                                 tr("Could not write session file %1.").arg(duplicatePath));
+            continue;
+        }
+        duplicateFile.close();
+
+        Session* duplicateSession = new Session();
+        m_evaluator->setSession(duplicateSession);
+        duplicateSession->deSerialize(duplicateJson, false);
+        duplicateSession->setName(name);
+        m_loadedSessions.insert(name, duplicateSession);
+        updatePaneLoadedSessionCounts();
+
+        activateSession(duplicateSession);
+        m_conditions.autoAns = !duplicateSession->historyIsEmpty();
+        saveSessionLayout(false);
+        return;
+    }
+}
+
+void MainWindow::showRenameSessionDialog()
+{
+    if (m_session == nullptr)
+        return;
+
+    const QString originalName = m_session->name();
+    while (true) {
+        bool accepted = false;
+        const QString enteredName = QInputDialog::getText(
+            this,
+            tr("Rename Session"),
+            tr("Session name:"),
+            QLineEdit::Normal,
+            originalName,
+            &accepted).trimmed();
+        if (!accepted)
+            return;
+
+        const QString name = normalizedSessionName(enteredName);
+        if (name == originalName)
+            return;
+
+        if (loadedSessionNameExists(m_loadedSessions, name) || QFileInfo::exists(sessionFilePath(name))) {
+            QMessageBox::warning(this,
+                                 tr("Rename Session"),
+                                 tr("A session named %1 already exists.").arg(name));
+            continue;
+        }
+
+        if (m_settings->historySaving == Settings::HistorySavingContinuously)
+            saveSessionToDefaultPath();
+
+        const QString originalPath = sessionFilePath(originalName);
+        const QString renamedPath = sessionFilePath(name);
+        if (QFileInfo::exists(originalPath) && !QFile::rename(originalPath, renamedPath)) {
+            QMessageBox::warning(this,
+                                 tr("Rename Session"),
+                                 tr("Could not rename session file %1.").arg(originalPath));
+            continue;
+        }
+
+        const QPair<int, int> viewportAnchor = m_sessionViewportAnchors.take(originalName);
+        const int scrollValue = m_sessionScrollValues.take(originalName);
+        m_loadedSessions.remove(originalName);
+        m_session->setName(name);
+        m_loadedSessions.insert(name, m_session);
+        for (auto it = m_paneSessionNames.begin(); it != m_paneSessionNames.end(); ++it) {
+            if (it.value().compare(originalName, Qt::CaseInsensitive) == 0)
+                it.value() = name;
+        }
+        for (auto it = m_paneSessionTabs.begin(); it != m_paneSessionTabs.end(); ++it) {
+            QStringList names = it.value();
+            for (QString& paneName : names) {
+                if (paneName.compare(originalName, Qt::CaseInsensitive) == 0)
+                    paneName = name;
+            }
+            it.value() = names;
+        }
+        if (viewportAnchor.first >= 0)
+            m_sessionViewportAnchors.insert(name, viewportAnchor);
+        if (scrollValue >= 0)
+            m_sessionScrollValues.insert(name, scrollValue);
+
+        m_widgets.display->viewport()->update();
+        updatePaneTabBars();
+        {
+            QJsonObject json;
+            m_session->serialize(json);
+            QFile renamedFile(sessionFilePath(name));
+            if (renamedFile.open(QIODevice::WriteOnly))
+                renamedFile.write(QJsonDocument(json).toJson(QJsonDocument::Compact));
+        }
+        saveSessionLayout();
+        return;
+    }
+}
+
+void MainWindow::closeCurrentSession()
+{
+    if (m_session == nullptr)
+        return;
+
+    QStringList names = paneSessionNames(m_widgets.display);
+    if (names.size() <= 1) {
+        if (splitPaneDisplays().size() <= 1) {
+            const QString closingName = m_session->name();
+            if (m_settings->historySaving == Settings::HistorySavingContinuously)
+                saveSessionToDefaultPath();
+
+            Session* replacementSession = createUntitledSession(true);
+            QStringList paneNames = paneSessionNames(m_widgets.display);
+            paneNames.removeAll(closingName);
+            if (replacementSession != nullptr && !paneNames.contains(replacementSession->name(), Qt::CaseInsensitive))
+                paneNames.append(replacementSession->name());
+            m_paneSessionTabs.insert(m_widgets.display, paneNames);
+            m_paneSessionNames.insert(m_widgets.display, replacementSession ? replacementSession->name() : QString());
+
+            Session* closingSession = m_loadedSessions.take(closingName);
+            m_sessionViewportAnchors.remove(closingName);
+            m_sessionScrollValues.remove(closingName);
+            delete closingSession;
+            updatePaneLoadedSessionCounts();
+            saveSessionLayout(false);
+            return;
+        }
+
+        QWidget* pane = paneWidgetForDisplay(m_widgets.display);
+        QSplitter* parentSplitter = qobject_cast<QSplitter*>(pane ? pane->parentWidget() : nullptr);
+        if (parentSplitter == nullptr)
+            return;
+        const int closingPaneIndex = parentSplitter->indexOf(pane);
+        const int nextPaneIndex = closingPaneIndex + 1 < parentSplitter->count()
+            ? closingPaneIndex + 1
+            : qMax(0, closingPaneIndex - 1);
+        QWidget* nextPane = parentSplitter->widget(nextPaneIndex);
+        ResultDisplay* nextDisplay = nextPane ? nextPane->findChild<ResultDisplay*>() : nullptr;
+        Editor* nextEditor = nextPane ? nextPane->findChild<Editor*>() : nullptr;
+        if (nextDisplay == nullptr || nextEditor == nullptr || pane == nextPane)
+            return;
+
+        captureEditorTextInCurrentSession();
+        QTabBar* closingTabBar = displayTabBar(m_widgets.display);
+        m_paneSessionNames.remove(m_widgets.display);
+        m_paneSessionTabs.remove(m_widgets.display);
+        m_paneTabBars.remove(m_widgets.display);
+        if (closingTabBar != nullptr)
+            m_tabBarDisplays.remove(closingTabBar);
+        m_widgets.display = nextDisplay;
+        m_widgets.editor = nextEditor;
+        m_copyWidget = nextEditor;
+        deletePaneAfterSessionTabDrag(pane);
+        normalizeSplitContainerTree();
+        updatePaneLoadedSessionCounts();
+        Session* nextSession = m_loadedSessions.value(m_paneSessionNames.value(nextDisplay), nullptr);
+        if (nextSession != nullptr)
+            activateSession(nextSession);
+        saveSessionLayout(false);
+        return;
+    }
+
+    if (m_settings->historySaving == Settings::HistorySavingContinuously)
+        saveSessionToDefaultPath();
+
+    const QString closingName = m_session->name();
+    names.sort(Qt::CaseInsensitive);
+    const int closingIndex = names.indexOf(closingName);
+    const int nextIndex = closingIndex >= 0 && closingIndex + 1 < names.size()
+        ? closingIndex + 1
+        : qMax(0, closingIndex - 1);
+    const QString nextName = names.value(nextIndex);
+    Session* nextSession = m_loadedSessions.value(nextName, nullptr);
+    if (nextSession == nullptr || nextSession == m_session)
+        return;
+
+    QStringList paneNames = paneSessionNames(m_widgets.display);
+    paneNames.removeAll(closingName);
+    m_paneSessionTabs.insert(m_widgets.display, paneNames);
+    activateSession(nextSession);
+    updatePaneLoadedSessionCounts();
+    saveSessionLayout(false);
+}
+
+void MainWindow::closeCurrentPane()
+{
+    if (m_widgets.display == nullptr || m_widgets.editor == nullptr || m_session == nullptr)
+        return;
+
+    captureEditorTextInCurrentSession();
+
+    ResultDisplay* closingDisplay = m_widgets.display;
+    QWidget* closingPane = paneWidgetForDisplay(closingDisplay);
+    if (closingPane == nullptr)
+        return;
+
+    QStringList closingNames = paneSessionNames(closingDisplay);
+    if (closingNames.isEmpty() && m_session != nullptr)
+        closingNames.append(m_session->name());
+
+    const auto saveLoadedSession = [this](const QString& name) {
+        Session* session = m_loadedSessions.value(name, nullptr);
+        if (session == nullptr)
+            return;
+
+        QJsonObject json;
+        session->serialize(json);
+        QFile file(sessionFilePath(name));
+        if (file.open(QIODevice::WriteOnly))
+            file.write(QJsonDocument(json).toJson(QJsonDocument::Compact));
+    };
+
+    for (const QString& name : closingNames)
+        saveLoadedSession(name);
+
+    const QList<ResultDisplay*> displaysBeforeClose = splitPaneDisplays();
+    if (displaysBeforeClose.size() <= 1) {
+        Session* replacementSession = createUntitledSession(true);
+        const QString replacementName = replacementSession ? replacementSession->name() : QString();
+        m_paneSessionTabs.insert(closingDisplay, replacementName.isEmpty() ? QStringList() : QStringList(replacementName));
+        m_paneSessionNames.insert(closingDisplay, replacementName);
+
+        for (const QString& name : closingNames) {
+            if (name == replacementName)
+                continue;
+            Session* session = m_loadedSessions.take(name);
+            m_sessionViewportAnchors.remove(name);
+            m_sessionScrollValues.remove(name);
+            delete session;
+        }
+
+        if (replacementSession != nullptr)
+            activateSession(replacementSession);
+        updatePaneLoadedSessionCounts();
+        saveSessionLayout(false);
+        return;
+    }
+
+    const int closingDisplayIndex = displaysBeforeClose.indexOf(closingDisplay);
+    ResultDisplay* nextDisplay = nullptr;
+    if (closingDisplayIndex >= 0 && closingDisplayIndex + 1 < displaysBeforeClose.size())
+        nextDisplay = displaysBeforeClose.at(closingDisplayIndex + 1);
+    else if (closingDisplayIndex > 0)
+        nextDisplay = displaysBeforeClose.at(closingDisplayIndex - 1);
+    else {
+        for (ResultDisplay* display : displaysBeforeClose) {
+            if (display != closingDisplay) {
+                nextDisplay = display;
+                break;
+            }
+        }
+    }
+
+    if (nextDisplay == nullptr)
+        return;
+
+    Editor* nextEditor = nextDisplay->parentWidget()
+        ? nextDisplay->parentWidget()->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly)
+        : nullptr;
+    Session* nextSession = m_loadedSessions.value(m_paneSessionNames.value(nextDisplay), nullptr);
+    if (nextEditor == nullptr || nextSession == nullptr)
+        return;
+
+    m_paneSessionNames.remove(closingDisplay);
+    m_paneSessionTabs.remove(closingDisplay);
+    QTabBar* closingTabBar = displayTabBar(closingDisplay);
+    m_paneTabBars.remove(closingDisplay);
+    if (closingTabBar != nullptr)
+        m_tabBarDisplays.remove(closingTabBar);
+    m_widgets.display = nextDisplay;
+    m_widgets.editor = nextEditor;
+    m_copyWidget = nextEditor;
+
+    deletePaneAfterSessionTabDrag(closingPane);
+    normalizeSplitContainerTree();
+
+    const auto referencedByRemainingPanes = [this](const QString& name) {
+        for (ResultDisplay* display : splitPaneDisplays()) {
+            const QStringList names = paneSessionNames(display);
+            if (names.contains(name, Qt::CaseInsensitive))
+                return true;
+        }
+        return false;
+    };
+
+    activateSession(nextSession);
+
+    for (const QString& name : closingNames) {
+        if (referencedByRemainingPanes(name))
+            continue;
+        Session* session = m_loadedSessions.take(name);
+        m_sessionViewportAnchors.remove(name);
+        m_sessionScrollValues.remove(name);
+        if (session != m_session)
+            delete session;
+    }
+
+    updatePaneLoadedSessionCounts();
+    updatePaneEditorCursorVisibility();
+    saveSessionLayout(false);
+}
+
+void MainWindow::deleteCurrentSession()
+{
+    if (m_session == nullptr)
+        return;
+
+    QMessageBox confirmation(this);
+    confirmation.setIcon(QMessageBox::Question);
+    confirmation.setWindowTitle(tr("Delete Session"));
+    confirmation.setText(tr("Are you sure you want to delete this session?"));
+    confirmation.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    confirmation.setDefaultButton(QMessageBox::No);
+    confirmation.setEscapeButton(QMessageBox::No);
+    QShortcut deleteSessionEscape(QKeySequence(Qt::Key_Escape), &confirmation);
+    connect(&deleteSessionEscape, &QShortcut::activated, &confirmation, &QMessageBox::reject);
+    if (confirmation.exec() != QMessageBox::Yes)
+        return;
+
+    const QString deletingName = m_session->name();
+    const QString deletingPath = sessionFilePath(deletingName);
+    Session* deletingSession = m_session;
+
+    m_loadedSessions.remove(deletingName);
+    m_sessionViewportAnchors.remove(deletingName);
+    m_sessionScrollValues.remove(deletingName);
+    m_session = nullptr;
+    m_evaluator->setSession(nullptr);
+
+    if (QFileInfo::exists(deletingPath))
+        QFile::remove(deletingPath);
+
+    Session* nextSession = nullptr;
+    bool createdReplacementSession = false;
+    if (m_loadedSessions.isEmpty()) {
+        const QString name = firstAvailableUntitledSessionName(m_loadedSessions);
+        nextSession = new Session();
+        nextSession->setName(name);
+        m_loadedSessions.insert(name, nextSession);
+        createdReplacementSession = true;
+    } else {
+        QStringList names = m_loadedSessions.keys();
+        names.sort(Qt::CaseInsensitive);
+        nextSession = m_loadedSessions.value(names.first(), nullptr);
+    }
+
+    updatePaneLoadedSessionCounts();
+    activateSession(nextSession);
+    for (auto it = m_paneSessionNames.begin(); it != m_paneSessionNames.end(); ++it) {
+        if (it.value() == deletingName)
+            it.value() = nextSession->name();
+    }
+    for (auto it = m_paneSessionTabs.begin(); it != m_paneSessionTabs.end(); ++it) {
+        QStringList names = it.value();
+        names.removeAll(deletingName);
+        if (names.isEmpty() && nextSession != nullptr)
+            names.append(nextSession->name());
+        it.value() = names;
+    }
+    if (createdReplacementSession)
+        applyStartupUserDefinitions();
+
+    delete deletingSession;
+    m_conditions.autoAns = false;
+    if (m_settings->historySaving == Settings::HistorySavingContinuously)
+        saveSessionToDefaultPath();
+    saveSessionLayout(false);
+}
+
+void MainWindow::showLoadedSessionsMenu(const QPoint& globalPos)
+{
+    const QStringList paneNames = paneSessionNames(m_widgets.display);
+    if (paneNames.isEmpty())
+        return;
+
+    QMenu menu(this);
+    QStringList names = paneNames;
+    names.sort(Qt::CaseInsensitive);
+    for (const QString& name : names) {
+        QAction* action = menu.addAction(name);
+        action->setCheckable(true);
+        action->setChecked(m_session != nullptr && name == m_session->name());
+        action->setData(name);
+    }
+
+    QAction* selectedAction = menu.exec(globalPos);
+    if (selectedAction == nullptr)
+        return;
+
+    const QString name = selectedAction->data().toString();
+    Session* selectedSession = m_loadedSessions.value(name, nullptr);
+    if (selectedSession == nullptr || selectedSession == m_session)
+        return;
+
+    if (m_settings->historySaving == Settings::HistorySavingContinuously)
+        saveSessionToDefaultPath();
+
+    activateSession(selectedSession);
+    saveSessionLayout(false);
 }
 
 void MainWindow::clearEditor()
@@ -2627,16 +5268,14 @@ void MainWindow::showCustomThemeDialog()
         palette.setColor(QPalette::Base, scheme.colorForRole(ColorScheme::Background));
         preview->setPalette(palette);
         previewHighlighter->rehighlight();
-        previewScrollbarTrack->setStyleSheet(QStringLiteral("background-color: %1;")
-                                                 .arg(scheme.colorForRole(ColorScheme::Background).name()));
+        previewScrollbarTrack->setStyleSheet(QStringLiteral("background-color: %1;").arg(scheme.colorForRole(ColorScheme::Background).name()));
 
         QPalette editorPalette = editorPreview->palette();
         editorPalette.setColor(QPalette::Base, scheme.colorForRole(ColorScheme::EditorBackground));
         editorPalette.setColor(QPalette::Text, scheme.colorForRole(ColorScheme::Number));
         editorPreview->setPalette(editorPalette);
         editorPreviewHighlighter->rehighlight();
-        previewScrollbar->setStyleSheet(QStringLiteral("background-color: %1;")
-                                            .arg(scheme.colorForRole(ColorScheme::ScrollBar).name()));
+        previewScrollbar->setStyleSheet(QStringLiteral("background-color: %1;").arg(scheme.colorForRole(ColorScheme::ScrollBar).name()));
     };
     const auto updateThemeListHeight = [](QListWidget* list) {
         const int visibleRows = qMin(list->count(), 7);
@@ -2791,8 +5430,7 @@ void MainWindow::showCustomThemeDialog()
             QMessageBox::critical(
                 this,
                 tr("Error"),
-                tr("Can't import theme \"%1\" because it conflicts with a built-in theme.")
-                    .arg(themeName));
+                tr("Can't import theme \"%1\" because it conflicts with a built-in theme.").arg(themeName));
             return;
         }
         const QString colorSchemesPath = writableColorSchemesPath();
@@ -2805,8 +5443,7 @@ void MainWindow::showCustomThemeDialog()
             const QMessageBox::StandardButton answer = QMessageBox::question(
                 this,
                 tr("Overwrite Theme"),
-                tr("A custom theme named \"%1\" already exists. Do you want to overwrite it?")
-                    .arg(themeName),
+                tr("A custom theme named \"%1\" already exists. Do you want to overwrite it?").arg(themeName),
                 QMessageBox::Yes | QMessageBox::No,
                 QMessageBox::No);
             if (answer != QMessageBox::Yes)
@@ -2868,8 +5505,7 @@ void MainWindow::showCustomThemeDialog()
             QMessageBox::critical(
                 this,
                 tr("Error"),
-                tr("Can't export theme as \"%1\" because it conflicts with a built-in theme.")
-                    .arg(exportFileInfo.completeBaseName()));
+                tr("Can't export theme as \"%1\" because it conflicts with a built-in theme.").arg(exportFileInfo.completeBaseName()));
             return;
         }
         QFile file(filePath);
@@ -2972,8 +5608,7 @@ void MainWindow::saveSessionDialog()
 {
     QString filters = tr("SpeedCrunch Sessions (*.json);;All Files (*)");
     const QString sessionBaseName =
-        QString(QLatin1String("session-%1"))
-        .arg(QDateTime::currentDateTime().toString(QLatin1String("yyyy_MM_dd-HH_mm_ss")));
+        QString(QLatin1String("session-%1")).arg(QDateTime::currentDateTime().toString(QLatin1String("yyyy_MM_dd-HH_mm_ss")));
     const QString defaultFileName = sessionBaseName + QLatin1String(".json");
 
     QFileDialog dialog(this, tr("Save Session"), QString(), filters);
@@ -3002,6 +5637,7 @@ void MainWindow::saveSessionDialog()
     }
 
     QJsonObject json;
+    captureEditorTextInCurrentSession();
     m_session->serialize(json);
     QJsonDocument doc(json);
     file.write(doc.toJson());
@@ -3504,7 +6140,8 @@ void MainWindow::setAutoAnsEnabled(bool b)
 void MainWindow::setAutoCalcEnabled(bool b)
 {
     m_settings->autoCalc = b;
-    m_widgets.editor->setAutoCalcEnabled(b);
+    if (m_widgets.editor != nullptr)
+        m_widgets.editor->setAutoCalcEnabled(b);
 }
 
 void MainWindow::setHistorySaving(QAction* action)
@@ -3553,7 +6190,7 @@ void MainWindow::setUpDownArrowBehavior(QAction* action)
 void MainWindow::setEmptyHistoryHintEnabled(bool b)
 {
     m_settings->showEmptyHistoryHint = b;
-    if (b && m_widgets.display->isEmpty())
+    if (b && m_widgets.display != nullptr && m_widgets.display->isEmpty())
         showReadyMessage();
     else if (!b)
         hideStateLabel();
@@ -3572,7 +6209,8 @@ void MainWindow::setSingleInstanceEnabled(bool b)
 void MainWindow::setAutoCompletionEnabled(bool b)
 {
     m_settings->autoCompletion = b;
-    m_widgets.editor->setAutoCompletionEnabled(b);
+    if (m_widgets.editor != nullptr)
+        m_widgets.editor->setAutoCompletionEnabled(b);
 }
 
 void MainWindow::setAutoCompletionBuiltInFunctionsEnabled(bool b)
@@ -3618,7 +6256,8 @@ void MainWindow::setDigitGrouping(QAction *action)
 {
     m_settings->digitGrouping = action->data().toInt();
     emit historyChanged();
-    m_widgets.editor->refreshAutoCalc();
+    if (m_widgets.editor != nullptr)
+        m_widgets.editor->refreshAutoCalc();
     emit syntaxHighlightingChanged();
 }
 
@@ -3626,7 +6265,8 @@ void MainWindow::setDigitGroupingIntegerPartOnlyEnabled(bool b)
 {
     m_settings->digitGroupingIntegerPartOnly = b;
     emit historyChanged();
-    m_widgets.editor->refreshAutoCalc();
+    if (m_widgets.editor != nullptr)
+        m_widgets.editor->refreshAutoCalc();
     emit syntaxHighlightingChanged();
 }
 
@@ -3639,13 +6279,15 @@ void MainWindow::setSimplifyResultExpressionsEnabled(bool b)
 {
     m_settings->simplifyResultExpressions = b;
     emit historyChanged();
-    m_widgets.editor->refreshAutoCalc();
+    if (m_widgets.editor != nullptr)
+        m_widgets.editor->refreshAutoCalc();
 }
 
 void MainWindow::setHoverHighlightResultsEnabled(bool b)
 {
     m_settings->hoverHighlightResults = b;
-    m_widgets.display->setHoverHighlightEnabled(b);
+    for (ResultDisplay* display : splitPaneDisplays())
+        display->setHoverHighlightEnabled(b);
 }
 
 void MainWindow::setAngleModeDegree()
@@ -3841,6 +6483,16 @@ void MainWindow::setFullScreenEnabled(bool b)
 
 bool MainWindow::eventFilter(QObject* o, QEvent* e)
 {
+    if (Editor* editor = qobject_cast<Editor*>(o)) {
+        if (e->type() == QEvent::FocusIn || e->type() == QEvent::MouseButtonPress) {
+            QWidget* pane = editor->parentWidget();
+            ResultDisplay* display = pane ? pane->findChild<ResultDisplay*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+            if (display != nullptr)
+                setActiveEditorDisplayPane(display, editor);
+        }
+        return QMainWindow::eventFilter(o, e);
+    }
+
     if (o == m_widgets.state && e->type() == QEvent::MouseButtonPress) {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(e);
         if (mouseEvent->button() == Qt::LeftButton) {
@@ -4598,12 +7250,13 @@ void MainWindow::copy()
 }
 
 void MainWindow::restoreSession(bool restoreHistory) {
-    QString data_path = Settings::getDataPath();
-    QDir qdir;
-    qdir.mkpath(data_path);
-    data_path.append("/history.json");
+    migrateLegacyHistoryIfNeeded();
+    ensureSessionsPath();
 
-    QFile file(data_path);
+    if (restoreSessionLayout(restoreHistory))
+        return;
+
+    QFile file(sessionFilePath(m_session->name()));
     if (!file.open(QIODevice::ReadOnly))
         return;
 
@@ -4611,16 +7264,331 @@ void MainWindow::restoreSession(bool restoreHistory) {
     QJsonDocument doc(QJsonDocument::fromJson(data));
     QJsonObject json = doc.object();
     if (!restoreHistory)
-        json.remove(QLatin1String("history"));
+        json.remove(QLatin1String(SessionJsonKeys::History));
     m_session->deSerialize(json, true);
+    m_session->setEditorText(json.value(QLatin1String(SessionJsonKeys::Editor)).toString());
 
     file.close();
     emit historyChanged();
     emit variablesChanged();
     emit functionsChanged();
     emit unitsChanged();
+    restoreEditorTextFromCurrentSession();
 
     m_conditions.autoAns = restoreHistory && !m_session->historyIsEmpty();
+}
+
+bool MainWindow::restoreSessionLayout(bool restoreHistory)
+{
+    if (m_settings->sessionLayoutJson.isEmpty())
+        return false;
+
+    const QJsonDocument layoutDoc = QJsonDocument::fromJson(m_settings->sessionLayoutJson.toUtf8());
+    if (!layoutDoc.isObject())
+        return false;
+
+    const QJsonObject layout = layoutDoc.object();
+    if (layout.value(QStringLiteral("scheme")).toInt() != 1
+            || layout.value(QStringLiteral("kind")).toString() != QLatin1String("session-layout")) {
+        return false;
+    }
+
+    const QJsonArray windows = layout.value(QStringLiteral("windows")).toArray();
+    if (windows.isEmpty())
+        return false;
+
+    const QString activeWindowId = layout.value(QStringLiteral("activeWindow")).toString();
+    QJsonObject window;
+    for (const QJsonValue& value : windows) {
+        if (!value.isObject())
+            continue;
+        const QJsonObject candidate = value.toObject();
+        if ((!activeWindowId.isEmpty() && candidate.value(QStringLiteral("id")).toString() == activeWindowId)
+                || (activeWindowId.isEmpty() && candidate.value(QStringLiteral("active")).toBool())) {
+            window = candidate;
+            break;
+        }
+    }
+    if (window.isEmpty() && windows.first().isObject())
+        window = windows.first().toObject();
+    if (window.isEmpty())
+        return false;
+
+    const QJsonObject root = window.value(QStringLiteral("root")).toObject();
+    const QString rootType = root.value(QStringLiteral("type")).toString();
+    if (rootType != QLatin1String("tabs") && rootType != QLatin1String("split"))
+        return false;
+
+    QJsonArray tabs = rootType == QLatin1String("tabs")
+        ? root.value(QStringLiteral("tabs")).toArray()
+        : QJsonArray();
+    const auto appendPaneTabs = [&tabs](const QJsonObject& node, const auto& appendPaneTabsRef) -> void {
+        const QString type = node.value(QStringLiteral("type")).toString();
+        if (type == QLatin1String("pane")) {
+            const QJsonArray paneTabs = node.value(QStringLiteral("tabs")).toArray();
+            for (const QJsonValue& tabValue : paneTabs)
+                tabs.append(tabValue);
+            return;
+        }
+        if (type != QLatin1String("split"))
+            return;
+        const QJsonArray children = node.value(QStringLiteral("children")).toArray();
+        for (const QJsonValue& childValue : children) {
+            if (childValue.isObject())
+                appendPaneTabsRef(childValue.toObject(), appendPaneTabsRef);
+        }
+    };
+    if (rootType == QLatin1String("split"))
+        appendPaneTabs(root, appendPaneTabs);
+    if (tabs.isEmpty())
+        return false;
+
+    QHash<QString, Session*> restoredSessions;
+    m_sessionViewportAnchors.clear();
+    m_sessionScrollValues.clear();
+    QString activeSessionName = normalizedSessionName(root.value(QStringLiteral("active")).toString());
+    Session* activeSession = nullptr;
+
+    for (const QJsonValue& value : tabs) {
+        if (!value.isObject())
+            continue;
+
+        const QJsonObject tab = value.toObject();
+        const QString name = normalizedSessionName(tab.value(QStringLiteral("name")).toString());
+        if (loadedSessionNameExists(restoredSessions, name))
+            continue;
+
+        QString fileName = tab.value(QStringLiteral("file")).toString();
+        if (fileName.isEmpty())
+            fileName = sessionFileBaseName(name) + QLatin1String(".json");
+
+        QJsonObject sessionJson;
+        const QString filePath = QDir(sessionsPath()).filePath(fileName);
+        if (!readValidSessionJson(filePath, &sessionJson))
+            continue;
+
+        if (!restoreHistory)
+            sessionJson.remove(QLatin1String(SessionJsonKeys::History));
+
+        Session* session = nullptr;
+        if (name == m_session->name() && restoredSessions.isEmpty()) {
+            session = m_session;
+        } else {
+            session = new Session();
+        }
+
+        m_evaluator->setSession(session);
+        session->deSerialize(sessionJson, false);
+        session->setName(name);
+        restoredSessions.insert(name, session);
+        const QJsonObject scroll = tab.value(QStringLiteral("scroll")).toObject();
+        const int block = scroll.value(QStringLiteral("block")).toInt(-1);
+        const int offset = scroll.value(QStringLiteral("offset")).toInt(0);
+        const int scrollValue = scroll.value(QStringLiteral("value")).toInt(-1);
+        if (block >= 0)
+            m_sessionViewportAnchors.insert(name, qMakePair(block, offset));
+        if (scrollValue >= 0)
+            m_sessionScrollValues.insert(name, scrollValue);
+        if (name == activeSessionName)
+            activeSession = session;
+    }
+
+    if (restoredSessions.isEmpty())
+        return false;
+
+    if (activeSession == nullptr) {
+        activeSessionName = restoredSessions.keys().constFirst();
+        activeSession = restoredSessions.value(activeSessionName);
+    }
+
+    const QFont displayFont = m_widgets.display->font();
+    const QFont editorFont = m_widgets.editor->font();
+    const QList<Session*> oldSessions = m_loadedSessions.values();
+    for (Session* oldSession : oldSessions) {
+        if (!restoredSessions.values().contains(oldSession))
+            delete oldSession;
+    }
+    m_loadedSessions = restoredSessions;
+
+    m_widgets.display = nullptr;
+    m_widgets.editor = nullptr;
+    m_copyWidget = nullptr;
+    while (m_widgets.splitContainer != nullptr && m_widgets.splitContainer->count() > 0) {
+        QWidget* child = m_widgets.splitContainer->widget(0);
+        child->setParent(nullptr);
+        delete child;
+    }
+
+    m_paneSessionNames.clear();
+    m_paneSessionTabs.clear();
+    m_paneTabBars.clear();
+    m_tabBarDisplays.clear();
+
+    ResultDisplay* activeDisplay = nullptr;
+    Editor* activeEditor = nullptr;
+    ResultDisplay* firstDisplay = nullptr;
+    Editor* firstEditor = nullptr;
+
+    const auto paneNamesFromNode = [](const QJsonObject& node) -> QStringList {
+        QStringList names;
+        const QJsonArray paneTabs = node.value(QStringLiteral("tabs")).toArray();
+        for (const QJsonValue& tabValue : paneTabs) {
+            if (!tabValue.isObject())
+                continue;
+            const QString name = normalizedSessionName(tabValue.toObject().value(QStringLiteral("name")).toString());
+            if (!name.isEmpty() && !names.contains(name, Qt::CaseInsensitive))
+                names.append(name);
+        }
+        const QString activeName = normalizedSessionName(node.value(QStringLiteral("active")).toString());
+        if (!activeName.isEmpty() && !names.contains(activeName, Qt::CaseInsensitive))
+            names.prepend(activeName);
+        return names;
+    };
+
+    const auto firstLoadedName = [this](const QStringList& names) -> QString {
+        for (const QString& name : names) {
+            if (m_loadedSessions.contains(name))
+                return name;
+        }
+        return QString();
+    };
+
+    const auto createPane = [this, &displayFont, &editorFont, &activeSessionName, &paneNamesFromNode,
+                             &activeDisplay, &activeEditor, &firstDisplay, &firstEditor,
+                             &firstLoadedName](const QJsonObject& node) -> QWidget* {
+        const QStringList names = paneNamesFromNode(node);
+        QStringList loadedNames;
+        for (const QString& name : names) {
+            if (m_loadedSessions.contains(name) && !loadedNames.contains(name, Qt::CaseInsensitive))
+                loadedNames.append(name);
+        }
+        if (loadedNames.isEmpty())
+            return nullptr;
+
+        QString activeName = normalizedSessionName(node.value(QStringLiteral("active")).toString());
+        if (!m_loadedSessions.contains(activeName))
+            activeName = firstLoadedName(loadedNames);
+        if (activeName.isEmpty())
+            return nullptr;
+        if (!loadedNames.contains(activeName, Qt::CaseInsensitive))
+            loadedNames.prepend(activeName);
+
+        ResultDisplay* display = new ResultDisplay();
+        display->setFrameStyle(QFrame::NoFrame);
+        display->setFont(displayFont);
+        display->setHoverHighlightEnabled(m_settings->hoverHighlightResults);
+        display->setLoadedSessionCount(1);
+        display->rehighlight();
+
+        Editor* editor = new Editor();
+        editor->setFrameStyle(QFrame::NoFrame);
+        editor->setFont(editorFont);
+        editor->setAutoCalcEnabled(m_settings->autoCalc);
+        editor->setAutoCompletionEnabled(m_settings->autoCompletion);
+        editor->rehighlight();
+
+        QWidget* pane = createEditorDisplayPane(display, editor);
+        configureEditorDisplayPane(display, editor);
+
+        m_paneSessionNames.insert(display, activeName);
+        m_paneSessionTabs.insert(display, loadedNames);
+        display->setSession(m_loadedSessions.value(activeName, nullptr));
+
+        if (firstDisplay == nullptr) {
+            firstDisplay = display;
+            firstEditor = editor;
+        }
+        if (activeName == activeSessionName) {
+            activeDisplay = display;
+            activeEditor = editor;
+        }
+        return pane;
+    };
+
+    const auto restoreSplitterSizes = [](QSplitter* splitter, const QJsonObject& node) {
+        QJsonArray splitSizes = node.value(QStringLiteral("sizes")).toArray();
+        if (splitSizes.isEmpty())
+            return;
+        QList<int> sizes;
+        for (const QJsonValue& value : splitSizes)
+            sizes.append(value.toInt());
+        if (sizes.size() == splitter->count())
+            splitter->setSizes(sizes);
+    };
+
+    const auto restoreNode = [this, &createPane, &restoreSplitterSizes](const QJsonObject& node,
+                                                                        const auto& restoreNodeRef) -> QWidget* {
+        const QString type = node.value(QStringLiteral("type")).toString();
+        if (type == QLatin1String("pane"))
+            return createPane(node);
+
+        QSplitter* splitter = new QSplitter(
+            node.value(QStringLiteral("orientation")).toString() == QLatin1String("vertical")
+                ? Qt::Vertical
+                : Qt::Horizontal);
+        splitter->setChildrenCollapsible(false);
+        splitter->setHandleWidth(1);
+        splitter->setStyleSheet(m_widgets.splitContainer->styleSheet());
+
+        const QJsonArray children = node.value(QStringLiteral("children")).toArray();
+        for (const QJsonValue& childValue : children) {
+            if (!childValue.isObject())
+                continue;
+            QWidget* child = restoreNodeRef(childValue.toObject(), restoreNodeRef);
+            if (child != nullptr)
+                splitter->addWidget(child);
+        }
+        restoreSplitterSizes(splitter, node);
+        return splitter;
+    };
+
+    if (rootType == QLatin1String("split")) {
+        m_widgets.splitContainer->setOrientation(
+            root.value(QStringLiteral("orientation")).toString() == QLatin1String("vertical")
+                ? Qt::Vertical
+                : Qt::Horizontal);
+        const QJsonArray children = root.value(QStringLiteral("children")).toArray();
+        for (const QJsonValue& childValue : children) {
+            if (!childValue.isObject())
+                continue;
+            QWidget* child = restoreNode(childValue.toObject(), restoreNode);
+            if (child != nullptr)
+                m_widgets.splitContainer->addWidget(child);
+        }
+        restoreSplitterSizes(m_widgets.splitContainer, root);
+    }
+
+    if (m_widgets.splitContainer->count() == 0 || firstDisplay == nullptr) {
+        while (m_widgets.splitContainer->count() > 0) {
+            QWidget* child = m_widgets.splitContainer->widget(0);
+            child->setParent(nullptr);
+            delete child;
+        }
+        m_paneSessionNames.clear();
+        m_paneSessionTabs.clear();
+        m_paneTabBars.clear();
+        m_tabBarDisplays.clear();
+        activeDisplay = nullptr;
+        activeEditor = nullptr;
+        firstDisplay = nullptr;
+        firstEditor = nullptr;
+
+        QJsonObject pane;
+        pane.insert(QStringLiteral("type"), QStringLiteral("pane"));
+        pane.insert(QStringLiteral("active"), activeSessionName);
+        pane.insert(QStringLiteral("tabs"), tabs);
+        m_widgets.splitContainer->addWidget(createPane(pane));
+    }
+
+    m_widgets.display = activeDisplay ? activeDisplay : firstDisplay;
+    m_widgets.editor = activeEditor ? activeEditor : firstEditor;
+    m_copyWidget = m_widgets.editor;
+    updatePaneLoadedSessionCounts();
+    m_session = nullptr;
+    activateSession(activeSession);
+    m_conditions.autoAns = restoreHistory && !m_session->historyIsEmpty();
+    updatePaneEditorCursorVisibility();
+    return true;
 }
 
 void MainWindow::evaluateEditorExpression()
@@ -4708,8 +7676,6 @@ void MainWindow::evaluateEditorExpression()
     HistoryEntry historyEntry(enteredExpr, result, interpretedExpr, evalContext);
     historyEntry.setRenderedLines(renderedLinesForHistoryEntry(historyEntry, m_settings));
     m_session->addHistoryEntry(historyEntry);
-    if (m_settings->historySaving == Settings::HistorySavingContinuously)
-        saveSessionToDefaultPath();
     const bool userVariableAssign = m_evaluator->isUserVariableAssign();
     emit historyChanged();
     if (!startedFromHistoryEdit)
@@ -4734,6 +7700,8 @@ void MainWindow::evaluateEditorExpression()
     m_widgets.editor->stopAutoComplete();
     if (!result.isNan())
         m_conditions.autoAns = true;
+    if (m_settings->historySaving == Settings::HistorySavingContinuously)
+        saveSessionToDefaultPath();
 }
 
 void MainWindow::startHistoryEntryEdit(int index)
@@ -5247,6 +8215,7 @@ void MainWindow::handleBitsChanged(const QString& str)
 
 void MainWindow::handleEditorTextChange()
 {
+    captureEditorTextInCurrentSession();
     m_widgets.display->clearHoverFeedback();
     clearTextEditSelection(m_widgets.display);
     if (m_widgets.editor->text().trimmed().isEmpty()) {
@@ -5345,17 +8314,38 @@ void MainWindow::persistSessionAndSettingsForShutdown()
     if (m_widgets.manual) {
         m_widgets.manual->close();
     }
+    ensureSessionsPath();
+    const bool saveHistory = m_settings->historySaving != Settings::HistorySavingNever;
+    for (auto it = m_loadedSessions.constBegin(); it != m_loadedSessions.constEnd(); ++it) {
+        Session* session = it.value();
+        if (session == nullptr)
+            continue;
+
+        QJsonObject json;
+        session->serialize(json);
+        if (!saveHistory)
+            json.remove(QLatin1String(SessionJsonKeys::History));
+
+        QFile file(sessionFilePath(it.key()));
+        if (!file.open(QIODevice::WriteOnly))
+            continue;
+        file.write(QJsonDocument(json).toJson(QJsonDocument::Compact));
+        file.close();
+    }
+    saveSessionLayout();
     saveSettings();
-    saveSessionToDefaultPath(m_settings->historySaving != Settings::HistorySavingNever);
 }
 
 void MainWindow::saveSessionToDefaultPath(bool saveHistory)
 {
-    QString data_path = Settings::getDataPath();
-    QDir qdir;
-    qdir.mkpath(data_path);
-    data_path.append("/history.json");
-    saveSession(data_path, saveHistory);
+    ensureSessionsPath();
+
+    QJsonObject json;
+    m_session->serialize(json);
+    const QString sessionName = json.value(QLatin1String(SessionJsonKeys::Session)).toString(
+        QLatin1String(SessionJsonKeys::SessionValueMain));
+    QString dataPath = sessionFilePath(sessionName);
+    saveSession(dataPath, saveHistory);
 }
 
 void MainWindow::setResultPrecision(int p)
@@ -5458,16 +8448,30 @@ void MainWindow::showResultSlotsDialog()
 
 void MainWindow::increaseDisplayFontPointSize()
 {
-    m_widgets.display->increaseFontPointSize();
-    m_widgets.editor->increaseFontPointSize();
+    if (m_widgets.display != nullptr)
+        m_widgets.display->increaseFontPointSize();
+    const QFont displayFont = m_widgets.display->font();
+    for (ResultDisplay* display : splitPaneDisplays()) {
+        if (display != m_widgets.display)
+            display->setFont(displayFont);
+        if (Editor* editor = display->parentWidget()->findChild<Editor*>())
+            editor->setFont(displayFont);
+    }
     if (m_widgets.state->isVisible())
         showStateLabel(m_widgets.state->text());
 }
 
 void MainWindow::decreaseDisplayFontPointSize()
 {
-    m_widgets.display->decreaseFontPointSize();
-    m_widgets.editor->decreaseFontPointSize();
+    if (m_widgets.display != nullptr)
+        m_widgets.display->decreaseFontPointSize();
+    const QFont displayFont = m_widgets.display->font();
+    for (ResultDisplay* display : splitPaneDisplays()) {
+        if (display != m_widgets.display)
+            display->setFont(displayFont);
+        if (Editor* editor = display->parentWidget()->findChild<Editor*>())
+            editor->setFont(displayFont);
+    }
     if (m_widgets.state->isVisible())
         showStateLabel(m_widgets.state->text());
 }

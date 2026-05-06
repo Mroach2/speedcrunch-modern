@@ -1168,6 +1168,7 @@ Editor::Editor(QWidget* parent)
     m_isAutoCalcEnabled = true;
     m_highlighter = new SyntaxHighlighter(this);
     m_matchingTimer = new QTimer(this);
+    m_customCursorVisible = true;
     m_shouldPaintCustomCursor = true;
     m_historyArrowNavigationEnabled = true;
 
@@ -1350,6 +1351,18 @@ bool Editor::isAutoCalcEnabled() const
 void Editor::setAutoCalcEnabled(bool enable)
 {
     m_isAutoCalcEnabled = enable;
+}
+
+void Editor::setCustomCursorVisible(bool visible)
+{
+    setCursorWidth(0);
+
+    if (m_customCursorVisible == visible)
+        return;
+
+    m_customCursorVisible = visible;
+    m_shouldPaintCustomCursor = visible;
+    viewport()->update();
 }
 
 void Editor::setHistoryArrowNavigationEnabled(bool enabled)
@@ -2111,6 +2124,11 @@ void Editor::evaluate()
 void Editor::paintEvent(QPaintEvent* event)
 {
     QPlainTextEdit::paintEvent(event);
+
+    if (!m_customCursorVisible) {
+        m_shouldPaintCustomCursor = false;
+        return;
+    }
 
     if (!m_shouldPaintCustomCursor) {
         m_shouldPaintCustomCursor = true;
@@ -3546,7 +3564,13 @@ void Editor::rehighlight()
     m_highlighter->update();
     auto color = m_highlighter->colorForRole(ColorScheme::EditorBackground);
     auto colorName = color.name();
-    setStyleSheet(QString("QPlainTextEdit { background: %1; }").arg(colorName));
+    QPalette pal = palette();
+    pal.setColor(QPalette::Active, QPalette::Base, color);
+    pal.setColor(QPalette::Inactive, QPalette::Base, color);
+    setPalette(pal);
+    setStyleSheet(QString("QPlainTextEdit { background-color: %1; }").arg(colorName));
+    viewport()->setStyleSheet(QString("background-color: %1;").arg(colorName));
+    m_highlighter->rehighlight();
 }
 
 void Editor::updateHistory()

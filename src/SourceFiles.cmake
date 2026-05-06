@@ -106,8 +106,9 @@ gui/keypad.cpp
 gui/mainwindow.cpp
 gui/manualwindow.cpp
 gui/numberformatdialog.cpp
-    gui/notationandprecisiondialog.cpp
+gui/notationandprecisiondialog.cpp
 gui/resultdisplay.cpp
+gui/splittertreeutils.cpp
 gui/syntaxhighlighter.cpp
 gui/variablelistwidget.cpp
 gui/userfunctionlistwidget.cpp
@@ -192,6 +193,7 @@ gui/displayformatutils.cpp
 gui/dockliststyle.cpp
 gui/functiontooltiputils.cpp
 gui/resultdisplay.cpp
+gui/splittertreeutils.cpp
 gui/syntaxhighlighter.cpp
 math/floatnum/floatcommon.c
 math/floatnum/floatconst.c
@@ -359,6 +361,7 @@ gui/displayformatutils.cpp
 gui/dockliststyle.cpp
 gui/functiontooltiputils.cpp
 gui/resultdisplay.cpp
+gui/splittertreeutils.cpp
 gui/syntaxhighlighter.cpp
 gui/editor.cpp
 gui/variablelistwidget.cpp

@@ -8,12 +8,13 @@
   "$id": "https://speedcrunch.org/schemas/session.json",
   "title": "SpeedCrunch Session",
   "type": "object",
-  "required": ["scheme", "speedcrunch", "session", "history", "variables", "functions", "units"],
+  "required": ["scheme", "speedcrunch", "session", "editor", "history", "variables", "functions", "units"],
   "additionalProperties": false,
   "properties": {
     "scheme": { "type": "integer", "const": 1 },
     "speedcrunch": { "type": "string" },
-    "session": { "type": "string", "const": "main" },
+    "session": { "type": "string", "minLength": 1 },
+    "editor": { "type": "string" },
     "history": {
       "type": "array",
       "items": { "$ref": "#/$defs/historyEntry" }
@@ -206,6 +207,7 @@ inline constexpr int SchemaVersionValue = 1;
 inline constexpr const char* SpeedCrunch = "speedcrunch";
 inline constexpr const char* Session = "session";
 inline constexpr const char* SessionValueMain = "main";
+inline constexpr const char* Editor = "editor";
 inline constexpr const char* History = "history";
 inline constexpr const char* Variables = "variables";
 inline constexpr const char* Functions = "functions";

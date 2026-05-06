@@ -8,6 +8,7 @@
 #include "gui/keypad.h"
 #include "math/quantity.h"
 
+#include <QHash>
 #include <QMainWindow>
 #include <QStringList>
 
@@ -41,6 +42,8 @@ class QLabel;
 class QPlainTextEdit;
 class QPushButton;
 class QResizeEvent;
+class QSplitter;
+class QTabBar;
 class QTranslator;
 class QVBoxLayout;
 
@@ -74,6 +77,7 @@ private slots:
     void clearEditor();
     void clearEditorAndBitfield();
     void clearHistory();
+    void clearSession();
     void copyResultToClipboard();
     void decreaseDisplayFontPointSize();
     void decreaseOpacity();
@@ -90,6 +94,20 @@ private slots:
     void handleKeypadButtonPress(Keypad::Button);
     void handleEditorTextChange();
     void handleEditorEscapePressed();
+    void showNewSessionDialog();
+    void showOpenSessionDialog();
+    void showDuplicateSessionDialog();
+    void showRenameSessionDialog();
+    void closeCurrentSession();
+    void closeCurrentPane();
+    void deleteCurrentSession();
+    void splitActivePaneLeft();
+    void splitActivePaneRight();
+    void splitActivePaneUp();
+    void splitActivePaneDown();
+    void activateNextChild();
+    void activatePreviousChild();
+    void showLoadedSessionsMenu(const QPoint& globalPos);
     void handleCustomKeypadButtonPress(int action, const QString& text);
     void handleDisplaySelectionChange();
     void handleEditorSelectionChange();
@@ -248,6 +266,7 @@ private:
     void checkInitialLanguage();
     void checkInitialDigitGrouping();
     void restoreSession(bool restoreHistory = true);
+    bool restoreSessionLayout(bool restoreHistory);
     void deleteKeypad();
     void deleteStatusBar();
     void deleteBitField();
@@ -261,6 +280,34 @@ private:
     void saveSettings();
     void saveSessionToDefaultPath(bool saveHistory = true);
     void saveSession(QString &fname, bool saveHistory = true);
+    void activateSession(Session* session);
+    void captureEditorTextInCurrentSession();
+    void restoreEditorTextFromCurrentSession();
+    QWidget* createEditorDisplayPane(ResultDisplay* display, Editor* editor);
+    void configureEditorDisplayPane(ResultDisplay* display, Editor* editor);
+    void setActiveEditorDisplayPane(ResultDisplay* display, Editor* editor);
+    void splitActivePane(Qt::Orientation orientation, bool insertAfter);
+    Session* createUntitledSession(bool activateCreatedSession = true);
+    QList<ResultDisplay*> splitPaneDisplays() const;
+    QList<Editor*> splitPaneEditors() const;
+    QStringList paneSessionNames(ResultDisplay* display) const;
+    void addSessionToActivePane(const QString& name);
+    void updatePaneLoadedSessionCounts();
+    void updatePaneEditorCursorVisibility();
+    void updatePaneTabBars();
+    void updateSessionWindowTitle();
+    ResultDisplay* tabBarDisplay(QTabBar* tabBar) const;
+    QTabBar* displayTabBar(ResultDisplay* display) const;
+    void switchPaneToSession(ResultDisplay* display, const QString& name);
+    void moveSessionTab(QTabBar* sourceTabBar, QTabBar* targetTabBar, const QString& name, int targetIndex);
+    void moveSessionTabToPane(QTabBar* sourceTabBar, ResultDisplay* targetDisplay, const QString& name, const QPoint& panePos);
+    void splitPaneWithSession(QTabBar* sourceTabBar, ResultDisplay* targetDisplay, const QString& name, Qt::Orientation orientation, bool insertAfter);
+    void removeSessionTabFromPane(ResultDisplay* display, const QString& name, bool closePaneIfEmpty);
+    void removePaneForDisplay(ResultDisplay* display);
+    void normalizeSplitContainerTree();
+    void updateSplitterStyleSheet();
+    void refreshPaneThemes();
+    void saveSessionLayout(bool captureCurrentViewport = true);
     bool configureCustomKeypad();
     void setActionsText();
     void updateComplexDisabledActionText();
@@ -472,6 +519,7 @@ private:
         QPushButton* stateCloseButton;
         ResultDisplay* display;
         Editor* editor;
+        QSplitter* splitContainer = nullptr;
         Keypad* keypad = nullptr;
         QWidget* root;
         ManualWindow* manual = nullptr;
@@ -489,6 +537,10 @@ private:
         GenericDock<BitFieldWidget>* bitField;
     } m_docks;
     QList<QDockWidget*> m_allDocks;
+    QHash<ResultDisplay*, QString> m_paneSessionNames;
+    QHash<ResultDisplay*, QStringList> m_paneSessionTabs;
+    QHash<ResultDisplay*, QTabBar*> m_paneTabBars;
+    QHash<QTabBar*, ResultDisplay*> m_tabBarDisplays;
 
     struct {
         bool autoAns;
@@ -514,6 +566,9 @@ private:
     FunctionRepo* m_functions;
     Settings* m_settings;
     Session* m_session;
+    QHash<QString, Session*> m_loadedSessions;
+    QHash<QString, QPair<int, int>> m_sessionViewportAnchors;
+    QHash<QString, int> m_sessionScrollValues;
     QTranslator* m_translator;
     QPlainTextEdit* m_copyWidget;
     ManualServer* m_manualServer;

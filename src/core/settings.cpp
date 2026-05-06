@@ -611,6 +611,7 @@ void Settings::load()
     windowState = settings->value(key + QLatin1String("State")).toByteArray();
     windowGeometry = settings->value(key + QLatin1String("WindowGeometry")).toByteArray();
     manualWindowGeometry = settings->value(key + QLatin1String("ManualWindowGeometry")).toByteArray();
+    sessionLayoutJson = settings->value(key + QLatin1String("SessionLayoutJson"), QString()).toString();
 
     key = KEY + QLatin1String("/Display/");
     displayFont = settings->value(key + QLatin1String("DisplayFont"), QFont().toString()).toString();
@@ -718,6 +719,7 @@ void Settings::save()
     settings->setValue(key + QLatin1String("State"), windowState);
     settings->setValue(key + QLatin1String("WindowGeometry"), windowGeometry);
     settings->setValue(key + QLatin1String("ManualWindowGeometry"), manualWindowGeometry);
+    settings->setValue(key + QLatin1String("SessionLayoutJson"), sessionLayoutJson);
     settings->setValue(key + QLatin1String("BitfieldVisible"), bitfieldVisible);
     settings->setValue(key + QLatin1String("ConstantsDockDomain"), constantsDockDomain);
     settings->setValue(key + QLatin1String("ConstantsDockSubdomain"), constantsDockSubdomain);
@@ -736,6 +738,17 @@ void Settings::save()
     settings->setValue(key + QLatin1String("CustomColorSchemeJson"), customColorSchemeJson);
 
 
+    delete settings;
+}
+
+void Settings::saveSessionLayoutJson()
+{
+    const QString KEY = QString::fromLatin1("SpeedCrunch");
+    QSettings* settings = createQSettings(KEY);
+    if (!settings)
+        return;
+
+    settings->setValue(KEY + QLatin1String("/Layout/SessionLayoutJson"), sessionLayoutJson);
     delete settings;
 }
 

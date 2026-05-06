@@ -96,6 +96,7 @@ public:
 
     void load();
     void save();
+    void saveSessionLayoutJson();
 
     char radixCharacter() const; // 0 or '*': Automatic.
     void setRadixCharacter(char c = 0);
@@ -197,6 +198,7 @@ public:
     QString colorScheme;
     QString customColorSchemeJson;
     QString displayFont;
+    QString sessionLayoutJson;
 
     QString language;
 

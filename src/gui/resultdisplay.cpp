@@ -35,6 +35,8 @@
 #include <QToolButton>
 #include <QToolTip>
 
+#include <limits>
+
 namespace {
 QPointF badgeCenter(const QRect& rect)
 {
@@ -261,6 +263,12 @@ QString formattedExpressionForDisplay(const QString& expression,
         interpretedExpression);
 }
 
+const Session* displaySession(const ResultDisplay* display)
+{
+    const Session* session = display != nullptr ? display->session() : nullptr;
+    return session != nullptr ? session : Evaluator::instance()->session();
+}
+
 }
 
 ResultDisplay::ResultDisplay(QWidget* parent)
@@ -276,6 +284,9 @@ ResultDisplay::ResultDisplay(QWidget* parent)
     , m_editingHistoryIndex(-1)
     , m_count(0)
     , m_firstDisplayedHistoryIndex(0)
+    , m_loadedSessionCount(1)
+    , m_closeSessionEnabled(false)
+    , m_session(nullptr)
     , m_scrollToBottomButton(new QToolButton(this))
 {
     setViewportMargins(0, 0, 0, 0);
@@ -375,6 +386,35 @@ void ResultDisplay::setEditingHistoryIndex(int index)
         viewport()->update(viewport()->rect());
 }
 
+void ResultDisplay::setLoadedSessionCount(int count)
+{
+    const int normalizedCount = qMax(1, count);
+    if (m_loadedSessionCount == normalizedCount)
+        return;
+
+    m_loadedSessionCount = normalizedCount;
+    viewport()->update();
+}
+
+void ResultDisplay::setCloseSessionEnabled(bool enabled)
+{
+    if (m_closeSessionEnabled == enabled)
+        return;
+
+    m_closeSessionEnabled = enabled;
+    viewport()->update();
+}
+
+void ResultDisplay::setSession(const Session* session)
+{
+    if (m_session == session)
+        return;
+
+    m_session = session;
+    refresh();
+    viewport()->update();
+}
+
 void ResultDisplay::append(const QString& expression, Quantity& value,
                            const QString& interpretedExpression)
 {
@@ -437,6 +477,16 @@ void ResultDisplay::restoreViewportTopAnchor(const QPair<int, int>& anchor)
     bar->setValue(qBound(bar->minimum(), targetValue, bar->maximum()));
 }
 
+void ResultDisplay::restoreScrollValue(int value)
+{
+    QScrollBar* bar = verticalScrollBar();
+    const int targetValue = value == std::numeric_limits<int>::max()
+        ? bar->maximum()
+        : qBound(bar->minimum(), value, bar->maximum());
+    bar->setValue(targetValue);
+    updateScrollToBottomButtonVisibility();
+}
+
 QString ResultDisplay::exportHtml() const
 {
     QString str;
@@ -447,6 +497,9 @@ QString ResultDisplay::exportHtml() const
 void ResultDisplay::rehighlight()
 {
     m_highlighter->update();
+    const QString background = m_highlighter->colorForRole(ColorScheme::Background).name();
+    setStyleSheet(QStringLiteral("QPlainTextEdit { background-color: %1; }").arg(background));
+    viewport()->setStyleSheet(QStringLiteral("background-color: %1;").arg(background));
     updateScrollBarStyleSheet();
 }
 
@@ -474,7 +527,11 @@ void ResultDisplay::clearHoverFeedback()
 
 void ResultDisplay::refresh()
 {
-    const Session* session = Evaluator::instance()->session();
+    const Session* session = displaySession(this);
+    if (session == nullptr) {
+        clear();
+        return;
+    }
     const int historyCount = session->historySize();
     const int previousScrollValue = verticalScrollBar()->value();
     const int firstDisplayedHistoryIndex = firstDisplayedHistoryIndexForCount(historyCount);
@@ -525,7 +582,11 @@ void ResultDisplay::refresh()
 
 void ResultDisplay::refreshLastHistoryEntry()
 {
-    const Session* session = Evaluator::instance()->session();
+    const Session* session = displaySession(this);
+    if (session == nullptr) {
+        clear();
+        return;
+    }
     const int historyCount = session->historySize();
     const int firstDisplayedHistoryIndex = firstDisplayedHistoryIndexForCount(historyCount);
     if (historyCount == 0) {
@@ -682,8 +743,8 @@ void ResultDisplay::mouseDoubleClickEvent(QMouseEvent* event)
             if (blockRangeForHistoryIndex(historyIndex, startBlock, endBlock)
                 && cursor.blockNumber() > startBlock)
             {
-                const Session* session = Evaluator::instance()->session();
-                if (historyIndex < session->historySize()) {
+                const Session* session = displaySession(this);
+                if (session != nullptr && historyIndex < session->historySize()) {
                     const Quantity value = session->historyEntryAtRef(historyIndex).result();
                     if (!value.isNan()) {
                         QString clipboardText = formatResultForClipboard(value);
@@ -728,8 +789,8 @@ void ResultDisplay::mousePressEvent(QMouseEvent* event)
     if (event->button() == Qt::LeftButton && m_hoverHighlightEnabled && m_hoveredHistoryIndex >= 0) {
         const QRect copyRect = copyGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
         if (copyRect.contains(event->pos())) {
-            const Session* session = Evaluator::instance()->session();
-            if (m_hoveredHistoryIndex >= 0 && m_hoveredHistoryIndex < session->historySize()) {
+            const Session* session = displaySession(this);
+            if (session != nullptr && m_hoveredHistoryIndex >= 0 && m_hoveredHistoryIndex < session->historySize()) {
                 const Quantity value = session->historyEntryAtRef(m_hoveredHistoryIndex).result();
                 if (!value.isNan())
                     QApplication::clipboard()->setText(formatResultForClipboard(value), QClipboard::Clipboard);
@@ -768,7 +829,12 @@ void ResultDisplay::contextMenuEvent(QContextMenuEvent* event)
     QMenu* menu = createStandardContextMenu();
     const int historyIndex = historyIndexAtPosition(event->pos());
     if (historyIndex >= 0) {
-        const Session* session = Evaluator::instance()->session();
+        const Session* session = displaySession(this);
+        if (session == nullptr) {
+            menu->exec(event->globalPos());
+            delete menu;
+            return;
+        }
         menu->addSeparator();
         QAction* copyExpressionAction = menu->addAction(tr("Copy Expression"));
         connect(copyExpressionAction, &QAction::triggered, this, [session, historyIndex]() {
@@ -815,6 +881,61 @@ void ResultDisplay::contextMenuEvent(QContextMenuEvent* event)
             emit removeHistoryEntriesBelowRequested(historyIndex);
         });
     }
+
+    menu->addSeparator();
+    QAction* newSessionAction = menu->addAction(tr("New Session"));
+    connect(newSessionAction, &QAction::triggered, this, [this]() {
+        emit newSessionRequested();
+    });
+    QAction* openSessionAction = menu->addAction(tr("Open Session"));
+    connect(openSessionAction, &QAction::triggered, this, [this]() {
+        emit openSessionRequested();
+    });
+    menu->addSeparator();
+    QAction* splitLeftAction = menu->addAction(tr("Split Left"));
+    connect(splitLeftAction, &QAction::triggered, this, [this]() {
+        emit splitLeftRequested();
+    });
+    QAction* splitRightAction = menu->addAction(tr("Split Right"));
+    connect(splitRightAction, &QAction::triggered, this, [this]() {
+        emit splitRightRequested();
+    });
+    QAction* splitUpAction = menu->addAction(tr("Split Up"));
+    connect(splitUpAction, &QAction::triggered, this, [this]() {
+        emit splitUpRequested();
+    });
+    QAction* splitDownAction = menu->addAction(tr("Split Down"));
+    connect(splitDownAction, &QAction::triggered, this, [this]() {
+        emit splitDownRequested();
+    });
+    menu->addSeparator();
+    menu->addAction(tr("Import Session"));
+    menu->addAction(tr("Export Session"));
+    menu->addSeparator();
+    QAction* duplicateSessionAction = menu->addAction(tr("Duplicate Session"));
+    connect(duplicateSessionAction, &QAction::triggered, this, [this]() {
+        emit duplicateSessionRequested();
+    });
+    QAction* renameSessionAction = menu->addAction(tr("Rename Session"));
+    connect(renameSessionAction, &QAction::triggered, this, [this]() {
+        emit renameSessionRequested();
+    });
+    QAction* clearSessionAction = menu->addAction(tr("Clear Session"));
+    connect(clearSessionAction, &QAction::triggered, this, [this]() {
+        emit clearSessionRequested();
+    });
+    QAction* deleteSessionAction = menu->addAction(tr("Delete Session"));
+    connect(deleteSessionAction, &QAction::triggered, this, [this]() {
+        emit deleteSessionRequested();
+    });
+    QAction* closeSessionAction = menu->addAction(tr("Close Session"));
+    connect(closeSessionAction, &QAction::triggered, this, [this]() {
+        emit closeSessionRequested();
+    });
+    QAction* closePaneAction = menu->addAction(tr("Close Pane"));
+    connect(closePaneAction, &QAction::triggered, this, [this]() {
+        emit closePaneRequested();
+    });
 
     QMainWindow* mainWindow = qobject_cast<QMainWindow*>(window());
     if (mainWindow != 0 && mainWindow->menuBar() != 0) {
@@ -952,7 +1073,12 @@ void ResultDisplay::mouseMoveEvent(QMouseEvent* event)
         return;
     }
 
-    const int hoveredHistoryIndex = historyIndexAtPosition(event->pos());
+    int hoveredHistoryIndex = historyIndexAtPosition(event->pos());
+    if (hoveredHistoryIndex >= 0
+            && (historyBlockOverlapsSessionBadge(hoveredHistoryIndex)
+                || historyBlockOverlapsScrollToBottomButton(hoveredHistoryIndex))) {
+        hoveredHistoryIndex = -1;
+    }
     if (hoveredHistoryIndex != m_hoveredHistoryIndex) {
         const int previousHoveredHistoryIndex = m_hoveredHistoryIndex;
         m_hoveredHistoryIndex = hoveredHistoryIndex;
@@ -1117,7 +1243,7 @@ void ResultDisplay::repositionScrollToBottomButton()
     const int margin = 10;
     const QRect contentRect = contentsRect();
     const int x = contentRect.left()
-        + qMax(0, (contentRect.width() - m_scrollToBottomButton->width()) / 2);
+        + qMax(0, contentRect.width() - m_scrollToBottomButton->width() - margin);
     const int y = contentRect.top()
         + qMax(0, contentRect.height() - m_scrollToBottomButton->height() - margin);
     m_scrollToBottomButton->move(x, y);
@@ -1348,6 +1474,41 @@ QRect ResultDisplay::cancelGlyphBadgeRectForEditingIndex() const
     return removeGlyphBadgeRectForHistoryIndex(m_editingHistoryIndex);
 }
 
+bool ResultDisplay::historyBlockOverlapsSessionBadge(int historyIndex) const
+{
+    int startBlock = -1;
+    int endBlock = -1;
+    if (!blockRangeForHistoryIndex(historyIndex, startBlock, endBlock))
+        return false;
+    return false;
+}
+
+bool ResultDisplay::historyBlockOverlapsScrollToBottomButton(int historyIndex) const
+{
+    if (m_scrollToBottomButton == nullptr || !m_scrollToBottomButton->isVisible())
+        return false;
+
+    int startBlock = -1;
+    int endBlock = -1;
+    if (!blockRangeForHistoryIndex(historyIndex, startBlock, endBlock))
+        return false;
+
+    const QTextBlock start = document()->findBlockByNumber(startBlock);
+    const QTextBlock end = document()->findBlockByNumber(endBlock);
+    if (!start.isValid() || !end.isValid())
+        return false;
+
+    const QRectF startRect = blockBoundingGeometry(start).translated(contentOffset());
+    const QRectF endRect = blockBoundingGeometry(end).translated(contentOffset());
+    const QRect historyRect(0,
+                            qRound(startRect.top()),
+                            viewport()->width(),
+                            qMax(1, qRound(endRect.bottom() - startRect.top())));
+    const QRect buttonRect(viewport()->mapFrom(this, m_scrollToBottomButton->pos()),
+                           m_scrollToBottomButton->size());
+    return historyRect.intersects(buttonRect);
+}
+
 void ResultDisplay::updateHoverHighlightSelection()
 {
     QList<QTextEdit::ExtraSelection> selections;
@@ -1418,7 +1579,9 @@ void ResultDisplay::markSimplifiedExpressionBlock(int blockNumber)
 
 void ResultDisplay::markSimplifiedExpressionBlocks()
 {
-    const Session* session = Evaluator::instance()->session();
+    const Session* session = displaySession(this);
+    if (session == nullptr)
+        return;
     const int historySize = session->historySize();
     const int firstDisplayedHistoryIndex = firstDisplayedHistoryIndexForCount(historySize);
 
@@ -1449,7 +1612,9 @@ void ResultDisplay::ensureHistoryBlockIndexCache() const
     m_blockToHistoryIndex.clear();
     m_historyBlockRanges.clear();
 
-    const Session* session = Evaluator::instance()->session();
+    const Session* session = displaySession(this);
+    if (session == nullptr)
+        return;
     const int historySize = session->historySize();
     const int firstDisplayedHistoryIndex = firstDisplayedHistoryIndexForCount(historySize);
     const int displayedHistoryCount = historySize - firstDisplayedHistoryIndex;

@@ -38,8 +38,15 @@ public:
     QString exportHtml() const;
     void setHoverHighlightEnabled(bool enabled);
     void setEditingHistoryIndex(int index);
+    void setLoadedSessionCount(int count);
+    void setCloseSessionEnabled(bool enabled);
+    void setSession(const Session* session);
+    const Session* session() const { return m_session; }
+    bool closeSessionEnabled() const { return m_closeSessionEnabled; }
+    int loadedSessionCount() const { return m_loadedSessionCount; }
     QPair<int, int> viewportTopAnchor() const;
     void restoreViewportTopAnchor(const QPair<int, int>& anchor);
+    void restoreScrollValue(int value);
 
 signals:
     void clicked();
@@ -56,6 +63,19 @@ signals:
     void removeHistoryEntryRequested(int index);
     void removeHistoryEntriesAboveRequested(int index);
     void removeHistoryEntriesBelowRequested(int index);
+    void newSessionRequested();
+    void openSessionRequested();
+    void duplicateSessionRequested();
+    void splitLeftRequested();
+    void splitRightRequested();
+    void splitUpRequested();
+    void splitDownRequested();
+    void renameSessionRequested();
+    void clearSessionRequested();
+    void closeSessionRequested();
+    void closePaneRequested();
+    void deleteSessionRequested();
+    void loadedSessionsMenuRequested(const QPoint& globalPos);
 
 public slots:
     void clear();
@@ -105,6 +125,8 @@ protected:
     QRect copyGlyphBadgeRectForHistoryIndex(int historyIndex) const;
     QRect hoverActionRectForHistoryIndex(int historyIndex) const;
     QRect cancelGlyphBadgeRectForEditingIndex() const;
+    bool historyBlockOverlapsSessionBadge(int historyIndex) const;
+    bool historyBlockOverlapsScrollToBottomButton(int historyIndex) const;
     void updateHoverHighlightSelection();
     void markHistoryBlockIndexCacheDirty();
     void markSimplifiedExpressionBlock(int blockNumber);
@@ -128,6 +150,9 @@ private:
     int m_editingHistoryIndex;
     int m_count;
     int m_firstDisplayedHistoryIndex;
+    int m_loadedSessionCount;
+    bool m_closeSessionEnabled;
+    const Session* m_session;
     QToolButton* m_scrollToBottomButton;
 };
 
