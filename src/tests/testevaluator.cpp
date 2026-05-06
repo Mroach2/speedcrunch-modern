@@ -900,6 +900,12 @@ void test_units_conversion_parentheses()
     CHECK_EVAL(QString::fromUtf8("1[metre] −> [cm]"), "100 cm");
     CHECK_EVAL(QString::fromUtf8("1[metre] → [cm]"), "100 cm");
     CHECK_EVAL(QString::fromUtf8("[hectare] → [m²] → [hectare]"), "1 hectare");
+    CHECK_EVAL_FAIL("12 -> [3]");
+    CHECK_EVAL_FAIL("12 -> 3");
+    CHECK_EVAL_FAIL("12 in [3]");
+    CHECK_EVAL_FAIL("12 in 3");
+    CHECK_EVAL_FAIL("12[g] in 3");
+    CHECK_EVAL_FAIL("12[g] in [3]");
 }
 
 void test_units_display_propagation()

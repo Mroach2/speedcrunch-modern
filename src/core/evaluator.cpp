@@ -7385,6 +7385,22 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
                 }
                 popStackValue(val1);
                 popStackValue(val2);
+                auto targetContainsUnitIdentifier = [this](const QString& targetText) {
+                    const Tokens targetTokens = scan(targetText);
+                    if (!targetTokens.valid())
+                        return false;
+                    for (const Token& token : targetTokens) {
+                        if (token.isUnitIdentifier()
+                            || (token.isIdentifier() && tryGetAnyUnitQuantity(token.text(), nullptr))) {
+                            return true;
+                        }
+                    }
+                    return false;
+                };
+                if (!targetContainsUnitIdentifier(opcode.text)) {
+                    m_error = tr("conversion target must be a unit");
+                    return HMath::nan();
+                }
                 if (val1.isZero()) {
                     m_error = tr("unit must not be zero");
                     return HMath::nan();
