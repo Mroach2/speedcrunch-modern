@@ -13,6 +13,14 @@
 #include <QDebug>
 #include <QLocalServer>
 #include <QLocalSocket>
+#include <QMetaObject>
+#include <QThread>
+
+#include <atomic>
+
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 #ifdef Q_OS_UNIX
 #include <QSocketNotifier>
@@ -81,6 +89,33 @@ bool startSingletonServer(QLocalServer* server, const QString& serverName, bool*
     return false;
 }
 
+MainWindow* g_mainWindow = 0;
+std::atomic_bool g_eventLoopRunning(false);
+
+void persistAndQuit()
+{
+    if (g_mainWindow)
+        g_mainWindow->persistSessionAndSettingsForShutdown();
+    if (QCoreApplication::instance())
+        QCoreApplication::quit();
+}
+
+void requestGracefulShutdown(Qt::ConnectionType connectionType = Qt::QueuedConnection)
+{
+    QCoreApplication* application = QCoreApplication::instance();
+    if (!application)
+        return;
+
+    if (QThread::currentThread() == application->thread()) {
+        persistAndQuit();
+        return;
+    }
+
+    QMetaObject::invokeMethod(application, []() {
+        persistAndQuit();
+    }, connectionType);
+}
+
 #ifdef Q_OS_UNIX
 int g_unixSignalFds[2] = { -1, -1 };
 
@@ -119,6 +154,25 @@ bool setupUnixTerminationSignalHandlers()
 }
 #endif
 
+#ifdef Q_OS_WIN
+BOOL WINAPI handleWindowsConsoleControl(DWORD controlType)
+{
+    switch (controlType) {
+    case CTRL_C_EVENT:
+    case CTRL_BREAK_EVENT:
+    case CTRL_CLOSE_EVENT:
+    case CTRL_LOGOFF_EVENT:
+    case CTRL_SHUTDOWN_EVENT:
+        requestGracefulShutdown(g_eventLoopRunning.load()
+            ? Qt::BlockingQueuedConnection
+            : Qt::QueuedConnection);
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
+#endif
+
 }
 
 int main(int argc, char* argv[])
@@ -131,12 +185,11 @@ int main(int argc, char* argv[])
 
     Settings* settings = Settings::instance();
     QLocalServer singletonServer;
-    MainWindow* mainWindow = 0;
     bool pendingActivation = false;
 
     QObject::connect(&application, &QCoreApplication::aboutToQuit, &application, [&]() {
-        if (mainWindow)
-            mainWindow->persistSessionAndSettingsForShutdown();
+        if (g_mainWindow)
+            g_mainWindow->persistSessionAndSettingsForShutdown();
 #ifdef Q_OS_UNIX
         if (g_unixSignalFds[0] != -1) {
             ::close(g_unixSignalFds[0]);
@@ -157,11 +210,16 @@ int main(int argc, char* argv[])
             char signalCode = 0;
             const ssize_t bytesRead = ::read(g_unixSignalFds[1], &signalCode, sizeof(signalCode));
             if (bytesRead > 0)
-                application.quit();
+                requestGracefulShutdown(Qt::QueuedConnection);
         });
     } else {
         qWarning() << "Could not install Unix termination signal handlers.";
     }
+#endif
+
+#ifdef Q_OS_WIN
+    if (!SetConsoleCtrlHandler(handleWindowsConsoleControl, TRUE))
+        qWarning() << "Could not install Windows console termination handler.";
 #endif
 
     if (settings->singleInstance) {
@@ -180,8 +238,8 @@ int main(int argc, char* argv[])
                     socket->deleteLater();
                 }
 
-                if (mainWindow)
-                    activateMainWindow(mainWindow);
+                if (g_mainWindow)
+                    activateMainWindow(g_mainWindow);
                 else
                     pendingActivation = true;
             });
@@ -191,13 +249,17 @@ int main(int argc, char* argv[])
     }
 
     MainWindow window;
-    mainWindow = &window;
+    g_mainWindow = &window;
     window.show();
 
     if (pendingActivation)
-        activateMainWindow(mainWindow);
+        activateMainWindow(g_mainWindow);
 
     application.connect(&application, SIGNAL(lastWindowClosed()), &application, SLOT(quit()));
 
-    return application.exec();
+    g_eventLoopRunning.store(true);
+    const int result = application.exec();
+    g_eventLoopRunning.store(false);
+    g_mainWindow = 0;
+    return result;
 }
