@@ -1523,7 +1523,7 @@ void MainWindow::createBitField() {
     m_docks.bitField->setAllowedAreas(Qt::AllDockWidgetAreas);
     m_widgets.bitField = m_docks.bitField->widget();
 
-    addTabifiedDock(m_docks.bitField, false);
+    addTabifiedDock(m_docks.bitField, false, Qt::BottomDockWidgetArea);
     m_widgets.display->verticalScrollBar()->setValue(m_widgets.display->verticalScrollBar()->maximum());
     connect(m_widgets.bitField, SIGNAL(bitsChanged(const QString&)), SLOT(handleBitsChanged(const QString&)));
     m_settings->bitfieldVisible = true;
