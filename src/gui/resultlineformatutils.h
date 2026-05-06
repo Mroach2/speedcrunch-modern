@@ -773,25 +773,50 @@ inline QString simplifiedExpressionLineForDisplay(const QString& interpretedExpr
     return foldRepeatedAdditiveTermsForDisplay(simplifiedDisplay);
 }
 
-inline QString conversionTargetSuffixForDisplay(const QString& expression)
+inline bool splitConversionExpressionForDisplay(const QString& expression,
+                                                QString* leftOut,
+                                                QString* rightOut)
 {
     const int asciiArrowPos = expression.lastIndexOf(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp);
     const int unicodeArrowPos = expression.lastIndexOf(MathDsl::TransOp);
+    int textualInPos = -1;
+    QRegularExpressionMatchIterator inMatches =
+        QRegularExpression(QStringLiteral("\\bin\\b"),
+                           QRegularExpression::CaseInsensitiveOption).globalMatch(expression);
+    while (inMatches.hasNext())
+        textualInPos = inMatches.next().capturedStart();
 
     int arrowPos = -1;
     int arrowWidth = 0;
-    if (asciiArrowPos >= 0 && asciiArrowPos >= unicodeArrowPos) {
+    if (asciiArrowPos >= 0
+        && asciiArrowPos >= unicodeArrowPos
+        && asciiArrowPos >= textualInPos) {
         arrowPos = asciiArrowPos;
         arrowWidth = 2;
-    } else if (unicodeArrowPos >= 0) {
+    } else if (unicodeArrowPos >= 0 && unicodeArrowPos >= textualInPos) {
         arrowPos = unicodeArrowPos;
         arrowWidth = 1;
+    } else if (textualInPos >= 0) {
+        arrowPos = textualInPos;
+        arrowWidth = 2;
     }
 
     if (arrowPos < 0)
+        return false;
+
+    if (leftOut)
+        *leftOut = expression.left(arrowPos).trimmed();
+    if (rightOut)
+        *rightOut = expression.mid(arrowPos + arrowWidth).trimmed();
+    return true;
+}
+
+inline QString conversionTargetSuffixForDisplay(const QString& expression)
+{
+    QString target;
+    if (!splitConversionExpressionForDisplay(expression, nullptr, &target))
         return QString();
 
-    const QString target = expression.mid(arrowPos + arrowWidth).trimmed();
     if (target.isEmpty())
         return QString();
 
@@ -804,11 +829,8 @@ inline QString formattedExpressionLineForDisplay(const QString& sourceExpression
     const QString sourceConversionTargetSuffix =
         conversionTargetSuffixForDisplay(sourceExpression);
     if (!sourceConversionTargetSuffix.isEmpty()) {
-        const int asciiArrowPos =
-            sourceExpression.lastIndexOf(QString(MathDsl::SubOpAl1) + MathDsl::GreaterThanOp);
-        const int unicodeArrowPos = sourceExpression.lastIndexOf(MathDsl::TransOp);
-        const int arrowPos = qMax(asciiArrowPos, unicodeArrowPos);
-        const QString sourceLeft = sourceExpression.left(arrowPos).trimmed();
+        QString sourceLeft;
+        splitConversionExpressionForDisplay(sourceExpression, &sourceLeft, nullptr);
         const bool preserveConvertedStandaloneSexagesimalAngle =
             isStandaloneSexagesimalAngleLiteral(sourceLeft)
             && !sourceLeft.contains(MathDsl::UnitStart)

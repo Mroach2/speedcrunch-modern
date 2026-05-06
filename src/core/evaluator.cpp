@@ -5679,10 +5679,13 @@ void Evaluator::compile(const Tokens& tokens)
     };
 
     bool hasGeneratedSexagesimalUnit = false;
+    bool hasUnitConversionToken = false;
     for (int idx = 0; idx < tokens.size(); ++idx) {
         if (isGeneratedSexagesimalUnitToken(tokens.at(idx))) {
             hasGeneratedSexagesimalUnit = true;
-            break;
+        } else if (tokens.at(idx).isOperator()
+                   && tokens.at(idx).asOperator() == Token::UnitConversion) {
+            hasUnitConversionToken = true;
         }
     }
 
@@ -6367,7 +6370,7 @@ void Evaluator::compile(const Tokens& tokens)
 
         m_hasImplicitMultiplication = !m_implicitMultiplicationOpcodeIndices.isEmpty();
 
-        m_interpretedExpression = hasGeneratedSexagesimalUnit
+        m_interpretedExpression = hasGeneratedSexagesimalUnit && !hasUnitConversionToken
             ? QString()
             : buildInterpretedExpressionFromOpcodes();
     }

@@ -3677,6 +3677,32 @@ void test_comment_and_description_edge_cases()
                       u8"1[metre]→cm");
     CHECK_INTERPRETED("1[metre] in [cm]",
                       u8"1[metre]→cm");
+    CHECK_INTERPRETED(QString::fromUtf8("1° in [rad]"),
+                      u8"1[degree]→rad");
+    CHECK_INTERPRETED(QString::fromUtf8("1′ in [rad]"),
+                      u8"1[arcminute]→rad");
+    CHECK_INTERPRETED(QString::fromUtf8("1″ in [rad]"),
+                      u8"1[arcsecond]→rad");
+    const QString compactAngleConversionCases[][2] = {
+        {QString::fromUtf8("1° in [rad]"), QString::fromUtf8("1° → [rad]")},
+        {QString::fromUtf8("1′ in [rad]"), QString::fromUtf8("1′ → [rad]")},
+        {QString::fromUtf8("1″ in [rad]"), QString::fromUtf8("1″ → [rad]")}
+    };
+    for (const auto& tc : compactAngleConversionCases) {
+        eval->setExpression(tc[0]);
+        eval->evalUpdateAns();
+        ++eval_total_tests;
+        const QString displayed = ResultLineFormatUtils::formattedExpressionLineForDisplay(
+            tc[0], eval->interpretedExpression());
+        if (displayed != tc[1]) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tcompact angle in-conversion display\t[NEW]" << endl
+                 << "\tExpression: " << tc[0].toUtf8().constData() << endl
+                 << "\tDisplayed : " << displayed.toUtf8().constData() << endl
+                 << "\tExpected  : " << tc[1].toUtf8().constData() << endl;
+        }
+    }
 
     // Explicit empty description should be stored as empty.
     CHECK_EVAL("vardesc2 = 1 ? ", "1");
