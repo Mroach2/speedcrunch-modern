@@ -231,6 +231,7 @@ private slots:
     void removeHistoryEntriesBelow(int index);
 
 protected:
+    bool event(QEvent*) override;
     void closeEvent(QCloseEvent*) override;
     void resizeEvent(QResizeEvent*) override;
     bool eventFilter(QObject*, QEvent*) override;
