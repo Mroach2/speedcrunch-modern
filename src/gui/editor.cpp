@@ -1640,9 +1640,13 @@ QStringList Editor::matchFragment(const QString& id, bool unitContext) const
             if (seenVariableCompletionIds.contains(completionIdentifier))
                 continue;
             seenVariableCompletionIds.insert(completionIdentifier);
-            const QString variableDescription = variable.description().trimmed().isEmpty()
-                ? NumberFormatter::format(variable.value())
-                : variable.description().trimmed();
+            QString variableDescription;
+            if (m_evaluator->isGlobalUserVariable(completionIdentifier))
+                variableDescription = NumberFormatter::format(variable.value());
+            else
+                variableDescription = variable.description().trimmed().isEmpty()
+                    ? NumberFormatter::format(variable.value())
+                    : variable.description().trimmed();
             variableChoices.append(QString("%1:%2").arg(
                 completionIdentifier,
                 variableDescription));

@@ -11,6 +11,7 @@
 
 #include <QFile>
 #include <QJsonDocument>
+#include <QObject>
 #include <functions.h>
 #include <algorithm>
 
@@ -144,8 +145,11 @@ void Session::normalizeHistoryOrder()
 
 void Session::serialize(QJsonObject &json) const
 {
+    const QString globalVariableTag = QObject::tr("Global User Variable");
+    const QString globalFunctionTag = QObject::tr("Global User Function");
+    const QString globalUnitTag = QObject::tr("Global User Unit");
+
     json[QLatin1String(SessionJsonKeys::SchemaVersion)] = SessionJsonKeys::SchemaVersionValue;
-    json[QLatin1String(SessionJsonKeys::SpeedCrunch)] = QString(SPEEDCRUNCH_VERSION);
     json[QLatin1String(SessionJsonKeys::Session)] = m_name.isEmpty()
         ? QLatin1String(SessionJsonKeys::SessionValueMain)
         : m_name;
@@ -169,6 +173,8 @@ void Session::serialize(QJsonObject &json) const
         //ignore builtin variables
         if(i.value().type()==Variable::BuiltIn && i.value().identifier()!=QLatin1String("ans"))
             continue;
+        if (i.value().description().contains(globalVariableTag))
+            continue;
         i.value().serialize(curr_entry_obj);
         var_entries.append(curr_entry_obj);
     }
@@ -181,6 +187,8 @@ void Session::serialize(QJsonObject &json) const
     while(j.hasNext()) {
         j.next();
         QJsonObject curr_entry_obj;
+        if (j.value().description().contains(globalFunctionTag))
+            continue;
         j.value().serialize(curr_entry_obj);
         func_entries.append(curr_entry_obj);
     }
@@ -191,17 +199,27 @@ void Session::serialize(QJsonObject &json) const
     while (k.hasNext()) {
         k.next();
         QJsonObject curr_entry_obj;
+        if (k.value().description().contains(globalUnitTag))
+            continue;
         k.value().serialize(curr_entry_obj);
         unit_entries.append(curr_entry_obj);
     }
     json[QLatin1String(SessionJsonKeys::Units)] = unit_entries;
+
+    QJsonArray globals;
+    const QStringList definitions = Settings::instance()->startupUserDefinitions.split(QLatin1Char('\n'));
+    for (const QString& line : definitions) {
+        const QString trimmed = line.trimmed();
+        if (!trimmed.isEmpty())
+            globals.append(trimmed);
+    }
+    json[QLatin1String(SessionJsonKeys::Globals)] = globals;
 }
 
 int Session::deSerialize(const QJsonObject &json, bool merge=false)
 {
     const int schemaVersion = json[QLatin1String(SessionJsonKeys::SchemaVersion)].toInt();
     (void)schemaVersion;
-    QString version = json[QLatin1String(SessionJsonKeys::SpeedCrunch)].toString();
     if(!merge) {
         m_history.clear();
         m_historyHead = 0;
@@ -244,6 +262,16 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
             addUserUnit(unit);
         }
     }
+    if (!merge && json.contains(QLatin1String(SessionJsonKeys::Globals))) {
+        const QJsonArray globalsObj = json[QLatin1String(SessionJsonKeys::Globals)].toArray();
+        QStringList lines;
+        lines.reserve(globalsObj.size());
+        for (const QJsonValue& value : globalsObj) {
+            if (value.isString() && !value.toString().trimmed().isEmpty())
+                lines.append(value.toString().trimmed());
+        }
+        Settings::instance()->startupUserDefinitions = lines.join(QLatin1Char('\n'));
+    }
 
     // Recover ans from history when missing or NaN, e.g. older sessions where
     // comment-only lines could overwrite ans with NaN.
@@ -279,7 +307,7 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
         }
     }
 
-    return version==SPEEDCRUNCH_VERSION;
+    return true;
 }
 
 void Session::setName(const QString& name)

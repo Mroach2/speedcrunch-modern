@@ -263,8 +263,6 @@ Settings::Settings()
     singleInstance = true;
     complexNumbers = false;
     imaginaryUnit = 'i';
-    startupUserDefinitionsOverwrite = false;
-    startupUserDefinitionsApplyBeforeRestore = false;
     autoCompletionBuiltInFunctions = true;
     autoCompletionBuiltInVariables = true;
     autoCompletionLongFormUnits = true;

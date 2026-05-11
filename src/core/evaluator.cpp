@@ -5037,6 +5037,7 @@ void Evaluator::setExpression(const QString& expr)
     m_error = QString();
     m_interpretedExpression = QString();
     m_hasImplicitMultiplication = false;
+    m_allowGlobalUserDefinitionsOverride = false;
 }
 
 QString Evaluator::expression() const
@@ -7797,6 +7798,22 @@ Quantity Evaluator::eval()
     }
     // Handle user variable or function assignment.
     if (!m_assignId.isEmpty()) {
+        if (!m_allowGlobalUserDefinitionsOverride && m_globalUserVariables.contains(m_assignId)) {
+                m_error = tr("%1 is a global user definition and cannot be overridden in this session.")
+                              .arg(m_assignId);
+                return CMath::nan();
+        }
+        if (!m_allowGlobalUserDefinitionsOverride && m_globalUserFunctions.contains(m_assignId)) {
+                m_error = tr("%1 is a global user definition and cannot be overridden in this session.")
+                              .arg(m_assignId);
+                return CMath::nan();
+        }
+        if (!m_allowGlobalUserDefinitionsOverride && m_globalUserUnits.contains(m_assignId)) {
+                m_error = tr("%1 is a global user definition and cannot be overridden in this session.")
+                              .arg(m_assignId);
+                return CMath::nan();
+        }
+
         if (m_assignFunc) {
             if (hasVariable(m_assignId)) {
                 m_error = tr("%1 is a variable name, please choose another "
@@ -7924,6 +7941,7 @@ void Evaluator::unsetVariable(const QString& id,
 {
     if (!m_session || (m_session->isBuiltInVariable(id) && !force))
         return;
+    if (!m_allowGlobalUserDefinitionsOverride && m_globalUserVariables.contains(id)) return;
     m_session->removeVariable(id);
 }
 
@@ -7958,10 +7976,14 @@ void Evaluator::unsetAllUserDefinedVariables()
 {
     if (!m_session)
         return;
-    auto ansBackup = getVariable(QLatin1String("ans")).value();
-    m_session->clearVariables();
-    setVariable(QLatin1String("ans"), ansBackup, Variable::BuiltIn);
-    initializeBuiltInVariables();
+    const QList<Variable> variables = m_session->variablesToList();
+    for (const Variable& variable : variables) {
+        if (variable.type() == Variable::BuiltIn)
+            continue;
+        if (!m_allowGlobalUserDefinitionsOverride && m_globalUserVariables.contains(variable.identifier()))
+            continue;
+        m_session->removeVariable(variable.identifier());
+    }
 }
 
 static void replaceSuperscriptPowersWithCaretEquivalent(QString& expr)
@@ -8210,12 +8232,22 @@ void Evaluator::setUserFunction(const UserFunction& f)
 
 void Evaluator::unsetUserFunction(const QString& fname)
 {
+    if (!m_session)
+        return;
+    if (!m_allowGlobalUserDefinitionsOverride && m_globalUserFunctions.contains(fname)) return;
     m_session->removeUserFunction(fname);
 }
 
 void Evaluator::unsetAllUserFunctions()
 {
-    m_session->clearUserFunctions();
+    if (!m_session)
+        return;
+    const QList<UserFunction> functions = m_session->UserFunctionsToList();
+    for (const UserFunction& function : functions) {
+        if (!m_allowGlobalUserDefinitionsOverride && m_globalUserFunctions.contains(function.name()))
+            continue;
+        m_session->removeUserFunction(function.name());
+    }
 }
 
 bool Evaluator::hasUserFunction(const QString& fname) const
@@ -8267,6 +8299,7 @@ void Evaluator::unsetUserUnit(const QString& name)
 {
     if (!m_session)
         return;
+    if (!m_allowGlobalUserDefinitionsOverride && m_globalUserUnits.contains(name)) return;
     m_session->removeUserUnit(name);
 }
 
@@ -8274,7 +8307,12 @@ void Evaluator::unsetAllUserUnits()
 {
     if (!m_session)
         return;
-    m_session->clearUserUnits();
+    const QList<UserUnit> units = m_session->userUnitsToList();
+    for (const UserUnit& unit : units) {
+        if (!m_allowGlobalUserDefinitionsOverride && m_globalUserUnits.contains(unit.name()))
+            continue;
+        m_session->removeUserUnit(unit.name());
+    }
 }
 
 bool Evaluator::hasUserUnit(const QString& name) const
@@ -8282,6 +8320,27 @@ bool Evaluator::hasUserUnit(const QString& name) const
     bool invalid = name.isEmpty() || !m_session;
     return invalid ? false : m_session->hasUserUnit(name);
 }
+
+void Evaluator::setAllowGlobalUserDefinitionsOverride(bool allow)
+{
+    // See m_allowGlobalUserDefinitionsOverride in evaluator.h for intent.
+    // Only the User Definitions import/apply path should enable this.
+    m_allowGlobalUserDefinitionsOverride = allow;
+}
+
+void Evaluator::clearGlobalUserDefinitionRegistry()
+{
+    m_globalUserVariables.clear();
+    m_globalUserFunctions.clear();
+    m_globalUserUnits.clear();
+}
+
+void Evaluator::registerGlobalUserVariable(const QString& id) { m_globalUserVariables.insert(id); }
+void Evaluator::registerGlobalUserFunction(const QString& name) { m_globalUserFunctions.insert(name); }
+void Evaluator::registerGlobalUserUnit(const QString& name) { m_globalUserUnits.insert(name); }
+bool Evaluator::isGlobalUserVariable(const QString& id) const { return m_globalUserVariables.contains(id); }
+bool Evaluator::isGlobalUserFunction(const QString& name) const { return m_globalUserFunctions.contains(name); }
+bool Evaluator::isGlobalUserUnit(const QString& name) const { return m_globalUserUnits.contains(name); }
 
 const UserUnit* Evaluator::getUserUnit(const QString& name) const
 {

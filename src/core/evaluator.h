@@ -173,6 +173,14 @@ public:
     void unsetAllUserUnits();
     bool hasUserUnit(const QString&) const;
     const UserUnit* getUserUnit(const QString&) const;
+    void setAllowGlobalUserDefinitionsOverride(bool allow);
+    void clearGlobalUserDefinitionRegistry();
+    void registerGlobalUserVariable(const QString& id);
+    void registerGlobalUserFunction(const QString& name);
+    void registerGlobalUserUnit(const QString& name);
+    bool isGlobalUserVariable(const QString& id) const;
+    bool isGlobalUserFunction(const QString& name) const;
+    bool isGlobalUserUnit(const QString& name) const;
 
 protected:
     void compile(const Tokens&);
@@ -203,6 +211,13 @@ private:
     Session* m_session;
     QSet<QString> m_functionsInUse;
     bool m_hasImplicitMultiplication;
+    // Temporary gate used by the User Definitions dialog import/apply path.
+    // When true, global definitions may replace previously-tagged global symbols.
+    // Keep false for normal editor/session evaluation so globals stay immutable.
+    bool m_allowGlobalUserDefinitionsOverride;
+    QSet<QString> m_globalUserVariables;
+    QSet<QString> m_globalUserFunctions;
+    QSet<QString> m_globalUserUnits;
 
     const Quantity& checkOperatorResult(const Quantity&);
     static QString stringFromFunctionError(Function*);

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 
-#include "core/startupdefinitions.h"
+#include "core/userdefinitions.h"
 
 #include "core/settings.h"
 
@@ -20,14 +20,12 @@ QString startupDefinitionsPath()
 }
 }
 
-void StartupDefinitions::loadInto(Settings* settings)
+void UserDefinitions::loadInto(Settings* settings)
 {
     if (!settings)
         return;
 
     settings->startupUserDefinitions.clear();
-    settings->startupUserDefinitionsOverwrite = false;
-    settings->startupUserDefinitionsApplyBeforeRestore = false;
 
     QFile file(startupDefinitionsPath());
     if (!file.exists() || !file.open(QIODevice::ReadOnly))
@@ -41,7 +39,7 @@ void StartupDefinitions::loadInto(Settings* settings)
     const QJsonObject json = doc.object();
     QStringList definitionLines;
     const QJsonValue startupDefinitionsValue = json.value(
-        QLatin1String(StartupDefinitions::JsonKeys::StartupDefinitions));
+        QLatin1String(UserDefinitions::kStartupDefinitionsJsonKey));
     if (startupDefinitionsValue.isArray()) {
         const QJsonArray definitionsArray = startupDefinitionsValue.toArray();
         for (const QJsonValue& value : definitionsArray) {
@@ -53,13 +51,9 @@ void StartupDefinitions::loadInto(Settings* settings)
         definitionLines = startupDefinitionsValue.toString().split(QLatin1Char('\n'));
     }
     settings->startupUserDefinitions = definitionLines.join(QLatin1Char('\n'));
-    settings->startupUserDefinitionsOverwrite = json.value(
-        QLatin1String(StartupDefinitions::JsonKeys::Overwrite)).toBool(false);
-    settings->startupUserDefinitionsApplyBeforeRestore = json.value(
-        QLatin1String(StartupDefinitions::JsonKeys::ApplyBeforeRestore)).toBool(false);
 }
 
-void StartupDefinitions::saveFrom(const Settings* settings)
+void UserDefinitions::saveFrom(const Settings* settings)
 {
     if (!settings)
         return;
@@ -78,8 +72,6 @@ void StartupDefinitions::saveFrom(const Settings* settings)
         if (!line.trimmed().isEmpty())
             definitionsArray.append(line);
     }
-    json[QLatin1String(StartupDefinitions::JsonKeys::StartupDefinitions)] = definitionsArray;
-    json[QLatin1String(StartupDefinitions::JsonKeys::Overwrite)] = settings->startupUserDefinitionsOverwrite;
-    json[QLatin1String(StartupDefinitions::JsonKeys::ApplyBeforeRestore)] = settings->startupUserDefinitionsApplyBeforeRestore;
+    json[QLatin1String(UserDefinitions::kStartupDefinitionsJsonKey)] = definitionsArray;
     file.write(QJsonDocument(json).toJson(QJsonDocument::Indented));
 }

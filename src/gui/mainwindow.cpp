@@ -12,7 +12,7 @@
 #include "core/settings.h"
 #include "core/session.h"
 #include "core/sessionjsonkeys.h"
-#include "core/startupdefinitions.h"
+#include "core/userdefinitions.h"
 #include "core/unicodechars.h"
 #include "core/variable.h"
 #include "core/sessionhistory.h"
@@ -285,14 +285,32 @@ bool isReusableUntitledSession(const Session* session)
     if (session == nullptr || !session->historyIsEmpty())
         return false;
 
+    Evaluator* evaluator = Evaluator::instance();
     const QList<Variable> variables = session->variablesToList();
     for (const Variable& variable : variables) {
-        if (variable.type() != Variable::BuiltIn)
+        if (variable.type() != Variable::BuiltIn
+            && !(evaluator && evaluator->isGlobalUserVariable(variable.identifier())))
             return false;
     }
 
-    return session->UserFunctionsToList().isEmpty()
-        && session->userUnitsToList().isEmpty();
+    const QList<UserFunction> functions = session->UserFunctionsToList();
+    for (const UserFunction& function : functions) {
+        if (!(evaluator && evaluator->isGlobalUserFunction(function.name())))
+            return false;
+    }
+
+    const QList<UserUnit> units = session->userUnitsToList();
+    for (const UserUnit& unit : units) {
+        if (!(evaluator && evaluator->isGlobalUserUnit(unit.name())))
+            return false;
+    }
+
+    return true;
+}
+
+bool shouldDeleteSessionFileOnClose(const QString& sessionName, const Session* session)
+{
+    return untitledSessionNumber(sessionName) > 0 && isReusableUntitledSession(session);
 }
 
 QJsonObject sessionLayoutEntry(const QString& name, const QPair<int, int>& viewportAnchor, int scrollValue)
@@ -1203,15 +1221,12 @@ QWidget* paneWidgetForDisplay(ResultDisplay* display)
     return widget;
 }
 
-bool splitUserFunctionDescriptionForImport(const QString& expression,
-                                           QString* expressionWithoutDescription)
+bool splitAssignmentDescriptionForImport(const QString& expression,
+                                         QString* expressionWithoutDescription,
+                                         QString* description = nullptr)
 {
     const int equalsPos = expression.indexOf(MathDsl::Equals);
     if (equalsPos < 0)
-        return false;
-
-    const QString leftSide = expression.left(equalsPos);
-    if (!leftSide.contains(MathDsl::GroupStart) || !leftSide.contains(MathDsl::GroupEnd))
         return false;
 
     int depth = 0;
@@ -1222,8 +1237,10 @@ bool splitUserFunctionDescriptionForImport(const QString& expression,
             ++depth;
         } else if (ch == MathDsl::GroupEnd && depth > 0) {
             --depth;
-        } else if (ch == UnicodeChars::QuestionMark && depth == 0) {
+        } else if (ch == MathDsl::CommentSep && depth == 0) {
             *expressionWithoutDescription = expression.left(i).trimmed();
+            if (description)
+                *description = expression.mid(i + 1).trimmed();
             return true;
         }
     }
@@ -1238,7 +1255,7 @@ AssignmentTarget assignmentTargetFromExpression(Evaluator* evaluator, const QStr
         return target;
 
     QString expressionToParse = expression;
-    splitUserFunctionDescriptionForImport(expression, &expressionToParse);
+    splitAssignmentDescriptionForImport(expression, &expressionToParse);
     Tokens tokens = evaluator->scan(expressionToParse);
 
     if (!tokens.valid())
@@ -1748,7 +1765,7 @@ void MainWindow::setActionsText()
     m_actions.sessionExportHtml->setText(MainWindow::tr("&HTML"));
     m_actions.sessionExportPlainText->setText(MainWindow::tr("Plain &text"));
     m_actions.sessionImport->setText(MainWindow::tr("&Import..."));
-    m_actions.sessionImportUserDefinitions->setText(MainWindow::tr("Startup &Definitions..."));
+    m_actions.sessionImportUserDefinitions->setText(MainWindow::tr("User &Definitions..."));
     m_actions.sessionLoad->setText(MainWindow::tr("&Load..."));
     m_actions.sessionQuit->setText(MainWindow::tr("&Quit"));
     m_actions.sessionSave->setText(MainWindow::tr("&Save..."));
@@ -2012,8 +2029,6 @@ void MainWindow::createMenus()
 {
     m_menus.session = new QMenu("", this);
     menuBar()->addMenu(m_menus.session);
-    m_menus.session->addAction(m_actions.sessionImportUserDefinitions);
-    m_menus.session->addSeparator();
     m_menus.session->addAction(m_actions.sessionLoad);
     m_menus.session->addAction(m_actions.sessionSave);
     m_menus.session->addSeparator();
@@ -2144,6 +2159,9 @@ void MainWindow::createMenus()
     m_menus.results->addAction(m_actions.settingsBehaviorSimplifyResultExpressions);
     m_menus.results->addAction(m_actions.settingsBehaviorAutoResultToClipboard);
 
+    m_menus.symbols = m_menus.settings->addMenu("");
+    m_menus.symbols->addAction(m_actions.sessionImportUserDefinitions);
+
     m_menus.angleUnit = m_menus.settings->addMenu("");
     m_menus.angleUnit->addAction(m_actions.settingsAngleUnitDegree);
     m_menus.angleUnit->addAction(m_actions.settingsAngleUnitRadian);
@@ -2197,6 +2215,7 @@ void MainWindow::setMenusText()
     m_menus.keypadZoom->setTitle(MainWindow::tr("&Zoom"));
     m_menus.settings->setTitle(MainWindow::tr("Se&ttings"));
     m_menus.results->setTitle(MainWindow::tr("&Results"));
+    m_menus.symbols->setTitle(MainWindow::tr("&Symbols"));
     m_menus.unitNegativeExponentStyle->setTitle(MainWindow::tr("Unit Exponent Style"));
     m_menus.resultRoundingMode->setTitle(MainWindow::tr("Rounding Mode"));
     m_menus.resultFormat->setTitle(MainWindow::tr("&Notation"));
@@ -2932,7 +2951,7 @@ Session* MainWindow::createUntitledSession(bool activateCreatedSession)
         m_evaluator->setSession(m_session);
         m_evaluator->initializeBuiltInVariables();
     }
-    applyStartupUserDefinitions();
+    applyUserDefinitions();
     m_conditions.autoAns = false;
     if (!activateCreatedSession) {
         m_session = previousSession;
@@ -4094,13 +4113,10 @@ void MainWindow::applySettings()
         m_actions.settingsBehaviorHistorySavingOnExit->setChecked(true);
     }
 
-    StartupDefinitions::loadInto(m_settings);
+    UserDefinitions::loadInto(m_settings);
 
-    if (m_settings->startupUserDefinitionsApplyBeforeRestore)
-        applyStartupUserDefinitions();
     restoreSession(m_settings->historySaving != Settings::HistorySavingNever);
-    if (!m_settings->startupUserDefinitionsApplyBeforeRestore)
-        applyStartupUserDefinitions();
+    applyUserDefinitions();
 
     m_actions.settingsBehaviorLeaveLastExpression->setChecked(m_settings->leaveLastExpression);
     switch (m_settings->upDownArrowBehavior) {
@@ -4806,7 +4822,7 @@ void MainWindow::clearSession()
     m_widgets.editor->setHistoryArrowNavigationEnabled(true);
     clearEditorAndBitfield();
     m_evaluator->initializeBuiltInVariables();
-    applyStartupUserDefinitions();
+    applyUserDefinitions();
     emit historyChanged();
     emit variablesChanged();
     emit functionsChanged();
@@ -5062,8 +5078,12 @@ void MainWindow::closeCurrentSession()
     if (names.size() <= 1) {
         if (splitPaneDisplays().size() <= 1) {
             const QString closingName = m_session->name();
-            if (m_settings->historySaving == Settings::HistorySavingContinuously)
-                saveSessionToDefaultPath();
+            if (m_settings->historySaving == Settings::HistorySavingContinuously) {
+                if (shouldDeleteSessionFileOnClose(closingName, m_session))
+                    QFile::remove(sessionFilePath(closingName));
+                else
+                    saveSessionToDefaultPath();
+            }
 
             Session* replacementSession = createUntitledSession(true);
             QStringList paneNames = paneSessionNames(m_widgets.display);
@@ -5116,10 +5136,14 @@ void MainWindow::closeCurrentSession()
         return;
     }
 
-    if (m_settings->historySaving == Settings::HistorySavingContinuously)
-        saveSessionToDefaultPath();
-
     const QString closingName = m_session->name();
+    if (m_settings->historySaving == Settings::HistorySavingContinuously) {
+        if (shouldDeleteSessionFileOnClose(closingName, m_session))
+            QFile::remove(sessionFilePath(closingName));
+        else
+            saveSessionToDefaultPath();
+    }
+
     names.sort(Qt::CaseInsensitive);
     const int closingIndex = names.indexOf(closingName);
     const int nextIndex = closingIndex >= 0 && closingIndex + 1 < names.size()
@@ -5158,6 +5182,10 @@ void MainWindow::closeCurrentPane()
         Session* session = m_loadedSessions.value(name, nullptr);
         if (session == nullptr)
             return;
+        if (shouldDeleteSessionFileOnClose(name, session)) {
+            QFile::remove(sessionFilePath(name));
+            return;
+        }
 
         QJsonObject json;
         session->serialize(json);
@@ -5314,7 +5342,7 @@ void MainWindow::deleteCurrentSession()
         it.value() = names;
     }
     if (createdReplacementSession)
-        applyStartupUserDefinitions();
+        applyUserDefinitions();
 
     delete deletingSession;
     m_conditions.autoAns = false;
@@ -6046,12 +6074,16 @@ void MainWindow::showSessionImportDialog()
 }
 
 void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwriteExisting,
-                                               int* importedVariables, int* importedFunctions,
+                                               int* importedVariables, int* importedFunctions, int* importedUnits,
                                                int* ignoredLines, QList<int>* ignoredLineNumbers,
                                                bool dryRun)
 {
+    const QString globalVariableTag = tr("Global User Variable");
+    const QString globalFunctionTag = tr("Global User Function");
+    const QString globalUnitTag = tr("Global User Unit");
     int localImportedVariables = 0;
     int localImportedFunctions = 0;
+    int localImportedUnits = 0;
     int localIgnoredLines = 0;
     QList<int> localIgnoredLineNumbers;
     Session sessionBackup;
@@ -6061,6 +6093,8 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
         sessionBackup = *m_session;
         autoAnsBackup = m_conditions.autoAns;
     }
+    m_evaluator->clearGlobalUserDefinitionRegistry();
+    m_evaluator->setAllowGlobalUserDefinitionsOverride(true);
 
     QString inputText = text;
     QTextStream stream(&inputText, QIODevice::ReadOnly);
@@ -6076,6 +6110,12 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
         const QString expression = m_evaluator->autoFix(normalizedExpression);
         if (expression.isEmpty() || Evaluator::isCommentOnlyExpression(expression))
             continue;
+        QString expressionWithoutDescription = expression;
+        QString explicitDescription;
+        splitAssignmentDescriptionForImport(
+            expression,
+            &expressionWithoutDescription,
+            &explicitDescription);
 
         const AssignmentTarget target =
             assignmentTargetFromExpression(m_evaluator, expression);
@@ -6123,8 +6163,13 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
         if (overwriteExisting) {
             if (target.isFunction && hasExistingUserVariable) {
                 m_evaluator->unsetVariable(target.identifier);
+            }
+            if (target.isFunction && hasExistingUserFunction) {
+                m_evaluator->unsetUserFunction(target.identifier);
             } else if (!target.isFunction && !target.isUnit && hasExistingUserFunction) {
                 m_evaluator->unsetUserFunction(target.identifier);
+            } else if (!target.isFunction && !target.isUnit && hasExistingUserVariable) {
+                m_evaluator->unsetVariable(target.identifier);
             } else if (target.isUnit) {
                 if (hasExistingUserVariable)
                     m_evaluator->unsetVariable(target.identifier);
@@ -6135,7 +6180,7 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
             }
         }
 
-        m_evaluator->setExpression(expression);
+        m_evaluator->setExpression(expressionWithoutDescription);
         m_evaluator->eval();
 
         bool importSucceeded = false;
@@ -6183,13 +6228,66 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
             continue;
         }
 
+        if (target.isFunction) {
+            UserFunction taggedFunction;
+            if (findUserFunctionByName(m_evaluator->getUserFunctions(), target.identifier, &taggedFunction)) {
+                QString description = explicitDescription;
+                if (description.isEmpty())
+                    description = taggedFunction.description();
+                if (!description.contains(globalFunctionTag))
+                    description = description.isEmpty()
+                        ? globalFunctionTag
+                        : description + QStringLiteral(" · ") + globalFunctionTag;
+                if (taggedFunction.description() != description)
+                    taggedFunction.setDescription(description);
+                m_evaluator->setUserFunction(taggedFunction);
+                m_evaluator->registerGlobalUserFunction(target.identifier);
+            }
+        } else if (target.isUnit) {
+            const UserUnit* existingUnit = m_evaluator->getUserUnit(target.identifier);
+            if (existingUnit) {
+                UserUnit taggedUnit = *existingUnit;
+                QString description = explicitDescription;
+                if (description.isEmpty())
+                    description = taggedUnit.description();
+                if (!description.contains(globalUnitTag))
+                    description = description.isEmpty()
+                        ? globalUnitTag
+                        : description + QStringLiteral(" · ") + globalUnitTag;
+                if (taggedUnit.description() != description)
+                    taggedUnit.setDescription(description);
+                m_evaluator->setUserUnit(taggedUnit);
+                m_evaluator->registerGlobalUserUnit(target.identifier);
+            }
+        } else if (m_evaluator->hasVariable(target.identifier)
+                   && !m_evaluator->isBuiltInVariable(target.identifier)) {
+            const Variable importedVariable = m_evaluator->getVariable(target.identifier);
+            QString description = explicitDescription;
+            if (description.isEmpty())
+                description = importedVariable.description();
+            if (!description.contains(globalVariableTag)) {
+                description = description.isEmpty()
+                    ? globalVariableTag
+                    : description + QStringLiteral(" · ") + globalVariableTag;
+            }
+            m_evaluator->setVariable(
+                importedVariable.identifier(),
+                importedVariable.value(),
+                importedVariable.type(),
+                description,
+                importedVariable.formattedValue());
+            m_evaluator->registerGlobalUserVariable(target.identifier);
+        }
+
         if (target.isFunction)
             ++localImportedFunctions;
+        else if (target.isUnit)
+            ++localImportedUnits;
         else
             ++localImportedVariables;
     }
 
-    if (!dryRun && (localImportedVariables > 0 || localImportedFunctions > 0)) {
+    if (!dryRun && (localImportedVariables > 0 || localImportedFunctions > 0 || localImportedUnits > 0)) {
         emit variablesChanged();
         emit functionsChanged();
         emit unitsChanged();
@@ -6199,18 +6297,21 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
         *m_session = sessionBackup;
         m_conditions.autoAns = autoAnsBackup;
     }
+    m_evaluator->setAllowGlobalUserDefinitionsOverride(false);
 
     if (importedVariables)
         *importedVariables = localImportedVariables;
     if (importedFunctions)
         *importedFunctions = localImportedFunctions;
+    if (importedUnits)
+        *importedUnits = localImportedUnits;
     if (ignoredLines)
         *ignoredLines = localIgnoredLines;
     if (ignoredLineNumbers)
         *ignoredLineNumbers = localIgnoredLineNumbers;
 }
 
-void MainWindow::applyStartupUserDefinitions()
+void MainWindow::applyUserDefinitions()
 {
     const QString definitionsText = m_settings->startupUserDefinitions.trimmed();
     if (definitionsText.isEmpty())
@@ -6218,39 +6319,24 @@ void MainWindow::applyStartupUserDefinitions()
 
     importUserDefinitionsFromText(
         definitionsText,
-        m_settings->startupUserDefinitionsOverwrite);
+        true);
 }
 
 void MainWindow::showUserDefinitionsImportDialog()
 {
     QDialog dialog(this);
-    dialog.setWindowTitle(tr("Startup Definitions"));
+    dialog.setWindowTitle(tr("User Definitions"));
     dialog.setMinimumSize(640, 420);
 
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
 
     QLabel* info = new QLabel(
-        tr("Define user variables, functions and units to load automatically on startup.\n"
+        tr("These definitions are global and are loaded into every session.\n"
+           "They are immutable for sessions and override same-name definitions from the session editor.\n"
            "Enter one definition per line."),
         &dialog);
     info->setWordWrap(true);
     layout->addWidget(info);
-
-    QComboBox* strategy = new QComboBox(&dialog);
-    strategy->addItem(tr("Merge with existing user functions, units and variables"), false);
-    strategy->addItem(tr("Overwrite existing user functions, units and variables if applicable"), true);
-    strategy->setCurrentIndex(m_settings->startupUserDefinitionsOverwrite ? 1 : 0);
-    layout->addWidget(strategy);
-
-    QLabel* overwriteWarning = new QLabel(
-        tr("Warning: Overwrite mode replaces existing user variables/functions/units "
-           "when imported names collide."),
-        &dialog);
-    overwriteWarning->setWordWrap(true);
-    overwriteWarning->setStyleSheet(QStringLiteral(
-        "QLabel { background-color: #fff3cd; color: #664d03; border: 1px solid #ffecb5; padding: 6px; }"));
-    overwriteWarning->setVisible(strategy->currentData().toBool());
-    layout->addWidget(overwriteWarning);
 
     QPlainTextEdit* textEdit = new QPlainTextEdit(&dialog);
     textEdit->setPlainText(m_settings->startupUserDefinitions);
@@ -6274,7 +6360,7 @@ void MainWindow::showUserDefinitionsImportDialog()
     lineNumbers->setTextInteractionFlags(Qt::NoTextInteraction);
     lineNumbers->setStyleSheet(QStringLiteral(
         "QPlainTextEdit { background: palette(alternate-base); color: palette(mid); }"));
-    lineNumbers->setFixedWidth(56);
+    lineNumbers->setFixedWidth(36);
     lineNumbers->setFont(textEdit->font());
 
     QWidget* editorRow = new QWidget(&dialog);
@@ -6300,77 +6386,31 @@ void MainWindow::showUserDefinitionsImportDialog()
             });
     updateLineNumbers();
 
-    QCheckBox* applyBeforeRestore = new QCheckBox(
-        tr("Apply before session restore (advanced)"),
-        &dialog);
-    applyBeforeRestore->setChecked(m_settings->startupUserDefinitionsApplyBeforeRestore);
-    layout->addWidget(applyBeforeRestore);
-
     QDialogButtonBox* buttons = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
         Qt::Horizontal,
         &dialog);
-    QPushButton* applyNowButton = buttons->addButton(tr("Apply Now"), QDialogButtonBox::ActionRole);
-    QPushButton* testNowButton = buttons->addButton(tr("Test Now"), QDialogButtonBox::ActionRole);
-    QPushButton* importButton = buttons->addButton(tr("Import..."), QDialogButtonBox::ActionRole);
-    QPushButton* exportButton = buttons->addButton(tr("Export..."), QDialogButtonBox::ActionRole);
+    QPushButton* applyNowButton = buttons->addButton(tr("Apply"), QDialogButtonBox::ActionRole);
+    QPushButton* validateButton = buttons->addButton(tr("Validate"), QDialogButtonBox::ActionRole);
     layout->addWidget(buttons);
 
-    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, [this, textEdit, &dialog]() {
+        importUserDefinitionsFromText(textEdit->toPlainText(), true);
+        dialog.accept();
+    });
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-    connect(strategy, QOverload<int>::of(&QComboBox::currentIndexChanged), &dialog,
-            [strategy, overwriteWarning](int) {
-                overwriteWarning->setVisible(strategy->currentData().toBool());
-            });
-    connect(importButton, &QPushButton::clicked, this, [this, textEdit]() {
-        const QString fname = QFileDialog::getOpenFileName(
-            this,
-            tr("Import Startup Definitions"),
-            QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
-            tr("Text file (*.txt);;All files (*)"));
-        if (fname.isEmpty())
-            return;
-
-        QFile file(fname);
-        if (!file.open(QIODevice::ReadOnly)) {
-            QMessageBox::critical(this, tr("Error"), tr("Can't read from file %1").arg(fname));
-            return;
-        }
-
-        QTextStream stream(&file);
-        textEdit->setPlainText(stream.readAll());
-    });
-    connect(exportButton, &QPushButton::clicked, this, [this, textEdit]() {
-        QString fname = QFileDialog::getSaveFileName(
-            this,
-            tr("Export Startup Definitions"),
-            QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
-            tr("Text file (*.txt);;All files (*)"));
-        if (fname.isEmpty())
-            return;
-
-        if (!fname.endsWith(QLatin1String(".txt"), Qt::CaseInsensitive))
-            fname += QLatin1String(".txt");
-
-        QFile file(fname);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            QMessageBox::critical(this, tr("Error"), tr("Can't write to file %1").arg(fname));
-            return;
-        }
-
-        QTextStream stream(&file);
-        stream << textEdit->toPlainText();
-    });
-    connect(testNowButton, &QPushButton::clicked, this, [this, textEdit, strategy]() {
+    connect(validateButton, &QPushButton::clicked, this, [this, textEdit]() {
         int importedVariables = 0;
         int importedFunctions = 0;
+        int importedUnits = 0;
         int ignoredLines = 0;
         QList<int> ignoredLineNumbers;
         importUserDefinitionsFromText(
             textEdit->toPlainText(),
-            strategy->currentData().toBool(),
+            true,
             &importedVariables,
             &importedFunctions,
+            &importedUnits,
             &ignoredLines,
             &ignoredLineNumbers,
             true);
@@ -6387,21 +6427,24 @@ void MainWindow::showUserDefinitionsImportDialog()
         QMessageBox::information(
             this,
             tr("Test Results"),
-            tr("Imported variables: %1\nImported functions: %2\nLine numbers with errors: %3")
+            tr("Imported variables: %1\nImported functions: %2\nImported units: %3\nLine numbers with errors: %4")
                 .arg(importedVariables)
                 .arg(importedFunctions)
+                .arg(importedUnits)
                 .arg(ignoredLineNumbersText.isEmpty() ? tr("none") : ignoredLineNumbersText));
     });
-    connect(applyNowButton, &QPushButton::clicked, this, [this, textEdit, strategy]() {
+    connect(applyNowButton, &QPushButton::clicked, this, [this, textEdit]() {
         int importedVariables = 0;
         int importedFunctions = 0;
+        int importedUnits = 0;
         int ignoredLines = 0;
         QList<int> ignoredLineNumbers;
         importUserDefinitionsFromText(
             textEdit->toPlainText(),
-            strategy->currentData().toBool(),
+            true,
             &importedVariables,
             &importedFunctions,
+            &importedUnits,
             &ignoredLines,
             &ignoredLineNumbers,
             false);
@@ -6418,9 +6461,10 @@ void MainWindow::showUserDefinitionsImportDialog()
         QMessageBox::information(
             this,
             tr("Apply Results"),
-            tr("Imported variables: %1\nImported functions: %2\nLine numbers with errors: %3")
+            tr("Imported variables: %1\nImported functions: %2\nImported units: %3\nLine numbers with errors: %4")
                 .arg(importedVariables)
                 .arg(importedFunctions)
+                .arg(importedUnits)
                 .arg(ignoredLineNumbersText.isEmpty() ? tr("none") : ignoredLineNumbersText));
     });
 
@@ -6428,11 +6472,9 @@ void MainWindow::showUserDefinitionsImportDialog()
         return;
 
     m_settings->startupUserDefinitions = textEdit->toPlainText();
-    m_settings->startupUserDefinitionsOverwrite = strategy->currentData().toBool();
-    m_settings->startupUserDefinitionsApplyBeforeRestore = applyBeforeRestore->isChecked();
-    StartupDefinitions::saveFrom(m_settings);
+    UserDefinitions::saveFrom(m_settings);
 
-    showStateLabel(tr("Startup user definitions saved."));
+    showStateLabel(tr("User definitions saved."));
 }
 
 void MainWindow::setAlwaysOnTopEnabled(bool b)

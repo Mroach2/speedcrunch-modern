@@ -8,11 +8,10 @@
   "$id": "https://speedcrunch.org/schemas/session.json",
   "title": "SpeedCrunch Session",
   "type": "object",
-  "required": ["scheme", "speedcrunch", "session", "editor", "history", "variables", "functions", "units"],
+  "required": ["scheme", "session", "editor", "history", "variables", "functions", "units", "globals"],
   "additionalProperties": false,
   "properties": {
     "scheme": { "type": "integer", "const": 1 },
-    "speedcrunch": { "type": "string" },
     "session": { "type": "string", "minLength": 1 },
     "editor": { "type": "string" },
     "history": {
@@ -30,6 +29,10 @@
     "units": {
       "type": "array",
       "items": { "$ref": "#/$defs/userUnit" }
+    },
+    "globals": {
+      "type": "array",
+      "items": { "type": "string" }
     }
   },
   "$defs": {
@@ -204,7 +207,6 @@
 namespace SessionJsonKeys {
 inline constexpr const char* SchemaVersion = "scheme";
 inline constexpr int SchemaVersionValue = 1;
-inline constexpr const char* SpeedCrunch = "speedcrunch";
 inline constexpr const char* Session = "session";
 inline constexpr const char* SessionValueMain = "main";
 inline constexpr const char* Editor = "editor";
@@ -212,6 +214,7 @@ inline constexpr const char* History = "history";
 inline constexpr const char* Variables = "variables";
 inline constexpr const char* Functions = "functions";
 inline constexpr const char* Units = "units";
+inline constexpr const char* Globals = "globals";
 
 namespace Common {
 inline constexpr const char* Id = "id";

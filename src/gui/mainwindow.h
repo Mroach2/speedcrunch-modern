@@ -320,10 +320,11 @@ private:
     QString statusBarComplexFormValue() const;
     QString statusBarResultPrecisionValue() const;
     QString statusBarResultFormatValue() const;
-    void applyStartupUserDefinitions();
+    void applyUserDefinitions();
     void importUserDefinitionsFromText(const QString& text, bool overwriteExisting,
                                        int* importedVariables = nullptr,
                                        int* importedFunctions = nullptr,
+                                       int* importedUnits = nullptr,
                                        int* ignoredLines = nullptr,
                                        QList<int>* ignoredLineNumbers = nullptr,
                                        bool dryRun = false);
@@ -504,6 +505,7 @@ private:
         QMenu* session;
         QMenu* sessionExport;
         QMenu* settings;
+        QMenu* symbols;
         QMenu* view;
         QMenu* keypad;
         QMenu* keypadZoom;
