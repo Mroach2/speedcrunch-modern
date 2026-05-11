@@ -1114,13 +1114,21 @@ static int trailingIdentifierStart(const QString& text, int endPosition)
     if (safeEnd <= 0)
         return -1;
 
-    auto isIdentifierChar = [](const QChar& ch) {
-        return isUnitIdentifierCharInEditor(ch);
+    auto isIdentifierStartChar = [](const QChar& ch) {
+        return isUnitIdentifierCharInEditor(ch)
+               && !ch.isDigit()
+               && !MathDsl::isSuperscriptPowerChar(ch);
+    };
+    auto isIdentifierContinueChar = [](const QChar& ch) {
+        return isUnitIdentifierCharInEditor(ch)
+               && !MathDsl::isSuperscriptPowerChar(ch);
     };
 
     int start = safeEnd;
-    while (start > 0 && isIdentifierChar(text.at(start - 1)))
+    while (start > 0 && isIdentifierContinueChar(text.at(start - 1)))
         --start;
+    while (start < safeEnd && !isIdentifierStartChar(text.at(start)))
+        ++start;
     if (start == safeEnd)
         return -1;
     return start;

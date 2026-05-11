@@ -77,6 +77,7 @@ private slots:
     void blocks_ime_commit_caret_after_multiplication_operator();
     void finds_completion_keyword_after_superscript_power();
     void completes_replacing_trailing_identifier_after_superscript_power();
+    void completes_identifier_immediately_after_digit();
     void completes_pi_identifier_as_pi_symbol();
     void accepts_degree_alias_in_unit_brackets_and_normalizes_to_degree_sign();
     void offers_unit_completion_for_degree_symbol_in_unit_context();
@@ -2165,6 +2166,31 @@ void TestEditorUi::completes_replacing_trailing_identifier_after_superscript_pow
         QString::fromUtf8("pi²")
             + QString(MathDsl::MulDotOp)
             + QStringLiteral("cos()"));
+}
+
+void TestEditorUi::completes_identifier_immediately_after_digit()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral("3c"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(&editor, "triggerAutoComplete", Qt::DirectConnection));
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QVERIFY(!s_popupSymbolForIdentifier(popup, QStringLiteral("cos")).isEmpty());
+    popup->hide();
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "autoComplete",
+        Qt::DirectConnection,
+        Q_ARG(QString, QStringLiteral("cos: Built-in function"))));
+
+    QCOMPARE(editor.text(), QStringLiteral("3cos()"));
 }
 
 void TestEditorUi::completes_pi_identifier_as_pi_symbol()
