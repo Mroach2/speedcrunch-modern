@@ -20,12 +20,6 @@ public:
         UpDownArrowBehaviorSingleLineOnly = 2
     };
 
-    enum HistorySaving {
-        HistorySavingNever = 0,
-        HistorySavingOnExit = 1,
-        HistorySavingContinuously = 2
-    };
-
     enum KeypadMode {
         KeypadModeDisabled = 0,
         KeypadModeBasicWide = 1,
@@ -156,7 +150,6 @@ public:
     NumberFormatStyle numberFormatStyle;
     bool hasNumberFormatStyleSetting;
     int maxHistoryEntries; // 0: unlimited.
-    HistorySaving historySaving;
     bool leaveLastExpression;
     bool showEmptyHistoryHint;
     bool syntaxHighlighting;
@@ -165,7 +158,6 @@ public:
     bool autoResultToClipboard;
     bool simplifyResultExpressions;
     bool windowPositionSave;
-    bool singleInstance;
     QString startupUserDefinitions;
 
     bool constantsDockVisible;

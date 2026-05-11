@@ -308,6 +308,37 @@ bool isReusableUntitledSession(const Session* session)
     return true;
 }
 
+bool sessionHasPersistableContent(const Session* session)
+{
+    if (session == nullptr)
+        return false;
+    if (!session->historyIsEmpty())
+        return true;
+
+    Evaluator* evaluator = Evaluator::instance();
+    const QList<Variable> variables = session->variablesToList();
+    for (const Variable& variable : variables) {
+        if (variable.type() != Variable::BuiltIn
+            && !(evaluator && evaluator->isGlobalUserVariable(variable.identifier()))) {
+            return true;
+        }
+    }
+
+    const QList<UserFunction> functions = session->UserFunctionsToList();
+    for (const UserFunction& function : functions) {
+        if (!(evaluator && evaluator->isGlobalUserFunction(function.name())))
+            return true;
+    }
+
+    const QList<UserUnit> units = session->userUnitsToList();
+    for (const UserUnit& unit : units) {
+        if (!(evaluator && evaluator->isGlobalUserUnit(unit.name())))
+            return true;
+    }
+
+    return false;
+}
+
 bool shouldDeleteSessionFileOnClose(const QString& sessionName, const Session* session)
 {
     return untitledSessionNumber(sessionName) > 0 && isReusableUntitledSession(session);
@@ -1445,11 +1476,7 @@ void MainWindow::createActions()
     m_actions.settingsBehaviorUpDownArrowAlways = new QAction(this);
     m_actions.settingsBehaviorUpDownArrowSingleLineOnly = new QAction(this);
     m_actions.settingsBehaviorPartialResults = new QAction(this);
-    m_actions.settingsBehaviorHistorySavingNever = new QAction(this);
-    m_actions.settingsBehaviorHistorySavingOnExit = new QAction(this);
-    m_actions.settingsBehaviorHistorySavingContinuously = new QAction(this);
     m_actions.settingsBehaviorSaveWindowPositionOnExit = new QAction(this);
-    m_actions.settingsBehaviorSingleInstance = new QAction(this);
     m_actions.settingsBehaviorSyntaxHighlighting = new QAction(this);
     m_actions.settingsBehaviorHoverHighlightResults = new QAction(this);
     m_actions.settingsBehaviorDigitGroupingNone = new QAction(this);
@@ -1530,14 +1557,7 @@ void MainWindow::createActions()
     m_actions.settingsBehaviorUpDownArrowSingleLineOnly->setCheckable(true);
     m_actions.settingsBehaviorUpDownArrowSingleLineOnly->setData(Settings::UpDownArrowBehaviorSingleLineOnly);
     m_actions.settingsBehaviorPartialResults->setCheckable(true);
-    m_actions.settingsBehaviorHistorySavingNever->setCheckable(true);
-    m_actions.settingsBehaviorHistorySavingNever->setData(Settings::HistorySavingNever);
-    m_actions.settingsBehaviorHistorySavingOnExit->setCheckable(true);
-    m_actions.settingsBehaviorHistorySavingOnExit->setData(Settings::HistorySavingOnExit);
-    m_actions.settingsBehaviorHistorySavingContinuously->setCheckable(true);
-    m_actions.settingsBehaviorHistorySavingContinuously->setData(Settings::HistorySavingContinuously);
     m_actions.settingsBehaviorSaveWindowPositionOnExit->setCheckable(true);
-    m_actions.settingsBehaviorSingleInstance->setCheckable(true);
     m_actions.settingsBehaviorSyntaxHighlighting->setCheckable(true);
     m_actions.settingsBehaviorHoverHighlightResults->setCheckable(true);
     m_actions.settingsBehaviorDigitGroupingNone->setCheckable(true);
@@ -1817,13 +1837,7 @@ void MainWindow::setActionsText()
     m_actions.settingsBehaviorEmptyHistoryHint->setToolTip(MainWindow::tr("When history is empty, show a hint in the status area."));
     m_actions.settingsBehaviorEmptyHistoryHint->setStatusTip(MainWindow::tr("When history is empty, show a hint in the status area."));
     m_actions.settingsBehaviorPartialResults->setText(MainWindow::tr("Show Live Result &Preview"));
-    m_actions.settingsBehaviorHistorySavingNever->setText(MainWindow::tr("&Never"));
-    m_actions.settingsBehaviorHistorySavingOnExit->setText(MainWindow::tr("On &Exit"));
-    m_actions.settingsBehaviorHistorySavingContinuously->setText(MainWindow::tr("&Continuously"));
     m_actions.settingsBehaviorSaveWindowPositionOnExit->setText(MainWindow::tr("Save &Window Position on Exit"));
-    m_actions.settingsBehaviorSingleInstance->setText(MainWindow::tr("Single &Instance"));
-    m_actions.settingsBehaviorSingleInstance->setToolTip(MainWindow::tr("When enabled, launching SpeedCrunch again focuses the existing window instead of opening another instance."));
-    m_actions.settingsBehaviorSingleInstance->setStatusTip(MainWindow::tr("When enabled, launching SpeedCrunch again focuses the existing window instead of opening another instance."));
     m_actions.settingsBehaviorSyntaxHighlighting->setText(MainWindow::tr("Syntax &Highlighting"));
     m_actions.settingsBehaviorHoverHighlightResults->setText(MainWindow::tr("Hover Highlighting"));
     m_actions.settingsBehaviorDigitGroupingNone->setText(MainWindow::tr("Disabled"));
@@ -1960,11 +1974,6 @@ void MainWindow::createActionGroups()
     m_actionGroups.digitGrouping->addAction(m_actions.settingsBehaviorDigitGroupingOneSpace);
     m_actionGroups.digitGrouping->addAction(m_actions.settingsBehaviorDigitGroupingTwoSpaces);
     m_actionGroups.digitGrouping->addAction(m_actions.settingsBehaviorDigitGroupingThreeSpaces);
-
-    m_actionGroups.historySaving = new QActionGroup(this);
-    m_actionGroups.historySaving->addAction(m_actions.settingsBehaviorHistorySavingNever);
-    m_actionGroups.historySaving->addAction(m_actions.settingsBehaviorHistorySavingOnExit);
-    m_actionGroups.historySaving->addAction(m_actions.settingsBehaviorHistorySavingContinuously);
 
     m_actionGroups.upDownArrowBehavior = new QActionGroup(this);
     m_actionGroups.upDownArrowBehavior->addAction(m_actions.settingsBehaviorUpDownArrowNever);
@@ -2172,15 +2181,10 @@ void MainWindow::createMenus()
     m_menus.settings->addMenu(m_menus.complexNumbers);
 
     m_menus.history = m_menus.settings->addMenu("");
-    m_menus.historySaving = m_menus.history->addMenu("");
-    m_menus.historySaving->addAction(m_actions.settingsBehaviorHistorySavingNever);
-    m_menus.historySaving->addAction(m_actions.settingsBehaviorHistorySavingOnExit);
-    m_menus.historySaving->addAction(m_actions.settingsBehaviorHistorySavingContinuously);
     m_menus.history->addAction(m_actions.settingsBehaviorHistorySizeLimit);
 
     m_menus.window = m_menus.settings->addMenu("");
     m_menus.window->addAction(m_actions.settingsBehaviorSaveWindowPositionOnExit);
-    m_menus.window->addAction(m_actions.settingsBehaviorSingleInstance);
     if (!isWaylandPlatform())
         m_menus.window->addAction(m_actions.settingsBehaviorAlwaysOnTop);
 
@@ -2228,7 +2232,6 @@ void MainWindow::setMenusText()
     m_menus.autoCompletion->setTitle(MainWindow::tr("A&utocomplete"));
     m_menus.upDownArrowBehavior->setTitle(MainWindow::tr("Up/Down Arrow History"));
     m_menus.history->setTitle(MainWindow::tr("&History"));
-    m_menus.historySaving->setTitle(MainWindow::tr("History &Saving"));
     m_menus.display->setTitle(MainWindow::tr("&Appearance"));
     m_menus.help->setTitle(MainWindow::tr("&Help"));
 }
@@ -3891,10 +3894,8 @@ void MainWindow::createFixedConnections()
     connect(m_actions.settingsBehaviorAutoAns, SIGNAL(toggled(bool)), SLOT(setAutoAnsEnabled(bool)));
     connect(m_actions.settingsBehaviorEmptyHistoryHint, SIGNAL(toggled(bool)), SLOT(setEmptyHistoryHintEnabled(bool)));
     connect(m_actions.settingsBehaviorPartialResults, SIGNAL(toggled(bool)), SLOT(setAutoCalcEnabled(bool)));
-    connect(m_actionGroups.historySaving, SIGNAL(triggered(QAction*)), SLOT(setHistorySaving(QAction*)));
     connect(m_actions.settingsBehaviorHistorySizeLimit, SIGNAL(triggered()), SLOT(setHistorySizeLimit()));
     connect(m_actions.settingsBehaviorSaveWindowPositionOnExit, SIGNAL(toggled(bool)), SLOT(setWindowPositionSaveEnabled(bool)));
-    connect(m_actions.settingsBehaviorSingleInstance, SIGNAL(toggled(bool)), SLOT(setSingleInstanceEnabled(bool)));
     connect(m_actions.settingsBehaviorSyntaxHighlighting, SIGNAL(toggled(bool)), SLOT(setSyntaxHighlightingEnabled(bool)));
     connect(m_actions.settingsBehaviorHoverHighlightResults, SIGNAL(toggled(bool)), SLOT(setHoverHighlightResultsEnabled(bool)));
     connect(m_actionGroups.digitGrouping, SIGNAL(triggered(QAction*)), SLOT(setDigitGrouping(QAction*)));
@@ -4136,17 +4137,9 @@ void MainWindow::applySettings()
     else if (m_settings->angleUnit == 'v')
         m_actions.settingsAngleUnitRevolution->setChecked(true);
 
-    if (m_settings->historySaving == Settings::HistorySavingNever) {
-        m_actions.settingsBehaviorHistorySavingNever->setChecked(true);
-    } else if (m_settings->historySaving == Settings::HistorySavingContinuously) {
-        m_actions.settingsBehaviorHistorySavingContinuously->setChecked(true);
-    } else {
-        m_actions.settingsBehaviorHistorySavingOnExit->setChecked(true);
-    }
-
     UserDefinitions::loadInto(m_settings);
 
-    restoreSession(m_settings->historySaving != Settings::HistorySavingNever);
+    restoreSession();
     applyUserDefinitions();
 
     m_actions.settingsBehaviorLeaveLastExpression->setChecked(m_settings->leaveLastExpression);
@@ -4164,7 +4157,6 @@ void MainWindow::applySettings()
     }
     m_actions.settingsBehaviorEmptyHistoryHint->setChecked(m_settings->showEmptyHistoryHint);
     m_actions.settingsBehaviorSaveWindowPositionOnExit->setChecked(m_settings->windowPositionSave);
-    m_actions.settingsBehaviorSingleInstance->setChecked(m_settings->singleInstance);
 
 
     checkInitialResultFormat();
@@ -4393,7 +4385,7 @@ void MainWindow::saveSettings()
     m_settings->save();
 }
 
-void MainWindow::saveSession(QString & fname, bool saveHistory)
+void MainWindow::saveSession(QString & fname)
 {
     captureEditorTextInCurrentSession();
 
@@ -4405,8 +4397,6 @@ void MainWindow::saveSession(QString & fname, bool saveHistory)
 
     QJsonObject json;
     m_session->serialize(json);
-    if (!saveHistory)
-        json.remove(QLatin1String(SessionJsonKeys::History));
     QJsonDocument doc(json);
     file.write(doc.toJson(QJsonDocument::Compact));
 
@@ -4860,8 +4850,7 @@ void MainWindow::clearSession()
     emit unitsChanged();
 
     m_conditions.autoAns = false;
-    if (m_settings->historySaving == Settings::HistorySavingContinuously)
-        saveSessionToDefaultPath();
+    saveSessionToDefaultPath();
 }
 
 void MainWindow::showNewSessionDialog()
@@ -4955,7 +4944,7 @@ void MainWindow::showOpenSessionDialog()
         selectedSession->setName(entry.name);
     }
 
-    if (selectedSession != m_session && m_settings->historySaving == Settings::HistorySavingContinuously)
+    if (selectedSession != m_session)
         saveSessionToDefaultPath();
 
     activateSession(selectedSession);
@@ -5057,8 +5046,7 @@ void MainWindow::showRenameSessionDialog()
             continue;
         }
 
-        if (m_settings->historySaving == Settings::HistorySavingContinuously)
-            saveSessionToDefaultPath();
+        saveSessionToDefaultPath();
 
         const QString originalPath = sessionFilePath(originalName);
         const QString renamedPath = sessionFilePath(name);
@@ -5114,12 +5102,10 @@ void MainWindow::closeCurrentSession()
     if (names.size() <= 1) {
         if (splitPaneDisplays().size() <= 1) {
             const QString closingName = m_session->name();
-            if (m_settings->historySaving == Settings::HistorySavingContinuously) {
-                if (shouldDeleteSessionFileOnClose(closingName, m_session))
-                    QFile::remove(sessionFilePath(closingName));
-                else
-                    saveSessionToDefaultPath();
-            }
+            if (shouldDeleteSessionFileOnClose(closingName, m_session))
+                QFile::remove(sessionFilePath(closingName));
+            else if (sessionHasPersistableContent(m_session))
+                saveSessionToDefaultPath();
 
             Session* replacementSession = createUntitledSession(true);
             QStringList paneNames = paneSessionNames(m_widgets.display);
@@ -5173,12 +5159,10 @@ void MainWindow::closeCurrentSession()
     }
 
     const QString closingName = m_session->name();
-    if (m_settings->historySaving == Settings::HistorySavingContinuously) {
-        if (shouldDeleteSessionFileOnClose(closingName, m_session))
-            QFile::remove(sessionFilePath(closingName));
-        else
-            saveSessionToDefaultPath();
-    }
+    if (shouldDeleteSessionFileOnClose(closingName, m_session))
+        QFile::remove(sessionFilePath(closingName));
+    else if (sessionHasPersistableContent(m_session))
+        saveSessionToDefaultPath();
 
     names.sort(Qt::CaseInsensitive);
     const int closingIndex = names.indexOf(closingName);
@@ -5222,6 +5206,8 @@ void MainWindow::closeCurrentPane()
             QFile::remove(sessionFilePath(name));
             return;
         }
+        if (!sessionHasPersistableContent(session))
+            return;
 
         QJsonObject json;
         session->serialize(json);
@@ -5382,8 +5368,6 @@ void MainWindow::deleteCurrentSession()
 
     delete deletingSession;
     m_conditions.autoAns = false;
-    if (m_settings->historySaving == Settings::HistorySavingContinuously)
-        saveSessionToDefaultPath();
     saveSessionLayout(false);
 }
 
@@ -5412,8 +5396,7 @@ void MainWindow::showLoadedSessionsMenu(const QPoint& globalPos)
     if (selectedSession == nullptr || selectedSession == m_session)
         return;
 
-    if (m_settings->historySaving == Settings::HistorySavingContinuously)
-        saveSessionToDefaultPath();
+    saveSessionToDefaultPath();
 
     activateSession(selectedSession);
     saveSessionLayout(false);
@@ -6632,13 +6615,6 @@ void MainWindow::setAutoCalcEnabled(bool b)
         m_widgets.editor->setAutoCalcEnabled(b);
 }
 
-void MainWindow::setHistorySaving(QAction* action)
-{
-    if (!action)
-        return;
-    m_settings->historySaving = static_cast<Settings::HistorySaving>(action->data().toInt());
-}
-
 void MainWindow::setHistorySizeLimit()
 {
     bool ok = false;
@@ -6660,6 +6636,7 @@ void MainWindow::setHistorySizeLimit()
     m_session->applyHistoryLimit();
     m_conditions.autoAns = !m_session->historyIsEmpty();
     emit historyChanged();
+    saveSessionToDefaultPath();
 }
 
 void MainWindow::setLeaveLastExpressionEnabled(bool b)
@@ -6687,11 +6664,6 @@ void MainWindow::setEmptyHistoryHintEnabled(bool b)
 void MainWindow::setWindowPositionSaveEnabled(bool b)
 {
     m_settings->windowPositionSave = b;
-}
-
-void MainWindow::setSingleInstanceEnabled(bool b)
-{
-    m_settings->singleInstance = b;
 }
 
 void MainWindow::setAutoCompletionEnabled(bool b)
@@ -8201,6 +8173,7 @@ void MainWindow::evaluateEditorExpression()
 
             m_widgets.editor->stopAutoCalc();
             m_widgets.editor->stopAutoComplete();
+            saveSessionToDefaultPath();
             return;
         }
     }
@@ -8251,8 +8224,7 @@ void MainWindow::evaluateEditorExpression()
     m_widgets.editor->stopAutoComplete();
     if (!result.isNan())
         m_conditions.autoAns = true;
-    if (m_settings->historySaving == Settings::HistorySavingContinuously)
-        saveSessionToDefaultPath();
+    saveSessionToDefaultPath();
 }
 
 void MainWindow::startHistoryEntryEdit(int index)
@@ -8513,8 +8485,7 @@ void MainWindow::editHistoryEntryContext(int index)
                                            deferredBar->maximum());
         deferredBar->setValue(deferredClamped);
     });
-    if (m_settings->historySaving == Settings::HistorySavingContinuously)
-        saveSessionToDefaultPath();
+    saveSessionToDefaultPath();
 }
 
 void MainWindow::cancelHistoryEntryEdit()
@@ -8650,6 +8621,7 @@ void MainWindow::removeHistoryEntryAt(int index)
     m_widgets.editor->setHistoryArrowNavigationEnabled(m_pendingHistoryEditIndex < 0);
     m_conditions.autoAns = !m_session->historyIsEmpty();
     emit historyChanged();
+    saveSessionToDefaultPath();
 }
 
 void MainWindow::removeHistoryEntriesAbove(int index)
@@ -8671,6 +8643,7 @@ void MainWindow::removeHistoryEntriesAbove(int index)
     m_widgets.editor->setHistoryArrowNavigationEnabled(m_pendingHistoryEditIndex < 0);
     m_conditions.autoAns = !m_session->historyIsEmpty();
     emit historyChanged();
+    saveSessionToDefaultPath();
 }
 
 void MainWindow::removeHistoryEntriesBelow(int index)
@@ -8688,6 +8661,7 @@ void MainWindow::removeHistoryEntriesBelow(int index)
     m_widgets.editor->setHistoryArrowNavigationEnabled(m_pendingHistoryEditIndex < 0);
     m_conditions.autoAns = !m_session->historyIsEmpty();
     emit historyChanged();
+    saveSessionToDefaultPath();
 }
 
 void MainWindow::clearTextEditSelection(QPlainTextEdit* edit)
@@ -8875,16 +8849,18 @@ void MainWindow::persistSessionAndSettingsForShutdown()
         m_widgets.manual->close();
     }
     ensureSessionsPath();
-    const bool saveHistory = m_settings->historySaving != Settings::HistorySavingNever;
     for (auto it = m_loadedSessions.constBegin(); it != m_loadedSessions.constEnd(); ++it) {
         Session* session = it.value();
         if (session == nullptr)
             continue;
+        if (!sessionHasPersistableContent(session)) {
+            if (shouldDeleteSessionFileOnClose(it.key(), session))
+                QFile::remove(sessionFilePath(it.key()));
+            continue;
+        }
 
         QJsonObject json;
         session->serialize(json);
-        if (!saveHistory)
-            json.remove(QLatin1String(SessionJsonKeys::History));
 
         QFile file(sessionFilePath(it.key()));
         if (!file.open(QIODevice::WriteOnly))
@@ -8896,7 +8872,7 @@ void MainWindow::persistSessionAndSettingsForShutdown()
     saveSettings();
 }
 
-void MainWindow::saveSessionToDefaultPath(bool saveHistory)
+void MainWindow::saveSessionToDefaultPath()
 {
     ensureSessionsPath();
 
@@ -8905,7 +8881,7 @@ void MainWindow::saveSessionToDefaultPath(bool saveHistory)
     const QString sessionName = json.value(QLatin1String(SessionJsonKeys::Session)).toString(
         QLatin1String(SessionJsonKeys::SessionValueMain));
     QString dataPath = sessionFilePath(sessionName);
-    saveSession(dataPath, saveHistory);
+    saveSession(dataPath);
 }
 
 void MainWindow::setResultPrecision(int p)

@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
     QCoreApplication::setOrganizationDomain("speedcrunch.org");
     QGuiApplication::setDesktopFileName("org.speedcrunch.SpeedCrunch");
 
-    Settings* settings = Settings::instance();
+    Settings::instance();
     QLocalServer singletonServer;
     bool pendingActivation = false;
 
@@ -222,30 +222,28 @@ int main(int argc, char* argv[])
         qWarning() << "Could not install Windows console termination handler.";
 #endif
 
-    if (settings->singleInstance) {
-        const QString serverName = singletonServerName();
-        if (notifyRunningInstance(serverName))
-            return 0;
+    const QString serverName = singletonServerName();
+    if (notifyRunningInstance(serverName))
+        return 0;
 
-        bool alreadyRunning = false;
-        if (startSingletonServer(&singletonServer, serverName, &alreadyRunning)) {
-            QObject::connect(&singletonServer, &QLocalServer::newConnection, &application, [&]() {
-                while (singletonServer.hasPendingConnections()) {
-                    QLocalSocket* socket = singletonServer.nextPendingConnection();
-                    if (!socket)
-                        continue;
-                    socket->close();
-                    socket->deleteLater();
-                }
+    bool alreadyRunning = false;
+    if (startSingletonServer(&singletonServer, serverName, &alreadyRunning)) {
+        QObject::connect(&singletonServer, &QLocalServer::newConnection, &application, [&]() {
+            while (singletonServer.hasPendingConnections()) {
+                QLocalSocket* socket = singletonServer.nextPendingConnection();
+                if (!socket)
+                    continue;
+                socket->close();
+                socket->deleteLater();
+            }
 
-                if (g_mainWindow)
-                    activateMainWindow(g_mainWindow);
-                else
-                    pendingActivation = true;
-            });
-        } else if (alreadyRunning) {
-            return 0;
-        }
+            if (g_mainWindow)
+                activateMainWindow(g_mainWindow);
+            else
+                pendingActivation = true;
+        });
+    } else if (alreadyRunning) {
+        return 0;
     }
 
     MainWindow window;

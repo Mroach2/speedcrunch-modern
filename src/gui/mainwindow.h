@@ -153,7 +153,6 @@ private slots:
     void setFullScreenEnabled(bool);
     void setFunctionsDockVisible(bool, bool takeFocus = true);
     void setHistoryDockVisible(bool, bool takeFocus = true);
-    void setHistorySaving(QAction*);
     void setKeypadMode(QAction*);
     void setKeypadZoom(QAction*);
     void setKeypadVisible(bool);
@@ -203,7 +202,6 @@ private slots:
     void setUserFunctionsDockVisible(bool, bool takeFocus = true);
     void setUserUnitsDockVisible(bool, bool takeFocus = true);
     void setWindowPositionSaveEnabled(bool);
-    void setSingleInstanceEnabled(bool);
     void setWidgetsDirection();
     void showAboutDialog();
     void showStateLabel(const QString&);
@@ -279,8 +277,8 @@ private:
     void deleteUserFunctionsDock();
     void deleteUserUnitsDock();
     void saveSettings();
-    void saveSessionToDefaultPath(bool saveHistory = true);
-    void saveSession(QString &fname, bool saveHistory = true);
+    void saveSessionToDefaultPath();
+    void saveSession(QString &fname);
     void activateSession(Session* session);
     void captureEditorTextInCurrentSession();
     void restoreEditorTextFromCurrentSession();
@@ -440,11 +438,7 @@ private:
         QAction* settingsBehaviorAlwaysOnTop;
         QAction* settingsBehaviorAutoResultToClipboard;
         QAction* settingsBehaviorSimplifyResultExpressions;
-        QAction* settingsBehaviorHistorySavingNever;
-        QAction* settingsBehaviorHistorySavingOnExit;
-        QAction* settingsBehaviorHistorySavingContinuously;
         QAction* settingsBehaviorHistorySizeLimit;
-        QAction* settingsBehaviorSingleInstance;
         QAction* settingsRadixCharBoth;
         QAction* settingsResultFormatComplexDisabled;
         QAction* settingsDisplayZoomIn;
@@ -478,7 +472,6 @@ private:
         QActionGroup* imaginaryUnit;
         QActionGroup* radixChar;
         QActionGroup* digitGrouping;
-        QActionGroup* historySaving;
         QActionGroup* upDownArrowBehavior;
         QActionGroup* keypad;
         QActionGroup* keypadZoom;
@@ -492,7 +485,6 @@ private:
         QMenu* editing;
         QMenu* autoCompletion;
         QMenu* history;
-        QMenu* historySaving;
         QMenu* colorScheme;
         QMenu* decimal;
         QMenu* digitGrouping;

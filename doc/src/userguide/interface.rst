@@ -342,17 +342,9 @@ History
 
 This section contains settings that control how calculation history is stored.
 
-* :menuselection:`History Saving --> Never`
-    Do not persist the calculation history between runs.
-* :menuselection:`History Saving --> On Exit`
-    Save the calculation history when SpeedCrunch exits and restore it on the next launch.
-* :menuselection:`History Saving --> Continuously`
-    Save calculation history after each new calculation and restore it on the next launch.
-* :menuselection:`History Saving`
-    This preference only affects calculation history. User-defined functions and user-defined
-    variables are always persisted.
+Calculation history is saved automatically when a session changes and restored
+on the next launch.
 
-    .. versionadded:: 1.0
 * :menuselection:`History Size Limit...`
     Sets the maximum number of stored history entries. By default, SpeedCrunch keeps
     up to 100 entries and automatically removes the oldest ones when this limit is
@@ -368,9 +360,6 @@ This section contains settings that control the main window behavior.
 
 * :menuselection:`Save Window Position on Exit`
     Controls if the window position is saved and restored.
-* :menuselection:`Single Instance`
-    When enabled (default), launching SpeedCrunch while it is already running focuses
-    the existing window instead of starting a second instance.
 * :menuselection:`Always on Top`
     Keep the SpeedCrunch window on top of other windows. This option is hidden on
     Wayland (non-X11 Linux desktop sessions), because many Wayland compositors do

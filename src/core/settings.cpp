@@ -260,7 +260,6 @@ Settings::Settings()
     numberFormatStyle = NumberFormatNoGroupingDot;
     hasNumberFormatStyleSetting = false;
     simplifyResultExpressions = true;
-    singleInstance = true;
     complexNumbers = false;
     imaginaryUnit = 'i';
     autoCompletionBuiltInFunctions = true;
@@ -350,24 +349,6 @@ void Settings::load()
             && upDownArrowBehavior != UpDownArrowBehaviorSingleLineOnly) {
         upDownArrowBehavior = UpDownArrowBehaviorAlways;
     }
-    const QString historySavingKey = key + QLatin1String("HistorySaving");
-    const QString historySavingLegacyKey = key + QLatin1String("HistorySavingPolicy");
-    if (settings->contains(historySavingKey)) {
-        historySaving = static_cast<HistorySaving>(settings->value(historySavingKey).toInt());
-    } else if (settings->contains(historySavingLegacyKey)) {
-        // Backward compatibility with previous key name.
-        historySaving = static_cast<HistorySaving>(settings->value(historySavingLegacyKey).toInt());
-    } else {
-        // Backward compatibility with previous boolean setting.
-        historySaving = settings->value(key + QLatin1String("SessionSave"), true).toBool()
-            ? HistorySavingOnExit
-            : HistorySavingNever;
-    }
-    if (historySaving != HistorySavingNever
-            && historySaving != HistorySavingOnExit
-            && historySaving != HistorySavingContinuously) {
-        historySaving = HistorySavingOnExit;
-    }
     leaveLastExpression = settings->value(key + QLatin1String("LeaveLastExpression"), false).toBool();
     showEmptyHistoryHint = settings->value(key + QLatin1String("ShowEmptyHistoryHint"), true).toBool();
     language = settings->value(key + QLatin1String("Language"), "C").toString();
@@ -376,7 +357,6 @@ void Settings::load()
     autoResultToClipboard = settings->value(key + QLatin1String("AutoResultToClipboard"), false).toBool();
     simplifyResultExpressions = settings->value(key + QLatin1String("SimplifyResultExpressions"), true).toBool();
     windowPositionSave = settings->value(key + QLatin1String("WindowPositionSave"), true).toBool();
-    singleInstance = settings->value(key + QLatin1String("SingleInstance"), true).toBool();
     complexNumbers = settings->value(key + QLatin1String("ComplexNumbers"), false).toBool();
     QString imaginaryUnitStr = settings->value(key + QLatin1String("ImaginaryUnit"), 'i').toString();
     if (imaginaryUnitStr != QLatin1String("i") && imaginaryUnitStr != QLatin1String("j"))
@@ -629,7 +609,6 @@ void Settings::save()
 
     QString key = KEY + QLatin1String("/General/");
 
-    settings->setValue(key + QLatin1String("HistorySaving"), static_cast<int>(historySaving));
     settings->setValue(key + QLatin1String("LeaveLastExpression"), leaveLastExpression);
     settings->setValue(key + QLatin1String("ShowEmptyHistoryHint"), showEmptyHistoryHint);
     settings->setValue(key + QLatin1String("AutoCompletion"), autoCompletion);
@@ -652,7 +631,6 @@ void Settings::save()
     settings->setValue(key + QLatin1String("SimplifyResultExpressions"), simplifyResultExpressions);
     settings->setValue(key + QLatin1String("Language"), language);
     settings->setValue(key + QLatin1String("WindowPositionSave"), windowPositionSave);
-    settings->setValue(key + QLatin1String("SingleInstance"), singleInstance);
     settings->setValue(key + QLatin1String("ComplexNumbers"), complexNumbers);
     settings->setValue(key + QLatin1String("ImaginaryUnit"), QString(QChar(imaginaryUnit)));
     settings->setValue(key + QLatin1String("AngleMode"), QString(QChar(angleUnit)));
