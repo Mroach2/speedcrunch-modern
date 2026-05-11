@@ -270,7 +270,8 @@ int Session::deSerialize(const QJsonObject &json, bool merge=false)
             if (value.isString() && !value.toString().trimmed().isEmpty())
                 lines.append(value.toString().trimmed());
         }
-        Settings::instance()->startupUserDefinitions = lines.join(QLatin1Char('\n'));
+        if (!lines.isEmpty() && Settings::instance()->startupUserDefinitions.trimmed().isEmpty())
+            Settings::instance()->startupUserDefinitions = lines.join(QLatin1Char('\n'));
     }
 
     // Recover ans from history when missing or NaN, e.g. older sessions where

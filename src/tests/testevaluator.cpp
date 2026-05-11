@@ -6,6 +6,7 @@
 #include "core/numberformatter.h"
 #include "core/settings.h"
 #include "core/session.h"
+#include "core/sessionjsonkeys.h"
 #include "core/unicodechars.h"
 #include "gui/editorutils.h"
 #include "gui/displayformatutils.h"
@@ -6656,6 +6657,58 @@ void test_session_deserialize_without_history()
         Evaluator::instance()->initializeBuiltInVariables();
 }
 
+void test_session_globals_deserialize_preserves_existing_definitions()
+{
+    Settings* settings = Settings::instance();
+    const QString previousDefinitions = settings->startupUserDefinitions;
+    settings->startupUserDefinitions.clear();
+
+    QJsonObject sessionWithGlobals;
+    sessionWithGlobals[QLatin1String(SessionJsonKeys::Session)] = QStringLiteral("Untitled-1");
+    QJsonArray globals;
+    globals.append(QStringLiteral("global_var=42"));
+    sessionWithGlobals[QLatin1String(SessionJsonKeys::Globals)] = globals;
+
+    Session first;
+    first.deSerialize(sessionWithGlobals, false);
+
+    QJsonObject sessionWithEmptyGlobals;
+    sessionWithEmptyGlobals[QLatin1String(SessionJsonKeys::Session)] = QStringLiteral("Untitled-2");
+    sessionWithEmptyGlobals[QLatin1String(SessionJsonKeys::Globals)] = QJsonArray();
+
+    Session second;
+    second.deSerialize(sessionWithEmptyGlobals, false);
+
+    ++eval_total_tests;
+    if (settings->startupUserDefinitions != QStringLiteral("global_var=42")) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tsession empty globals do not clear loaded globals\t[NEW]" << endl
+             << "\tActual   : " << settings->startupUserDefinitions.toUtf8().constData() << endl
+             << "\tExpected : global_var=42" << endl;
+    }
+
+    QJsonObject sessionWithOtherGlobals;
+    sessionWithOtherGlobals[QLatin1String(SessionJsonKeys::Session)] = QStringLiteral("Untitled-3");
+    QJsonArray otherGlobals;
+    otherGlobals.append(QStringLiteral("other_global=24"));
+    sessionWithOtherGlobals[QLatin1String(SessionJsonKeys::Globals)] = otherGlobals;
+
+    Session third;
+    third.deSerialize(sessionWithOtherGlobals, false);
+
+    ++eval_total_tests;
+    if (settings->startupUserDefinitions != QStringLiteral("global_var=42")) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tsession globals do not replace existing startup definitions\t[NEW]" << endl
+             << "\tActual   : " << settings->startupUserDefinitions.toUtf8().constData() << endl
+             << "\tExpected : global_var=42" << endl;
+    }
+
+    settings->startupUserDefinitions = previousDefinitions;
+}
+
 void test_function_usage_tooltip()
 {
     auto checkTooltip = [](const QString& expression,
@@ -9698,6 +9751,7 @@ int main(int argc, char* argv[])
     test_expression_operator_normalization();
     test_session_history_limit();
     test_session_deserialize_without_history();
+    test_session_globals_deserialize_preserves_existing_definitions();
     test_function_usage_tooltip();
     test_grouped_numeric_literal_display_format();
     test_pasted_standalone_numeric_literal_reformatting();

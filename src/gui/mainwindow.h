@@ -320,7 +320,11 @@ private:
     QString statusBarComplexFormValue() const;
     QString statusBarResultPrecisionValue() const;
     QString statusBarResultFormatValue() const;
-    void applyUserDefinitions();
+    void applyUserDefinitions(int* importedVariables = nullptr,
+                              int* importedFunctions = nullptr,
+                              int* importedUnits = nullptr,
+                              int* ignoredLines = nullptr,
+                              QList<int>* ignoredLineNumbers = nullptr);
     void importUserDefinitionsFromText(const QString& text, bool overwriteExisting,
                                        int* importedVariables = nullptr,
                                        int* importedFunctions = nullptr,

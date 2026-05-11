@@ -2932,6 +2932,7 @@ Session* MainWindow::createUntitledSession(bool activateCreatedSession)
     }
 
     if (recycledSession != nullptr) {
+        applyUserDefinitions();
         if (activateCreatedSession)
             activateSession(recycledSession);
         return recycledSession;
@@ -2943,22 +2944,9 @@ Session* MainWindow::createUntitledSession(bool activateCreatedSession)
     m_loadedSessions.insert(name, session);
     updatePaneLoadedSessionCounts();
 
-    Session* previousSession = m_session;
-    if (activateCreatedSession) {
-        activateSession(session);
-    } else {
-        m_session = session;
-        m_evaluator->setSession(m_session);
-        m_evaluator->initializeBuiltInVariables();
-    }
     applyUserDefinitions();
-    m_conditions.autoAns = false;
-    if (!activateCreatedSession) {
-        m_session = previousSession;
-        m_evaluator->setSession(m_session);
-        if (m_session != nullptr)
-            m_evaluator->initializeBuiltInVariables();
-    }
+    if (activateCreatedSession)
+        activateSession(session);
     return session;
 }
 
@@ -6093,8 +6081,31 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
         sessionBackup = *m_session;
         autoAnsBackup = m_conditions.autoAns;
     }
-    m_evaluator->clearGlobalUserDefinitionRegistry();
     m_evaluator->setAllowGlobalUserDefinitionsOverride(true);
+
+    const auto hasGlobalTag = [](const QString& description, const QString& tag) {
+        return description.contains(tag);
+    };
+
+    const QList<Variable> existingVariables = m_evaluator->getUserDefinedVariables();
+    for (const Variable& variable : existingVariables) {
+        if (hasGlobalTag(variable.description(), globalVariableTag))
+            m_evaluator->unsetVariable(variable.identifier());
+    }
+
+    const QList<UserFunction> existingFunctions = m_evaluator->getUserFunctions();
+    for (const UserFunction& function : existingFunctions) {
+        if (hasGlobalTag(function.description(), globalFunctionTag))
+            m_evaluator->unsetUserFunction(function.name());
+    }
+
+    const QList<UserUnit> existingUnits = m_evaluator->getUserUnits();
+    for (const UserUnit& unit : existingUnits) {
+        if (hasGlobalTag(unit.description(), globalUnitTag))
+            m_evaluator->unsetUserUnit(unit.name());
+    }
+
+    m_evaluator->clearGlobalUserDefinitionRegistry();
 
     QString inputText = text;
     QTextStream stream(&inputText, QIODevice::ReadOnly);
@@ -6311,15 +6322,87 @@ void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwri
         *ignoredLineNumbers = localIgnoredLineNumbers;
 }
 
-void MainWindow::applyUserDefinitions()
+void MainWindow::applyUserDefinitions(int* importedVariables,
+                                      int* importedFunctions,
+                                      int* importedUnits,
+                                      int* ignoredLines,
+                                      QList<int>* ignoredLineNumbers)
 {
     const QString definitionsText = m_settings->startupUserDefinitions.trimmed();
-    if (definitionsText.isEmpty())
-        return;
+    const int previousImportedVariables = importedVariables ? *importedVariables : 0;
+    const int previousImportedFunctions = importedFunctions ? *importedFunctions : 0;
+    const int previousImportedUnits = importedUnits ? *importedUnits : 0;
+    const int previousIgnoredLines = ignoredLines ? *ignoredLines : 0;
 
-    importUserDefinitionsFromText(
-        definitionsText,
-        true);
+    int totalImportedVariables = 0;
+    int totalImportedFunctions = 0;
+    int totalImportedUnits = 0;
+    int maxIgnoredLines = 0;
+    QSet<int> uniqueIgnoredLineNumbers;
+
+    Session* previousSession = m_session;
+    const bool previousAutoAns = m_conditions.autoAns;
+
+    const QList<Session*> sessions = m_loadedSessions.values();
+    for (Session* session : sessions) {
+        if (session == nullptr)
+            continue;
+
+        m_session = session;
+        m_evaluator->setSession(m_session);
+        m_evaluator->initializeBuiltInVariables();
+
+        int sessionImportedVariables = 0;
+        int sessionImportedFunctions = 0;
+        int sessionImportedUnits = 0;
+        int sessionIgnoredLines = 0;
+        QList<int> sessionIgnoredLineNumbers;
+        importUserDefinitionsFromText(
+            definitionsText,
+            true,
+            &sessionImportedVariables,
+            &sessionImportedFunctions,
+            &sessionImportedUnits,
+            &sessionIgnoredLines,
+            &sessionIgnoredLineNumbers,
+            false);
+
+        totalImportedVariables += sessionImportedVariables;
+        totalImportedFunctions += sessionImportedFunctions;
+        totalImportedUnits += sessionImportedUnits;
+        maxIgnoredLines = qMax(maxIgnoredLines, sessionIgnoredLines);
+        for (int lineNumber : sessionIgnoredLineNumbers)
+            uniqueIgnoredLineNumbers.insert(lineNumber);
+    }
+
+    m_session = previousSession;
+    m_evaluator->setSession(m_session);
+    if (m_session != nullptr)
+        m_evaluator->initializeBuiltInVariables();
+    m_conditions.autoAns = previousAutoAns;
+    if (m_widgets.display != nullptr && m_session != nullptr)
+        m_widgets.display->setSession(m_session);
+
+    if (importedVariables)
+        *importedVariables = previousImportedVariables + totalImportedVariables;
+    if (importedFunctions)
+        *importedFunctions = previousImportedFunctions + totalImportedFunctions;
+    if (importedUnits)
+        *importedUnits = previousImportedUnits + totalImportedUnits;
+    if (ignoredLines)
+        *ignoredLines = previousIgnoredLines + maxIgnoredLines;
+    if (ignoredLineNumbers) {
+        QList<int> sortedIgnoredLineNumbers = uniqueIgnoredLineNumbers.values();
+        std::sort(sortedIgnoredLineNumbers.begin(), sortedIgnoredLineNumbers.end());
+        for (int lineNumber : sortedIgnoredLineNumbers) {
+            if (!ignoredLineNumbers->contains(lineNumber))
+                ignoredLineNumbers->append(lineNumber);
+        }
+    }
+
+    emit variablesChanged();
+    emit functionsChanged();
+    emit unitsChanged();
 }
 
 void MainWindow::showUserDefinitionsImportDialog()
@@ -6395,7 +6478,8 @@ void MainWindow::showUserDefinitionsImportDialog()
     layout->addWidget(buttons);
 
     connect(buttons, &QDialogButtonBox::accepted, &dialog, [this, textEdit, &dialog]() {
-        importUserDefinitionsFromText(textEdit->toPlainText(), true);
+        m_settings->startupUserDefinitions = textEdit->toPlainText();
+        applyUserDefinitions();
         dialog.accept();
     });
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
@@ -6439,15 +6523,13 @@ void MainWindow::showUserDefinitionsImportDialog()
         int importedUnits = 0;
         int ignoredLines = 0;
         QList<int> ignoredLineNumbers;
-        importUserDefinitionsFromText(
-            textEdit->toPlainText(),
-            true,
+        m_settings->startupUserDefinitions = textEdit->toPlainText();
+        applyUserDefinitions(
             &importedVariables,
             &importedFunctions,
             &importedUnits,
             &ignoredLines,
-            &ignoredLineNumbers,
-            false);
+            &ignoredLineNumbers);
 
         QString ignoredLineNumbersText;
         if (!ignoredLineNumbers.isEmpty()) {
