@@ -2556,15 +2556,19 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
             Session* sessionToDelete = detachedWindow->m_loadedSessions.take(name);
             detachedWindow->m_sessionViewportAnchors.remove(name);
             detachedWindow->m_sessionScrollValues.remove(name);
+            if (sessionToDelete == detachedWindow->m_session)
+                detachedWindow->m_session = nullptr;
             if (sessionToDelete != nullptr)
                 delete sessionToDelete;
         }
+        detachedWindow->m_evaluator->setSession(nullptr);
 
         Session* movedSession = new Session();
         detachedWindow->m_evaluator->setSession(movedSession);
         movedSession->deSerialize(sourceJson, false);
         movedSession->setName(sessionName);
         detachedWindow->m_loadedSessions.insert(sessionName, movedSession);
+        detachedWindow->applyUserDefinitions();
         detachedWindow->m_paneSessionTabs.insert(detachedWindow->m_widgets.display, QStringList(sessionName));
         detachedWindow->m_paneSessionNames.insert(detachedWindow->m_widgets.display, sessionName);
         detachedWindow->m_widgets.display->setSession(movedSession);
@@ -3124,6 +3128,7 @@ void MainWindow::moveSessionTab(QTabBar* sourceTabBar, QTabBar* targetTabBar, co
         movedSession->deSerialize(movedJson, false);
         movedSession->setName(name);
         m_loadedSessions.insert(name, movedSession);
+        applyUserDefinitions();
 
         if (!targetNames.contains(name, Qt::CaseInsensitive))
             targetNames.insert(qBound(0, targetIndex, targetNames.size()), name);
