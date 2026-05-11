@@ -31,6 +31,8 @@ public:
     void setSearchText(const QString& text);
 
 signals:
+    // Emitted immediately before updateList() reads Evaluator::instance().
+    void aboutToUpdateList();
     void userFunctionSelected(const QString&);
     void userFunctionEdited(const QString&);
 

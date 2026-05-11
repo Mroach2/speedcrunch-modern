@@ -642,6 +642,17 @@ bool& appShutdownInProgress()
     return shuttingDown;
 }
 
+bool applicationShutdownInProgress()
+{
+    // MainWindow close events can be triggered by more than one shutdown path:
+    // the primary window, QApplication::quit(), and the single-instance startup
+    // handshake in main.cpp. Keep this helper in sync with main.cpp's dynamic
+    // property so child windows can tell a real app shutdown from an ordinary
+    // child-window close.
+    return appShutdownInProgress()
+        || (qApp && qApp->property("speedcrunchShutdownInProgress").toBool());
+}
+
 
 QList<QPointer<QWidget>>& panesPendingSessionTabDragDeletion()
 {
@@ -3246,14 +3257,23 @@ void MainWindow::removeSessionTabFromPane(ResultDisplay* display, const QString&
     if (m_paneSessionNames.value(display).compare(name, Qt::CaseInsensitive) == 0) {
         m_paneSessionNames.insert(display, names.first());
         if (Session* session = m_loadedSessions.value(names.first(), nullptr)) {
-            display->setSession(session);
-            display->refresh();
             QWidget* page = display->parentWidget();
             if (Editor* editor = page ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr) {
-                editor->setText(session->editorText());
-                editor->setCursorPosition(editor->text().size());
-                editor->updateHistory();
-                editor->refreshAutoCalc();
+                // Removing a tab can switch the visible pane to another
+                // session without changing keyboard focus. If this is the
+                // active pane, update MainWindow::m_session too; otherwise the
+                // window-level symbol docks keep reading the removed session
+                // until the pane receives a click/focus event.
+                if (display == m_widgets.display && editor == m_widgets.editor) {
+                    activateSession(session);
+                } else {
+                    display->setSession(session);
+                    display->refresh();
+                    editor->setText(session->editorText());
+                    editor->setCursorPosition(editor->text().size());
+                    editor->updateHistory();
+                    editor->refreshAutoCalc();
+                }
             }
         }
     }
@@ -3743,10 +3763,22 @@ void MainWindow::createVariablesDock(bool takeFocus)
             this, &MainWindow::insertVariableIntoEditor);
     connect(m_docks.variables->widget(), &VariableListWidget::variableEdited,
             this, &MainWindow::insertTextIntoEditor);
-    connect(this, &MainWindow::radixCharacterChanged,
-            m_docks.variables->widget(), &VariableListWidget::updateList);
-    connect(this, &MainWindow::variablesChanged,
-            m_docks.variables->widget(), &VariableListWidget::updateList);
+    // The list widget reads symbols through Evaluator::instance(). Because the
+    // evaluator is shared by all windows, every passive refresh must first bind
+    // it to this window's active session, including delayed show/filter updates.
+    connect(m_docks.variables->widget(), &VariableListWidget::aboutToUpdateList,
+            this, &MainWindow::activateEvaluatorSession);
+    const auto updateVariables = [this]() {
+        activateEvaluatorSession();
+        if (m_docks.variables)
+            m_docks.variables->widget()->updateList();
+    };
+    connect(this, &MainWindow::radixCharacterChanged, this, updateVariables);
+    connect(this, &MainWindow::variablesChanged, this, updateVariables);
+    connect(m_docks.variables, &QDockWidget::visibilityChanged, this, [updateVariables](bool visible) {
+        if (visible)
+            updateVariables();
+    });
 
     addTabifiedDock(m_docks.variables, takeFocus);
     m_docks.variables->widget()->setSearchText(m_settings->variablesDockSearchText);
@@ -3764,10 +3796,22 @@ void MainWindow::createUserFunctionsDock(bool takeFocus)
             this, &MainWindow::insertUserFunctionIntoEditor);
     connect(m_docks.userFunctions->widget(), &UserFunctionListWidget::userFunctionEdited,
             this, &MainWindow::insertUserFunctionIntoEditor);
-    connect(this, &MainWindow::radixCharacterChanged,
-            m_docks.userFunctions->widget(), &UserFunctionListWidget::updateList);
-    connect(this, &MainWindow::functionsChanged,
-            m_docks.userFunctions->widget(), &UserFunctionListWidget::updateList);
+    // User function docks have the same shared-evaluator hazard as variables:
+    // startup/show refreshes can otherwise display another window's session
+    // symbols until the pane is explicitly activated.
+    connect(m_docks.userFunctions->widget(), &UserFunctionListWidget::aboutToUpdateList,
+            this, &MainWindow::activateEvaluatorSession);
+    const auto updateFunctions = [this]() {
+        activateEvaluatorSession();
+        if (m_docks.userFunctions)
+            m_docks.userFunctions->widget()->updateList();
+    };
+    connect(this, &MainWindow::radixCharacterChanged, this, updateFunctions);
+    connect(this, &MainWindow::functionsChanged, this, updateFunctions);
+    connect(m_docks.userFunctions, &QDockWidget::visibilityChanged, this, [updateFunctions](bool visible) {
+        if (visible)
+            updateFunctions();
+    });
 
     addTabifiedDock(m_docks.userFunctions, takeFocus);
     m_docks.userFunctions->widget()->setSearchText(m_settings->userFunctionsDockSearchText);
@@ -3785,10 +3829,21 @@ void MainWindow::createUserUnitsDock(bool takeFocus)
             this, &MainWindow::insertUserUnitIntoEditor);
     connect(m_docks.userUnits->widget(), &UserUnitListWidget::userUnitEdited,
             this, &MainWindow::insertTextIntoEditor);
-    connect(this, &MainWindow::radixCharacterChanged,
-            m_docks.userUnits->widget(), &UserUnitListWidget::updateList);
-    connect(this, &MainWindow::unitsChanged,
-            m_docks.userUnits->widget(), &UserUnitListWidget::updateList);
+    // User unit refreshes also go through the shared evaluator, so keep them
+    // tied to the window session rather than to whichever window refreshed last.
+    connect(m_docks.userUnits->widget(), &UserUnitListWidget::aboutToUpdateList,
+            this, &MainWindow::activateEvaluatorSession);
+    const auto updateUnits = [this]() {
+        activateEvaluatorSession();
+        if (m_docks.userUnits)
+            m_docks.userUnits->widget()->updateList();
+    };
+    connect(this, &MainWindow::radixCharacterChanged, this, updateUnits);
+    connect(this, &MainWindow::unitsChanged, this, updateUnits);
+    connect(m_docks.userUnits, &QDockWidget::visibilityChanged, this, [updateUnits](bool visible) {
+        if (visible)
+            updateUnits();
+    });
 
     addTabifiedDock(m_docks.userUnits, takeFocus);
     m_docks.userUnits->widget()->setSearchText(m_settings->userUnitsDockSearchText);
@@ -3845,7 +3900,7 @@ void MainWindow::createFixedConnections()
     connect(m_actions.sessionImport, SIGNAL(triggered()), SLOT(showSessionImportDialog()));
     connect(m_actions.sessionImportUserDefinitions, SIGNAL(triggered()), SLOT(showUserDefinitionsImportDialog()));
     connect(m_actions.sessionLoad, SIGNAL(triggered()), SLOT(showSessionLoadDialog()));
-    connect(m_actions.sessionQuit, SIGNAL(triggered()), SLOT(close()));
+    connect(m_actions.sessionQuit, &QAction::triggered, qApp, &QCoreApplication::quit);
     connect(m_actions.sessionSave, SIGNAL(triggered()), SLOT(saveSessionDialog()));
 
     connect(m_actions.editClearExpression, SIGNAL(triggered()), SLOT(clearEditorAndBitfield()));
@@ -4039,7 +4094,7 @@ void MainWindow::createFixedConnections()
     bindStandardKey(QKeySequence::PreviousChild, [this]() { activatePreviousChild(); });
     bindStandardKey(QKeySequence::Open, [this]() { showOpenSessionDialog(); });
     bindStandardKey(QKeySequence::Close, [this]() { closeCurrentSession(); });
-    bindStandardKey(QKeySequence::Quit, [this]() { close(); });
+    bindStandardKey(QKeySequence::Quit, []() { qApp->quit(); });
 
     QShortcut* splitRightShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+\\")), this);
     connect(splitRightShortcut, &QShortcut::activated, this, &MainWindow::splitActivePaneRight);
@@ -4658,6 +4713,18 @@ void MainWindow::activateSession(Session* session)
     updatePaneEditorCursorVisibility();
 }
 
+void MainWindow::activateEvaluatorSession()
+{
+    if (m_session == nullptr)
+        return;
+
+    // This intentionally does less than activateSession(): dock refreshes only
+    // need the evaluator's backing session to be correct, and must not capture
+    // editor text or emit more symbol-refresh signals recursively.
+    m_evaluator->setSession(m_session);
+    m_evaluator->initializeBuiltInVariables();
+}
+
 void MainWindow::captureEditorTextInCurrentSession()
 {
     if (m_session == nullptr || m_widgets.editor == nullptr)
@@ -4931,6 +4998,7 @@ void MainWindow::showOpenSessionDialog()
     }
 
     Session* selectedSession = m_loadedSessions.value(entry.name, nullptr);
+    bool reloadedSession = false;
     if (selectedSession == nullptr) {
         selectedSession = new Session();
         m_evaluator->setSession(selectedSession);
@@ -4938,11 +5006,18 @@ void MainWindow::showOpenSessionDialog()
         selectedSession->setName(entry.name);
         m_loadedSessions.insert(entry.name, selectedSession);
         updatePaneLoadedSessionCounts();
+        reloadedSession = true;
     } else if (selectedSession == m_session) {
         m_evaluator->setSession(selectedSession);
         selectedSession->deSerialize(entry.json, false);
         selectedSession->setName(entry.name);
+        reloadedSession = true;
     }
+    // Deserializing a saved session replaces its symbol tables. Startup global
+    // definitions are applied after normal restore, so manual open/reload has
+    // to do the same or an empty session appears to have no global symbols.
+    if (reloadedSession)
+        applyUserDefinitions();
 
     if (selectedSession != m_session)
         saveSessionToDefaultPath();
@@ -5106,6 +5181,15 @@ void MainWindow::closeCurrentSession()
                 QFile::remove(sessionFilePath(closingName));
             else if (sessionHasPersistableContent(m_session))
                 saveSessionToDefaultPath();
+
+            // A child window exists only to host its current session set. When
+            // the last tab closes there, close the child window instead of
+            // creating a replacement untitled session as the primary window
+            // does.
+            if (this != primaryMainWindow()) {
+                close();
+                return;
+            }
 
             Session* replacementSession = createUntitledSession(true);
             QStringList paneNames = paneSessionNames(m_widgets.display);
@@ -8818,11 +8902,15 @@ void MainWindow::setRadixCharacterBoth()
 void MainWindow::closeEvent(QCloseEvent* e)
 {
     if (primaryMainWindow() == this) {
+        // Mark shutdown before saving/restoring layouts so child close events
+        // caused by QApplication::quit() do not rewrite the multi-window layout
+        // as if each child had been closed manually.
+        qApp->setProperty("speedcrunchShutdownInProgress", true);
         appShutdownInProgress() = true;
         persistSessionAndSettingsForShutdown();
         qApp->quit();
     } else {
-        if (!appShutdownInProgress()) {
+        if (!applicationShutdownInProgress()) {
             allMainWindows().removeAll(QPointer<MainWindow>(this));
             saveSessionLayout(false);
         }
@@ -8849,24 +8937,31 @@ void MainWindow::persistSessionAndSettingsForShutdown()
         m_widgets.manual->close();
     }
     ensureSessionsPath();
-    for (auto it = m_loadedSessions.constBegin(); it != m_loadedSessions.constEnd(); ++it) {
-        Session* session = it.value();
-        if (session == nullptr)
+    QSet<Session*> savedSessions;
+    // Shutdown has to persist every restored window, not just the primary one.
+    // Saving by Session* avoids duplicate writes when a session is referenced
+    // by more than one pane or window during layout transitions.
+    for (const QPointer<MainWindow>& ptr : allMainWindows()) {
+        MainWindow* window = ptr.data();
+        if (window == nullptr)
             continue;
-        if (!sessionHasPersistableContent(session)) {
-            if (shouldDeleteSessionFileOnClose(it.key(), session))
-                QFile::remove(sessionFilePath(it.key()));
-            continue;
+
+        window->captureEditorTextInCurrentSession();
+        for (auto it = window->m_loadedSessions.constBegin(); it != window->m_loadedSessions.constEnd(); ++it) {
+            Session* session = it.value();
+            if (session == nullptr || savedSessions.contains(session))
+                continue;
+            savedSessions.insert(session);
+
+            QJsonObject json;
+            session->serialize(json);
+
+            QFile file(sessionFilePath(it.key()));
+            if (!file.open(QIODevice::WriteOnly))
+                continue;
+            file.write(QJsonDocument(json).toJson(QJsonDocument::Compact));
+            file.close();
         }
-
-        QJsonObject json;
-        session->serialize(json);
-
-        QFile file(sessionFilePath(it.key()));
-        if (!file.open(QIODevice::WriteOnly))
-            continue;
-        file.write(QJsonDocument(json).toJson(QJsonDocument::Compact));
-        file.close();
     }
     saveSessionLayout();
     saveSettings();

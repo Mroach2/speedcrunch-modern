@@ -109,6 +109,10 @@ void VariableListWidget::updateList()
         return;
     }
 
+    // MainWindow uses this to bind the shared evaluator to the owning window
+    // before the widget reads session-scoped variables below.
+    emit aboutToUpdateList();
+
     setUpdatesEnabled(false);
 
     m_filterTimer->stop();

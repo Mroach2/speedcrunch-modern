@@ -14,7 +14,9 @@
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QMetaObject>
+#include <QEvent>
 #include <QThread>
+#include <QVariant>
 
 #include <atomic>
 
@@ -30,6 +32,10 @@
 #endif
 
 namespace {
+
+// Dynamic property name mirrored by MainWindow. It lets the GUI layer observe
+// shutdown state even when quit starts from the application/singleton layer.
+constexpr const char* kShutdownInProgressProperty = "speedcrunchShutdownInProgress";
 
 QString singletonServerName()
 {
@@ -56,14 +62,21 @@ void activateMainWindow(MainWindow* window)
 bool notifyRunningInstance(const QString& serverName)
 {
     QLocalSocket socket;
-    socket.connectToServer(serverName, QIODevice::WriteOnly);
+    socket.connectToServer(serverName, QIODevice::ReadWrite);
     if (!socket.waitForConnected(250))
         return false;
 
-    socket.write("activate");
-    socket.waitForBytesWritten(250);
+    socket.write("activate\n");
+    if (!socket.waitForBytesWritten(250))
+        return false;
+    if (!socket.waitForReadyRead(750))
+        return false;
+    // Treat the instance as running only after it explicitly accepts the
+    // activation. If it is already shutting down, the new process should take
+    // over instead of exiting and leaving the user with no restored windows.
+    const QByteArray response = socket.readAll().trimmed();
     socket.disconnectFromServer();
-    return true;
+    return response == QByteArrayLiteral("accepted");
 }
 
 bool startSingletonServer(QLocalServer* server, const QString& serverName, bool* alreadyRunning)
@@ -91,9 +104,45 @@ bool startSingletonServer(QLocalServer* server, const QString& serverName, bool*
 
 MainWindow* g_mainWindow = 0;
 std::atomic_bool g_eventLoopRunning(false);
+std::atomic_bool g_shutdownInProgress(false);
+
+bool shutdownInProgress()
+{
+    const QCoreApplication* application = QCoreApplication::instance();
+    // Keep both an atomic flag and the QApplication property: signal handlers
+    // and singleton callbacks use the atomic, while MainWindow close handling
+    // reads the property.
+    return g_shutdownInProgress.load()
+        || (application && application->property(kShutdownInProgressProperty).toBool());
+}
+
+class ShutdownEventFilter : public QObject {
+public:
+    using QObject::QObject;
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override
+    {
+        Q_UNUSED(watched);
+        if (event != nullptr && event->type() == QEvent::Quit) {
+            // Mark shutdown as early as possible. aboutToQuit can be too late
+            // for nested close events that decide whether to save child-window
+            // layout changes.
+            g_shutdownInProgress.store(true);
+            if (QCoreApplication::instance())
+                QCoreApplication::instance()->setProperty(kShutdownInProgressProperty, true);
+        }
+        return false;
+    }
+};
 
 void persistAndQuit()
 {
+    // Console/signal shutdown paths bypass the normal window-close entry point,
+    // so they must publish shutdown state before asking MainWindow to persist.
+    g_shutdownInProgress.store(true);
+    if (QCoreApplication::instance())
+        QCoreApplication::instance()->setProperty(kShutdownInProgressProperty, true);
     if (g_mainWindow)
         g_mainWindow->persistSessionAndSettingsForShutdown();
     if (QCoreApplication::instance())
@@ -178,6 +227,8 @@ BOOL WINAPI handleWindowsConsoleControl(DWORD controlType)
 int main(int argc, char* argv[])
 {
     QApplication application(argc, argv);
+    ShutdownEventFilter shutdownEventFilter(&application);
+    application.installEventFilter(&shutdownEventFilter);
 
     QCoreApplication::setApplicationName("SpeedCrunch");
     QCoreApplication::setOrganizationDomain("speedcrunch.org");
@@ -188,6 +239,12 @@ int main(int argc, char* argv[])
     bool pendingActivation = false;
 
     QObject::connect(&application, &QCoreApplication::aboutToQuit, &application, [&]() {
+        // Stop accepting single-instance activations during teardown. A second
+        // launch that races with quit should create the replacement instance,
+        // not send activation to a process that is already saving and exiting.
+        g_shutdownInProgress.store(true);
+        application.setProperty(kShutdownInProgressProperty, true);
+        singletonServer.close();
         if (g_mainWindow)
             g_mainWindow->persistSessionAndSettingsForShutdown();
 #ifdef Q_OS_UNIX
@@ -229,14 +286,33 @@ int main(int argc, char* argv[])
     bool alreadyRunning = false;
     if (startSingletonServer(&singletonServer, serverName, &alreadyRunning)) {
         QObject::connect(&singletonServer, &QLocalServer::newConnection, &application, [&]() {
+            bool acceptedActivation = false;
             while (singletonServer.hasPendingConnections()) {
                 QLocalSocket* socket = singletonServer.nextPendingConnection();
                 if (!socket)
                     continue;
+                if (shutdownInProgress()) {
+                    // Refuse activation during shutdown so the launching
+                    // process removes the stale server and performs a full
+                    // restore of all saved windows.
+                    socket->write("shutting-down\n");
+                    socket->waitForBytesWritten(250);
+                    socket->close();
+                    socket->deleteLater();
+                    continue;
+                }
+
+                socket->write("accepted\n");
+                socket->waitForBytesWritten(250);
                 socket->close();
                 socket->deleteLater();
+                acceptedActivation = true;
             }
 
+            // If all pending sockets were refused because shutdown is in
+            // progress, do not raise a window that is about to disappear.
+            if (!acceptedActivation)
+                return;
             if (g_mainWindow)
                 activateMainWindow(g_mainWindow);
             else
