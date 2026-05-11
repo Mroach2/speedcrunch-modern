@@ -3045,6 +3045,44 @@ void MainWindow::switchPaneToSession(ResultDisplay* display, const QString& name
     updatePaneTabBars();
 }
 
+bool MainWindow::focusOpenSession(const QString& name)
+{
+    if (name.isEmpty())
+        return false;
+
+    QList<QPointer<MainWindow>> candidateWindows;
+    candidateWindows.append(QPointer<MainWindow>(this));
+    for (const QPointer<MainWindow>& window : allMainWindows()) {
+        if (window != nullptr && window != this)
+            candidateWindows.append(window);
+    }
+
+    for (const QPointer<MainWindow>& window : candidateWindows) {
+        if (window == nullptr)
+            continue;
+
+        for (ResultDisplay* display : window->splitPaneDisplays()) {
+            if (!window->paneSessionNames(display).contains(name, Qt::CaseInsensitive))
+                continue;
+
+            QWidget* page = display->parentWidget();
+            Editor* editor = page ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+            if (editor == nullptr)
+                continue;
+
+            window->setActiveEditorDisplayPane(display, editor);
+            window->switchPaneToSession(display, name);
+            if (window->isMinimized())
+                window->showNormal();
+            window->raise();
+            window->activateWindow();
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void MainWindow::moveSessionTab(QTabBar* sourceTabBar, QTabBar* targetTabBar, const QString& name, int targetIndex)
 {
     if (m_shutdownStateSaved)
@@ -4893,6 +4931,11 @@ void MainWindow::showOpenSessionDialog()
         return;
 
     const SessionFileEntry entry = entries.at(entryIndex);
+    if (focusOpenSession(entry.name)) {
+        saveSessionLayout(false);
+        return;
+    }
+
     Session* selectedSession = m_loadedSessions.value(entry.name, nullptr);
     if (selectedSession == nullptr) {
         selectedSession = new Session();

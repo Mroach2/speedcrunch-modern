@@ -300,6 +300,7 @@ private:
     ResultDisplay* tabBarDisplay(QTabBar* tabBar) const;
     QTabBar* displayTabBar(ResultDisplay* display) const;
     void switchPaneToSession(ResultDisplay* display, const QString& name);
+    bool focusOpenSession(const QString& name);
     void moveSessionTab(QTabBar* sourceTabBar, QTabBar* targetTabBar, const QString& name, int targetIndex);
     void moveSessionTabToPane(QTabBar* sourceTabBar, ResultDisplay* targetDisplay, const QString& name, const QPoint& panePos);
     void splitPaneWithSession(QTabBar* sourceTabBar, ResultDisplay* targetDisplay, const QString& name, Qt::Orientation orientation, bool insertAfter);
