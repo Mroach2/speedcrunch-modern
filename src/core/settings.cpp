@@ -520,11 +520,6 @@ void Settings::load()
         quinaryResultFormatComplex = 'c';
     else
         quinaryResultFormatComplex = quinaryComplexForm.at(0).toLatin1();
-    secondaryResultFormatComplex = resultFormatComplex;
-    tertiaryResultFormatComplex = resultFormatComplex;
-    quaternaryResultFormatComplex = resultFormatComplex;
-    quinaryResultFormatComplex = resultFormatComplex;
-
     if (resultPrecision > DECPRECISION)
         resultPrecision = DECPRECISION;
     if (secondaryResultPrecision > DECPRECISION)

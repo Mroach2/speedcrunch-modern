@@ -9,12 +9,13 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
-#include <QFormLayout>
-#include <QGroupBox>
+#include <QFont>
+#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSpinBox>
 #include <QVBoxLayout>
+#include <QWidget>
 
 namespace {
 char notationFromComboData(const QVariant& data)
@@ -23,104 +24,49 @@ char notationFromComboData(const QVariant& data)
     return value.isEmpty() ? '\0' : value.at(0).toLatin1();
 }
 
-bool isDecimalNotation(char notation)
+QLabel* createHeaderLabel(const QString& text, QWidget* parent)
 {
-    return notation == 'g' || notation == 'f' || notation == 'n' || notation == 'e';
+    QLabel* label = new QLabel(text, parent);
+    QFont font = label->font();
+    font.setBold(true);
+    label->setFont(font);
+    return label;
 }
+
+QComboBox* createNotationCombo(QWidget* parent)
+{
+    QComboBox* combo = new QComboBox(parent);
+    combo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    combo->addItem(QObject::tr("Automatic decimal"), QStringLiteral("g"));
+    combo->addItem(QObject::tr("Fixed-point decimal"), QStringLiteral("f"));
+    combo->addItem(QObject::tr("Engineering decimal"), QStringLiteral("n"));
+    combo->addItem(QObject::tr("Scientific decimal"), QStringLiteral("e"));
+    combo->insertSeparator(combo->count());
+    combo->addItem(QObject::tr("Rational"), QStringLiteral("r"));
+    combo->addItem(QObject::tr("Binary"), QStringLiteral("b"));
+    combo->addItem(QObject::tr("Octal"), QStringLiteral("o"));
+    combo->addItem(QObject::tr("Hexadecimal"), QStringLiteral("h"));
+    combo->addItem(QObject::tr("Sexagesimal"), QStringLiteral("s"));
+    return combo;
+}
+
 }
 
 ResultSlotsDialog::ResultSlotsDialog(QWidget* parent)
     : QDialog(parent)
-    , m_slot(new QComboBox(this))
-    , m_notation(new QComboBox(this))
-    , m_enabled(new QCheckBox(tr("Enable this result line"), this))
-    , m_autoPrecision(new QCheckBox(tr("Automatic"), this))
-    , m_precision(new QSpinBox(this))
-    , m_precisionLabel(new QLabel(this))
-    , m_selectorGroup(new QGroupBox(tr("Result Line"), this))
-    , m_settingsGroup(new QGroupBox(tr("Result Configuration"), this))
-    , m_advancedMode(new QCheckBox(tr("Advanced mode: show multiple result lines"), this))
+    , m_table(new QWidget(this))
 {
     setWindowTitle(tr("Notation & Precision"));
 
     QVBoxLayout* root = new QVBoxLayout(this);
-
-    QVBoxLayout* selectorLayout = new QVBoxLayout(m_selectorGroup);
-    QFormLayout* selectorForm = new QFormLayout();
-    selectorLayout->addLayout(selectorForm);
-
-    m_slot->addItem(tr("Main Line"));
-    m_slot->addItem(tr("Extra Line #1"));
-    m_slot->addItem(tr("Extra Line #2"));
-    m_slot->addItem(tr("Extra Line #3"));
-    m_slot->addItem(tr("Extra Line #4"));
-    selectorForm->addRow(tr("Configure:"), m_slot);
-    root->addWidget(m_selectorGroup);
-
-    QVBoxLayout* settingsLayout = new QVBoxLayout(m_settingsGroup);
-    QFormLayout* form = new QFormLayout();
-    settingsLayout->addLayout(form);
-    root->addWidget(m_settingsGroup);
-
-    m_notation->addItem(tr("Automatic decimal"), QStringLiteral("g"));
-    m_notation->addItem(tr("Fixed-point decimal"), QStringLiteral("f"));
-    m_notation->addItem(tr("Engineering decimal"), QStringLiteral("n"));
-    m_notation->addItem(tr("Scientific decimal"), QStringLiteral("e"));
-    m_notation->insertSeparator(m_notation->count());
-    m_notation->addItem(tr("Rational"), QStringLiteral("r"));
-    m_notation->addItem(tr("Binary"), QStringLiteral("b"));
-    m_notation->addItem(tr("Octal"), QStringLiteral("o"));
-    m_notation->addItem(tr("Hexadecimal"), QStringLiteral("h"));
-    m_notation->addItem(tr("Sexagesimal"), QStringLiteral("s"));
-    form->addRow(QString(), m_enabled);
-    form->addRow(tr("Notation:"), m_notation);
-
-    m_precision->setRange(0, 50);
-    m_precision->setValue(8);
-    QHBoxLayout* precisionRow = new QHBoxLayout();
-    precisionRow->addWidget(m_autoPrecision);
-    precisionRow->addWidget(m_precision);
-    form->addRow(m_precisionLabel, precisionRow);
-
-    root->addWidget(m_advancedMode);
+    createTable();
+    root->addWidget(m_table);
 
     QDialogButtonBox* buttons =
         new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     root->addWidget(buttons);
-
-    connect(m_autoPrecision, &QCheckBox::toggled, this, [this](bool checked) {
-        m_precision->setEnabled(!checked);
-    });
-    connect(m_notation, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, [this](int) {
-        updatePrecisionLabel();
-    });
-    connect(m_enabled, &QCheckBox::toggled, this, [this](bool enabled) {
-        const bool isMain = (m_activeSlotIndex == 0);
-        const bool allowEditing = isMain || enabled;
-        m_notation->setEnabled(allowEditing);
-        m_autoPrecision->setEnabled(allowEditing);
-        m_precision->setEnabled(allowEditing && !m_autoPrecision->isChecked());
-    });
-    connect(m_slot, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, [this](int index) {
-        const int previousSlot = m_activeSlotIndex;
-        m_activeSlotIndex = qBound(0, index, 4);
-        if (previousSlot != m_activeSlotIndex)
-            saveCurrentUiToSlot(previousSlot);
-        loadSlotToUi(m_activeSlotIndex);
-    });
-    connect(m_advancedMode, &QCheckBox::toggled, this, [this](bool advanced) {
-        saveCurrentUiToSlot(m_activeSlotIndex);
-        if (!advanced) {
-            m_activeSlotIndex = 0;
-            m_slot->setCurrentIndex(0);
-            loadSlotToUi(0);
-        }
-        updateAdvancedModeUi(advanced);
-    });
     connect(buttons, &QDialogButtonBox::accepted, this, [this]() {
-        saveCurrentUiToSlot(m_activeSlotIndex);
+        saveRowsToSlots();
         applyToSettings();
         emit settingsApplied();
         accept();
@@ -128,17 +74,66 @@ ResultSlotsDialog::ResultSlotsDialog(QWidget* parent)
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     loadFromSettings();
-    m_activeSlotIndex = 0;
-    m_slot->setCurrentIndex(0);
-    loadSlotToUi(0);
-    m_advancedMode->setChecked(Settings::instance()->multipleResultLinesEnabled);
-    updateAdvancedModeUi(m_advancedMode->isChecked());
+    loadRowsToUi();
+    m_table->setFixedSize(m_table->sizeHint());
+    setFixedSize(sizeHint());
 }
 
-int ResultSlotsDialog::currentSlotIndex() const
+void ResultSlotsDialog::createTable()
 {
-    const int index = m_slot->currentIndex();
-    return qBound(0, index, 4);
+    QGridLayout* grid = new QGridLayout(m_table);
+    grid->setColumnStretch(0, 0);
+    grid->setColumnStretch(1, 0);
+    grid->setColumnStretch(2, 0);
+    grid->setColumnStretch(3, 0);
+    grid->setHorizontalSpacing(12);
+    grid->setVerticalSpacing(6);
+
+    grid->addWidget(createHeaderLabel(tr("Result Line"), m_table), 0, 0);
+    grid->addWidget(createHeaderLabel(tr("Enabled"), m_table), 0, 1);
+    grid->addWidget(createHeaderLabel(tr("Notation"), m_table), 0, 2);
+    grid->addWidget(createHeaderLabel(tr("Decimal Places"), m_table), 0, 3);
+
+    const QStringList rowNames = {
+        tr("Main Line"),
+        tr("Extra Line #1"),
+        tr("Extra Line #2"),
+        tr("Extra Line #3"),
+        tr("Extra Line #4")
+    };
+
+    for (int row = 0; row < 5; ++row) {
+        const int gridRow = row + 1;
+        grid->addWidget(new QLabel(rowNames.at(row), m_table), gridRow, 0);
+
+        RowWidgets widgets;
+        widgets.enabled = new QCheckBox(m_table);
+        widgets.enabled->setChecked(row == 0);
+        widgets.enabled->setEnabled(row != 0);
+        grid->addWidget(widgets.enabled, gridRow, 1, Qt::AlignCenter);
+
+        widgets.notation = createNotationCombo(m_table);
+        grid->addWidget(widgets.notation, gridRow, 2);
+
+        QWidget* precisionWidget = new QWidget(m_table);
+        QHBoxLayout* precisionLayout = new QHBoxLayout(precisionWidget);
+        precisionLayout->setContentsMargins(0, 0, 0, 0);
+        widgets.autoPrecision = new QCheckBox(tr("Auto"), precisionWidget);
+        widgets.precision = new QSpinBox(precisionWidget);
+        widgets.precision->setRange(0, 50);
+        precisionLayout->addWidget(widgets.autoPrecision);
+        precisionLayout->addWidget(widgets.precision);
+        grid->addWidget(precisionWidget, gridRow, 3);
+
+        m_rows[row] = widgets;
+
+        connect(widgets.enabled, &QCheckBox::toggled, this, [this, row](bool enabled) {
+            setRowControlsEnabled(row, enabled);
+        });
+        connect(widgets.autoPrecision, &QCheckBox::toggled, this, [this, row](bool automatic) {
+            m_rows[row].precision->setEnabled(m_rows[row].enabled->isChecked() && !automatic);
+        });
+    }
 }
 
 void ResultSlotsDialog::loadFromSettings()
@@ -165,81 +160,70 @@ void ResultSlotsDialog::loadFromSettings()
     m_slots[4].enabled = settings->quinaryResultEnabled;
 }
 
-void ResultSlotsDialog::saveCurrentUiToSlot(int slotIndex)
+void ResultSlotsDialog::loadRowsToUi()
 {
-    const int slot = qBound(0, slotIndex, 4);
-    SlotSettings& target = m_slots[slot];
-    target.notation = notationFromComboData(m_notation->currentData());
-    target.enabled = (slot == 0) ? true : m_enabled->isChecked();
-    target.precision = m_autoPrecision->isChecked() ? -1 : m_precision->value();
+    for (int row = 0; row < 5; ++row) {
+        const SlotSettings& source = m_slots[row];
+        RowWidgets& widgets = m_rows[row];
+
+        widgets.enabled->setChecked(row == 0 ? true : source.enabled);
+        const int notationIndex = widgets.notation->findData(QString(QChar(source.notation)));
+        widgets.notation->setCurrentIndex(notationIndex >= 0
+            ? notationIndex
+            : widgets.notation->findData(QStringLiteral("g")));
+
+        widgets.autoPrecision->setChecked(source.precision < 0);
+        widgets.precision->setValue(source.precision < 0 ? 8 : source.precision);
+
+        setRowControlsEnabled(row, widgets.enabled->isChecked());
+    }
 }
 
-void ResultSlotsDialog::loadSlotToUi(int slotIndex)
+void ResultSlotsDialog::saveRowsToSlots()
 {
-    const int slot = qBound(0, slotIndex, 4);
-    const SlotSettings& source = m_slots[slot];
-    const bool isMain = (slot == 0);
-    m_enabled->setVisible(!isMain);
-    m_enabled->setChecked(isMain ? true : source.enabled);
-    const int notationIndex = m_notation->findData(QString(QChar(source.notation)));
-    m_notation->setCurrentIndex(notationIndex >= 0 ? notationIndex : m_notation->findData(QStringLiteral("g")));
-
-    m_autoPrecision->setChecked(source.precision < 0);
-    m_precision->setValue(source.precision < 0 ? 8 : source.precision);
-    m_precision->setEnabled(source.precision >= 0);
-
-    const bool allowEditing = isMain || source.enabled;
-    m_notation->setEnabled(allowEditing);
-    m_autoPrecision->setEnabled(allowEditing);
-    m_precision->setEnabled(allowEditing && source.precision >= 0);
-    updatePrecisionLabel();
+    for (int row = 0; row < 5; ++row) {
+        const RowWidgets& widgets = m_rows[row];
+        SlotSettings& target = m_slots[row];
+        target.enabled = (row == 0) ? true : widgets.enabled->isChecked();
+        target.notation = notationFromComboData(widgets.notation->currentData());
+        target.precision = widgets.autoPrecision->isChecked() ? -1 : widgets.precision->value();
+    }
 }
 
 void ResultSlotsDialog::applyToSettings()
 {
     Settings* settings = Settings::instance();
-    settings->multipleResultLinesEnabled = m_advancedMode->isChecked();
+    settings->multipleResultLinesEnabled =
+        m_slots[1].enabled || m_slots[2].enabled || m_slots[3].enabled || m_slots[4].enabled;
     settings->complexNumbers = true;
     settings->resultFormat = m_slots[0].notation;
     settings->resultPrecision = m_slots[0].precision;
-    const char complexFormat = settings->resultFormatComplex;
 
     settings->alternativeResultFormat = m_slots[1].notation;
     settings->secondaryResultEnabled = m_slots[1].enabled;
     settings->secondaryResultPrecision = m_slots[1].precision;
     settings->secondaryComplexNumbers = true;
-    settings->secondaryResultFormatComplex = complexFormat;
 
     settings->tertiaryResultFormat = m_slots[2].notation;
     settings->tertiaryResultEnabled = m_slots[2].enabled;
     settings->tertiaryResultPrecision = m_slots[2].precision;
     settings->tertiaryComplexNumbers = true;
-    settings->tertiaryResultFormatComplex = complexFormat;
 
     settings->quaternaryResultFormat = m_slots[3].notation;
     settings->quaternaryResultEnabled = m_slots[3].enabled;
     settings->quaternaryResultPrecision = m_slots[3].precision;
     settings->quaternaryComplexNumbers = true;
-    settings->quaternaryResultFormatComplex = complexFormat;
 
     settings->quinaryResultFormat = m_slots[4].notation;
     settings->quinaryResultEnabled = m_slots[4].enabled;
     settings->quinaryResultPrecision = m_slots[4].precision;
     settings->quinaryComplexNumbers = true;
-    settings->quinaryResultFormatComplex = complexFormat;
 }
 
-void ResultSlotsDialog::updateAdvancedModeUi(bool advanced)
+void ResultSlotsDialog::setRowControlsEnabled(int row, bool enabled)
 {
-    m_selectorGroup->setVisible(advanced);
-    adjustSize();
-}
-
-void ResultSlotsDialog::updatePrecisionLabel()
-{
-    const char notation = notationFromComboData(m_notation->currentData());
-    const QString label = isDecimalNotation(notation)
-        ? tr("Decimal places:")
-        : tr("Fractional digits:");
-    m_precisionLabel->setText(label);
+    RowWidgets& widgets = m_rows[row];
+    widgets.notation->setEnabled(enabled);
+    widgets.autoPrecision->setEnabled(enabled);
+    widgets.precision->setEnabled(enabled && !widgets.autoPrecision->isChecked());
 }

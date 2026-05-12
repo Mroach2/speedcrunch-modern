@@ -211,6 +211,13 @@ The result display supports mouse-driven interactions for navigation and editing
 
     .. versionadded:: 1.0
 
+* Calculation settings from highlighted blocks
+    The calculation settings action opens a tabular layout with one mandatory
+    ``Main Line`` row and four optional extra result-line rows. The table
+    shows line enablement, notation, decimal places, and angle mode together
+    so the stored calculation context can be adjusted before SpeedCrunch
+    recalculates the affected history.
+
 .. _result_format:
 
 Notation
@@ -384,19 +391,15 @@ This section contains settings that control result output and post-evaluation be
     separator and digit grouping. See :ref:`radix_character`.
 
 * :menuselection:`Notation & Precision...`
-    Open a unified dialog to configure notation and precision.
-    The precision row label changes by notation: ``Decimal places`` for
-    decimal notations, otherwise ``Fractional digits``.
-    By default, the dialog shows only ``Main Line`` settings. Enable
-    ``Advanced mode: show multiple result lines`` to configure
-    ``Extra Line #1`` through ``Extra Line #4``.
-
-    When advanced mode is disabled, configured extra lines are preserved but
-    ignored in output.
+    Open a tabular layout with one mandatory ``Main Line`` row and four
+    optional extra result-line rows. Each row has columns for enabling the
+    line, notation, and decimal places. Extra lines are ignored unless their
+    row is enabled.
 
     Applying changes from this dialog updates only the current editor previews
     immediately (live/selection) without rewriting already displayed
     calculation history.
+
 * :menuselection:`Rounding Mode`
     Choose how displayed results are rounded when formatting to a finite number
     of digits. The default is :menuselection:`Half Away from Zero (Arithmetic)`.

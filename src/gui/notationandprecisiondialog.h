@@ -10,9 +10,8 @@
 
 class QCheckBox;
 class QComboBox;
-class QGroupBox;
-class QLabel;
 class QSpinBox;
+class QWidget;
 
 class ResultSlotsDialog : public QDialog {
     Q_OBJECT
@@ -30,25 +29,23 @@ private:
         bool enabled = true;
     };
 
-    int currentSlotIndex() const;
-    void loadFromSettings();
-    void saveCurrentUiToSlot(int slotIndex);
-    void loadSlotToUi(int slotIndex);
-    void applyToSettings();
-    void updateAdvancedModeUi(bool advanced);
-    void updatePrecisionLabel();
+    struct RowWidgets {
+        QCheckBox* enabled = nullptr;
+        QComboBox* notation = nullptr;
+        QCheckBox* autoPrecision = nullptr;
+        QSpinBox* precision = nullptr;
+    };
 
-    QComboBox* m_slot;
-    QComboBox* m_notation;
-    QCheckBox* m_enabled;
-    QCheckBox* m_autoPrecision;
-    QSpinBox* m_precision;
-    QLabel* m_precisionLabel;
-    QGroupBox* m_selectorGroup;
-    QGroupBox* m_settingsGroup;
-    QCheckBox* m_advancedMode;
+    void createTable();
+    void loadFromSettings();
+    void loadRowsToUi();
+    void saveRowsToSlots();
+    void applyToSettings();
+    void setRowControlsEnabled(int row, bool enabled);
+
+    QWidget* m_table;
     std::array<SlotSettings, 5> m_slots;
-    int m_activeSlotIndex = 0;
+    std::array<RowWidgets, 5> m_rows;
 };
 
 #endif // GUI_RESULTSLOTSDIALOG_H

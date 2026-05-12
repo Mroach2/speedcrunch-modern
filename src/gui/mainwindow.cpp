@@ -4353,10 +4353,6 @@ void MainWindow::checkInitialComplexFormat()
     m_settings->tertiaryComplexNumbers = true;
     m_settings->quaternaryComplexNumbers = true;
     m_settings->quinaryComplexNumbers = true;
-    m_settings->secondaryResultFormatComplex = m_settings->resultFormatComplex;
-    m_settings->tertiaryResultFormatComplex = m_settings->resultFormatComplex;
-    m_settings->quaternaryResultFormatComplex = m_settings->resultFormatComplex;
-    m_settings->quinaryResultFormatComplex = m_settings->resultFormatComplex;
     DMath::complexMode = true;
 
     if (m_settings->resultFormatComplex == 'p')
@@ -8327,11 +8323,15 @@ void MainWindow::editHistoryEntryContext(int index)
     QDialog dialog(this);
     dialog.setWindowTitle(tr("Calculation Settings"));
     QVBoxLayout* root = new QVBoxLayout(&dialog);
-    QGroupBox* commonGroup = new QGroupBox(tr("Common Settings"), &dialog);
-    QFormLayout* globalForm = new QFormLayout(commonGroup);
-    root->addWidget(commonGroup);
 
-    auto addNotationItems = [](QComboBox* combo) {
+    const auto dataChar = [](const QComboBox* combo) {
+        const QString value = combo->currentData().toString();
+        return value.isEmpty() ? '\0' : value.at(0).toLatin1();
+    };
+
+    const auto createNotationCombo = [](QWidget* parent) {
+        QComboBox* combo = new QComboBox(parent);
+        combo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
         combo->addItem(QObject::tr("Automatic decimal"), QStringLiteral("g"));
         combo->addItem(QObject::tr("Fixed-point decimal"), QStringLiteral("f"));
         combo->addItem(QObject::tr("Engineering decimal"), QStringLiteral("n"));
@@ -8341,43 +8341,27 @@ void MainWindow::editHistoryEntryContext(int index)
         combo->addItem(QObject::tr("Octal"), QStringLiteral("o"));
         combo->addItem(QObject::tr("Hexadecimal"), QStringLiteral("h"));
         combo->addItem(QObject::tr("Sexagesimal"), QStringLiteral("s"));
+        return combo;
     };
 
-    auto addComplexFormItems = [](QComboBox* combo) {
-        combo->addItem(QObject::tr("Rectangular (a + bi)"), QStringLiteral("c"));
-        combo->addItem(QObject::tr("Polar (r·e^(iθ))"), QStringLiteral("p"));
-        combo->addItem(QObject::tr("Polar (r∠θ)"), QStringLiteral("a"));
+    const auto createAngleCombo = [](QWidget* parent) {
+        QComboBox* combo = new QComboBox(parent);
+        combo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+        combo->addItem(MainWindow::tr("Radian"), QStringLiteral("r"));
+        combo->addItem(MainWindow::tr("Degree"), QStringLiteral("d"));
+        combo->addItem(MainWindow::tr("Gradian"), QStringLiteral("g"));
+        combo->addItem(MainWindow::tr("Turn"), QStringLiteral("t"));
+        combo->addItem(MainWindow::tr("Revolution"), QStringLiteral("v"));
+        return combo;
     };
 
-    QComboBox* angle = new QComboBox(&dialog);
-    angle->addItem(tr("Radian"), QStringLiteral("r"));
-    angle->addItem(tr("Degree"), QStringLiteral("d"));
-    angle->addItem(tr("Gradian"), QStringLiteral("g"));
-    angle->addItem(tr("Turn"), QStringLiteral("t"));
-    angle->addItem(tr("Revolution"), QStringLiteral("v"));
-    angle->setCurrentIndex(qMax(0, angle->findData(QString(QChar(ctx.angle)))));
-    globalForm->addRow(tr("Angle mode:"), angle);
-
-    QComboBox* unitExp = new QComboBox(&dialog);
-    unitExp->addItem(tr("Superscript"), QStringLiteral("s"));
-    unitExp->addItem(tr("Fraction"), QStringLiteral("f"));
-    unitExp->setCurrentIndex((ctx.unitExp == 'f') ? 1 : 0);
-    globalForm->addRow(tr("Unit exponent style:"), unitExp);
-
-    QComboBox* round = new QComboBox(&dialog);
-    round->addItem(tr("Half away from zero"), QStringLiteral("a"));
-    round->addItem(tr("Half to even"), QStringLiteral("e"));
-    round->addItem(tr("Toward zero"), QStringLiteral("z"));
-    round->addItem(tr("Toward +infinity"), QStringLiteral("p"));
-    round->addItem(tr("Toward -infinity"), QStringLiteral("m"));
-    round->setCurrentIndex(qMax(0, round->findData(QString(QChar(ctx.round)))));
-    globalForm->addRow(tr("Rounding mode:"), round);
-
-    QComboBox* imagUnit = new QComboBox(&dialog);
-    imagUnit->addItem(QStringLiteral("i"), QStringLiteral("i"));
-    imagUnit->addItem(QStringLiteral("j"), QStringLiteral("j"));
-    imagUnit->setCurrentIndex(ctx.unit == 'j' ? 1 : 0);
-    globalForm->addRow(tr("Complex unit:"), imagUnit);
+    const auto createHeaderLabel = [](const QString& text, QWidget* parent) {
+        QLabel* label = new QLabel(text, parent);
+        QFont font = label->font();
+        font.setBold(true);
+        label->setFont(font);
+        return label;
+    };
 
     struct LineUiState {
         bool enabled = true;
@@ -8399,114 +8383,127 @@ void MainWindow::editHistoryEntryContext(int index)
         }
     }
 
-    QComboBox* lineSelector = new QComboBox(&dialog);
-    lineSelector->addItem(tr("Main Line"));
-    lineSelector->addItem(tr("Extra Line #1"));
-    lineSelector->addItem(tr("Extra Line #2"));
-    lineSelector->addItem(tr("Extra Line #3"));
-    lineSelector->addItem(tr("Extra Line #4"));
+    struct RowWidgets {
+        QCheckBox* enabled = nullptr;
+        QComboBox* notation = nullptr;
+        QCheckBox* autoPrecision = nullptr;
+        QSpinBox* precision = nullptr;
+        QComboBox* angle = nullptr;
+    };
+    std::array<RowWidgets, 5> rows;
 
-    QGroupBox* selectorGroup = new QGroupBox(tr("Result Line"), &dialog);
-    QFormLayout* selectorForm = new QFormLayout(selectorGroup);
-    selectorForm->addRow(tr("Configure:"), lineSelector);
-    root->addWidget(selectorGroup);
+    QWidget* table = new QWidget(&dialog);
+    QGridLayout* grid = new QGridLayout(table);
+    grid->setHorizontalSpacing(12);
+    grid->setVerticalSpacing(6);
+    grid->setColumnStretch(0, 0);
+    grid->setColumnStretch(1, 0);
+    grid->setColumnStretch(2, 0);
+    grid->setColumnStretch(3, 0);
+    grid->setColumnStretch(4, 0);
 
-    QGroupBox* lineGroup = new QGroupBox(tr("Result Configuration"), &dialog);
-    QFormLayout* lineForm = new QFormLayout(lineGroup);
-    QCheckBox* lineEnabled = new QCheckBox(tr("Enable this result line"), lineGroup);
-    QComboBox* lineFmt = new QComboBox(lineGroup);
-    addNotationItems(lineFmt);
-    QCheckBox* lineAutoPrecision = new QCheckBox(tr("Automatic"), lineGroup);
-    QSpinBox* linePrecision = new QSpinBox(lineGroup);
-    linePrecision->setRange(0, 50);
-    QComboBox* lineCplx = new QComboBox(lineGroup);
-    addComplexFormItems(lineCplx);
+    grid->addWidget(createHeaderLabel(tr("Result Line"), table), 0, 0);
+    grid->addWidget(createHeaderLabel(tr("Enabled"), table), 0, 1);
+    grid->addWidget(createHeaderLabel(tr("Notation"), table), 0, 2);
+    grid->addWidget(createHeaderLabel(tr("Decimal Places"), table), 0, 3);
+    grid->addWidget(createHeaderLabel(tr("Angle Mode"), table), 0, 4);
 
-    QWidget* precisionRow = new QWidget(lineGroup);
-    QHBoxLayout* precisionLayout = new QHBoxLayout(precisionRow);
-    precisionLayout->setContentsMargins(0, 0, 0, 0);
-    precisionLayout->addWidget(lineAutoPrecision);
-    precisionLayout->addWidget(linePrecision);
-    lineForm->addRow(QString(), lineEnabled);
-    lineForm->addRow(tr("Notation:"), lineFmt);
-    lineForm->addRow(tr("Decimal places:"), precisionRow);
-    lineForm->addRow(tr("Complex format:"), lineCplx);
-    root->addWidget(lineGroup);
-
-    int activeLineIndex = 0;
-    auto loadLineUi = [&](int i) {
-        const LineUiState& st = lines.at(i);
-        const bool isMain = (i == 0);
-        const bool allow = isMain || st.enabled;
-
-        lineEnabled->blockSignals(true);
-        lineFmt->blockSignals(true);
-        lineAutoPrecision->blockSignals(true);
-        linePrecision->blockSignals(true);
-        lineCplx->blockSignals(true);
-
-        lineEnabled->setVisible(!isMain);
-        lineEnabled->setChecked(isMain ? true : st.enabled);
-        lineFmt->setCurrentIndex(qMax(0, lineFmt->findData(QString(QChar(st.fmt)))));
-        lineAutoPrecision->setChecked(st.prec < 0);
-        linePrecision->setValue(st.prec < 0 ? 8 : st.prec);
-        lineFmt->setEnabled(allow);
-        lineAutoPrecision->setEnabled(allow);
-        linePrecision->setEnabled(allow && st.prec >= 0);
-        lineCplx->setCurrentIndex(qMax(0, lineCplx->findData(QString(QChar(st.cplx)))));
-        lineCplx->setEnabled(allow);
-
-        lineEnabled->blockSignals(false);
-        lineFmt->blockSignals(false);
-        lineAutoPrecision->blockSignals(false);
-        linePrecision->blockSignals(false);
-        lineCplx->blockSignals(false);
+    const QStringList rowNames = {
+        tr("Main Line"),
+        tr("Extra Line #1"),
+        tr("Extra Line #2"),
+        tr("Extra Line #3"),
+        tr("Extra Line #4")
     };
 
-    auto saveLineUi = [&](int i) {
-        LineUiState& st = lines[i];
-        st.enabled = (i == 0) ? true : lineEnabled->isChecked();
-        st.fmt = lineFmt->currentData().toString().at(0).toLatin1();
-        st.prec = lineAutoPrecision->isChecked() ? -1 : linePrecision->value();
-        st.cplx = lineCplx->currentData().toString().at(0).toLatin1();
+    auto setComboData = [](QComboBox* combo, char value, const QString& fallback) {
+        const int index = combo->findData(QString(QChar(value)));
+        combo->setCurrentIndex(index >= 0 ? index : combo->findData(fallback));
     };
 
-    connect(lineAutoPrecision, &QCheckBox::toggled, linePrecision, [linePrecision](bool checked) {
-        linePrecision->setEnabled(!checked);
-    });
-    connect(lineSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), &dialog, [&](int newIndex) {
-        saveLineUi(activeLineIndex);
-        activeLineIndex = qBound(0, newIndex, 4);
-        loadLineUi(activeLineIndex);
-    });
-    connect(lineEnabled, &QCheckBox::toggled, &dialog, [&](bool enabled) {
-        const bool allow = (activeLineIndex == 0) || enabled;
-        lineFmt->setEnabled(allow);
-        lineAutoPrecision->setEnabled(allow);
-        linePrecision->setEnabled(allow && !lineAutoPrecision->isChecked());
-        lineCplx->setEnabled(allow);
-    });
-    lineSelector->setCurrentIndex(0);
-    activeLineIndex = 0;
-    loadLineUi(0);
+    auto setLineControlsEnabled = [&](int row) {
+        const bool lineEnabled = row == 0 || rows[row].enabled->isChecked();
+        rows[row].notation->setEnabled(lineEnabled);
+        rows[row].autoPrecision->setEnabled(lineEnabled);
+        rows[row].precision->setEnabled(lineEnabled && !rows[row].autoPrecision->isChecked());
+        rows[row].angle->setEnabled(row == 0);
+    };
+
+    auto mirrorAngleMode = [&]() {
+        for (int row = 1; row < 5; ++row) {
+            rows[row].angle->setCurrentIndex(rows[0].angle->currentIndex());
+        }
+    };
+
+    for (int row = 0; row < 5; ++row) {
+        const int gridRow = row + 1;
+        grid->addWidget(new QLabel(rowNames.at(row), table), gridRow, 0);
+
+        RowWidgets widgets;
+        widgets.enabled = new QCheckBox(table);
+        widgets.enabled->setChecked(row == 0 ? true : lines[row].enabled);
+        widgets.enabled->setEnabled(row != 0);
+        grid->addWidget(widgets.enabled, gridRow, 1, Qt::AlignCenter);
+
+        widgets.notation = createNotationCombo(table);
+        setComboData(widgets.notation, lines[row].fmt, QStringLiteral("g"));
+        grid->addWidget(widgets.notation, gridRow, 2);
+
+        QWidget* precisionWidget = new QWidget(table);
+        QHBoxLayout* precisionLayout = new QHBoxLayout(precisionWidget);
+        precisionLayout->setContentsMargins(0, 0, 0, 0);
+        widgets.autoPrecision = new QCheckBox(tr("Auto"), precisionWidget);
+        widgets.autoPrecision->setChecked(lines[row].prec < 0);
+        widgets.precision = new QSpinBox(precisionWidget);
+        widgets.precision->setRange(0, 50);
+        widgets.precision->setValue(lines[row].prec < 0 ? 8 : lines[row].prec);
+        precisionLayout->addWidget(widgets.autoPrecision);
+        precisionLayout->addWidget(widgets.precision);
+        grid->addWidget(precisionWidget, gridRow, 3);
+
+        widgets.angle = createAngleCombo(table);
+        setComboData(widgets.angle, ctx.angle, QStringLiteral("r"));
+        grid->addWidget(widgets.angle, gridRow, 4);
+
+        rows[row] = widgets;
+
+        connect(rows[row].enabled, &QCheckBox::toggled, &dialog, [&, row](bool) {
+            setLineControlsEnabled(row);
+        });
+        connect(rows[row].autoPrecision, &QCheckBox::toggled, &dialog, [&, row](bool) {
+            setLineControlsEnabled(row);
+        });
+    }
+
+    connect(rows[0].angle, QOverload<int>::of(&QComboBox::currentIndexChanged), &dialog, mirrorAngleMode);
+
+    mirrorAngleMode();
+    for (int row = 0; row < 5; ++row)
+        setLineControlsEnabled(row);
+
+    table->setFixedSize(table->sizeHint());
+    root->addWidget(table);
 
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     root->addWidget(buttons);
     connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    dialog.setFixedSize(dialog.sizeHint());
 
     if (dialog.exec() != QDialog::Accepted)
         return;
 
-    saveLineUi(activeLineIndex);
+    for (int row = 0; row < 5; ++row) {
+        lines[row].enabled = row == 0 ? true : rows[row].enabled->isChecked();
+        lines[row].fmt = dataChar(rows[row].notation);
+        lines[row].prec = rows[row].autoPrecision->isChecked() ? -1 : rows[row].precision->value();
+    }
+
     ctx.main.fmt = lines[0].fmt;
     ctx.main.prec = lines[0].prec;
     ctx.main.cplx = lines[0].cplx;
     ctx.complexOn = true;
-    ctx.unit = imagUnit->currentData().toString().at(0).toLatin1();
-    ctx.angle = angle->currentData().toString().at(0).toLatin1();
-    ctx.unitExp = unitExp->currentData().toString().at(0).toLatin1();
-    ctx.round = round->currentData().toString().at(0).toLatin1();
+    ctx.angle = dataChar(rows[0].angle);
     ctx.extras.clear();
     for (int i = 1; i < 5; ++i) {
         if (!lines[i].enabled)
