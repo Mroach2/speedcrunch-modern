@@ -446,6 +446,16 @@ The displayed imaginary-unit symbol is configurable in
 The displayed complex form is configurable in
 :menuselection:`Settings --> Results --> Complex Numbers --> Form`.
 
+You can enter complex numbers in phasor notation with ``∠``. The expression
+``r ∠ θ`` is interpreted as ``r * cis(θ)``. The phase follows the current angle
+mode unless it has an explicit angle unit::
+
+    3 ∠ 90°
+    = 3j
+
+    3 ∠ 200 [gon]
+    = -3
+
 Not every function accepts complex arguments. Refer to each function entry in
 the reference.
 

@@ -1073,6 +1073,13 @@ inline bool expressionUsesTrigFunction(const QString& sourceExpression,
     return false;
 }
 
+inline bool expressionUsesPhasorOperator(const QString& sourceExpression,
+                                         const QString& interpretedExpression)
+{
+    return sourceExpression.contains(MathDsl::PhasorOp)
+        || interpretedExpression.contains(MathDsl::PhasorOp);
+}
+
 inline bool shouldShowAdditionalRationalForTrig(const Settings* settings,
                                                  const QString& sourceExpression,
                                                  const QString& interpretedExpression,
@@ -1237,6 +1244,8 @@ inline QString formatPiRadianResultLineIfNeeded(const Settings* settings,
                                                 const Quantity& value,
                                                 const Evaluator* evaluator = nullptr)
 {
+    if (expressionUsesPhasorOperator(sourceExpression, interpretedExpression))
+        return QString();
     if (!expressionUsesTrigOrExplicitAngleInput(sourceExpression, interpretedExpression, evaluator))
         return QString();
     if (!isRadianResultContext(settings, sourceExpression, interpretedExpression))
@@ -1277,6 +1286,8 @@ inline QString appendAngleModeSuffixIfNeeded(const QString& formattedText,
     if (formattedText.contains(MathDsl::UnitStart) || formattedText.contains(MathDsl::UnitEnd))
         return formattedText;
     if (expressionUsesTrigFunction(sourceExpression, interpretedExpression, evaluator))
+        return formattedText;
+    if (expressionUsesPhasorOperator(sourceExpression, interpretedExpression))
         return formattedText;
     const bool hasExplicitBracketedAngleUnit =
         containsExplicitBracketedAngleUnit(sourceExpression)

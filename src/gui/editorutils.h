@@ -251,6 +251,10 @@ inline QString adjustedTypedTextForImplicitMultiplicationAfterDigit(
         if (!leftNonSpaceSupportsOperatorInsertion())
             return typedText;
         operatorPrefix = MathDsl::buildWrappedToken(MathDsl::DivOp, MathDsl::DivWrap);
+    } else if (typed == MathDsl::PhasorOp) {
+        if (!leftNonSpaceSupportsOperatorInsertion())
+            return typedText;
+        operatorPrefix = MathDsl::buildWrappedToken(MathDsl::PhasorOp, MathDsl::AddWrap);
     } else if (MathDsl::isMultiplicationOperator(typed)
                || MathDsl::isMultiplicationOperatorAlias(typed, true)) {
         if (!leftNonSpaceSupportsOperatorInsertion())
@@ -317,6 +321,7 @@ inline bool isAnyOperator(const QChar& ch)
            || ch == MathDsl::SubOpAl1
            || ch == MathDsl::MulOpAl1
            || ch == QLatin1Char('/')
+           || ch == MathDsl::PhasorOp
            || ch == MathDsl::PercentOp
            || ch == MathDsl::PowOp
            || ch == MathDsl::BitAndOp
@@ -356,10 +361,12 @@ inline bool expressionWithoutIgnorableTrailingToken(const QString& text, QString
     const bool isMultiplicationTail =
         (MathDsl::isMultiplicationOperator(last)
          || MathDsl::isMultiplicationOperatorAlias(last, true));
+    const bool isPhasorTail = last == MathDsl::PhasorOp;
 
     if (last != MathDsl::GroupStart
         && !isPlusMinusTail
         && !isMultiplicationTail
+        && !isPhasorTail
         && last != MathDsl::FunArgSep
         && last != QLatin1Char('/')
         && last != MathDsl::PowOp

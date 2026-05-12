@@ -36,6 +36,7 @@ public:
         ArithmeticLeftShift, ArithmeticRightShift,
         BitwiseLogicalNOT,
         BitwiseLogicalAND, BitwiseLogicalOR,
+        Phasor,
         UnitConversion,
         Function // For managing shift/reduce conflicts.
     };

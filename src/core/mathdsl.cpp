@@ -69,6 +69,7 @@ bool isExpressionBoundaryOperatorOrSeparator(const QChar& ch)
            || ch == PowOp
            || ch == BitAndOp
            || ch == BitOrOp
+           || ch == PhasorOp
            || ch == Equals
            || ch == GreaterThanOp
            || ch == LessThanOp

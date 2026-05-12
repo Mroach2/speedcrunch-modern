@@ -590,6 +590,11 @@ complex representation. They override the global
 :menuselection:`Settings --> Results --> Complex Numbers --> Form` setting for
 that result only.
 
+Complex numbers can also be entered in phasor notation as ``r ∠ θ``. This is
+equivalent to ``r * cis(θ)``: the left operand is the magnitude, and the right
+operand is the phase angle. Unitless phases follow the global angle mode, while
+explicit angle units override it.
+
 .. function:: real(x)
 
     Return the real part of a complex number ``x``.
@@ -643,6 +648,9 @@ that result only.
 
     Format the complex number ``x`` in phasor form, shown as *r ∠ ɸ*. The
     angle ɸ follows the global angle mode.
+
+    This output format is related to phasor input notation: ``r ∠ θ`` enters a
+    complex number from magnitude ``r`` and phase ``θ``.
 
     This corresponds to
     :menuselection:`Settings --> Results --> Complex Numbers --> Form -->

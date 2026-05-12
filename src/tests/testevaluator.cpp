@@ -5477,6 +5477,26 @@ void test_format()
 
     const char savedComplexForm = settings->resultFormatComplex;
     const char savedAngleUnit = settings->angleUnit;
+    const char savedImaginaryUnit = settings->imaginaryUnit;
+
+    const QString phasorOp(MathDsl::PhasorOp);
+    settings->imaginaryUnit = 'i';
+    CMath::setImaginaryUnitSymbol(QLatin1Char('i'));
+
+    settings->angleUnit = 'r';
+    Evaluator::instance()->initializeAngleUnits();
+    CHECK_EVAL(QStringLiteral("3 ") + phasorOp + QStringLiteral(" pi"), "-3");
+    CHECK_EVAL(QStringLiteral("3 ") + phasorOp + QStringLiteral(" (pi/2)"), "3i");
+    CHECK_EVAL(QStringLiteral("3 ") + phasorOp + QString::fromUtf8(" 90°"), "3i");
+    CHECK_EVAL(QStringLiteral("3 ") + phasorOp + QStringLiteral(" 200[gon]"), "-3");
+
+    settings->angleUnit = 'd';
+    Evaluator::instance()->initializeAngleUnits();
+    CHECK_EVAL(QStringLiteral("3 ") + phasorOp + QStringLiteral(" 90"), "3i");
+    CHECK_EVAL(QStringLiteral("2 * 3 ") + phasorOp + QStringLiteral(" 180"), "-6");
+    CHECK_DISPLAY_INTERPRETED(
+        QStringLiteral("3") + phasorOp + QString::fromUtf8("90°"),
+        QStringLiteral("3") + space + phasorOp + space + QString::fromUtf8("90°"));
 
     settings->resultFormatComplex = 'a';
     settings->angleUnit = 'r';
@@ -5504,6 +5524,8 @@ void test_format()
 
     settings->resultFormatComplex = savedComplexForm;
     settings->angleUnit = savedAngleUnit;
+    settings->imaginaryUnit = savedImaginaryUnit;
+    CMath::setImaginaryUnitSymbol(QChar(savedImaginaryUnit));
     Evaluator::instance()->initializeAngleUnits();
 }
 
@@ -8820,6 +8842,84 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
             }
         }
     };
+    auto checkPhasorOutputsWithExplicitAngleUnitsHaveNoRadianSuffix = [&]() {
+        settings->angleUnit = 'r';
+        settings->imaginaryUnit = 'j';
+        settings->resultFormat = 'g';
+        settings->resultFormatComplex = 'c';
+        CMath::setImaginaryUnitSymbol(QLatin1Char('j'));
+        Evaluator::instance()->initializeAngleUnits();
+
+        const QString phasorOp(MathDsl::PhasorOp);
+        struct Case {
+            QString expression;
+            QString expectedResultLine;
+        };
+        const Case cases[] = {
+            {
+                QStringLiteral("3 ") + phasorOp + QStringLiteral(" 200 [gon]"),
+                QString::fromUtf8("= −3")
+            },
+            {
+                QStringLiteral("3 ") + phasorOp + QString::fromUtf8(" 200°"),
+                QString()
+            },
+            {
+                QStringLiteral("3 ") + phasorOp + QStringLiteral(" 200 [rev]"),
+                QStringLiteral("= 3")
+            },
+            {
+                QStringLiteral("pi ") + phasorOp + QString::fromUtf8(" 0°"),
+                QString()
+            }
+        };
+
+        for (const Case& tc : cases) {
+            session->clearHistory();
+            eval->setExpression(tc.expression);
+            const Quantity value = eval->evalUpdateAns();
+
+            ++eval_total_tests;
+            if (!eval->error().isEmpty()) {
+                ++eval_failed_tests;
+                ++eval_new_failed_tests;
+                cerr << __FILE__ << "[" << __LINE__ << "]\tresult display phasor with explicit angle input has no radian suffix\t[NEW]" << endl
+                     << "\tExpression: " << tc.expression.toUtf8().constData() << endl
+                     << "\tError     : " << qPrintable(eval->error()) << endl;
+                continue;
+            }
+
+            session->addHistoryEntry(HistoryEntry(
+                tc.expression,
+                value,
+                eval->interpretedExpression()));
+
+            TestableResultDisplay display;
+            display.resize(800, 600);
+            display.refresh();
+
+            ++eval_total_tests;
+            const QString resultLine = display.document()->findBlockByNumber(1).text();
+            const bool expectedLineOk =
+                tc.expectedResultLine.isEmpty()
+                || resultLine == tc.expectedResultLine;
+            const bool hasAngleSuffix =
+                resultLine.endsWith(QString(MathDsl::QuantSp) + Units::angleModeUnitSymbol('r'))
+                || resultLine.endsWith(QStringLiteral(" ") + Units::angleModeUnitSymbol('r'))
+                || resultLine.endsWith(Units::angleModeUnitSymbol('r'));
+            if (!expectedLineOk
+                || hasAngleSuffix
+                || resultLine.contains(QString(MathDsl::UnitStart))
+                || resultLine.contains(QString(MathDsl::UnitEnd))) {
+                ++eval_failed_tests;
+                ++eval_new_failed_tests;
+                cerr << __FILE__ << "[" << __LINE__ << "]\tresult display phasor with explicit angle input has no radian suffix\t[NEW]" << endl
+                     << "\tExpression: " << tc.expression.toUtf8().constData() << endl
+                     << "\tLine      : " << resultLine.toUtf8().constData() << endl
+                     << "\tExpected  : complex phasor result with no angle suffix or []" << endl;
+            }
+        }
+    };
 
     checkAngleModeSuffix('r', Units::angleModeUnitSymbol('r'), false,
                          "result display angle suffix in radian mode");
@@ -8837,6 +8937,7 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
     checkTrigOutputHasNoAngleSuffix('d',
                                     "result display trig output has no degree suffix");
     checkCisOutputsWithExplicitAngleUnitsHaveNoRadianSuffix();
+    checkPhasorOutputsWithExplicitAngleUnitsHaveNoRadianSuffix();
     checkSimplifiedLineForRepeatedTrigWithDegreeSignInResultDisplay();
     checkSimplifiedLineForMixedDegreeAliasesInResultDisplay();
     checkScientificAngleUnitSpacing(

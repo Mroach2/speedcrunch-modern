@@ -33,6 +33,27 @@ static QString superscriptDigitsToAscii(const QString& text);
 static bool normalizeUnsignedIntegerEquivalentDecimalText(QString& text);
 static QString rewriteListBracesToInternalCalls(const QString& text);
 
+static Quantity s_cisFromAngle(Quantity angle)
+{
+    const bool convertedExplicitAngleUnit =
+        Units::tryConvertExplicitAngleToRadians(&angle);
+    if (!convertedExplicitAngleUnit && Settings::instance()->angleUnit == 'd') {
+        if (angle.isReal())
+            angle = DMath::deg2rad(angle);
+    } else if (!convertedExplicitAngleUnit && Settings::instance()->angleUnit == 'g') {
+        if (angle.isReal())
+            angle = DMath::gon2rad(angle);
+    } else if (!convertedExplicitAngleUnit && (Settings::instance()->angleUnit == 't'
+                                               || Settings::instance()->angleUnit == 'v')) {
+        if (angle.isReal())
+            angle *= Quantity(2) * DMath::pi();
+    }
+
+    Quantity result = DMath::cos(angle) + (DMath::i() * DMath::sin(angle));
+    result.stripUnits();
+    return result;
+}
+
 #ifdef EVALUATOR_DEBUG
 #include <QDebug>
 #include <QFile>
@@ -584,6 +605,7 @@ static bool s_isExpressionOperatorOrSeparator(const QChar& ch)
            || ch == MathDsl::SubOp
            || ch == MathDsl::MulDotOp
            || ch == MathDsl::DivOp
+           || ch == MathDsl::PhasorOp
            || ch == MathDsl::PercentOp
            || ch == MathDsl::PowOp
            || ch == MathDsl::BitAndOp
@@ -612,11 +634,13 @@ static bool s_expressionWithoutIgnorableTrailingToken(const QString& text, QStri
         (last == MathDsl::AddOp || s_isSubtractionOperatorAlias(last));
     const bool isMultiplicationTail =
         (last == MathDsl::MulDotOp || s_isMultiplicationOperatorAlias(last, true));
+    const bool isPhasorTail = last == MathDsl::PhasorOp;
 
     if (last != MathDsl::GroupStart
         && last != MathDsl::UnitStart
         && !isPlusMinusTail
         && !isMultiplicationTail
+        && !isPhasorTail
         && last != QLatin1Char(';')
         && last != MathDsl::DivOp
         && last != MathDsl::PowOp
@@ -924,6 +948,9 @@ static Token::Operator matchOperator(const QString& text)
         case MathDsl::BitOrOp.unicode():
             result = Token::BitwiseLogicalOR;
             break;
+        case MathDsl::PhasorOp.unicode():
+            result = Token::Phasor;
+            break;
         case MathDsl::TransOp.unicode():
             result = Token::UnitConversion;
             break;
@@ -965,6 +992,7 @@ static int opPrecedence(Token::Operator op)
         break;
     case Token::Multiplication:
     case Token::Division:
+    case Token::Phasor:
         prec = 500;
         break;
     case Token::Modulo:
@@ -1013,6 +1041,7 @@ static int opcodePrecedence(Opcode::Type opcodeType)
         return opPrecedence(Token::Addition);
     case Opcode::Mul:
     case Opcode::Div:
+    case Opcode::Phasor:
         return opPrecedence(Token::Multiplication);
     case Opcode::Unit:
         return opPrecedence(Token::Factorial) + 1;
@@ -1066,6 +1095,7 @@ static QString opcodeToInfixSymbol(Opcode::Type opcodeType, bool implicitMultipl
     case Opcode::RSh: return ">>";
     case Opcode::BAnd: return "&";
     case Opcode::BOr: return "|";
+    case Opcode::Phasor: return QString(MathDsl::PhasorOp);
     case Opcode::Conv: return QString(MathDsl::TransOp);
     default: return QString();
     }
@@ -4113,6 +4143,7 @@ static QString formatInterpretedExpressionForDisplayImpl(const QString& expressi
             || op == Token::Subtraction
             || op == Token::Multiplication
             || op == Token::Division
+            || op == Token::Phasor
             || op == Token::IntegerDivision
             || op == Token::UnitConversion
             || op == Token::Assignment
@@ -4770,6 +4801,7 @@ bool Evaluator::isSeparatorChar(const QChar& ch)
     if (ch == UnicodeChars::Summation
         || ch == UnicodeChars::SquareRoot
         || ch == UnicodeChars::CubeRoot
+        || ch == MathDsl::PhasorOp
         || isDegreeSign(ch))
         return false;
 
@@ -5682,9 +5714,13 @@ void Evaluator::compile(const Tokens& tokens)
 
     bool hasGeneratedSexagesimalUnit = false;
     bool hasUnitConversionToken = false;
+    bool hasPhasorToken = false;
     for (int idx = 0; idx < tokens.size(); ++idx) {
         if (isGeneratedSexagesimalUnitToken(tokens.at(idx))) {
             hasGeneratedSexagesimalUnit = true;
+        } else if (tokens.at(idx).isOperator()
+                   && tokens.at(idx).asOperator() == Token::Phasor) {
+            hasPhasorToken = true;
         } else if (tokens.at(idx).isOperator()
                    && tokens.at(idx).asOperator() == Token::UnitConversion) {
             hasUnitConversionToken = true;
@@ -6174,6 +6210,9 @@ void Evaluator::compile(const Tokens& tokens)
                    case Token::Division:
                        m_codes.append(Opcode::Div);
                        break;
+                   case Token::Phasor:
+                       m_codes.append(Opcode::Phasor);
+                       break;
                    case Token::Exponentiation:
                        m_codes.append(Opcode::Pow);
                        break;
@@ -6375,6 +6414,7 @@ void Evaluator::compile(const Tokens& tokens)
         const bool preserveSourceSexagesimalDisplay =
             hasGeneratedSexagesimalUnit
             && !hasUnitConversionToken
+            && !hasPhasorToken
             && m_implicitMultiplicationOpcodeIndices.isEmpty();
         m_interpretedExpression = preserveSourceSexagesimalDisplay
             ? QString()
@@ -6710,6 +6750,7 @@ QString Evaluator::buildInterpretedExpressionFromOpcodes() const
         case Opcode::Sub:
         case Opcode::Mul:
         case Opcode::Div:
+        case Opcode::Phasor:
         case Opcode::Pow:
         case Opcode::Modulo:
         case Opcode::IntDiv:
@@ -7254,6 +7295,18 @@ Quantity Evaluator::exec(const QVector<Opcode>& opcodes,
                 popStackValue(val1);
                 popStackValue(val2);
                 val2 = checkOperatorResultWithDeferredNoOperand(val2 / val1);
+                pushStackValue(val2);
+                break;
+
+            case Opcode::Phasor:
+                if (stack.count() < 2) {
+                    m_error = tr("invalid expression");
+                    return CMath::nan();
+                }
+                popStackValue(val1);
+                popStackValue(val2);
+                val2 = checkOperatorResultWithDeferredNoOperand(
+                    val2 * s_cisFromAngle(val1));
                 pushStackValue(val2);
                 break;
 
@@ -8862,6 +8915,9 @@ QString Evaluator::dump()
                 break;
             case Opcode::Div:
                 code = "Div";
+                break;
+            case Opcode::Phasor:
+                code = "Phasor";
                 break;
             case Opcode::Neg:
                 code = "Neg";

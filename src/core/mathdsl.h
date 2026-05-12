@@ -25,6 +25,7 @@ inline constexpr QChar MulOpAl6 = UnicodeChars::NAryTimesOperator;
 inline constexpr QChar MulOpAl7 = UnicodeChars::VectorOrCrossProduct;
 inline constexpr QChar DivOp = UnicodeChars::Solidus;
 inline constexpr QChar TransOp = UnicodeChars::RightwardsArrow;
+inline constexpr QChar PhasorOp = UnicodeChars::Angle;
 inline constexpr QChar PowOp = UnicodeChars::CircumflexAccent;
 inline constexpr QChar TimeSep = UnicodeChars::Colon;
 inline constexpr QChar FunArgSep = UnicodeChars::Semicolon;
