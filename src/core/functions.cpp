@@ -63,6 +63,11 @@ enum class StatisticalNormalization {
     Sample
 };
 
+enum class ScalarRoundingMode {
+    HalfAwayFromZero,
+    HalfEven
+};
+
 #define ENSURE_MINIMUM_ARGUMENT_COUNT(i) \
     if (args.count() < i) { \
         f->setError(InvalidParamCount); \
@@ -437,9 +442,8 @@ Quantity function_lcm(Function* f, const Function::ArgumentList& args)
     return std::accumulate(args.begin() + 1, args.end(), args.at(0), DMath::lcm);
 }
 
-Quantity function_round(Function* f, const Function::ArgumentList& args)
+static Quantity s_roundScalar(Function* f, const Function::ArgumentList& args, ScalarRoundingMode mode)
 {
-    /* TODO : complex mode switch for this function */
     ENSURE_EITHER_ARGUMENT_COUNT(1, 2);
     Quantity num = args.at(0);
     int prec = 0;
@@ -464,36 +468,37 @@ Quantity function_round(Function* f, const Function::ArgumentList& args)
         return DMath::nan();
     }
 
-    const HNumber scale = HMath::raise(HNumber(10), prec);
-    const HNumber scaled = num.numericValue().real * scale;
     HNumber rounded;
-    switch (runtimeResultRoundingMode()) {
-    case Settings::ResultRoundingHalfAwayFromZero: {
+    switch (mode) {
+    case ScalarRoundingMode::HalfAwayFromZero: {
+        const HNumber scale = HMath::raise(HNumber(10), prec);
+        const HNumber scaled = num.numericValue().real * scale;
         const HNumber absRounded = HMath::floor(HMath::abs(scaled) + HNumber("0.5"));
-        rounded = scaled.isNegative() ? -absRounded : absRounded;
+        rounded = (scaled.isNegative() ? -absRounded : absRounded) / scale;
         break;
     }
-    case Settings::ResultRoundingTowardZero:
-        rounded = HMath::trunc(scaled);
-        break;
-    case Settings::ResultRoundingTowardPositiveInfinity:
-        rounded = HMath::ceil(scaled);
-        break;
-    case Settings::ResultRoundingTowardNegativeInfinity:
-        rounded = HMath::floor(scaled);
-        break;
-    case Settings::ResultRoundingHalfEven:
+    case ScalarRoundingMode::HalfEven:
     default:
-        rounded = HMath::round(scaled);
+        rounded = HMath::round(num.numericValue().real, prec);
         break;
     }
 
     Quantity result(num);
-    result = Quantity(CNumber(rounded / scale));
+    result = Quantity(CNumber(rounded));
     result.copyDimension(num);
     if (num.hasUnit())
         result.setDisplayUnit(num.unit(), num.unitName());
     return result;
+}
+
+Quantity function_round(Function* f, const Function::ArgumentList& args)
+{
+    return s_roundScalar(f, args, ScalarRoundingMode::HalfAwayFromZero);
+}
+
+Quantity function_roundeven(Function* f, const Function::ArgumentList& args)
+{
+    return s_roundScalar(f, args, ScalarRoundingMode::HalfEven);
 }
 
 Quantity function_sqrt(Function* f, const Function::ArgumentList& args)
@@ -652,6 +657,16 @@ Quantity function_cos(Function* f, const Function::ArgumentList& args)
     Quantity result = DMath::cos(angle);
     // Trig outputs are always pure scalars; explicit input-angle display units
     // (e.g. °/rad) must not leak into the function result.
+    result.stripUnits();
+    return result;
+}
+
+Quantity function_cis(Function* f, const Function::ArgumentList& args)
+{
+    ENSURE_ARGUMENT_COUNT(1);
+    Quantity angle = args.at(0);
+    CONVERT_ARGUMENT_ANGLE(angle);
+    Quantity result = DMath::cos(angle) + (DMath::i() * DMath::sin(angle));
     result.stripUnits();
     return result;
 }
@@ -1388,16 +1403,22 @@ Quantity function_octpad(Function* f, const Function::ArgumentList& args)
     return s_nonDecimalPad(f, args, Quantity::Format::Fixed() + Quantity::Format::Octal());
 }
 
-Quantity function_cart(Function* f, const Function::ArgumentList& args)
+Quantity function_rect(Function* f, const Function::ArgumentList& args)
 {
     ENSURE_ARGUMENT_COUNT(1);
     return Quantity(args.at(0)).setFormat(Quantity::Format::Cartesian() + Quantity(args.at(0)).format());
 }
 
-Quantity function_polar(Function* f, const Function::ArgumentList& args)
+Quantity function_expform(Function* f, const Function::ArgumentList& args)
 {
     ENSURE_ARGUMENT_COUNT(1);
     return Quantity(args.at(0)).setFormat(Quantity::Format::Polar() + Quantity(args.at(0)).format());
+}
+
+Quantity function_phasor(Function* f, const Function::ArgumentList& args)
+{
+    ENSURE_ARGUMENT_COUNT(1);
+    return Quantity(args.at(0)).setFormat(Quantity::Format::PolarAngle() + Quantity(args.at(0)).format());
 }
 
 Quantity function_binompmf(Function* f, const Function::ArgumentList& args)
@@ -1931,6 +1952,7 @@ void FunctionRepo::createFunctions()
     FUNCTION_INSERT(FunctionDomain::Arithmetic, frac);
     FUNCTION_INSERT(FunctionDomain::Arithmetic, int);
     FUNCTION_INSERT(FunctionDomain::Arithmetic, round);
+    FUNCTION_INSERT(FunctionDomain::Arithmetic, roundeven);
     FUNCTION_INSERT(FunctionDomain::Arithmetic, sgn);
     FUNCTION_INSERT(FunctionDomain::Arithmetic, sqrt);
     FUNCTION_INSERT(FunctionDomain::Arithmetic, trunc);
@@ -1965,12 +1987,13 @@ void FunctionRepo::createFunctions()
     FUNCTION_INSERT(FunctionDomain::Combinatorics, npr);
 
     // Complex.
-    FUNCTION_INSERT(FunctionDomain::Complex, cart);
     FUNCTION_INSERT(FunctionDomain::Complex, conj);
+    FUNCTION_INSERT(FunctionDomain::Complex, expform);
     FUNCTION_INSERT(FunctionDomain::Complex, imag);
     FUNCTION_INSERT(FunctionDomain::Complex, phase);
-    FUNCTION_INSERT(FunctionDomain::Complex, polar);
+    FUNCTION_INSERT(FunctionDomain::Complex, phasor);
     FUNCTION_INSERT(FunctionDomain::Complex, real);
+    FUNCTION_INSERT(FunctionDomain::Complex, rect);
 
     // Date & Time.
     FUNCTION_INSERT(FunctionDomain::DateTime, datetime);
@@ -2079,6 +2102,7 @@ void FunctionRepo::createFunctions()
     FUNCTION_INSERT(FunctionDomain::Trigonometry, artanh);
     FUNCTION_INSERT(FunctionDomain::Trigonometry, cos);
     FUNCTION_INSERT(FunctionDomain::Trigonometry, cosh);
+    FUNCTION_INSERT(FunctionDomain::Trigonometry, cis);
     FUNCTION_INSERT(FunctionDomain::Trigonometry, cot);
     FUNCTION_INSERT(FunctionDomain::Trigonometry, csc);
     FUNCTION_INSERT(FunctionDomain::Trigonometry, sec);
@@ -2204,9 +2228,9 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(average, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(bin, "n");
     FUNCTION_USAGE(binpad, "n [; bits]");
-    FUNCTION_USAGE(cart, "x");
     FUNCTION_USAGE(cbrt, "x");
     FUNCTION_USAGE(ceil, "x");
+    FUNCTION_USAGE(cis, "x");
     FUNCTION_USAGE(conj, "x");
     FUNCTION_USAGE(cos, "x");
     FUNCTION_USAGE(cosh, "x");
@@ -2227,6 +2251,7 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(erf, "x");
     FUNCTION_USAGE(erfc, "x");
     FUNCTION_USAGE(exp, "x");
+    FUNCTION_USAGE(expform, "x");
     FUNCTION_USAGE(floor, "x");
     FUNCTION_USAGE(flatten, "matrix");
     FUNCTION_USAGE(frac, "x");
@@ -2276,13 +2301,14 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(norm, "list-or-matrix");
     FUNCTION_USAGE(or, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(popcount, "n");
-    FUNCTION_USAGE(polar, "x");
     FUNCTION_USAGE(product, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(phase, "x");
+    FUNCTION_USAGE(phasor, "x");
     FUNCTION_USAGE(radians, "x");
     FUNCTION_USAGE(rank, "matrix");
     FUNCTION_USAGE(real, "x");
     FUNCTION_USAGE(rat, "x");
+    FUNCTION_USAGE(rect, "x");
     FUNCTION_USAGE(sci, "x");
     FUNCTION_USAGE(sec, "x)");
     FUNCTION_USAGE(sgn, "x");
@@ -2333,6 +2359,7 @@ void FunctionRepo::setTranslatableFunctionUsages()
     FUNCTION_USAGE_TR(poipmf, tr("events; average_events"));
     FUNCTION_USAGE_TR(poivar, tr("average_events"));
     FUNCTION_USAGE_TR(round, tr("x [; precision]"));
+    FUNCTION_USAGE_TR(roundeven, tr("x [; precision]"));
     FUNCTION_USAGE_TR(shl, "x; bits");
     FUNCTION_USAGE_TR(shr, "x; bits");
     FUNCTION_USAGE_TR(unmask, "x; bits");
@@ -2358,9 +2385,9 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(binommean, tr("Binomial Distribution Mean"));
     FUNCTION_NAME(binompmf, tr("Binomial Probability Mass Function"));
     FUNCTION_NAME(binomvar, tr("Binomial Distribution Variance"));
-    FUNCTION_NAME(cart, tr("Convert to Cartesian Notation"));
     FUNCTION_NAME(cbrt, tr("Cube Root"));
     FUNCTION_NAME(ceil, tr("Ceiling"));
+    FUNCTION_NAME(cis, tr("Cosine plus Imaginary Sine"));
     FUNCTION_NAME(conj, tr("Complex Conjugate"));
     FUNCTION_NAME(cos, tr("Cosine"));
     FUNCTION_NAME(cosh, tr("Hyperbolic Cosine"));
@@ -2383,6 +2410,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(erf, tr("Error Function"));
     FUNCTION_NAME(erfc, tr("Complementary Error Function"));
     FUNCTION_NAME(exp, tr("Exponential"));
+    FUNCTION_NAME(expform, tr("Convert to Exponential Complex Form"));
     FUNCTION_NAME(floor, tr("Floor"));
     FUNCTION_NAME(flatten, tr("Flatten Matrix"));
     FUNCTION_NAME(frac, tr("Fractional Part"));
@@ -2452,12 +2480,14 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(poimean, tr("Poissonian Distribution Mean"));
     FUNCTION_NAME(poipmf, tr("Poissonian Probability Mass Function"));
     FUNCTION_NAME(poivar, tr("Poissonian Distribution Variance"));
-    FUNCTION_NAME(polar, tr("Convert to Polar Notation"));
+    FUNCTION_NAME(phasor, tr("Convert to Phasor Complex Form"));
     FUNCTION_NAME(product, tr("Product"));
     FUNCTION_NAME(radians, tr("Radians"));
     FUNCTION_NAME(rank, tr("Matrix Rank"));
     FUNCTION_NAME(real, tr("Real Part"));
+    FUNCTION_NAME(rect, tr("Convert to Rectangular Complex Form"));
     FUNCTION_NAME(round, tr("Rounding"));
+    FUNCTION_NAME(roundeven, tr("Rounding Half Even"));
     FUNCTION_NAME(sci, tr("Convert to Scientific Notation"));
     FUNCTION_NAME(sec, tr("Secant"));
     FUNCTION_NAME(shl, tr("Arithmetic Shift Left"));

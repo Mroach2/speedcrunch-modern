@@ -5470,7 +5470,10 @@ void test_format()
     CHECK_EVAL_FAIL("eng(0.000123456; -4)");
     CHECK_EVAL_FAIL("eng(0.000123456; 2)");
 
-    CHECK_EVAL("polar(3+4j)", "5 · exp(i · 0.92729521800161223243)");
+    CHECK_EVAL("expform(3+4j)", "5 · exp(i · 0.92729521800161223243)");
+    CHECK_EVAL("rect(3+4j)", "3+4i");
+    CHECK_EVAL_FORMAT_EXACT("phasor(3+4j)", QString::fromUtf8("5 ∠ 0.92729521800161223243"));
+    CHECK_EVAL("cis(pi)", "-1");
 
     const char savedComplexForm = settings->resultFormatComplex;
     const char savedAngleUnit = settings->angleUnit;
@@ -5479,10 +5482,14 @@ void test_format()
     settings->angleUnit = 'r';
     Evaluator::instance()->initializeAngleUnits();
     CHECK_EVAL_FORMAT_EXACT("1+1j", QString::fromUtf8("1.4142135623730950488 ∠ 0.78539816339744830962"));
+    CHECK_EVAL_FORMAT_EXACT("rect(1+1j)", QString::fromUtf8("1+1i"));
+    CHECK_EVAL_FORMAT_EXACT("expform(1+1j)", QString::fromUtf8("1.4142135623730950488 · exp(i · 0.78539816339744830962)"));
+    CHECK_EVAL_FORMAT_EXACT("phasor(1+1j)", QString::fromUtf8("1.4142135623730950488 ∠ 0.78539816339744830962"));
 
     settings->angleUnit = 'd';
     Evaluator::instance()->initializeAngleUnits();
     CHECK_EVAL_FORMAT_EXACT("1+1j", QString::fromUtf8("1.4142135623730950488 ∠ 45"));
+    CHECK_EVAL("cis(180)", "-1");
 
     settings->angleUnit = 'g';
     Evaluator::instance()->initializeAngleUnits();
@@ -5525,14 +5532,18 @@ void test_result_rounding_mode_formatting()
     checkFixed0("half-away -2.5", "-2.5", "-3");
     CHECK_EVAL("round(2.5)", "3");
     CHECK_EVAL("round(2.5[m])", "3 metre");
+    CHECK_EVAL("roundeven(2.5)", "2");
+    CHECK_EVAL("roundeven(3.5)", "4");
+    CHECK_EVAL("roundeven(2.5[m])", "2 metre");
 
     settings->resultRoundingMode = Settings::ResultRoundingHalfEven;
     setRuntimeResultRoundingMode(settings->resultRoundingMode);
     checkFixed0("half-even +2.5", "2.5", "2");
     checkFixed0("half-even +3.5", "3.5", "4");
     checkFixed0("half-even -2.5", "-2.5", "-2");
-    CHECK_EVAL("round(2.5)", "2");
-    CHECK_EVAL("round(2.5[m])", "2 metre");
+    CHECK_EVAL("round(2.5)", "3");
+    CHECK_EVAL("round(2.5[m])", "3 metre");
+    CHECK_EVAL("roundeven(-2.5)", "-2");
 
     settings->resultRoundingMode = Settings::ResultRoundingTowardZero;
     setRuntimeResultRoundingMode(settings->resultRoundingMode);

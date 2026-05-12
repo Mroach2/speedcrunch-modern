@@ -431,11 +431,14 @@ This section contains settings that control result output and post-evaluation be
         Example at 1 fractional digit: ``2.290 -> 2.2``,
         ``-2.210 -> -2.3``.
 
-    This setting affects result formatting (including live previews). It does
-    not change the behavior of the :func:`round` and :func:`trunc` functions.
-    Like other result-format settings, changes apply to subsequent
-    calculations and previews; already stored history entries keep their
-    original display.
+    This setting affects result formatting (including live previews), not the
+    numeric value of expressions. Use explicit functions when a calculation
+    must apply a rounding strategy:
+    :func:`round` for half away from zero, :func:`roundeven` for half even
+    (banker's), :func:`trunc` for toward zero, :func:`ceil` for toward
+    +infinity, and :func:`floor` for toward -infinity. Like other
+    result-format settings, changes apply to subsequent calculations and
+    previews; already stored history entries keep their original display.
 
 * :menuselection:`Complex Numbers`
     Configure the imaginary unit and complex result form. See

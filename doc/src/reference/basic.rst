@@ -374,6 +374,22 @@ current angle mode.
         | :func:`sec`
         | :func:`arccos`
 
+.. function:: cis(x)
+
+    Return ``cos(x) + i·sin(x)``.
+
+    Like :func:`sin` and :func:`cos`, explicit angle units
+    (``rad``, ``degree``, ``gradian``/``grad``/``gon``, ``turn``,
+    ``arcminute``, ``arcsecond``) override the global angle mode. Unitless
+    values follow the current angle mode.
+
+    Complex arguments are allowed only in *radians* mode. The argument must be
+    dimensionless.
+
+    .. seealso::
+        | :func:`sin`
+        | :func:`cos`
+
 .. function:: tan(x)
 
     Returns the tangent of ``x``. The behavior depends on both the angle mode setting and on whether complex numbers are enabled.
@@ -569,6 +585,11 @@ Special
 Complex Numbers
 ---------------
 
+The complex-form functions in this section format one result in a specific
+complex representation. They override the global
+:menuselection:`Settings --> Results --> Complex Numbers --> Form` setting for
+that result only.
+
 .. function:: real(x)
 
     Return the real part of a complex number ``x``.
@@ -598,22 +619,34 @@ Complex Numbers
     .. seealso::
        | :func:`abs` (absolute value)
 
-.. function:: polar(x)
+.. function:: rect(x)
 
-    Converts the complex number ``x`` to polar form.
+    Format the complex number ``x`` in rectangular form, i.e. the form
+    *a + b u*, where ``u`` is the currently selected imaginary-unit symbol
+    (``i`` or ``j``).
 
-    In the ``Polar (r·e^(iθ))`` complex-number display mode, values are
-    shown as *r e* :sup:`uɸ`, where ``u`` is the selected imaginary-unit
-    symbol (``i`` or ``j``), and ɸ is in radians.
+    This corresponds to
+    :menuselection:`Settings --> Results --> Complex Numbers --> Form -->
+    Rectangular (a + bi)`.
 
-    In the ``Polar (r∠θ)`` complex-number display mode, values are shown as
-    *r ∠ ɸ*, and ɸ follows the global angle-unit setting.
+.. function:: expform(x)
 
-.. function:: cart(x)
+    Format the complex number ``x`` in exponential form, shown as
+    *r e* :sup:`uɸ`, where ``u`` is the selected imaginary-unit symbol
+    (``i`` or ``j``), and ɸ is in radians.
 
-    Converts the complex number ``x`` to cartesian form, i.e. the form
-    *a + b u*, where ``u`` is the currently selected imaginary-unit
-    symbol (``i`` or ``j``).
+    This corresponds to
+    :menuselection:`Settings --> Results --> Complex Numbers --> Form -->
+    Exponential (reⁱᶿ)`.
+
+.. function:: phasor(x)
+
+    Format the complex number ``x`` in phasor form, shown as *r ∠ ɸ*. The
+    angle ɸ follows the global angle mode.
+
+    This corresponds to
+    :menuselection:`Settings --> Results --> Complex Numbers --> Form -->
+    Phasor (r∠θ)`.
 
 
 Various

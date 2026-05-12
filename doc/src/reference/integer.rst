@@ -178,25 +178,34 @@ Rounding
 
 .. function:: ceil(x)
 
-    Round ``x`` to the next largest integer. Only real, dimensionless arguments are allowed.
+    Round ``x`` to the next largest integer. This is the expression-level
+    counterpart to :menuselection:`Settings --> Results --> Rounding Mode -->
+    Toward +Infinity`. Only real, dimensionless arguments are allowed.
 
 .. function:: floor(x)
 
-    Round ``x`` to the next smallest integer. Only real, dimensionless arguments are allowed.
+    Round ``x`` to the next smallest integer. This is the expression-level
+    counterpart to :menuselection:`Settings --> Results --> Rounding Mode -->
+    Toward -Infinity`. Only real, dimensionless arguments are allowed.
 
 
 .. function:: round(x [; n])
 
-    Round ``x`` to the nearest number with ``n`` fractional digits; ``n`` may be omitted, in which case ``x`` is rounded to the closest integer.
+    Round ``x`` to the nearest number with ``n`` fractional digits using
+    half-away-from-zero rounding; ``n`` may be omitted, in which case ``x`` is
+    rounded to the closest integer.
 
-    Tie handling and directional behavior follow the global
-    :menuselection:`Settings --> Results --> Rounding Mode` option (for
-    example *Half Even (Banker's)*, *Half Away from Zero*, or directed modes).
+    This is the expression-level counterpart to
+    :menuselection:`Settings --> Results --> Rounding Mode --> Half Away from
+    Zero (Arithmetic)`. It does not depend on the global rounding mode.
 
     Example::
 
         round(0.5)
-        = 0
+        = 1
+
+        round(-0.5)
+        = -1
 
         round(1.5)
         = 2
@@ -209,13 +218,48 @@ Rounding
 
     ``x`` must be real. ``n`` must be a real, dimensionless integer.
 
+.. function:: roundeven(x [; n])
+
+    Round ``x`` to the nearest number with ``n`` fractional digits using
+    half-even, also known as banker's rounding; ``n`` may be omitted, in which
+    case ``x`` is rounded to the closest integer.
+
+    Ties are rounded to the value whose last kept digit is even. This is the
+    expression-level counterpart to
+    :menuselection:`Settings --> Results --> Rounding Mode --> Half Even
+    (Banker's)`. It does not depend on the global rounding mode.
+
+    Example::
+
+        roundeven(0.5)
+        = 0
+
+        roundeven(1.5)
+        = 2
+
+        roundeven(2.5)
+        = 2
+
+        roundeven(12.345; 2)
+        = 12.34
+
+    ``x`` must be real. ``n`` must be a real, dimensionless integer.
+
 .. function:: trunc(x [; n])
 
-    Truncate (rounds toward zero) ``x`` to the next number with ``n`` fractional digits; ``n`` may be omitted, in which case ``x`` is rounded to integer. Only real, dimensionless arguments are allowed.
+    Truncate (round toward zero) ``x`` to the next number with ``n``
+    fractional digits; ``n`` may be omitted, in which case ``x`` is rounded to
+    integer. This is the expression-level counterpart to
+    :menuselection:`Settings --> Results --> Rounding Mode --> Toward Zero
+    (Truncation)`. Only real, dimensionless arguments are allowed.
 
     .. seealso::
        | :func:`int`
        | :func:`frac`
+       | :func:`ceil`
+       | :func:`floor`
+       | :func:`round`
+       | :func:`roundeven`
 
 
 Integer Division
