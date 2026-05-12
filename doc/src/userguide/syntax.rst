@@ -443,8 +443,8 @@ Write ``j*5`` explicitly if needed.
 
 The displayed imaginary-unit symbol is configurable in
 :menuselection:`Settings --> Results --> Complex Numbers --> Imaginary Unit`.
-The displayed complex format is configurable in
-:menuselection:`Settings --> Results --> Complex Numbers --> Complex Format`.
+The displayed complex form is configurable in
+:menuselection:`Settings --> Results --> Complex Numbers --> Form`.
 
 Not every function accepts complex arguments. Refer to each function entry in
 the reference.

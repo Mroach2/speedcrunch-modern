@@ -214,7 +214,6 @@ private slots:
     void showReadyMessage();
     void showAngleModeContextMenu(const QPoint&);
     void showPrecisionContextMenu(const QPoint&);
-    void showComplexFormContextMenu(const QPoint&);
     void showKeypadContextMenu(const QPoint&);
     void showResultFormatContextMenu(const QPoint&);
     void showSessionImportDialog();
@@ -314,7 +313,6 @@ private:
     void setStatusBarText();
     void updateStatusBarSectionVisibility();
     QString statusBarAngleUnitValue() const;
-    QString statusBarComplexFormValue() const;
     QString statusBarResultPrecisionValue() const;
     QString statusBarResultFormatValue() const;
     void applyUserDefinitions(int* importedVariables = nullptr,
@@ -554,9 +552,6 @@ private:
         QWidget* resultPrecisionSection;
         QLabel* resultPrecisionLabel;
         QPushButton* resultPrecision;
-        QWidget* complexFormSection;
-        QLabel* complexFormLabel;
-        QPushButton* complexForm;
     } m_status;
 
     Constants* m_constants;

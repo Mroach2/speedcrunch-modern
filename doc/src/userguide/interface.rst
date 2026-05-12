@@ -304,12 +304,12 @@ Complex numbers are always enabled.
     Use ``i`` as the imaginary unit symbol.
 * :menuselection:`Imaginary Unit --> j`
     Use ``j`` as the imaginary unit symbol.
-* :menuselection:`Complex Format --> Rectangular (a + bi)`
+* :menuselection:`Form --> Rectangular (a + bi)`
     Display complex results in rectangular form.
-* :menuselection:`Complex Format --> Polar (r·e^(iθ))`
+* :menuselection:`Form --> Exponential (reⁱᶿ)`
     Display complex results in polar exponential form.
-* :menuselection:`Complex Format --> Polar (r∠θ)`
-    Display complex results in polar angle form.
+* :menuselection:`Form --> Phasor (r∠θ)`
+    Display complex results in phasor form.
 
 .. _radix_character:
 
@@ -438,7 +438,7 @@ This section contains settings that control result output and post-evaluation be
     original display.
 
 * :menuselection:`Complex Numbers`
-    Configure the imaginary unit and complex result format. See
+    Configure the imaginary unit and complex result form. See
     :ref:`complex_numbers`.
 
 * :menuselection:`Unit Exponent Style`
@@ -607,8 +607,8 @@ Widgets and Docks
     Show/hide the status bar.
     The status bar provides quick selectors for :menuselection:`Angle Mode`,
     :menuselection:`Results --> Notation`, and
-    :menuselection:`Results --> Complex Numbers --> Complex Format`. On narrow
-    windows, selectors that do not fully fit are hidden automatically.
+    :menuselection:`Results --> Precision`. On narrow windows, selectors that
+    do not fully fit are hidden automatically.
 
 Scrolling
 +++++++++
