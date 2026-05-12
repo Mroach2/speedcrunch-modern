@@ -8544,6 +8544,8 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
 
         const QString expressions[] = {
             QString::fromUtf8("cos(180°)"),
+            QString::fromUtf8("3cis(90[°])"),
+            QStringLiteral("3 * cis(200 [gon])"),
             QString::fromUtf8("uf_trig_wrap(90°)"),
             QStringLiteral("uf_trig_wrap((pi/2)[rad])")
         };

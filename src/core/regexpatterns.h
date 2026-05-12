@@ -70,7 +70,7 @@ inline const QRegularExpression& separatorToken()
 inline const QRegularExpression& trigFunctionCall()
 {
     static const QRegularExpression pattern(
-        QStringLiteral(R"(\b(?:sin|cos|tan|cot|sec|csc|arcsin|arccos|arctan|arctan2|radians|degrees|gradians)\s*\()"),
+        QStringLiteral(R"(\b(?:sin|cos|tan|cot|sec|csc|cis|arcsin|arccos|arctan|arctan2|radians|degrees|gradians)\s*\()"),
         QRegularExpression::CaseInsensitiveOption);
     return pattern;
 }
@@ -94,6 +94,7 @@ inline bool isTrigFunctionIdentifier(QStringView identifier)
         || identifier.compare(QStringLiteral("cot"), Qt::CaseInsensitive) == 0
         || identifier.compare(QStringLiteral("sec"), Qt::CaseInsensitive) == 0
         || identifier.compare(QStringLiteral("csc"), Qt::CaseInsensitive) == 0
+        || identifier.compare(QStringLiteral("cis"), Qt::CaseInsensitive) == 0
         || identifier.compare(QStringLiteral("arcsin"), Qt::CaseInsensitive) == 0
         || identifier.compare(QStringLiteral("arccos"), Qt::CaseInsensitive) == 0
         || identifier.compare(QStringLiteral("arctan"), Qt::CaseInsensitive) == 0
