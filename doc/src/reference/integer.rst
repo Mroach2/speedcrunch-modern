@@ -180,13 +180,13 @@ Rounding
 
     Round ``x`` to the next largest integer. This is the expression-level
     counterpart to :menuselection:`Settings --> Results --> Rounding Mode -->
-    Toward +Infinity`. Only real, dimensionless arguments are allowed.
+    Toward +∞ (ceil)`. Only real, dimensionless arguments are allowed.
 
 .. function:: floor(x)
 
     Round ``x`` to the next smallest integer. This is the expression-level
     counterpart to :menuselection:`Settings --> Results --> Rounding Mode -->
-    Toward -Infinity`. Only real, dimensionless arguments are allowed.
+    Toward −∞ (floor)`. Only real, dimensionless arguments are allowed.
 
 
 .. function:: round(x [; n])
@@ -196,8 +196,8 @@ Rounding
     rounded to the closest integer.
 
     This is the expression-level counterpart to
-    :menuselection:`Settings --> Results --> Rounding Mode --> Half Away from
-    Zero (Arithmetic)`. It does not depend on the global rounding mode.
+    :menuselection:`Settings --> Results --> Rounding Mode --> Nearest, Half
+    Away (round)`. It does not depend on the global rounding mode.
 
     Example::
 
@@ -226,8 +226,9 @@ Rounding
 
     Ties are rounded to the value whose last kept digit is even. This is the
     expression-level counterpart to
-    :menuselection:`Settings --> Results --> Rounding Mode --> Half Even
-    (Banker's)`. It does not depend on the global rounding mode.
+    :menuselection:`Settings --> Results --> Rounding Mode --> Nearest, Half
+    Even (roundeven)`. This strategy is commonly known as Banker's rounding.
+    It does not depend on the global rounding mode.
 
     Example::
 
@@ -251,7 +252,7 @@ Rounding
     fractional digits; ``n`` may be omitted, in which case ``x`` is rounded to
     integer. This is the expression-level counterpart to
     :menuselection:`Settings --> Results --> Rounding Mode --> Toward Zero
-    (Truncation)`. Only real, dimensionless arguments are allowed.
+    (trunc)`. Only real, dimensionless arguments are allowed.
 
     .. seealso::
        | :func:`int`

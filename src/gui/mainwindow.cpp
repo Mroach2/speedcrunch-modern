@@ -1871,12 +1871,14 @@ void MainWindow::setActionsText()
     m_actions.settingsResultFormat8Digits->setText(MainWindow::tr("&8 Digits"));
     m_actions.settingsResultFormatCustomDigits->setText(MainWindow::tr("&Custom..."));
     m_actions.settingsResultRoundingHalfAwayFromZero->setText(
-        MainWindow::tr("Half Away from Zero (&Arithmetic)"));
+        MainWindow::tr("Nearest, Half &Away (round)"));
     m_actions.settingsResultRoundingHalfEven->setText(
-        MainWindow::tr("Half &Even (Banker's)"));
-    m_actions.settingsResultRoundingTowardZero->setText(MainWindow::tr("Toward &Zero"));
-    m_actions.settingsResultRoundingTowardPositiveInfinity->setText(MainWindow::tr("Toward +&Infinity"));
-    m_actions.settingsResultRoundingTowardNegativeInfinity->setText(MainWindow::tr("Toward -I&nfinity"));
+        MainWindow::tr("Nearest, Half &Even (roundeven)"));
+    m_actions.settingsResultRoundingTowardZero->setText(MainWindow::tr("Toward &Zero (trunc)"));
+    m_actions.settingsResultRoundingTowardPositiveInfinity->setText(
+        MainWindow::tr("Toward +&∞ (ceil)"));
+    m_actions.settingsResultRoundingTowardNegativeInfinity->setText(
+        MainWindow::tr("Toward −&∞ (floor)"));
     m_actions.settingsResultFormatAutoPrecision->setText(MainWindow::tr("&Automatic"));
     m_actions.settingsResultFormatGeneral->setText(MainWindow::tr("&Automatic"));
     m_actions.settingsResultFormatFixed->setText(MainWindow::tr("&Fixed-Point"));

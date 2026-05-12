@@ -402,41 +402,41 @@ This section contains settings that control result output and post-evaluation be
 
 * :menuselection:`Rounding Mode`
     Choose how displayed results are rounded when formatting to a finite number
-    of digits. The default is :menuselection:`Half Away from Zero (Arithmetic)`.
+    of digits. The default is :menuselection:`Nearest, Half Away (round)`.
     Available modes are:
-    :menuselection:`Half Even (Banker's)`,
-    :menuselection:`Half Away from Zero (Arithmetic)`,
-    :menuselection:`Up (Ceil)`,
-    :menuselection:`Down (Floor)`,
-    :menuselection:`Toward Zero (Truncation)`.
+    :menuselection:`Nearest, Half Away (round)`,
+    :menuselection:`Nearest, Half Even (roundeven)`,
+    :menuselection:`Toward Zero (trunc)`,
+    :menuselection:`Toward +∞ (ceil)`,
+    :menuselection:`Toward −∞ (floor)`.
 
-    * :menuselection:`Half Even (Banker's)`
-        Round to nearest; ties go to the nearest even last kept digit.
-        Example at 1 fractional digit: ``2.250 -> 2.2``,
-        ``2.350 -> 2.4``, ``-2.250 -> -2.2``.
-    * :menuselection:`Half Away from Zero (Arithmetic)`
-        Round to nearest; ties increase magnitude.
+    * :menuselection:`Nearest, Half Away (round)`
+        Round to nearest; ties increase magnitude. This matches the
+        :func:`round` function.
         Example at 1 fractional digit: ``2.250 -> 2.3``,
         ``-2.250 -> -2.3``.
-    * :menuselection:`Toward Zero`
-        Discard extra digits without rounding up.
+    * :menuselection:`Nearest, Half Even (roundeven)`
+        Round to nearest; ties go to the nearest even last kept digit. This is
+        Banker's rounding and matches the :func:`roundeven` function.
+        Example at 1 fractional digit: ``2.250 -> 2.2``,
+        ``2.350 -> 2.4``, ``-2.250 -> -2.2``.
+    * :menuselection:`Toward Zero (trunc)`
+        Discard extra digits without rounding up. This matches the
+        :func:`trunc` function.
         Example at 1 fractional digit: ``2.290 -> 2.2``,
         ``-2.290 -> -2.2``.
-    * :menuselection:`Toward +Infinity`
-        Always round upward.
+    * :menuselection:`Toward +∞ (ceil)`
+        Always round upward. This matches the :func:`ceil` function.
         Example at 1 fractional digit: ``2.210 -> 2.3``,
         ``-2.210 -> -2.2``.
-    * :menuselection:`Toward -Infinity`
-        Always round downward.
+    * :menuselection:`Toward −∞ (floor)`
+        Always round downward. This matches the :func:`floor` function.
         Example at 1 fractional digit: ``2.290 -> 2.2``,
         ``-2.210 -> -2.3``.
 
     This setting affects result formatting (including live previews), not the
-    numeric value of expressions. Use explicit functions when a calculation
-    must apply a rounding strategy:
-    :func:`round` for half away from zero, :func:`roundeven` for half even
-    (banker's), :func:`trunc` for toward zero, :func:`ceil` for toward
-    +infinity, and :func:`floor` for toward -infinity. Like other
+    numeric value of expressions. Use the named function in parentheses when a
+    calculation must apply the same rounding strategy explicitly. Like other
     result-format settings, changes apply to subsequent calculations and
     previews; already stored history entries keep their original display.
 
