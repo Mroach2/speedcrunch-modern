@@ -10,6 +10,7 @@
 #include <QTextBlockUserData>
 
 class QPlainTextEdit;
+class Evaluator;
 
 class SyntaxHighlightBlockData : public QTextBlockUserData {
 public:
@@ -22,6 +23,7 @@ public:
     explicit SyntaxHighlighter(QPlainTextEdit*);
 
     void setColorScheme(ColorScheme&&);
+    void setEvaluator(const Evaluator* evaluator);
     QColor colorForRole(ColorScheme::Role role) const { return m_colorScheme.colorForRole(role); }
 
     void update();
@@ -35,8 +37,10 @@ private:
     SyntaxHighlighter(QTextDocument*);
     void groupDigits(const QString& text, int pos, int length);
     void formatDigitsGroup(const QString& text, int start, int end, bool invert, int size);
+    const Evaluator* evaluator() const;
 
     ColorScheme m_colorScheme;
+    const Evaluator* m_evaluator;
 };
 
 #endif

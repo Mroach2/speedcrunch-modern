@@ -4,7 +4,6 @@
 
 #include "gui/historywidget.h"
 #include "core/sessionhistory.h"
-#include "core/evaluator.h"
 #include "core/numberformatter.h"
 #include "core/session.h"
 #include "gui/dockliststyle.h"
@@ -27,6 +26,7 @@ QString groupedExpressionForHistory(const QString& input)
 HistoryWidget::HistoryWidget(QWidget *parent)
     : QWidget(parent)
     , m_list(new QListWidget(this))
+    , m_session(nullptr)
 {
     m_list->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_list->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -59,19 +59,27 @@ HistoryWidget::HistoryWidget(QWidget *parent)
 
 void HistoryWidget::updateHistory()
 {
-    const Session* session = Evaluator::instance()->session();
-    const int historySize = session->historySize();
+    const int historySize = m_session != nullptr ? m_session->historySize() : 0;
 
     m_list->clear();
     m_list->clearSelection();
 
     for (int i = 0; i < historySize; ++i) {
-        const QString expression = session->historyEntryAtRef(i).expr();
+        const QString expression = m_session->historyEntryAtRef(i).expr();
         QListWidgetItem* item = new QListWidgetItem(groupedExpressionForHistory(expression));
         item->setData(Qt::UserRole, expression);
         m_list->addItem(item);
     }
     m_list->scrollToBottom();
+}
+
+void HistoryWidget::setSession(const Session* session)
+{
+    if (m_session == session)
+        return;
+
+    m_session = session;
+    updateHistory();
 }
 
 void HistoryWidget::handleItem(QListWidgetItem *item)

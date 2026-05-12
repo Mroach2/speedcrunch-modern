@@ -8,6 +8,7 @@
 #include "core/sessionhistory.h"
 
 #include <QPlainTextEdit>
+#include <memory>
 
 struct Constant;
 class ConstantCompletion;
@@ -32,9 +33,11 @@ class Editor : public QPlainTextEdit {
 
 public:
     explicit Editor(QWidget* parent = nullptr);
+    ~Editor() override;
 
     bool isAutoCalcEnabled() const;
     bool isAutoCompletionEnabled() const;
+    Evaluator* evaluator() const { return m_evaluator; }
     void clearHistory();
     int cursorPosition() const;
     void doBackspace();
@@ -43,6 +46,7 @@ public:
     void setAutoCalcEnabled(bool);
     void setAutoCompletionEnabled(bool);
     void setCustomCursorVisible(bool visible);
+    void setSession(Session* session);
     void setHistoryArrowNavigationEnabled(bool enabled);
     void setCursorPosition(int pos);
     void setText(const QString&);
@@ -127,7 +131,8 @@ private:
     bool m_shouldPaintCustomCursor;
     bool m_historyArrowNavigationEnabled;
     bool m_pendingDeadCaretPreedit = false;
-    const Session * m_session;
+    std::unique_ptr<Session> m_ownedSession;
+    Session* m_session;
 
     void updateHeightForWrappedText();
 };

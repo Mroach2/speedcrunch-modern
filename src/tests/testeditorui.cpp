@@ -6,6 +6,7 @@
 #include "gui/editorutils.h"
 #include "gui/syntaxhighlighter.h"
 #include "core/evaluator.h"
+#include "core/session.h"
 #include "core/settings.h"
 #include "core/unicodechars.h"
 #include "core/mathdsl.h"
@@ -749,7 +750,9 @@ void TestEditorUi::inserts_parenthesis_pair_and_places_cursor_inside()
     QCOMPARE(editor.textCursor().position(),
              QString::fromUtf8("2 pi⁻²³ · cos(").size());
 
-    Evaluator* evaluator = Evaluator::instance();
+    Session session;
+    Evaluator* evaluator = session.evaluator();
+    editor.setSession(&session);
     evaluator->unsetAllUserFunctions();
     evaluator->setUserFunction(UserFunction(
         QStringLiteral("user_fun"),
@@ -1332,7 +1335,8 @@ void TestEditorUi::unit_bracket_context_disallows_variables_and_constants()
     // State: expressions "2[foo]", "2[e]", "2[pi]".
     // Action: evaluate with foo defined as variable.
     // Expected: all fail with "unknown unit".
-    Evaluator* evaluator = Evaluator::instance();
+    Session session;
+    Evaluator* evaluator = session.evaluator();
     evaluator->setVariable(QStringLiteral("foo"), Quantity(3));
 
     evaluator->setExpression(QStringLiteral("2[foo]"));
@@ -1352,7 +1356,8 @@ void TestEditorUi::unit_bracket_context_disallows_variables_and_constants()
 
 void TestEditorUi::evaluator_accepts_compact_arc_symbol_units()
 {
-    Evaluator* evaluator = Evaluator::instance();
+    Session session;
+    Evaluator* evaluator = session.evaluator();
     const auto tokensDebug = [evaluator](const QString& expr) {
         const Tokens tokens = evaluator->scan(expr);
         QStringList parts;
@@ -2282,7 +2287,9 @@ void TestEditorUi::unit_context_completion_excludes_user_variables()
     QVERIFY(QTest::qWaitForWindowExposed(&editor));
     editor.setFocus();
 
-    Evaluator* evaluator = Evaluator::instance();
+    Session session;
+    Evaluator* evaluator = session.evaluator();
+    editor.setSession(&session);
     evaluator->setVariable(QStringLiteral("foo"), Quantity(3));
 
     const QStringList unitChoices = editor.matchFragment(QStringLiteral("fo"), true);
@@ -2311,7 +2318,9 @@ void TestEditorUi::unit_context_completion_excludes_user_functions()
     QVERIFY(QTest::qWaitForWindowExposed(&editor));
     editor.setFocus();
 
-    Evaluator* evaluator = Evaluator::instance();
+    Session session;
+    Evaluator* evaluator = session.evaluator();
+    editor.setSession(&session);
     evaluator->setUserFunction(UserFunction(
         QStringLiteral("foof"),
         QStringList() << QStringLiteral("x"),
@@ -3192,7 +3201,8 @@ void TestEditorUi::completion_popup_uses_expected_icons_for_all_symbol_types()
         }
     } settingsRestoreGuard {settings, builtInFnBackup, builtInVarBackup, userFnBackup, userVarBackup};
 
-    Evaluator* evaluator = Evaluator::instance();
+    Session session;
+    Evaluator* evaluator = session.evaluator();
     evaluator->unsetAllUserUnits();
     evaluator->unsetAllUserFunctions();
     evaluator->unsetVariable(QStringLiteral("icon_user_var"));
@@ -3201,6 +3211,7 @@ void TestEditorUi::completion_popup_uses_expected_icons_for_all_symbol_types()
     QVERIFY(!evaluator->eval().isNan());
     evaluator->setExpression(QStringLiteral("s = 9"));
     QVERIFY(!evaluator->eval().isNan());
+    evaluator->setVariable(QStringLiteral("ans"), Quantity(9), Variable::BuiltIn);
     evaluator->setUserFunction(UserFunction(
         QStringLiteral("icon_user_func"),
         QStringList() << QStringLiteral("t"),
@@ -3215,6 +3226,7 @@ void TestEditorUi::completion_popup_uses_expected_icons_for_all_symbol_types()
         QStringLiteral("[icon_user_unit]=2[m]")));
 
     Editor editor;
+    editor.setSession(&session);
     editor.show();
     QVERIFY(QTest::qWaitForWindowExposed(&editor));
     editor.setFocus();

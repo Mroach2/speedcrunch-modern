@@ -11,6 +11,7 @@ class QListWidget;
 class QListWidgetItem;
 class HistoryEntry;
 class QPoint;
+class Session;
 
 class HistoryWidget : public QWidget
 {
@@ -18,6 +19,7 @@ class HistoryWidget : public QWidget
 
 public:
     explicit HistoryWidget(QWidget *parent = 0);
+    void setSession(const Session* session);
 
 public slots:
     void updateHistory();
@@ -39,6 +41,7 @@ private:
     Q_DISABLE_COPY(HistoryWidget)
 
     QListWidget *m_list;
+    const Session* m_session;
 };
 
 #endif

@@ -687,7 +687,8 @@ inline QString foldRepeatedAdditiveTermsForDisplay(const QString& text)
 
 inline QString simplifiedExpressionLineForDisplay(const QString& interpretedExpression,
                                                   const QString& sourceExpression,
-                                                  bool simplifyResultExpressions)
+                                                  bool simplifyResultExpressions,
+                                                  const Evaluator* evaluator = nullptr)
 {
     if (!simplifyResultExpressions)
         return QString();
@@ -748,9 +749,9 @@ inline QString simplifiedExpressionLineForDisplay(const QString& interpretedExpr
         return QString();
 
     QString interpretedDisplay = DisplayFormatUtils::applyDigitGroupingForDisplay(
-        Evaluator::formatInterpretedExpressionForDisplay(expressionForSimplification));
+        Evaluator::formatInterpretedExpressionForDisplay(expressionForSimplification, evaluator));
     QString simplifiedDisplay = DisplayFormatUtils::applyDigitGroupingForDisplay(
-        Evaluator::formatInterpretedExpressionSimplifiedForDisplay(expressionForSimplification));
+        Evaluator::formatInterpretedExpressionSimplifiedForDisplay(expressionForSimplification, evaluator));
     if (!sourceExpression.isEmpty()) {
         interpretedDisplay = DisplayFormatUtils::preserveConversionTargetBracketsForDisplay(
             interpretedDisplay, sourceExpression);
@@ -824,7 +825,8 @@ inline QString conversionTargetSuffixForDisplay(const QString& expression)
 }
 
 inline QString formattedExpressionLineForDisplay(const QString& sourceExpression,
-                                                 const QString& interpretedExpression)
+                                                 const QString& interpretedExpression,
+                                                 const Evaluator* evaluator = nullptr)
 {
     const QString sourceConversionTargetSuffix =
         conversionTargetSuffixForDisplay(sourceExpression);
@@ -858,7 +860,7 @@ inline QString formattedExpressionLineForDisplay(const QString& sourceExpression
         : interpretedExpression;
     const QString displayed = DisplayFormatUtils::applyDigitGroupingForDisplay(
         UnicodeChars::normalizePiForDisplay(
-            Evaluator::formatInterpretedExpressionForDisplay(interpretedSource)));
+            Evaluator::formatInterpretedExpressionForDisplay(interpretedSource, evaluator)));
     return collapseBracketedCompactAngleSuffixes(
         collapseValueUnitMultiplicationForDisplay(
             preserveExplicitParenthesizedUnitDenominatorFromSource(
@@ -991,7 +993,8 @@ inline bool shouldPreserveDetailedStandaloneSexagesimalAngle(
 }
 
 inline bool expressionUsesTrigFunction(const QString& sourceExpression,
-                                       const QString& interpretedExpression)
+                                       const QString& interpretedExpression,
+                                       const Evaluator* evaluator = nullptr)
 {
     const QString source = interpretedExpression.isEmpty()
         ? sourceExpression
@@ -999,7 +1002,8 @@ inline bool expressionUsesTrigFunction(const QString& sourceExpression,
     if (RegExpPatterns::trigFunctionCall().match(source).hasMatch())
         return true;
 
-    const QList<UserFunction> userFunctions = Evaluator::instance()->getUserFunctions();
+    const QList<UserFunction> userFunctions =
+        (evaluator ? evaluator : Evaluator::instance())->getUserFunctions();
     if (userFunctions.isEmpty())
         return false;
 
@@ -1072,7 +1076,8 @@ inline bool expressionUsesTrigFunction(const QString& sourceExpression,
 inline bool shouldShowAdditionalRationalForTrig(const Settings* settings,
                                                  const QString& sourceExpression,
                                                  const QString& interpretedExpression,
-                                                 const Quantity& value)
+                                                 const Quantity& value,
+                                                 const Evaluator* evaluator = nullptr)
 {
     const bool hasRationalAlready =
         settings->resultFormat == 'r'
@@ -1087,7 +1092,7 @@ inline bool shouldShowAdditionalRationalForTrig(const Settings* settings,
     if (hasRationalAlready)
         return false;
 
-    if (!expressionUsesTrigFunction(sourceExpression, interpretedExpression))
+    if (!expressionUsesTrigFunction(sourceExpression, interpretedExpression, evaluator))
         return false;
 
     return !NumberFormatter::formatTrigSymbolic(value).isEmpty();
@@ -1139,9 +1144,10 @@ inline bool isRadianResultContext(const Settings* settings,
 }
 
 inline bool expressionUsesTrigOrExplicitAngleInput(const QString& sourceExpression,
-                                                   const QString& interpretedExpression)
+                                                   const QString& interpretedExpression,
+                                                   const Evaluator* evaluator = nullptr)
 {
-    if (expressionUsesTrigFunction(sourceExpression, interpretedExpression))
+    if (expressionUsesTrigFunction(sourceExpression, interpretedExpression, evaluator))
         return true;
 
     return containsExplicitBracketedAngleUnit(sourceExpression)
@@ -1228,9 +1234,10 @@ inline QString formatPiMultipleForRadians(const HNumber& radians)
 inline QString formatPiRadianResultLineIfNeeded(const Settings* settings,
                                                 const QString& sourceExpression,
                                                 const QString& interpretedExpression,
-                                                const Quantity& value)
+                                                const Quantity& value,
+                                                const Evaluator* evaluator = nullptr)
 {
-    if (!expressionUsesTrigOrExplicitAngleInput(sourceExpression, interpretedExpression))
+    if (!expressionUsesTrigOrExplicitAngleInput(sourceExpression, interpretedExpression, evaluator))
         return QString();
     if (!isRadianResultContext(settings, sourceExpression, interpretedExpression))
         return QString();
@@ -1260,7 +1267,8 @@ inline QString appendAngleModeSuffixIfNeeded(const QString& formattedText,
                                              const QString& interpretedExpression,
                                              const Quantity& value,
                                              char resultFormat,
-                                             const Settings* settings)
+                                             const Settings* settings,
+                                             const Evaluator* evaluator = nullptr)
 {
     if (resultFormat == 's')
         return formattedText;
@@ -1268,7 +1276,7 @@ inline QString appendAngleModeSuffixIfNeeded(const QString& formattedText,
         return formattedText;
     if (formattedText.contains(MathDsl::UnitStart) || formattedText.contains(MathDsl::UnitEnd))
         return formattedText;
-    if (expressionUsesTrigFunction(sourceExpression, interpretedExpression))
+    if (expressionUsesTrigFunction(sourceExpression, interpretedExpression, evaluator))
         return formattedText;
     const bool hasExplicitBracketedAngleUnit =
         containsExplicitBracketedAngleUnit(sourceExpression)
@@ -1311,9 +1319,10 @@ inline QString formatNumericResultLine(const Quantity& value,
                                        bool complexNumbers,
                                        char complexFormat,
                                        bool stripUnitBrackets,
-                                       const Settings* settings)
+                                       const Settings* settings,
+                                       const Evaluator* evaluator = nullptr)
 {
-    if (!expressionUsesTrigFunction(sourceExpression, interpretedExpression)
+    if (!expressionUsesTrigFunction(sourceExpression, interpretedExpression, evaluator)
         && shouldPreserveDetailedStandaloneSexagesimalAngle(
             sourceExpression, value, settings)) {
         resultFormat = 's';
@@ -1331,7 +1340,7 @@ inline QString formatNumericResultLine(const Quantity& value,
     formattedText = NumberFormatter::rewriteScientificNotationForDisplay(formattedText);
     formattedText.replace(QString::fromUtf8(" × 10⁰"), QString());
     formattedText = appendAngleModeSuffixIfNeeded(
-        formattedText, sourceExpression, interpretedExpression, value, resultFormat, settings);
+        formattedText, sourceExpression, interpretedExpression, value, resultFormat, settings, evaluator);
     return stripUnitBrackets ? stripDisplayedUnitBrackets(formattedText) : formattedText;
 }
 
@@ -1339,7 +1348,8 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
                                                const QString& interpretedExpression,
                                                const Quantity& value,
                                                bool includeExpressionLine,
-                                               bool stripUnitBracketsInNumericLines)
+                                               bool stripUnitBracketsInNumericLines,
+                                               const Evaluator* evaluator = nullptr)
 {
     const Settings* settings = Settings::instance();
     QStringList lines;
@@ -1349,10 +1359,10 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
     };
 
     if (includeExpressionLine)
-        appendUniqueLine(formattedExpressionLineForDisplay(sourceExpression, interpretedExpression));
+        appendUniqueLine(formattedExpressionLineForDisplay(sourceExpression, interpretedExpression, evaluator));
 
     const QString simplifiedLine = simplifiedExpressionLineForDisplay(
-        interpretedExpression, sourceExpression, settings->simplifyResultExpressions);
+        interpretedExpression, sourceExpression, settings->simplifyResultExpressions, evaluator);
     if (!simplifiedLine.isEmpty())
         appendUniqueLine(QStringLiteral("= ") + simplifiedLine);
 
@@ -1383,7 +1393,8 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
         settings->complexNumbers,
         settings->resultFormatComplex,
         stripUnitBracketsInNumericLines,
-        settings));
+        settings,
+        evaluator));
 
     if (settings->multipleResultLinesEnabled && settings->secondaryResultEnabled
         && settings->alternativeResultFormat != '\0') {
@@ -1396,7 +1407,8 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
             settings->complexNumbers && settings->secondaryComplexNumbers,
             settings->secondaryResultFormatComplex,
             stripUnitBracketsInNumericLines,
-            settings));
+            settings,
+            evaluator));
     }
     if (settings->multipleResultLinesEnabled && settings->tertiaryResultEnabled
         && settings->tertiaryResultFormat != '\0') {
@@ -1409,7 +1421,8 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
             settings->complexNumbers && settings->tertiaryComplexNumbers,
             settings->tertiaryResultFormatComplex,
             stripUnitBracketsInNumericLines,
-            settings));
+            settings,
+            evaluator));
     }
     if (settings->multipleResultLinesEnabled && settings->quaternaryResultEnabled
         && settings->quaternaryResultFormat != '\0') {
@@ -1422,7 +1435,8 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
             settings->complexNumbers && settings->quaternaryComplexNumbers,
             settings->quaternaryResultFormatComplex,
             stripUnitBracketsInNumericLines,
-            settings));
+            settings,
+            evaluator));
     }
     if (settings->multipleResultLinesEnabled && settings->quinaryResultEnabled
         && settings->quinaryResultFormat != '\0') {
@@ -1435,16 +1449,17 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
             settings->complexNumbers && settings->quinaryComplexNumbers,
             settings->quinaryResultFormatComplex,
             stripUnitBracketsInNumericLines,
-            settings));
+            settings,
+            evaluator));
     }
 
     const QString piRadianResultLine = formatPiRadianResultLineIfNeeded(
-        settings, sourceExpression, interpretedExpression, value);
+        settings, sourceExpression, interpretedExpression, value, evaluator);
     if (!piRadianResultLine.isEmpty())
         appendUniqueLine(QStringLiteral("= ") + piRadianResultLine);
 
     if (shouldShowAdditionalRationalForTrig(
-            settings, sourceExpression, interpretedExpression, value)) {
+            settings, sourceExpression, interpretedExpression, value, evaluator)) {
         const QString trigSymbolicLine = DisplayFormatUtils::applyDigitGroupingForDisplay(
             NumberFormatter::formatTrigSymbolic(value));
         const QString trigSymbolicNormalizedPi = UnicodeChars::normalizePiForDisplay(trigSymbolicLine);

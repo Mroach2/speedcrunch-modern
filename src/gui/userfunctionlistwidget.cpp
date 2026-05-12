@@ -29,6 +29,7 @@ UserFunctionListWidget::UserFunctionListWidget(QWidget* parent)
     , m_noMatchLabel(new QLabel(m_userFunctions))
     , m_searchFilter(new QLineEdit(this))
     , m_searchLabel(new QLabel(this))
+    , m_evaluator(Evaluator::instance())
     , m_pendingRefresh(false)
 {
     m_filterTimer->setInterval(500);
@@ -107,16 +108,12 @@ void UserFunctionListWidget::updateList()
         return;
     }
 
-    // MainWindow uses this to bind the shared evaluator to the owning window
-    // before the widget reads session-scoped user functions below.
-    emit aboutToUpdateList();
-
     setUpdatesEnabled(false);
 
     m_filterTimer->stop();
     m_userFunctions->clear();
     QString term = m_searchFilter->text();
-    QList<UserFunction> userFunctions = Evaluator::instance()->getUserFunctions();
+    QList<UserFunction> userFunctions = m_evaluator->getUserFunctions();
 
     for (int i = 0; i < userFunctions.count(); ++i) {
         QString fname = userFunctions.at(i).name() + "(" + userFunctions.at(i).arguments().join(";")  + ")";
@@ -136,7 +133,7 @@ void UserFunctionListWidget::updateList()
                 : userFunction.interpretedExpression();
             const QString formattedExpression = DisplayFormatUtils::applyDigitGroupingForDisplay(
                 UnicodeChars::normalizePiForDisplay(
-                    Evaluator::formatInterpretedExpressionForDisplay(sourceExpression)));
+                    Evaluator::formatInterpretedExpressionForDisplay(sourceExpression, m_evaluator)));
             namesAndValues[1] = formattedExpression;
             QTreeWidgetItem* item = new QTreeWidgetItem(m_userFunctions, namesAndValues);
             item->setData(1, Qt::UserRole, rawExpression);
@@ -189,6 +186,7 @@ QString UserFunctionListWidget::getUserFunctionName(const QTreeWidgetItem *item)
 }
 
 QString UserFunctionListWidget::searchText() const { return m_searchFilter->text(); }
+void UserFunctionListWidget::setEvaluator(Evaluator* evaluator) { m_evaluator = evaluator ? evaluator : Evaluator::instance(); }
 void UserFunctionListWidget::setSearchText(const QString& text) { m_searchFilter->setText(text); }
 
 void UserFunctionListWidget::activateItem()
@@ -214,13 +212,13 @@ void UserFunctionListWidget::deleteItem()
 {
     if (!currentItem() || m_userFunctions->selectedItems().isEmpty())
         return;
-    Evaluator::instance()->unsetUserFunction(getUserFunctionName(currentItem()));
+    m_evaluator->unsetUserFunction(getUserFunctionName(currentItem()));
     updateList();
 }
 
 void UserFunctionListWidget::deleteAllItems()
 {
-    Evaluator::instance()->unsetAllUserFunctions();
+    m_evaluator->unsetAllUserFunctions();
     updateList();
 }
 

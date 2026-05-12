@@ -1138,7 +1138,8 @@ static QString formattedLiveResultWithAlternatives(const Quantity& quantity,
                                                    const QString& expression,
                                                    const QString& interpretedExpression,
                                                    const QString& simplifiedExpression = QString(),
-                                                   const QString& sourceExpression = QString())
+                                                   const QString& sourceExpression = QString(),
+                                                   const Evaluator* evaluator = nullptr)
 {
     Q_UNUSED(expression);
     Q_UNUSED(simplifiedExpression);
@@ -1148,7 +1149,8 @@ static QString formattedLiveResultWithAlternatives(const Quantity& quantity,
         interpretedExpression,
         quantity,
         true,
-        true);
+        true,
+        evaluator);
     QStringList escapedLines;
     for (const QString& line : lines)
         escapedLines.append(line.toHtmlEscaped());
@@ -1156,18 +1158,22 @@ static QString formattedLiveResultWithAlternatives(const Quantity& quantity,
 }
 
 static QString simplifiedExpressionLineForTooltip(const QString& interpretedExpression,
-                                                  const QString& sourceExpression)
+                                                  const QString& sourceExpression,
+                                                  const Evaluator* evaluator)
 {
     return ResultLineFormatUtils::simplifiedExpressionLineForDisplay(
         interpretedExpression,
         sourceExpression,
-        Settings::instance()->simplifyResultExpressions);
+        Settings::instance()->simplifyResultExpressions,
+        evaluator);
 }
 
 Editor::Editor(QWidget* parent)
     : QPlainTextEdit(parent)
 {
-    m_evaluator = Evaluator::instance();
+    m_ownedSession.reset(new Session);
+    m_session = m_ownedSession.get();
+    m_evaluator = m_session->evaluator();
     m_currentHistoryIndex = 0;
     m_isAutoCompletionEnabled = true;
     m_completion = new EditorCompletion(this);
@@ -1202,6 +1208,22 @@ Editor::Editor(QWidget* parent)
 
     adjustSize();
     updateHeightForWrappedText();
+}
+
+Editor::~Editor() = default;
+
+void Editor::setSession(Session* session)
+{
+    if (session == nullptr) {
+        if (!m_ownedSession)
+            m_ownedSession.reset(new Session);
+        session = m_ownedSession.get();
+    }
+
+    m_session = session;
+    m_evaluator = m_session->evaluator();
+    m_highlighter->setEvaluator(m_evaluator);
+    updateHistory();
 }
 
 void Editor::refreshAutoCalc()
@@ -1767,7 +1789,7 @@ void Editor::triggerAutoComplete()
 
     // If we are assigning a user function, find matches in its arguments names
     // and replace variables names that collide.
-    if (Evaluator::instance()->isUserFunctionAssign()) {
+    if (m_evaluator->isUserFunctionAssign()) {
         for (int i=2; i<tokens.size(); ++i) {
             if (tokens[i].asOperator() == Token::ListSeparator)
                 continue;
@@ -1946,7 +1968,7 @@ void Editor::autoCalc()
         QString simplifiedLine;
         if (!quantity.isNan() && !m_evaluator->isUserFunctionAssign()
             && !Evaluator::isCommentOnlyExpression(str)) {
-            simplifiedLine = simplifiedExpressionLineForTooltip(interpretedExpr, text());
+            simplifiedLine = simplifiedExpressionLineForTooltip(interpretedExpr, text(), m_evaluator);
         }
 
         if (quantity.isNan() && (m_evaluator->isUserFunctionAssign()
@@ -1957,7 +1979,7 @@ void Editor::autoCalc()
         } else {
             const auto formatted =
                 formattedLiveResultWithAlternatives(
-                    quantity, str, interpretedExpr, simplifiedLine, text());
+                    quantity, str, interpretedExpr, simplifiedLine, text(), m_evaluator);
             auto message = tr("Current result:<br/>%1").arg(formatted);
             emit autoCalcMessageAvailable(message);
             emit autoCalcQuantityAvailable(quantity);
@@ -1983,7 +2005,7 @@ void Editor::autoCalc()
                     const QString simplifiedLine = (!baseQuantity.isNan()
                         && !m_evaluator->isUserFunctionAssign()
                         && !Evaluator::isCommentOnlyExpression(baseExpression))
-                        ? simplifiedExpressionLineForTooltip(interpretedExpr, text())
+                        ? simplifiedExpressionLineForTooltip(interpretedExpr, text(), m_evaluator)
                         : QString();
                     if (baseQuantity.isNan() && (m_evaluator->isUserFunctionAssign()
                         || Evaluator::isCommentOnlyExpression(baseExpression))) {
@@ -1991,7 +2013,7 @@ void Editor::autoCalc()
                     } else {
                         const auto formatted =
                             formattedLiveResultWithAlternatives(
-                                baseQuantity, baseExpression, interpretedExpr, simplifiedLine, text());
+                                baseQuantity, baseExpression, interpretedExpr, simplifiedLine, text(), m_evaluator);
                         auto message = tr("Current result:<br/>%1").arg(formatted);
                         emit autoCalcMessageAvailable(message);
                         emit autoCalcQuantityAvailable(baseQuantity);
@@ -2052,7 +2074,7 @@ void Editor::autoCalcSelection(const QString& custom)
         const QString interpretedExpr = m_evaluator->interpretedExpression();
         const QString simplifiedLine = (!quantity.isNan() && !m_evaluator->isUserFunctionAssign()
             && !Evaluator::isCommentOnlyExpression(str))
-            ? simplifiedExpressionLineForTooltip(interpretedExpr, rawSelection)
+            ? simplifiedExpressionLineForTooltip(interpretedExpr, rawSelection, m_evaluator)
             : QString();
         if (quantity.isNan() && (m_evaluator->isUserFunctionAssign()
             || Evaluator::isCommentOnlyExpression(str))) {
@@ -2063,7 +2085,7 @@ void Editor::autoCalcSelection(const QString& custom)
         } else {
             const auto formatted =
                 formattedLiveResultWithAlternatives(
-                    quantity, str, interpretedExpr, simplifiedLine, rawSelection);
+                    quantity, str, interpretedExpr, simplifiedLine, rawSelection, m_evaluator);
             auto message = tr("Selection result:<br/>%1").arg(formatted);
             emit autoCalcMessageAvailable(message);
             emit autoCalcQuantityAvailable(quantity);
@@ -2082,7 +2104,7 @@ void Editor::autoCalcSelection(const QString& custom)
                 const QString interpretedExpr = m_evaluator->interpretedExpression();
                 const QString simplifiedLine = (!baseQuantity.isNan() && !m_evaluator->isUserFunctionAssign()
                     && !Evaluator::isCommentOnlyExpression(baseExpression))
-                    ? simplifiedExpressionLineForTooltip(interpretedExpr, rawSelection)
+                    ? simplifiedExpressionLineForTooltip(interpretedExpr, rawSelection, m_evaluator)
                     : QString();
                 if (baseQuantity.isNan() && (m_evaluator->isUserFunctionAssign()
                     || Evaluator::isCommentOnlyExpression(baseExpression))) {
@@ -2091,7 +2113,7 @@ void Editor::autoCalcSelection(const QString& custom)
                 } else {
                     const auto formatted =
                         formattedLiveResultWithAlternatives(
-                            baseQuantity, baseExpression, interpretedExpr, simplifiedLine, rawSelection);
+                            baseQuantity, baseExpression, interpretedExpr, simplifiedLine, rawSelection, m_evaluator);
                     auto message = tr("Selection result:<br/>%1").arg(formatted);
                     emit autoCalcMessageAvailable(message);
                     emit autoCalcQuantityAvailable(baseQuantity);
@@ -3587,7 +3609,9 @@ void Editor::rehighlight()
 
 void Editor::updateHistory()
 {
-    const Session* session = Evaluator::instance()->session();
+    const Session* session = m_session;
+    if (session == nullptr)
+        return;
     const int sessionHistoryCount = session->historySize();
 
     // Fast path for appending one new history entry.
@@ -3759,7 +3783,7 @@ void EditorCompletion::showCompletion(const QStringList& choices)
     m_popup->clear();
     // Performance: compute these once per popup render (not per row) because
     // unit completion can contain many entries and this function runs often.
-    Evaluator* evaluator = Evaluator::instance();
+    Evaluator* evaluator = m_editor->evaluator();
     const QList<QString> builtInUnitKeys =
         Units::builtInUnitLookup(Settings::instance()->angleUnit).keys();
     const QSet<QString> builtInUnits(

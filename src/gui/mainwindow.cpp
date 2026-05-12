@@ -285,7 +285,7 @@ bool isReusableUntitledSession(const Session* session)
     if (session == nullptr || !session->historyIsEmpty())
         return false;
 
-    Evaluator* evaluator = Evaluator::instance();
+    const Evaluator* evaluator = session->evaluator();
     const QList<Variable> variables = session->variablesToList();
     for (const Variable& variable : variables) {
         if (variable.type() != Variable::BuiltIn
@@ -315,7 +315,7 @@ bool sessionHasPersistableContent(const Session* session)
     if (!session->historyIsEmpty())
         return true;
 
-    Evaluator* evaluator = Evaluator::instance();
+    const Evaluator* evaluator = session->evaluator();
     const QList<Variable> variables = session->variablesToList();
     for (const Variable& variable : variables) {
         if (variable.type() != Variable::BuiltIn
@@ -440,7 +440,7 @@ void applyEvaluationContext(Settings* settings, const EvaluationContext& ctx)
     setRuntimeResultRoundingMode(settings->resultRoundingMode);
 }
 
-QStringList renderedLinesForHistoryEntry(const HistoryEntry& entry, Settings* settings)
+QStringList renderedLinesForHistoryEntry(const HistoryEntry& entry, Settings* settings, const Evaluator* evaluator)
 {
     const EvaluationContext previousContext = currentEvaluationContext(settings);
     applyEvaluationContext(settings, entry.contextRef());
@@ -448,14 +448,16 @@ QStringList renderedLinesForHistoryEntry(const HistoryEntry& entry, Settings* se
     QStringList lines;
     lines.append(ResultLineFormatUtils::formattedExpressionLineForDisplay(
         entry.expr(),
-        entry.interpretedExpr()));
+        entry.interpretedExpr(),
+        evaluator));
     if (!entry.result().isNan()) {
         lines.append(ResultLineFormatUtils::formatResultLinesForDisplay(
             entry.expr(),
             entry.interpretedExpr(),
             entry.result(),
             false,
-            true));
+            true,
+            evaluator));
     }
 
     applyEvaluationContext(settings, previousContext);
@@ -2403,6 +2405,7 @@ void MainWindow::createFixedWidgets()
     m_paneSessionNames.insert(m_widgets.display, m_session ? m_session->name() : QString());
     m_paneSessionTabs.insert(m_widgets.display, QStringList(m_session ? m_session->name() : QString()));
     m_widgets.display->setSession(m_session);
+    m_widgets.editor->setSession(m_session);
 
     m_widgets.state = new QLabel(this);
     m_widgets.state->setPalette(QToolTip::palette());
@@ -2575,10 +2578,7 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
             if (sessionToDelete != nullptr)
                 delete sessionToDelete;
         }
-        detachedWindow->m_evaluator->setSession(nullptr);
-
         Session* movedSession = new Session();
-        detachedWindow->m_evaluator->setSession(movedSession);
         movedSession->deSerialize(sourceJson, false);
         movedSession->setName(sessionName);
         detachedWindow->m_loadedSessions.insert(sessionName, movedSession);
@@ -2815,6 +2815,8 @@ void MainWindow::splitActivePane(Qt::Orientation orientation, bool insertAfter)
     if (newSession != nullptr)
         m_paneSessionTabs.insert(display, QStringList(newSession->name()));
     display->setSession(newSession);
+    if (newSession != nullptr)
+        editor->setSession(newSession);
 
     const int firstHalf = qMax(1, activeSize / 2);
     const int secondHalf = qMax(1, activeSize - firstHalf);
@@ -3138,7 +3140,6 @@ void MainWindow::moveSessionTab(QTabBar* sourceTabBar, QTabBar* targetTabBar, co
         sourceSession->serialize(movedJson);
         movedJson.insert(QLatin1String(SessionJsonKeys::Session), name);
         Session* movedSession = new Session();
-        m_evaluator->setSession(movedSession);
         movedSession->deSerialize(movedJson, false);
         movedSession->setName(name);
         m_loadedSessions.insert(name, movedSession);
@@ -3216,6 +3217,7 @@ void MainWindow::moveSessionTab(QTabBar* sourceTabBar, QTabBar* targetTabBar, co
             sourceDisplay->refresh();
             QWidget* page = sourceDisplay->parentWidget();
             if (Editor* sourceEditor = page ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr) {
+                sourceEditor->setSession(sourceSession);
                 sourceEditor->setText(sourceSession->editorText());
                 sourceEditor->setCursorPosition(sourceEditor->text().size());
                 sourceEditor->updateHistory();
@@ -3493,6 +3495,7 @@ void MainWindow::splitPaneWithSession(QTabBar* sourceTabBar, ResultDisplay* targ
     m_paneSessionNames.insert(display, name);
     m_paneSessionTabs.insert(display, QStringList(name));
     display->setSession(session);
+    editor->setSession(session);
 
     const int firstHalf = qMax(1, activeSize / 2);
     const int secondHalf = qMax(1, activeSize - firstHalf);
@@ -3746,6 +3749,7 @@ void MainWindow::createHistoryDock(bool)
             this, &MainWindow::removeHistoryEntriesBelow);
     connect(this, &MainWindow::historyChanged,
             m_docks.history->widget(), &HistoryWidget::updateHistory);
+    m_docks.history->widget()->setSession(m_session);
 
     // No focus for this dock.
     addTabifiedDock(m_docks.history, false);
@@ -3763,13 +3767,8 @@ void MainWindow::createVariablesDock(bool takeFocus)
             this, &MainWindow::insertVariableIntoEditor);
     connect(m_docks.variables->widget(), &VariableListWidget::variableEdited,
             this, &MainWindow::insertTextIntoEditor);
-    // The list widget reads symbols through Evaluator::instance(). Because the
-    // evaluator is shared by all windows, every passive refresh must first bind
-    // it to this window's active session, including delayed show/filter updates.
-    connect(m_docks.variables->widget(), &VariableListWidget::aboutToUpdateList,
-            this, &MainWindow::activateEvaluatorSession);
+    m_docks.variables->widget()->setEvaluator(m_evaluator);
     const auto updateVariables = [this]() {
-        activateEvaluatorSession();
         if (m_docks.variables)
             m_docks.variables->widget()->updateList();
     };
@@ -3796,13 +3795,8 @@ void MainWindow::createUserFunctionsDock(bool takeFocus)
             this, &MainWindow::insertUserFunctionIntoEditor);
     connect(m_docks.userFunctions->widget(), &UserFunctionListWidget::userFunctionEdited,
             this, &MainWindow::insertUserFunctionIntoEditor);
-    // User function docks have the same shared-evaluator hazard as variables:
-    // startup/show refreshes can otherwise display another window's session
-    // symbols until the pane is explicitly activated.
-    connect(m_docks.userFunctions->widget(), &UserFunctionListWidget::aboutToUpdateList,
-            this, &MainWindow::activateEvaluatorSession);
+    m_docks.userFunctions->widget()->setEvaluator(m_evaluator);
     const auto updateFunctions = [this]() {
-        activateEvaluatorSession();
         if (m_docks.userFunctions)
             m_docks.userFunctions->widget()->updateList();
     };
@@ -3829,12 +3823,8 @@ void MainWindow::createUserUnitsDock(bool takeFocus)
             this, &MainWindow::insertUserUnitIntoEditor);
     connect(m_docks.userUnits->widget(), &UserUnitListWidget::userUnitEdited,
             this, &MainWindow::insertTextIntoEditor);
-    // User unit refreshes also go through the shared evaluator, so keep them
-    // tied to the window session rather than to whichever window refreshed last.
-    connect(m_docks.userUnits->widget(), &UserUnitListWidget::aboutToUpdateList,
-            this, &MainWindow::activateEvaluatorSession);
+    m_docks.userUnits->widget()->setEvaluator(m_evaluator);
     const auto updateUnits = [this]() {
-        activateEvaluatorSession();
         if (m_docks.userUnits)
             m_docks.userUnits->widget()->updateList();
     };
@@ -4651,23 +4641,36 @@ void MainWindow::activateSession(Session* session)
     if (session == nullptr)
         return;
 
-    if (m_session != nullptr
-            && m_session != session
-            && (m_widgets.display == nullptr || m_paneSessionNames.value(m_widgets.display) == m_session->name())) {
+    const bool previousSessionIsLoaded =
+        m_session != nullptr && m_loadedSessions.values().contains(m_session);
+    if (previousSessionIsLoaded && m_session != session) {
         captureEditorTextInCurrentSession();
-        m_sessionViewportAnchors.insert(m_session->name(), m_widgets.display->viewportTopAnchor());
-        QScrollBar* bar = m_widgets.display->verticalScrollBar();
-        const int scrollValue = bar->value() == bar->maximum()
-            ? std::numeric_limits<int>::max()
-            : bar->value();
-        m_sessionScrollValues.insert(m_session->name(), scrollValue);
+        if (m_widgets.display != nullptr
+                && m_paneSessionNames.value(m_widgets.display) == m_session->name()) {
+            m_sessionViewportAnchors.insert(m_session->name(), m_widgets.display->viewportTopAnchor());
+            QScrollBar* bar = m_widgets.display->verticalScrollBar();
+            const int scrollValue = bar->value() == bar->maximum()
+                ? (std::numeric_limits<int>::max)()
+                : bar->value();
+            m_sessionScrollValues.insert(m_session->name(), scrollValue);
+        }
     }
 
     m_session = session;
-    m_evaluator->setSession(m_session);
+    m_evaluator = m_session->evaluator();
     m_evaluator->initializeBuiltInVariables();
     if (m_widgets.display != nullptr)
         m_widgets.display->setSession(m_session);
+    if (m_widgets.editor != nullptr)
+        m_widgets.editor->setSession(m_session);
+    if (m_docks.history)
+        m_docks.history->widget()->setSession(m_session);
+    if (m_docks.variables)
+        m_docks.variables->widget()->setEvaluator(m_evaluator);
+    if (m_docks.userFunctions)
+        m_docks.userFunctions->widget()->setEvaluator(m_evaluator);
+    if (m_docks.userUnits)
+        m_docks.userUnits->widget()->setEvaluator(m_evaluator);
     if (m_widgets.display != nullptr)
         m_paneSessionNames.insert(m_widgets.display, m_session->name());
     if (m_widgets.display != nullptr)
@@ -4713,18 +4716,6 @@ void MainWindow::activateSession(Session* session)
     updatePaneEditorCursorVisibility();
 }
 
-void MainWindow::activateEvaluatorSession()
-{
-    if (m_session == nullptr)
-        return;
-
-    // This intentionally does less than activateSession(): dock refreshes only
-    // need the evaluator's backing session to be correct, and must not capture
-    // editor text or emit more symbol-refresh signals recursively.
-    m_evaluator->setSession(m_session);
-    m_evaluator->initializeBuiltInVariables();
-}
-
 void MainWindow::captureEditorTextInCurrentSession()
 {
     if (m_session == nullptr || m_widgets.editor == nullptr)
@@ -4765,9 +4756,8 @@ MainWindow::MainWindow()
     m_session = new Session();
     m_loadedSessions.insert(m_session->name(), m_session);
     m_constants = Constants::instance();
-    m_evaluator = Evaluator::instance();
+    m_evaluator = m_session->evaluator();
     m_functions = FunctionRepo::instance();
-    m_evaluator->setSession(m_session);
     m_evaluator->initializeBuiltInVariables();
 
     m_translator = 0;
@@ -5001,14 +4991,12 @@ void MainWindow::showOpenSessionDialog()
     bool reloadedSession = false;
     if (selectedSession == nullptr) {
         selectedSession = new Session();
-        m_evaluator->setSession(selectedSession);
         selectedSession->deSerialize(entry.json, false);
         selectedSession->setName(entry.name);
         m_loadedSessions.insert(entry.name, selectedSession);
         updatePaneLoadedSessionCounts();
         reloadedSession = true;
     } else if (selectedSession == m_session) {
-        m_evaluator->setSession(selectedSession);
         selectedSession->deSerialize(entry.json, false);
         selectedSession->setName(entry.name);
         reloadedSession = true;
@@ -5079,7 +5067,6 @@ void MainWindow::showDuplicateSessionDialog()
         duplicateFile.close();
 
         Session* duplicateSession = new Session();
-        m_evaluator->setSession(duplicateSession);
         duplicateSession->deSerialize(duplicateJson, false);
         duplicateSession->setName(name);
         m_loadedSessions.insert(name, duplicateSession);
@@ -5415,7 +5402,7 @@ void MainWindow::deleteCurrentSession()
     m_sessionViewportAnchors.remove(deletingName);
     m_sessionScrollValues.remove(deletingName);
     m_session = nullptr;
-    m_evaluator->setSession(nullptr);
+    m_evaluator = nullptr;
 
     if (QFileInfo::exists(deletingPath))
         QFile::remove(deletingPath);
@@ -6153,7 +6140,7 @@ void MainWindow::showSessionImportDialog()
         } else {
             const QString interpretedExpr = m_evaluator->interpretedExpression();
             HistoryEntry historyEntry(normalizedExp, result, interpretedExpr);
-            historyEntry.setRenderedLines(renderedLinesForHistoryEntry(historyEntry, m_settings));
+            historyEntry.setRenderedLines(renderedLinesForHistoryEntry(historyEntry, m_settings, m_evaluator));
             m_session->addHistoryEntry(historyEntry);
             m_widgets.editor->setText(str);
             m_widgets.editor->selectAll();
@@ -6464,7 +6451,7 @@ void MainWindow::applyUserDefinitions(int* importedVariables,
             continue;
 
         m_session = session;
-        m_evaluator->setSession(m_session);
+        m_evaluator = m_session->evaluator();
         m_evaluator->initializeBuiltInVariables();
 
         int sessionImportedVariables = 0;
@@ -6491,12 +6478,14 @@ void MainWindow::applyUserDefinitions(int* importedVariables,
     }
 
     m_session = previousSession;
-    m_evaluator->setSession(m_session);
+    m_evaluator = m_session ? m_session->evaluator() : nullptr;
     if (m_session != nullptr)
         m_evaluator->initializeBuiltInVariables();
     m_conditions.autoAns = previousAutoAns;
     if (m_widgets.display != nullptr && m_session != nullptr)
         m_widgets.display->setSession(m_session);
+    if (m_widgets.editor != nullptr && m_evaluator != nullptr)
+        m_widgets.editor->setSession(m_session);
 
     if (importedVariables)
         *importedVariables = previousImportedVariables + totalImportedVariables;
@@ -7042,7 +7031,7 @@ bool MainWindow::event(QEvent* e)
             if (Session* activeSession = m_loadedSessions.value(activeName, nullptr))
                 activateSession(activeSession);
         } else if (m_session != nullptr) {
-            m_evaluator->setSession(m_session);
+            m_evaluator = m_session->evaluator();
             m_evaluator->initializeBuiltInVariables();
         }
     }
@@ -7948,7 +7937,6 @@ bool MainWindow::restoreSessionLayout(bool restoreHistory)
             session = new Session();
         }
 
-        m_evaluator->setSession(session);
         session->deSerialize(sessionJson, false);
         session->setName(name);
         restoredSessions.insert(name, session);
@@ -7975,11 +7963,9 @@ bool MainWindow::restoreSessionLayout(bool restoreHistory)
     const QFont displayFont = m_widgets.display->font();
     const QFont editorFont = m_widgets.editor->font();
     const QList<Session*> oldSessions = m_loadedSessions.values();
-    for (Session* oldSession : oldSessions) {
-        if (!restoredSessions.values().contains(oldSession))
-            delete oldSession;
-    }
     m_loadedSessions = restoredSessions;
+    m_session = nullptr;
+    m_evaluator = nullptr;
 
     m_widgets.display = nullptr;
     m_widgets.editor = nullptr;
@@ -7994,6 +7980,12 @@ bool MainWindow::restoreSessionLayout(bool restoreHistory)
     m_paneSessionTabs.clear();
     m_paneTabBars.clear();
     m_tabBarDisplays.clear();
+
+    const QList<Session*> retainedSessions = restoredSessions.values();
+    for (Session* oldSession : oldSessions) {
+        if (!retainedSessions.contains(oldSession))
+            delete oldSession;
+    }
 
     ResultDisplay* activeDisplay = nullptr;
     Editor* activeEditor = nullptr;
@@ -8063,7 +8055,10 @@ bool MainWindow::restoreSessionLayout(bool restoreHistory)
 
         m_paneSessionNames.insert(display, activeName);
         m_paneSessionTabs.insert(display, loadedNames);
-        display->setSession(m_loadedSessions.value(activeName, nullptr));
+        Session* paneSession = m_loadedSessions.value(activeName, nullptr);
+        display->setSession(paneSession);
+        if (paneSession != nullptr)
+            editor->setSession(paneSession);
 
         if (firstDisplay == nullptr) {
             firstDisplay = display;
@@ -8282,7 +8277,7 @@ void MainWindow::evaluateEditorExpression()
 
     const QString interpretedExpr = m_evaluator->interpretedExpression();
     HistoryEntry historyEntry(enteredExpr, result, interpretedExpr, evalContext);
-    historyEntry.setRenderedLines(renderedLinesForHistoryEntry(historyEntry, m_settings));
+    historyEntry.setRenderedLines(renderedLinesForHistoryEntry(historyEntry, m_settings, m_evaluator));
     m_session->addHistoryEntry(historyEntry);
     const bool userVariableAssign = m_evaluator->isUserVariableAssign();
     emit historyChanged();
@@ -8680,7 +8675,7 @@ bool MainWindow::rebuildSessionFromEntries(const QList<HistoryEntry>& entries,
         const QString interpretedExpr = m_evaluator->interpretedExpression();
         HistoryEntry rebuiltEntry(currentExpr, result, interpretedExpr, entry.contextRef());
         rebuiltEntry.setEditTimestamp(entry.editTimestamp());
-        rebuiltEntry.setRenderedLines(renderedLinesForHistoryEntry(rebuiltEntry, m_settings));
+        rebuiltEntry.setRenderedLines(renderedLinesForHistoryEntry(rebuiltEntry, m_settings, m_evaluator));
         m_session->addHistoryEntry(rebuiltEntry);
     }
 

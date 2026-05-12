@@ -280,7 +280,6 @@ private:
     void saveSessionToDefaultPath();
     void saveSession(QString &fname);
     void activateSession(Session* session);
-    void activateEvaluatorSession();
     void captureEditorTextInCurrentSession();
     void restoreEditorTextFromCurrentSession();
     QWidget* createEditorDisplayPane(ResultDisplay* display, Editor* editor);

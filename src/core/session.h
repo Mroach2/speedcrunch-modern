@@ -11,30 +11,32 @@
 #include "userfunction.h"
 #include "userunit.h"
 #include <QList>
-#include <QHash>
 #include <QString>
 #include <QJsonArray>
+#include <memory>
 
+class Evaluator;
 class Session {
 private:
     typedef QList<HistoryEntry> History ;
-    typedef QHash<QString, Variable> VariableContainer;
-    typedef QHash<QString, UserFunction> FunctionContainer;
-    typedef QHash<QString, UserUnit> UnitContainer;
     History m_history;
     int m_historyHead = 0; // Logical index 0 maps to physical m_historyHead.
-    VariableContainer m_variables;
-    FunctionContainer m_userFunctions;
-    UnitContainer m_userUnits;
+    std::unique_ptr<Evaluator> m_evaluator;
     QString m_name;
     QString m_editorText;
     int physicalHistoryIndex(int logicalIndex) const;
     void normalizeHistoryOrder();
+    void bindEvaluator();
 
 public:
     Session();
     Session(QJsonObject & json);
-    Session& operator=(const Session&) = default;
+    Session(const Session& other);
+    Session& operator=(const Session& other);
+    ~Session();
+
+    Evaluator* evaluator() { return m_evaluator.get(); }
+    const Evaluator* evaluator() const { return m_evaluator.get(); }
 
     void load();
     void save();

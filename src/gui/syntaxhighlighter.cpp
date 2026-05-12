@@ -65,9 +65,21 @@ static QString stripTrailingAsciiDigits(QString text)
 
 SyntaxHighlighter::SyntaxHighlighter(QPlainTextEdit* edit)
     : QSyntaxHighlighter(edit)
+    , m_evaluator(Evaluator::instance())
 {
     setDocument(edit->document());
     update();
+}
+
+const Evaluator* SyntaxHighlighter::evaluator() const
+{
+    return m_evaluator ? m_evaluator : Evaluator::instance();
+}
+
+void SyntaxHighlighter::setEvaluator(const Evaluator* evaluator)
+{
+    m_evaluator = evaluator ? evaluator : Evaluator::instance();
+    rehighlight();
 }
 
 void SyntaxHighlighter::setColorScheme(ColorScheme&& colorScheme) {
@@ -97,7 +109,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             if (Settings::instance()->digitGrouping > 0) {
                 // Use token-based grouping for result lines as well, so
                 // integer-only grouping works when lexer splits around radix chars.
-                const Tokens tokens = Evaluator::instance()->scan(text);
+                const Tokens tokens = evaluator()->scan(text);
                 for (int i = 0; i < tokens.count(); ++i) {
                     const Token& token = tokens.at(i);
                     if (token.type() != Token::stxNumber)
@@ -125,7 +137,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setFormat(expressionOffset + questionMarkIndex, expressionText.length() - questionMarkIndex, colorForRole(ColorScheme::Comment));
 
         const QString normalizedExpressionText = textNormalizedForHighlighting(expressionText);
-        Tokens tokens = Evaluator::instance()->scan(normalizedExpressionText);
+        Tokens tokens = evaluator()->scan(normalizedExpressionText);
         int unitBracketDepth = 0;
         for (int i = 0; i < tokens.count(); ++i) {
             const Token& token = tokens.at(i);
@@ -153,7 +165,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 break;
             case Token::stxIdentifier:
                 color = colorForRole(ColorScheme::Variable);
-                if (Evaluator::instance()->hasUserFunction(token.text())
+                if (evaluator()->hasUserFunction(token.text())
                     || functionNames.contains(tokenText, Qt::CaseInsensitive))
                     color = colorForRole(ColorScheme::Function);
                 else if (i + 1 < tokens.count()
@@ -163,7 +175,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                     const QString originalTokenText = expressionText.mid(token.pos(), token.size());
                     if (hasSuperscriptExponent(originalTokenText)) {
                         const QString baseName = stripTrailingAsciiDigits(token.text());
-                        if (Evaluator::instance()->hasUserFunction(baseName)
+                        if (evaluator()->hasUserFunction(baseName)
                             || functionNames.contains(baseName.toLower(), Qt::CaseInsensitive)) {
                             color = colorForRole(ColorScheme::Function);
                         }
@@ -207,7 +219,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         setFormat(questionMarkIndex, text.length(), colorForRole(ColorScheme::Comment));
 
     const QString normalizedText = textNormalizedForHighlighting(text);
-    Tokens tokens = Evaluator::instance()->scan(normalizedText);
+    Tokens tokens = evaluator()->scan(normalizedText);
     int unitBracketDepth = 0;
 
     for (int i = 0; i < tokens.count(); ++i) {
@@ -248,7 +260,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 
         case Token::stxIdentifier:
             color = colorForRole(ColorScheme::Variable);
-            if (Evaluator::instance()->hasUserFunction(token.text())
+            if (evaluator()->hasUserFunction(token.text())
                 || functionNames.contains(tokenText, Qt::CaseInsensitive))
                 color = colorForRole(ColorScheme::Function);
             else if (i + 1 < tokens.count()
@@ -258,7 +270,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 const QString originalTokenText = text.mid(token.pos(), token.size());
                 if (hasSuperscriptExponent(originalTokenText)) {
                     const QString baseName = stripTrailingAsciiDigits(token.text());
-                    if (Evaluator::instance()->hasUserFunction(baseName)
+                    if (evaluator()->hasUserFunction(baseName)
                         || functionNames.contains(baseName.toLower(), Qt::CaseInsensitive)) {
                         color = colorForRole(ColorScheme::Function);
                     }

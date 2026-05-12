@@ -3,6 +3,7 @@
 
 
 #include "core/evaluator.h"
+#include "core/session.h"
 #include "core/settings.h"
 #include "gui/splittertreeutils.h"
 #include "gui/userunitlistwidget.h"
@@ -24,7 +25,8 @@ private slots:
 
 void TestDocksWidgetsUi::user_units_dock_shows_rhs_and_description_after_definition()
 {
-    Evaluator* evaluator = Evaluator::instance();
+    Session session;
+    Evaluator* evaluator = session.evaluator();
     evaluator->unsetAllUserUnits();
 
     evaluator->setExpression(QStringLiteral("[cm_s] = 2 [cm/s] ? speed alias"));
@@ -32,6 +34,7 @@ void TestDocksWidgetsUi::user_units_dock_shows_rhs_and_description_after_definit
     QVERIFY(!result.isNan());
 
     UserUnitListWidget widget;
+    widget.setEvaluator(evaluator);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     widget.updateList();
@@ -49,7 +52,8 @@ void TestDocksWidgetsUi::user_units_dock_shows_rhs_and_description_after_definit
 
 void TestDocksWidgetsUi::user_variables_dock_keeps_existing_value_text_after_new_definition()
 {
-    Evaluator* evaluator = Evaluator::instance();
+    Session session;
+    Evaluator* evaluator = session.evaluator();
     Settings* settings = Settings::instance();
 
     evaluator->unsetAllUserDefinedVariables();
@@ -63,6 +67,7 @@ void TestDocksWidgetsUi::user_variables_dock_keeps_existing_value_text_after_new
     QVERIFY(!evaluator->eval().isNan());
 
     VariableListWidget widget;
+    widget.setEvaluator(evaluator);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     widget.updateList();

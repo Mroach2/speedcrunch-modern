@@ -7,6 +7,7 @@
 
 #include "core/functions.h"
 #include "core/opcode.h"
+#include "core/symbolcontext.h"
 #include "core/variable.h"
 #include "core/userfunction.h"
 #include "core/userunit.h"
@@ -21,8 +22,6 @@
 #include <QString>
 #include <QStringList>
 #include <QVector>
-
-class Session;
 
 class Token {
 public:
@@ -112,17 +111,17 @@ class Evaluator : public QObject {
 
 public:
     static Evaluator* instance();
+    Evaluator();
     void reset();
-
-    void setSession(Session*);
-    const Session* session();
 
     static bool isSeparatorChar(const QChar&);
     static bool isRadixChar(const QChar&);
     static bool isCommentOnlyExpression(const QString&);
     static QString simplifyInterpretedExpression(const QString&);
     static QString formatInterpretedExpressionForDisplay(const QString&);
+    static QString formatInterpretedExpressionForDisplay(const QString&, const Evaluator*);
     static QString formatInterpretedExpressionSimplifiedForDisplay(const QString&);
+    static QString formatInterpretedExpressionSimplifiedForDisplay(const QString&, const Evaluator*);
     static QString fixNumberRadix(const QString&);
     static QString fixSexagesimal(const QString&, QString& unit);
     static QStringList builtInUnitIdentifiers();
@@ -181,12 +180,14 @@ public:
     bool isGlobalUserVariable(const QString& id) const;
     bool isGlobalUserFunction(const QString& name) const;
     bool isGlobalUserUnit(const QString& name) const;
+    SymbolContext& symbolContext() { return m_symbols; }
+    const SymbolContext& symbolContext() const { return m_symbols; }
+    void copySymbolContextFrom(const Evaluator& other);
 
 protected:
     void compile(const Tokens&);
 
 private:
-    Evaluator();
     Q_DISABLE_COPY(Evaluator)
 
     bool m_dirty;
@@ -208,17 +209,13 @@ private:
     QStringList m_constantTexts;
     QStringList m_identifiers;
     QSet<int> m_implicitMultiplicationOpcodeIndices;
-    Session* m_session;
+    SymbolContext m_symbols;
     QSet<QString> m_functionsInUse;
     bool m_hasImplicitMultiplication;
     // Temporary gate used by the User Definitions dialog import/apply path.
     // When true, global definitions may replace previously-tagged global symbols.
     // Keep false for normal editor/session evaluation so globals stay immutable.
     bool m_allowGlobalUserDefinitionsOverride;
-    QSet<QString> m_globalUserVariables;
-    QSet<QString> m_globalUserFunctions;
-    QSet<QString> m_globalUserUnits;
-
     const Quantity& checkOperatorResult(const Quantity&);
     static QString stringFromFunctionError(Function*);
     Quantity exec(const QVector<Opcode>& opcodes,

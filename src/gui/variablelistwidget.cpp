@@ -31,6 +31,7 @@ VariableListWidget::VariableListWidget(QWidget* parent)
     , m_noMatchLabel(new QLabel(m_variables))
     , m_searchFilter(new QLineEdit(this))
     , m_searchLabel(new QLabel(this))
+    , m_evaluator(Evaluator::instance())
     , m_pendingRefresh(false)
 {
     m_filterTimer->setInterval(500);
@@ -109,15 +110,11 @@ void VariableListWidget::updateList()
         return;
     }
 
-    // MainWindow uses this to bind the shared evaluator to the owning window
-    // before the widget reads session-scoped variables below.
-    emit aboutToUpdateList();
-
     setUpdatesEnabled(false);
 
     m_filterTimer->stop();
     const QString term = m_searchFilter->text();
-    const QList<Variable> variables = Evaluator::instance()->getUserDefinedVariables();
+    const QList<Variable> variables = m_evaluator->getUserDefinedVariables();
     QHash<QString, QTreeWidgetItem*> itemsByName;
     itemsByName.reserve(m_variables->topLevelItemCount());
     for (int i = 0; i < m_variables->topLevelItemCount(); ++i) {
@@ -196,6 +193,7 @@ QTreeWidgetItem* VariableListWidget::currentItem() const
 }
 
 QString VariableListWidget::searchText() const { return m_searchFilter->text(); }
+void VariableListWidget::setEvaluator(Evaluator* evaluator) { m_evaluator = evaluator ? evaluator : Evaluator::instance(); }
 void VariableListWidget::setSearchText(const QString& text) { m_searchFilter->setText(text); }
 
 void VariableListWidget::activateItem()
@@ -209,7 +207,7 @@ void VariableListWidget::deleteItem()
 {
     if (!currentItem() || m_variables->selectedItems().isEmpty())
         return;
-    Evaluator::instance()->unsetVariable(currentItem()->text(0));
+    m_evaluator->unsetVariable(currentItem()->text(0));
     updateList();
 }
 
@@ -226,7 +224,7 @@ void VariableListWidget::editItem()
 
 void VariableListWidget::deleteAllItems()
 {
-    Evaluator::instance()->unsetAllUserDefinedVariables();
+    m_evaluator->unsetAllUserDefinedVariables();
     updateList();
 }
 

@@ -28,6 +28,7 @@ UserUnitListWidget::UserUnitListWidget(QWidget* parent)
     , m_noMatchLabel(new QLabel(m_userUnits))
     , m_searchFilter(new QLineEdit(this))
     , m_searchLabel(new QLabel(this))
+    , m_evaluator(Evaluator::instance())
     , m_pendingRefresh(false)
 {
     m_filterTimer->setInterval(500);
@@ -106,16 +107,12 @@ void UserUnitListWidget::updateList()
         return;
     }
 
-    // MainWindow uses this to bind the shared evaluator to the owning window
-    // before the widget reads session-scoped user units below.
-    emit aboutToUpdateList();
-
     setUpdatesEnabled(false);
 
     m_filterTimer->stop();
     m_userUnits->clear();
     const QString term = m_searchFilter->text();
-    const QList<UserUnit> userUnits = Evaluator::instance()->getUserUnits();
+    const QList<UserUnit> userUnits = m_evaluator->getUserUnits();
 
     for (int i = 0; i < userUnits.count(); ++i) {
         const UserUnit& userUnit = userUnits.at(i);
@@ -190,6 +187,7 @@ QString UserUnitListWidget::getUserUnitName(const QTreeWidgetItem* item)
 }
 
 QString UserUnitListWidget::searchText() const { return m_searchFilter->text(); }
+void UserUnitListWidget::setEvaluator(Evaluator* evaluator) { m_evaluator = evaluator ? evaluator : Evaluator::instance(); }
 void UserUnitListWidget::setSearchText(const QString& text) { m_searchFilter->setText(text); }
 
 void UserUnitListWidget::activateItem()
@@ -215,13 +213,13 @@ void UserUnitListWidget::deleteItem()
 {
     if (!currentItem() || m_userUnits->selectedItems().isEmpty())
         return;
-    Evaluator::instance()->unsetUserUnit(getUserUnitName(currentItem()));
+    m_evaluator->unsetUserUnit(getUserUnitName(currentItem()));
     updateList();
 }
 
 void UserUnitListWidget::deleteAllItems()
 {
-    Evaluator::instance()->unsetAllUserUnits();
+    m_evaluator->unsetAllUserUnits();
     updateList();
 }
 

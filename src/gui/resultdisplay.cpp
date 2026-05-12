@@ -103,7 +103,7 @@ QString formatResultForClipboard(const Quantity& value)
     return textToCopy;
 }
 
-QStringList formatResultLines(const HistoryEntry& entry)
+QStringList formatResultLines(const HistoryEntry& entry, const Evaluator* evaluator)
 {
     Settings* settings = Settings::instance();
     const bool oldComplexNumbers = settings->complexNumbers;
@@ -183,7 +183,8 @@ QStringList formatResultLines(const HistoryEntry& entry)
         entry.interpretedExpr(),
         entry.result(),
         false,
-        true);
+        true,
+        evaluator);
 
     settings->complexNumbers = oldComplexNumbers;
     settings->imaginaryUnit = oldImaginaryUnit;
@@ -215,19 +216,21 @@ QStringList formatResultLines(const HistoryEntry& entry)
     return lines;
 }
 
-QString formattedExpressionForDisplay(const HistoryEntry& entry)
+QString formattedExpressionForDisplay(const HistoryEntry& entry, const Evaluator* evaluator)
 {
     return ResultLineFormatUtils::formattedExpressionLineForDisplay(
         entry.expr(),
-        entry.interpretedExpr());
+        entry.interpretedExpr(),
+        evaluator);
 }
 
-QString simplifiedExpressionLineForDisplay(const HistoryEntry& entry)
+QString simplifiedExpressionLineForDisplay(const HistoryEntry& entry, const Evaluator* evaluator)
 {
     const QString simplifiedLine = ResultLineFormatUtils::simplifiedExpressionLineForDisplay(
         entry.interpretedExpr(),
         entry.expr(),
-        Settings::instance()->simplifyResultExpressions);
+        Settings::instance()->simplifyResultExpressions,
+        evaluator);
     return simplifiedLine.isEmpty() ? QString() : QStringLiteral("= ") + simplifiedLine;
 }
 
@@ -243,30 +246,31 @@ bool isSimplifiedExpressionRenderLine(const QStringList& renderedLines, int line
     return !simplifiedLine.isEmpty() && line == simplifiedLine;
 }
 
-QStringList renderedHistoryLinesForDisplay(const HistoryEntry& entry)
+QStringList renderedHistoryLinesForDisplay(const HistoryEntry& entry, const Evaluator* evaluator)
 {
     if (entry.hasRenderedLines())
         return entry.renderedLines();
 
     QStringList lines;
-    lines.append(formattedExpressionForDisplay(entry));
+    lines.append(formattedExpressionForDisplay(entry, evaluator));
     if (!entry.result().isNan())
-        lines.append(formatResultLines(entry));
+        lines.append(formatResultLines(entry, evaluator));
     return lines;
 }
 
 QString formattedExpressionForDisplay(const QString& expression,
-                                     const QString& interpretedExpression)
+                                     const QString& interpretedExpression,
+                                     const Evaluator* evaluator)
 {
     return ResultLineFormatUtils::formattedExpressionLineForDisplay(
         expression,
-        interpretedExpression);
+        interpretedExpression,
+        evaluator);
 }
 
 const Session* displaySession(const ResultDisplay* display)
 {
-    const Session* session = display != nullptr ? display->session() : nullptr;
-    return session != nullptr ? session : Evaluator::instance()->session();
+    return display != nullptr ? display->session() : nullptr;
 }
 
 }
@@ -411,6 +415,7 @@ void ResultDisplay::setSession(const Session* session)
         return;
 
     m_session = session;
+    m_highlighter->setEvaluator(m_session ? m_session->evaluator() : nullptr);
     refresh();
     viewport()->update();
 }
@@ -419,8 +424,9 @@ void ResultDisplay::append(const QString& expression, Quantity& value,
                            const QString& interpretedExpression)
 {
     ++m_count;
+    const Evaluator* evaluator = m_session ? m_session->evaluator() : nullptr;
 
-    appendPlainText(formattedExpressionForDisplay(expression, interpretedExpression));
+    appendPlainText(formattedExpressionForDisplay(expression, interpretedExpression, evaluator));
     if (!value.isNan()) {
         const Settings* settings = Settings::instance();
         EvaluationContext ctx;
@@ -433,12 +439,13 @@ void ResultDisplay::append(const QString& expression, Quantity& value,
         ctx.unitExp = settings->unitNegativeExponentStyle;
         ctx.round = settings->resultRoundingMode;
         const HistoryEntry entry(expression, value, interpretedExpression, ctx);
-        const QStringList resultLines = formatResultLines(entry);
-        const QString simplifiedLine = simplifiedExpressionLineForDisplay(entry);
+        const QStringList resultLines = formatResultLines(entry, evaluator);
+        const QString simplifiedLine = simplifiedExpressionLineForDisplay(entry, evaluator);
+        const QStringList renderedLines = QStringList({ formattedExpressionForDisplay(entry, evaluator) }) + resultLines;
         for (int i = 0; i < resultLines.size(); ++i) {
             const QString& line = resultLines.at(i);
             appendPlainText(line);
-            if (isSimplifiedExpressionRenderLine(QStringList({ formattedExpressionForDisplay(entry) }) + resultLines, i + 1, simplifiedLine))
+            if (isSimplifiedExpressionRenderLine(renderedLines, i + 1, simplifiedLine))
                 markSimplifiedExpressionBlock(document()->lastBlock().blockNumber());
         }
     }
@@ -542,8 +549,9 @@ void ResultDisplay::refresh()
         && firstDisplayedHistoryIndex == m_firstDisplayedHistoryIndex) {
         clearHoverFeedback();
         const HistoryEntry& lastEntry = session->historyEntryAtRef(historyCount - 1);
-        const QStringList renderedLines = renderedHistoryLinesForDisplay(lastEntry);
-        const QString simplifiedLine = simplifiedExpressionLineForDisplay(lastEntry);
+        const Evaluator* evaluator = session->evaluator();
+        const QStringList renderedLines = renderedHistoryLinesForDisplay(lastEntry, evaluator);
+        const QString simplifiedLine = simplifiedExpressionLineForDisplay(lastEntry, evaluator);
         for (int i = 0; i < renderedLines.size(); ++i) {
             const QString& line = renderedLines.at(i);
             appendPlainText(line);
@@ -567,7 +575,7 @@ void ResultDisplay::refresh()
     allLines.reserve(qMax(1, (m_count - m_firstDisplayedHistoryIndex) * 3));
     for (int i = m_firstDisplayedHistoryIndex; i < m_count; ++i) {
         const HistoryEntry& historyEntry = session->historyEntryAtRef(i);
-        allLines.append(renderedHistoryLinesForDisplay(historyEntry));
+        allLines.append(renderedHistoryLinesForDisplay(historyEntry, session->evaluator()));
         allLines.append(QLatin1String(""));
     }
 
@@ -615,7 +623,7 @@ void ResultDisplay::refreshLastHistoryEntry()
         startBlock = startBlock.previous();
 
     const HistoryEntry& lastEntry = session->historyEntryAtRef(historyCount - 1);
-    QStringList updatedLines = renderedHistoryLinesForDisplay(lastEntry);
+    QStringList updatedLines = renderedHistoryLinesForDisplay(lastEntry, session->evaluator());
     updatedLines.append(QLatin1String(""));
 
     clearHoverFeedback();
@@ -1588,8 +1596,8 @@ void ResultDisplay::markSimplifiedExpressionBlocks()
     QTextBlock block = document()->firstBlock();
     for (int i = firstDisplayedHistoryIndex; i < historySize && block.isValid(); ++i) {
         const HistoryEntry& entry = session->historyEntryAtRef(i);
-        const QStringList renderedLines = renderedHistoryLinesForDisplay(entry);
-        const QString simplifiedLine = simplifiedExpressionLineForDisplay(entry);
+        const QStringList renderedLines = renderedHistoryLinesForDisplay(entry, session->evaluator());
+        const QString simplifiedLine = simplifiedExpressionLineForDisplay(entry, session->evaluator());
         int lineIndex = 0;
 
         while (block.isValid()) {

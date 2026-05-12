@@ -113,7 +113,7 @@ void BookDock::handleAnchorClick(const QUrl& url)
         if (evaluator->isValid()) {
             const QString interpreted = evaluator->interpretedExpression();
             if (!interpreted.isEmpty())
-                expression = Evaluator::formatInterpretedExpressionForDisplay(interpreted);
+                expression = Evaluator::formatInterpretedExpressionForDisplay(interpreted, evaluator);
         }
 
         expression.replace(MathDsl::MulCrossOp, MathDsl::MulDotOp);

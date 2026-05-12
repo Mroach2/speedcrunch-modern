@@ -15,6 +15,7 @@ class QShowEvent;
 class QTimer;
 class QTreeWidget;
 class QTreeWidgetItem;
+class Evaluator;
 
 class UserUnitListWidget : public QWidget
 {
@@ -27,11 +28,10 @@ public:
     QTreeWidgetItem* currentItem() const;
     QString getUserUnitName(const QTreeWidgetItem*);
     QString searchText() const;
+    void setEvaluator(Evaluator* evaluator);
     void setSearchText(const QString& text);
 
 signals:
-    // Emitted immediately before updateList() reads Evaluator::instance().
-    void aboutToUpdateList();
     void userUnitSelected(const QString&);
     void userUnitEdited(const QString&);
 
@@ -63,6 +63,7 @@ private:
     QLabel* m_noMatchLabel;
     QLineEdit* m_searchFilter;
     QLabel* m_searchLabel;
+    Evaluator* m_evaluator;
     bool m_pendingRefresh;
 };
 

@@ -36,6 +36,7 @@ using namespace std;
 typedef Quantity::Format Format;
 
 static Evaluator* eval = 0;
+static Session* evalSession = 0;
 static int eval_total_tests = 0;
 static int eval_failed_tests = 0;
 static int eval_new_failed_tests = 0;
@@ -303,7 +304,7 @@ static void checkDisplayInterpreted(const char* file, int line, const char* msg,
     }
 
     const QString interpreted = eval->interpretedExpression();
-    const QString displayed = Evaluator::formatInterpretedExpressionForDisplay(interpreted);
+    const QString displayed = Evaluator::formatInterpretedExpressionForDisplay(interpreted, eval);
     if (displayed != expected) {
         ++eval_failed_tests;
         ++eval_new_failed_tests;
@@ -321,6 +322,7 @@ public:
     explicit TestableResultDisplay(QWidget* parent = 0)
         : ResultDisplay(parent)
     {
+        setSession(evalSession);
     }
 
     using ResultDisplay::blockRangeForHistoryIndex;
@@ -346,7 +348,7 @@ public:
 void test_result_display_history_mapping_after_multiple_lines_toggle_with_comment_only_entry()
 {
     Settings* settings = Settings::instance();
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
 
     const bool oldMultipleResultLinesEnabled = settings->multipleResultLinesEnabled;
     const bool oldSecondaryResultEnabled = settings->secondaryResultEnabled;
@@ -440,7 +442,7 @@ static void checkDisplaySimplifiedInterpreted(const char* file, int line, const 
     }
 
     const QString interpreted = eval->interpretedExpression();
-    const QString displayed = Evaluator::formatInterpretedExpressionSimplifiedForDisplay(interpreted);
+    const QString displayed = Evaluator::formatInterpretedExpressionSimplifiedForDisplay(interpreted, eval);
     if (displayed != expected) {
         ++eval_failed_tests;
         ++eval_new_failed_tests;
@@ -468,9 +470,9 @@ static void checkSuppressSimplifiedExpressionLine(const char* file, int line, co
     }
 
     const QString interpreted =
-        Evaluator::formatInterpretedExpressionForDisplay(eval->interpretedExpression());
+        Evaluator::formatInterpretedExpressionForDisplay(eval->interpretedExpression(), eval);
     const QString simplified =
-        Evaluator::formatInterpretedExpressionSimplifiedForDisplay(eval->interpretedExpression());
+        Evaluator::formatInterpretedExpressionSimplifiedForDisplay(eval->interpretedExpression(), eval);
     const bool suppressed = SimplifiedExpressionUtils::shouldSuppressSimplifiedExpressionLine(
         interpreted, simplified);
     if (suppressed != expectedSuppressed) {
@@ -2889,7 +2891,7 @@ void test_function_basic()
                 eval->interpretedExpression(),
                 value,
                 true,
-                true);
+                true, eval);
             const bool hasCompactSuperscript = lines.last().contains(QString::fromUtf8("g²·mol⁻²"));
             const bool hasCompactFraction = lines.last().contains(QString::fromUtf8("g²/mol²"));
             const bool hasInverseOnlySuperscript = lines.last().contains(QString::fromUtf8("1·mol⁻²"));
@@ -3700,7 +3702,7 @@ void test_comment_and_description_edge_cases()
         eval->evalUpdateAns();
         ++eval_total_tests;
         const QString displayed = ResultLineFormatUtils::formattedExpressionLineForDisplay(
-            tc[0], eval->interpretedExpression());
+            tc[0], eval->interpretedExpression(), eval);
         if (displayed != tc[1]) {
             ++eval_failed_tests;
             ++eval_new_failed_tests;
@@ -3967,7 +3969,7 @@ void test_angle_mode(Settings* settings)
         eval->setExpression(expression);
         eval->evalUpdateAns();
         const QString interpreted = Evaluator::formatInterpretedExpressionForDisplay(
-            eval->interpretedExpression());
+            eval->interpretedExpression(), eval);
         if (!eval->error().isEmpty()
             || !interpreted.contains(expectedToken)
             || interpreted.contains(forbiddenToken))
@@ -4611,9 +4613,9 @@ void test_display_interpreted_spacing()
     } else {
         const QString unitJoin = QString(MathDsl::QuantSp) + QStringLiteral("[");
         const QString interpretedDisplayed =
-            Evaluator::formatInterpretedExpressionForDisplay(eval->interpretedExpression());
+            Evaluator::formatInterpretedExpressionForDisplay(eval->interpretedExpression(), eval);
         const QString simplifiedDisplayed = DisplayFormatUtils::applyDigitGroupingForDisplay(
-            Evaluator::formatInterpretedExpressionSimplifiedForDisplay(eval->interpretedExpression()));
+            Evaluator::formatInterpretedExpressionSimplifiedForDisplay(eval->interpretedExpression(), eval));
         const QString resultDisplayed = DisplayFormatUtils::applyDigitGroupingForDisplay(
             NumberFormatter::format(eval->evalUpdateAns()));
         if (!interpretedDisplayed.contains(unitJoin)
@@ -4639,7 +4641,7 @@ void test_display_interpreted_spacing()
              << "\tError: " << qPrintable(eval->error()) << endl;
     } else {
         const QString interpretedDisplayed =
-            Evaluator::formatInterpretedExpressionForDisplay(eval->interpretedExpression());
+            Evaluator::formatInterpretedExpressionForDisplay(eval->interpretedExpression(), eval);
         const QString expected =
             QStringLiteral("x")
             + QString(MathDsl::QuantSp)
@@ -4664,7 +4666,7 @@ void test_display_interpreted_spacing()
              << "\tError: " << qPrintable(eval->error()) << endl;
     } else {
         const QString interpretedDisplayed =
-            Evaluator::formatInterpretedExpressionForDisplay(eval->interpretedExpression());
+            Evaluator::formatInterpretedExpressionForDisplay(eval->interpretedExpression(), eval);
         const QString expected =
             QStringLiteral("ffff()")
             + QString(MathDsl::QuantSp)
@@ -4704,7 +4706,7 @@ void test_display_interpreted_spacing()
             eval->interpretedExpression(),
             valueUnitMulResult,
             true,
-            true);
+            true, eval);
         const QString expectedLine = QStringLiteral("750")
             + QString(MathDsl::QuantSp)
             + QStringLiteral("[h]");
@@ -4764,7 +4766,7 @@ void test_display_interpreted_spacing()
         const QString interpretedDisplayed =
             ResultLineFormatUtils::formattedExpressionLineForDisplay(
                 QString::fromUtf8("4[s·s]/(2[s])"),
-                eval->interpretedExpression());
+                eval->interpretedExpression(), eval);
         const QString expected = QStringLiteral("4")
             + QString(MathDsl::QuantSp)
             + QString::fromUtf8("[s²]")
@@ -4792,7 +4794,7 @@ void test_display_interpreted_spacing()
         const QString interpretedDisplayed =
             ResultLineFormatUtils::formattedExpressionLineForDisplay(
                 QString::fromUtf8("4[s·s/s]/(2[s])"),
-                eval->interpretedExpression());
+                eval->interpretedExpression(), eval);
         const QString expected = QStringLiteral("4")
             + QString(MathDsl::QuantSp)
             + QStringLiteral("[s]")
@@ -6149,7 +6151,7 @@ void test_expression_operator_normalization()
     eval->setExpression(QString::fromUtf8("2pi pi^2"));
     eval->evalUpdateAns();
     const QString threadExpressionDisplay = UnicodeChars::normalizePiForDisplay(
-        Evaluator::formatInterpretedExpressionForDisplay(eval->interpretedExpression()));
+        Evaluator::formatInterpretedExpressionForDisplay(eval->interpretedExpression(), eval));
     DisplayErrorOnMismatch(__FILE__, __LINE__, "normalizePiForDisplay thread expression",
                            threadExpressionDisplay.toStdString(),
                            "2 · π · π²",
@@ -6620,10 +6622,8 @@ void test_session_deserialize_without_history()
 {
     Session source;
     Session restored;
-    Session* const previousSession = const_cast<Session*>(Evaluator::instance()->session());
-
-    Evaluator::instance()->setSession(&source);
-    Evaluator::instance()->initializeBuiltInVariables();
+    Evaluator* sourceEvaluator = source.evaluator();
+    Evaluator* restoredEvaluator = restored.evaluator();
 
     source.addVariable(Variable("persistedVar", Quantity(42), Variable::UserDefined,
                                 "Saved variable"));
@@ -6635,7 +6635,6 @@ void test_session_deserialize_without_history()
     source.serialize(json);
     json.remove("history");
 
-    Evaluator::instance()->setSession(&restored);
     restored.deSerialize(json, false);
 
     ++eval_total_tests;
@@ -6651,10 +6650,34 @@ void test_session_deserialize_without_history()
         ++eval_new_failed_tests;
         cerr << __FILE__ << "[" << __LINE__ << "]\tsession deserialize without history keeps vars/functions\t[NEW]" << endl;
     }
+    ++eval_total_tests;
+    if (sourceEvaluator != source.evaluator() || restoredEvaluator != restored.evaluator()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tsession deserialize keeps evaluators session-owned\t[NEW]" << endl;
+    }
+}
 
-    Evaluator::instance()->setSession(previousSession);
-    if (previousSession)
-        Evaluator::instance()->initializeBuiltInVariables();
+void test_session_owns_distinct_evaluator_state()
+{
+    Session left;
+    Session right;
+
+    left.evaluator()->setExpression(QStringLiteral("left_only = 11"));
+    left.evaluator()->evalUpdateAns();
+    right.evaluator()->setExpression(QStringLiteral("right_only = 22"));
+    right.evaluator()->evalUpdateAns();
+
+    ++eval_total_tests;
+    if (left.evaluator() == right.evaluator()
+            || !left.evaluator()->hasVariable(QStringLiteral("left_only"))
+            || left.evaluator()->hasVariable(QStringLiteral("right_only"))
+            || !right.evaluator()->hasVariable(QStringLiteral("right_only"))
+            || right.evaluator()->hasVariable(QStringLiteral("left_only"))) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tsessions own isolated evaluators\t[NEW]" << endl;
+    }
 }
 
 void test_session_globals_deserialize_preserves_existing_definitions()
@@ -6707,6 +6730,35 @@ void test_session_globals_deserialize_preserves_existing_definitions()
     }
 
     settings->startupUserDefinitions = previousDefinitions;
+}
+
+void test_session_deserialize_rejects_invalid_schema_without_mutating()
+{
+    Session session;
+    session.addHistoryEntry(HistoryEntry("1+1", Quantity(2)));
+    session.addVariable(Variable("kept", Quantity(7), Variable::UserDefined));
+    session.setEditorText("kept editor");
+
+    QJsonObject invalid;
+    invalid[QLatin1String(SessionJsonKeys::SchemaVersion)] = SessionJsonKeys::SchemaVersionValue + 1;
+    invalid[QLatin1String(SessionJsonKeys::History)] = QJsonArray();
+    invalid[QLatin1String(SessionJsonKeys::Variables)] = QJsonArray();
+
+    const int deserializeResult = session.deSerialize(invalid, false);
+
+    ++eval_total_tests;
+    const bool historyKept = session.historySize() == 1
+        && session.historyEntryAt(0).expr() == QStringLiteral("1+1");
+    const bool variableKept = session.hasVariable(QStringLiteral("kept"))
+        && DMath::format(session.getVariable(QStringLiteral("kept")).value(), Format::Fixed()) == "7";
+    if (deserializeResult != false
+            || !historyKept
+            || !variableKept
+            || session.editorText() != QStringLiteral("kept editor")) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tsession deserialize rejects invalid schema without mutating\t[NEW]" << endl;
+    }
 }
 
 void test_function_usage_tooltip()
@@ -7080,7 +7132,7 @@ void test_display_conversion_with_unicode_spaces_and_cross_units()
 
     const QString interpreted = eval->interpretedExpression();
     const QString displayed = DisplayFormatUtils::applyDigitGroupingForDisplay(
-        Evaluator::formatInterpretedExpressionForDisplay(interpreted));
+        Evaluator::formatInterpretedExpressionForDisplay(interpreted, eval));
     const QString expected = QStringLiteral("3")
         + QString(MathDsl::QuantSp)
         + QString::fromUtf8("[kg·m²/s⁴] → kg·m²/s⁴");
@@ -7097,7 +7149,7 @@ void test_display_conversion_with_unicode_spaces_and_cross_units()
 
     ++eval_total_tests;
     const QString simplifiedDisplayed = DisplayFormatUtils::applyDigitGroupingForDisplay(
-        Evaluator::formatInterpretedExpressionSimplifiedForDisplay(interpreted));
+        Evaluator::formatInterpretedExpressionSimplifiedForDisplay(interpreted, eval));
     const bool corrupted = simplifiedDisplayed.contains(QStringLiteral("//"))
         || simplifiedDisplayed.contains(QStringLiteral("··"))
         || hasSpacedOperatorsInsideUnitBrackets(simplifiedDisplayed);
@@ -7156,7 +7208,7 @@ void test_preserve_brackets_for_displayed_conversion_target_without_source_hint(
 
 void test_result_display_preserves_conversion_target_brackets()
 {
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     session->addHistoryEntry(HistoryEntry(
         QString::fromUtf8("3 [m] → [km]"),
@@ -7203,7 +7255,7 @@ void test_result_display_preserves_converted_sexagesimal_expression_line()
     } else {
         const QString displayed = ResultLineFormatUtils::formattedExpressionLineForDisplay(
             expression,
-            eval->interpretedExpression());
+            eval->interpretedExpression(), eval);
         const QString expected = QString::fromUtf8("179°59′59″ → [rad]");
 
         ++eval_total_tests;
@@ -7240,7 +7292,7 @@ void test_result_display_adds_normalized_sexagesimal_simplification_line()
         return;
     }
 
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     session->addHistoryEntry(HistoryEntry(
         QStringLiteral("1:120:3600"),
@@ -7309,7 +7361,7 @@ void test_result_display_highlights_simplified_expression_line()
         cerr << __FILE__ << "[" << __LINE__ << "]\thighlight simplified expression line setup\t[NEW]" << endl
              << "\tError: " << qPrintable(eval->error()) << endl;
     } else {
-        Session* session = const_cast<Session*>(eval->session());
+        Session* session = evalSession;
         session->clearHistory();
         session->addHistoryEntry(HistoryEntry(
             QStringLiteral("2 * cos(pi) * sin(pi) * cos(pi)"),
@@ -7409,7 +7461,7 @@ void test_result_display_highlights_primary_result_with_extra_result_line()
     settings->colorScheme = QStringLiteral("Custom");
     settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
 
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     session->addHistoryEntry(HistoryEntry(QStringLiteral("12 + 1212"), Quantity(1224)));
 
@@ -7502,7 +7554,7 @@ void test_result_display_highlights_primary_sexagesimal_result_with_extra_result
     settings->colorScheme = QStringLiteral("Custom");
     settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
 
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     session->addHistoryEntry(HistoryEntry(QStringLiteral("12"), Quantity(12)));
 
@@ -7611,7 +7663,7 @@ void test_result_display_highlights_primary_radian_result_with_pi_factor_line()
         cerr << __FILE__ << "[" << __LINE__ << "]\tevaluate radian pi-factor display case\t[NEW]" << endl
              << "\tError: " << qPrintable(eval->error()) << endl;
     } else {
-        Session* session = const_cast<Session*>(eval->session());
+        Session* session = evalSession;
         session->clearHistory();
         session->addHistoryEntry(HistoryEntry(QString::fromUtf8("12°"), value, eval->interpretedExpression()));
 
@@ -7692,7 +7744,7 @@ void test_result_display_adds_normalized_sexagesimal_simplification_line_for_ari
         return;
     }
 
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     session->addHistoryEntry(HistoryEntry(
         QStringLiteral("23:50:40 + 5:20:50"),
@@ -7748,7 +7800,7 @@ void test_result_display_preserves_fractional_seconds_in_normalized_sexagesimal_
         return;
     }
 
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     session->addHistoryEntry(HistoryEntry(
         QStringLiteral("12:34:56.75 + 1:25:30.50"),
@@ -7805,7 +7857,7 @@ void test_result_display_normalized_sexagesimal_line_with_time_conversion_target
         return;
     }
 
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     session->addHistoryEntry(HistoryEntry(
         QStringLiteral("5:59:59.875 + 0:00:00.250 -> [ms]"),
@@ -7891,7 +7943,7 @@ void test_result_display_mixed_per_term_time_conversions()
         return;
     }
 
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     session->addHistoryEntry(HistoryEntry(
         QString::fromUtf8("−5:59:59.875 → [h] + 0:00:00.250 → [s] − 10:0:0 → [ms]"),
@@ -7952,7 +8004,7 @@ void test_result_display_mixed_per_term_time_conversions_in_sexagesimal_notation
         return;
     }
 
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     session->addHistoryEntry(HistoryEntry(
         QString::fromUtf8("−5:59:59.875 → [h] + 0:00:00.250 → [s] − 10:0:0 → [ms]"),
@@ -7990,7 +8042,7 @@ void test_result_display_mixed_per_term_time_conversions_in_sexagesimal_notation
 
 void test_result_display_strips_unit_brackets_and_double_click_restores_canonical_unit_expression()
 {
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     eval->setExpression(QStringLiteral("2[s]"));
     const Quantity value = eval->evalUpdateAns();
@@ -8062,7 +8114,7 @@ void test_result_display_strips_unit_brackets_and_double_click_restores_canonica
 
 void test_result_display_double_click_selects_list_result()
 {
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     eval->setExpression(QStringLiteral("{1; 2; 3}"));
     const Quantity value = eval->evalUpdateAns();
@@ -8116,7 +8168,7 @@ void test_result_display_double_click_selects_list_result()
 
 void test_result_display_uses_base10_exponent_notation()
 {
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     Settings* settings = Settings::instance();
     const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
     const char oldResultFormat = settings->resultFormat;
@@ -8182,7 +8234,7 @@ void test_result_display_uses_base10_exponent_notation()
 
 void test_result_display_omits_zero_power_of_ten_generically()
 {
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     Settings* settings = Settings::instance();
     const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
     const char oldResultFormat = settings->resultFormat;
@@ -8257,7 +8309,7 @@ void test_result_display_omits_zero_power_of_ten_generically()
 
 void test_result_display_double_click_preserves_compact_angle_suffix()
 {
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     Settings* settings = Settings::instance();
     const char oldAngleUnit = settings->angleUnit;
     settings->angleUnit = 'd';
@@ -8321,7 +8373,7 @@ void test_result_display_double_click_preserves_compact_angle_suffix()
 
 void test_result_display_keeps_quantsp_before_degree_celsius_and_fahrenheit()
 {
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
 
     eval->setExpression(QString::fromUtf8("77 [°F] -> [°C]"));
@@ -8366,7 +8418,7 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
     const char oldAngleUnit = settings->angleUnit;
     const char oldResultFormat = settings->resultFormat;
     const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     session->clearHistory();
     auto checkAngleModeSuffix = [&](char angleUnit,
                                     const QString& expectedSuffix,
@@ -8916,7 +8968,7 @@ void test_value_unit_separator_normalization()
 void test_result_display_preserves_standalone_sexagesimal_angles_without_implicit_conversion()
 {
     Settings* settings = Settings::instance();
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
     const bool oldMultipleResultLinesEnabled = settings->multipleResultLinesEnabled;
     const char oldResultFormat = settings->resultFormat;
@@ -9000,7 +9052,7 @@ void test_result_display_preserves_standalone_sexagesimal_angles_without_implici
 void test_result_display_adds_simplified_line_for_unit_conversion_when_interpreted_is_empty()
 {
     Settings* settings = Settings::instance();
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
     const char oldUnitExponentStyle = settings->unitNegativeExponentStyle;
 
@@ -9059,7 +9111,7 @@ void test_result_display_adds_simplified_line_for_unit_conversion_when_interpret
 void test_result_display_adds_simplified_line_for_unit_conversion_with_interpreted_expression()
 {
     Settings* settings = Settings::instance();
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
     const char oldUnitExponentStyle = settings->unitNegativeExponentStyle;
 
@@ -9117,7 +9169,7 @@ void test_result_display_adds_simplified_line_for_unit_conversion_with_interpret
 void test_result_display_shows_pi_multiples_for_radian_angle_results()
 {
     Settings* settings = Settings::instance();
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     const char oldAngleUnit = settings->angleUnit;
     const char oldResultFormat = settings->resultFormat;
     const bool oldSimplify = settings->simplifyResultExpressions;
@@ -9283,7 +9335,7 @@ void test_result_display_shows_pi_multiples_for_radian_angle_results()
 void test_result_display_compacts_bracketed_degree_inside_trig_call()
 {
     Settings* settings = Settings::instance();
-    Session* session = const_cast<Session*>(eval->session());
+    Session* session = evalSession;
     const char oldAngleUnit = settings->angleUnit;
 
     settings->angleUnit = 'r';
@@ -9509,7 +9561,7 @@ void test_non_informative_numeric_simplified_row_suppression()
                      << "\tError: " << qPrintable(eval->error()) << endl;
             } else {
                 const QString displayed = Evaluator::formatInterpretedExpressionForDisplay(
-                    eval->interpretedExpression());
+                    eval->interpretedExpression(), eval);
                 const QString expectedDisplayed =
                     QString::fromUtf8("(cos²(pi")
                     + QString(MathDsl::AddWrap)
@@ -9524,7 +9576,7 @@ void test_non_informative_numeric_simplified_row_suppression()
                     + QString(MathDsl::AddWrap)
                     + QStringLiteral("3)");
                 const QString simplifiedDisplayed = Evaluator::formatInterpretedExpressionSimplifiedForDisplay(
-                    eval->interpretedExpression());
+                    eval->interpretedExpression(), eval);
                 if (displayed != expectedDisplayed || simplifiedDisplayed != expectedSimplified) {
                     ++eval_failed_tests;
                     ++eval_new_failed_tests;
@@ -9621,9 +9673,9 @@ void test_non_informative_numeric_simplified_row_suppression()
                  << "\tSimplified : " << simplified.toUtf8().constData() << endl;
         }
         const QString interpretedDisplay =
-            Evaluator::formatInterpretedExpressionForDisplay(interpreted);
+            Evaluator::formatInterpretedExpressionForDisplay(interpreted, eval);
         const QString simplifiedDisplay =
-            Evaluator::formatInterpretedExpressionSimplifiedForDisplay(interpreted);
+            Evaluator::formatInterpretedExpressionSimplifiedForDisplay(interpreted, eval);
         ++eval_total_tests;
         if (eval->error().isEmpty() && simplifiedDisplay == interpretedDisplay) {
             ++eval_failed_tests;
@@ -9689,7 +9741,9 @@ int main(int argc, char* argv[])
     CMath::setImaginaryUnitSymbol(QLatin1Char('i'));
     DMath::complexMode = false;
 
-    eval = Evaluator::instance();
+    static Session mainSession;
+    evalSession = &mainSession;
+    eval = evalSession->evaluator();
 
     eval->initializeBuiltInVariables();
 
@@ -9751,7 +9805,9 @@ int main(int argc, char* argv[])
     test_expression_operator_normalization();
     test_session_history_limit();
     test_session_deserialize_without_history();
+    test_session_owns_distinct_evaluator_state();
     test_session_globals_deserialize_preserves_existing_definitions();
+    test_session_deserialize_rejects_invalid_schema_without_mutating();
     test_function_usage_tooltip();
     test_grouped_numeric_literal_display_format();
     test_pasted_standalone_numeric_literal_reformatting();
