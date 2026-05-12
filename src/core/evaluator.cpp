@@ -6372,7 +6372,11 @@ void Evaluator::compile(const Tokens& tokens)
 
         m_hasImplicitMultiplication = !m_implicitMultiplicationOpcodeIndices.isEmpty();
 
-        m_interpretedExpression = hasGeneratedSexagesimalUnit && !hasUnitConversionToken
+        const bool preserveSourceSexagesimalDisplay =
+            hasGeneratedSexagesimalUnit
+            && !hasUnitConversionToken
+            && m_implicitMultiplicationOpcodeIndices.isEmpty();
+        m_interpretedExpression = preserveSourceSexagesimalDisplay
             ? QString()
             : buildInterpretedExpressionFromOpcodes();
     }

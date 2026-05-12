@@ -8427,7 +8427,9 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
 {
     Settings* settings = Settings::instance();
     const char oldAngleUnit = settings->angleUnit;
+    const char oldImaginaryUnit = settings->imaginaryUnit;
     const char oldResultFormat = settings->resultFormat;
+    const char oldResultFormatComplex = settings->resultFormatComplex;
     const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
     Session* session = evalSession;
     session->clearHistory();
@@ -8544,8 +8546,6 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
 
         const QString expressions[] = {
             QString::fromUtf8("cos(180°)"),
-            QString::fromUtf8("3cis(90[°])"),
-            QStringLiteral("3 * cis(200 [gon])"),
             QString::fromUtf8("uf_trig_wrap(90°)"),
             QStringLiteral("uf_trig_wrap((pi/2)[rad])")
         };
@@ -8748,6 +8748,78 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
                  << "\tExpected : simplified trig line with coefficient 4 and final = -4 line" << endl;
         }
     };
+    auto checkCisOutputsWithExplicitAngleUnitsHaveNoRadianSuffix = [&]() {
+        settings->angleUnit = 'r';
+        settings->imaginaryUnit = 'j';
+        settings->resultFormat = 'g';
+        settings->resultFormatComplex = 'c';
+        CMath::setImaginaryUnitSymbol(QLatin1Char('j'));
+        Evaluator::instance()->initializeAngleUnits();
+
+        struct Case {
+            QString expression;
+            QString expectedExpressionLine;
+            QString expectedResultLine;
+        };
+        const Case cases[] = {
+            {
+                QString::fromUtf8("3cis(90°)"),
+                QStringLiteral("3")
+                    + QString(MathDsl::MulDotWrapSp)
+                    + QString(MathDsl::MulDotOp)
+                    + QString(MathDsl::MulDotWrapSp)
+                    + QString::fromUtf8("cis(90°)"),
+                QStringLiteral("= 3j")
+            },
+            {
+                QStringLiteral("3 * cis(200 [gon])"),
+                QString(),
+                QString::fromUtf8("= −3")
+            }
+        };
+
+        for (const Case& tc : cases) {
+            session->clearHistory();
+            eval->setExpression(tc.expression);
+            const Quantity value = eval->evalUpdateAns();
+
+            ++eval_total_tests;
+            if (!eval->error().isEmpty()) {
+                ++eval_failed_tests;
+                ++eval_new_failed_tests;
+                cerr << __FILE__ << "[" << __LINE__ << "]\tresult display cis with explicit angle input has no radian suffix\t[NEW]" << endl
+                     << "\tExpression: " << tc.expression.toUtf8().constData() << endl
+                     << "\tError     : " << qPrintable(eval->error()) << endl;
+                continue;
+            }
+
+            session->addHistoryEntry(HistoryEntry(
+                tc.expression,
+                value,
+                eval->interpretedExpression()));
+
+            TestableResultDisplay display;
+            display.resize(800, 600);
+            display.refresh();
+
+            ++eval_total_tests;
+            const QString expressionLine = display.document()->findBlockByNumber(0).text();
+            const QString resultLine = display.document()->findBlockByNumber(1).text();
+            const bool expressionLineOk =
+                tc.expectedExpressionLine.isEmpty()
+                || expressionLine == tc.expectedExpressionLine;
+            if (!expressionLineOk || resultLine != tc.expectedResultLine) {
+                ++eval_failed_tests;
+                ++eval_new_failed_tests;
+                cerr << __FILE__ << "[" << __LINE__ << "]\tresult display cis with explicit angle input has no radian suffix\t[NEW]" << endl
+                     << "\tExpression: " << tc.expression.toUtf8().constData() << endl
+                     << "\tExpr line : " << expressionLine.toUtf8().constData() << endl
+                     << "\tExpected  : " << tc.expectedExpressionLine.toUtf8().constData() << endl
+                     << "\tLine      : " << resultLine.toUtf8().constData() << endl
+                     << "\tExpected  : " << tc.expectedResultLine.toUtf8().constData() << endl;
+            }
+        }
+    };
 
     checkAngleModeSuffix('r', Units::angleModeUnitSymbol('r'), false,
                          "result display angle suffix in radian mode");
@@ -8764,6 +8836,7 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
                                     "result display trig output has no radian suffix");
     checkTrigOutputHasNoAngleSuffix('d',
                                     "result display trig output has no degree suffix");
+    checkCisOutputsWithExplicitAngleUnitsHaveNoRadianSuffix();
     checkSimplifiedLineForRepeatedTrigWithDegreeSignInResultDisplay();
     checkSimplifiedLineForMixedDegreeAliasesInResultDisplay();
     checkScientificAngleUnitSpacing(
@@ -8918,8 +8991,11 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
     }
 
     settings->angleUnit = oldAngleUnit;
+    settings->imaginaryUnit = oldImaginaryUnit;
     settings->resultFormat = oldResultFormat;
+    settings->resultFormatComplex = oldResultFormatComplex;
     settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    CMath::setImaginaryUnitSymbol(QChar(oldImaginaryUnit));
     Evaluator::instance()->initializeAngleUnits();
     session->clearHistory();
 }
