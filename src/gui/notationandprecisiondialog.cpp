@@ -37,7 +37,6 @@ ResultSlotsDialog::ResultSlotsDialog(QWidget* parent)
     , m_autoPrecision(new QCheckBox(tr("Automatic"), this))
     , m_precision(new QSpinBox(this))
     , m_precisionLabel(new QLabel(this))
-    , m_complex(new QComboBox(this))
     , m_selectorGroup(new QGroupBox(tr("Result Line"), this))
     , m_settingsGroup(new QGroupBox(tr("Result Configuration"), this))
     , m_advancedMode(new QCheckBox(tr("Advanced mode: show multiple result lines"), this))
@@ -83,11 +82,6 @@ ResultSlotsDialog::ResultSlotsDialog(QWidget* parent)
     precisionRow->addWidget(m_precision);
     form->addRow(m_precisionLabel, precisionRow);
 
-    m_complex->addItem(tr("Rectangular (Cartesian)"), QStringLiteral("c"));
-    m_complex->addItem(tr("Polar (Exponential)"), QStringLiteral("p"));
-    m_complex->addItem(tr("Polar (Angle)"), QStringLiteral("a"));
-    form->addRow(tr("Complex form:"), m_complex);
-
     root->addWidget(m_advancedMode);
 
     QDialogButtonBox* buttons =
@@ -104,11 +98,9 @@ ResultSlotsDialog::ResultSlotsDialog(QWidget* parent)
     connect(m_enabled, &QCheckBox::toggled, this, [this](bool enabled) {
         const bool isMain = (m_activeSlotIndex == 0);
         const bool allowEditing = isMain || enabled;
-        const bool complexGloballyEnabled = Settings::instance()->complexNumbers;
         m_notation->setEnabled(allowEditing);
         m_autoPrecision->setEnabled(allowEditing);
         m_precision->setEnabled(allowEditing && !m_autoPrecision->isChecked());
-        m_complex->setEnabled(allowEditing && complexGloballyEnabled);
     });
     connect(m_slot, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [this](int index) {
@@ -155,32 +147,22 @@ void ResultSlotsDialog::loadFromSettings()
     m_slots[0].notation = settings->resultFormat;
     m_slots[0].precision = settings->resultPrecision;
     m_slots[0].enabled = true;
-    m_slots[0].complexEnabled = settings->complexNumbers;
-    m_slots[0].complexForm = settings->resultFormatComplex;
 
     m_slots[1].notation = settings->alternativeResultFormat;
     m_slots[1].precision = settings->secondaryResultPrecision;
     m_slots[1].enabled = settings->secondaryResultEnabled;
-    m_slots[1].complexEnabled = settings->secondaryComplexNumbers;
-    m_slots[1].complexForm = settings->secondaryResultFormatComplex;
 
     m_slots[2].notation = settings->tertiaryResultFormat;
     m_slots[2].precision = settings->tertiaryResultPrecision;
     m_slots[2].enabled = settings->tertiaryResultEnabled;
-    m_slots[2].complexEnabled = settings->tertiaryComplexNumbers;
-    m_slots[2].complexForm = settings->tertiaryResultFormatComplex;
 
     m_slots[3].notation = settings->quaternaryResultFormat;
     m_slots[3].precision = settings->quaternaryResultPrecision;
     m_slots[3].enabled = settings->quaternaryResultEnabled;
-    m_slots[3].complexEnabled = settings->quaternaryComplexNumbers;
-    m_slots[3].complexForm = settings->quaternaryResultFormatComplex;
 
     m_slots[4].notation = settings->quinaryResultFormat;
     m_slots[4].precision = settings->quinaryResultPrecision;
     m_slots[4].enabled = settings->quinaryResultEnabled;
-    m_slots[4].complexEnabled = settings->quinaryComplexNumbers;
-    m_slots[4].complexForm = settings->quinaryResultFormatComplex;
 }
 
 void ResultSlotsDialog::saveCurrentUiToSlot(int slotIndex)
@@ -190,17 +172,12 @@ void ResultSlotsDialog::saveCurrentUiToSlot(int slotIndex)
     target.notation = notationFromComboData(m_notation->currentData());
     target.enabled = (slot == 0) ? true : m_enabled->isChecked();
     target.precision = m_autoPrecision->isChecked() ? -1 : m_precision->value();
-
-    target.complexEnabled = true;
-    target.complexForm = notationFromComboData(m_complex->currentData());
 }
 
 void ResultSlotsDialog::loadSlotToUi(int slotIndex)
 {
     const int slot = qBound(0, slotIndex, 4);
     const SlotSettings& source = m_slots[slot];
-    const Settings* settings = Settings::instance();
-
     const bool isMain = (slot == 0);
     m_enabled->setVisible(!isMain);
     m_enabled->setChecked(isMain ? true : source.enabled);
@@ -211,13 +188,10 @@ void ResultSlotsDialog::loadSlotToUi(int slotIndex)
     m_precision->setValue(source.precision < 0 ? 8 : source.precision);
     m_precision->setEnabled(source.precision >= 0);
 
-    m_complex->setCurrentIndex(m_complex->findData(QString(QChar(source.complexForm))));
-
     const bool allowEditing = isMain || source.enabled;
     m_notation->setEnabled(allowEditing);
     m_autoPrecision->setEnabled(allowEditing);
     m_precision->setEnabled(allowEditing && source.precision >= 0);
-    m_complex->setEnabled(allowEditing && settings->complexNumbers);
     updatePrecisionLabel();
 }
 
@@ -225,33 +199,34 @@ void ResultSlotsDialog::applyToSettings()
 {
     Settings* settings = Settings::instance();
     settings->multipleResultLinesEnabled = m_advancedMode->isChecked();
+    settings->complexNumbers = true;
     settings->resultFormat = m_slots[0].notation;
     settings->resultPrecision = m_slots[0].precision;
-    settings->resultFormatComplex = m_slots[0].complexForm;
+    const char complexFormat = settings->resultFormatComplex;
 
     settings->alternativeResultFormat = m_slots[1].notation;
     settings->secondaryResultEnabled = m_slots[1].enabled;
     settings->secondaryResultPrecision = m_slots[1].precision;
     settings->secondaryComplexNumbers = true;
-    settings->secondaryResultFormatComplex = m_slots[1].complexForm;
+    settings->secondaryResultFormatComplex = complexFormat;
 
     settings->tertiaryResultFormat = m_slots[2].notation;
     settings->tertiaryResultEnabled = m_slots[2].enabled;
     settings->tertiaryResultPrecision = m_slots[2].precision;
     settings->tertiaryComplexNumbers = true;
-    settings->tertiaryResultFormatComplex = m_slots[2].complexForm;
+    settings->tertiaryResultFormatComplex = complexFormat;
 
     settings->quaternaryResultFormat = m_slots[3].notation;
     settings->quaternaryResultEnabled = m_slots[3].enabled;
     settings->quaternaryResultPrecision = m_slots[3].precision;
     settings->quaternaryComplexNumbers = true;
-    settings->quaternaryResultFormatComplex = m_slots[3].complexForm;
+    settings->quaternaryResultFormatComplex = complexFormat;
 
     settings->quinaryResultFormat = m_slots[4].notation;
     settings->quinaryResultEnabled = m_slots[4].enabled;
     settings->quinaryResultPrecision = m_slots[4].precision;
     settings->quinaryComplexNumbers = true;
-    settings->quinaryResultFormatComplex = m_slots[4].complexForm;
+    settings->quinaryResultFormatComplex = complexFormat;
 }
 
 void ResultSlotsDialog::updateAdvancedModeUi(bool advanced)

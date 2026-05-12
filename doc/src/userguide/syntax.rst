@@ -345,11 +345,8 @@ SpeedCrunch supports the following operators, listed in order of decreasing prec
 |                               |   that the power operation is                                 |                         |
 |                               |   *right-associative*, i.e. it is                             | ``2^2^3 = 2^8 = 256``   |
 |                               |   evaluated from right to left.                               |                         |
-|                               |   In *real mode*, fractional powers of                        |                         |
-|                               |   negative numbers are only defined for                       | ``(-1)^(2/3) = 1``      |
-|                               |   rational exponents with odd denominators.                   |                         |
-|                               |   The result is negative only when the reduced                | ``(-8)^(2/3) = 4``      |
-|                               |   rational exponent has an odd numerator.                     |                         |
+|                               |   Fractional powers return principal                          | ``(-1)^(1/2) = i``      |
+|                               |   complex roots for negative bases.                           |                         |
 |                               |   Positive and negative powers can be written                 | ``10^3``, ``10^-3``,    |
 |                               |   with either ``^`` or ``**``.                                | ``10**3``, ``10**-3``   |
 |                               |                                                               |                         |
@@ -423,29 +420,17 @@ SpeedCrunch supports the following operators, listed in order of decreasing prec
 |                               |   :ref:`units` for more information.                          |                         |
 +-------------------------------+---------------------------------------------------------------+-------------------------+
 
-For negative bases in *real mode*, the exponentiation rule can be read as:
-
-1. Express the exponent as a reduced rational ``p/q``.
-2. If ``q`` is even, the result is ``NaN``.
-3. If ``q`` is odd, the result is real, with sign set by ``p``:
-   odd ``p`` gives a negative result, even ``p`` gives a positive result.
-
-Examples::
-
-    (-13)^(1/3) = -2.3513346877207574895
-    (-13)^(2/3) = 5.5287748136788717828
-    (-13)^(1/9.123) = 1.32465488702830785593
-    (-13)^(1/2) = NaN
-    (-13)^pi = NaN
+For negative bases, fractional powers return the principal complex root.
+Use :func:`cbrt` when you specifically need the real cubic root of a real
+negative value.
 
 
 Complex Numbers
 ---------------
 .. versionadded:: 0.12
 
-SpeedCrunch supports complex-number expressions. Enable complex mode in
-:menuselection:`Settings --> Complex Numbers`, then enter the imaginary unit as
-``i`` or ``j``::
+SpeedCrunch supports complex-number expressions by default. Enter the imaginary
+unit as ``i`` or ``j``::
 
     j^2
     = -1
@@ -457,18 +442,15 @@ Syntax note: ``5j`` means ``5*j``, while ``j5`` is a variable named ``j5``.
 Write ``j*5`` explicitly if needed.
 
 The displayed imaginary-unit symbol is configurable in
-:menuselection:`Settings --> Complex Numbers --> Imaginary Unit i/j`.
+:menuselection:`Settings --> Results --> Complex Numbers --> Imaginary Unit`.
+The displayed complex format is configurable in
+:menuselection:`Settings --> Results --> Complex Numbers --> Complex Format`.
 
 Not every function accepts complex arguments. Refer to each function entry in
 the reference.
 
-Caution: with complex mode enabled, fractional powers return principal complex
-roots. For example, ``x^(1/3)`` may be non-real. In contrast, :func:`cbrt`
-always returns the real cubic root for real inputs.
+Caution: fractional powers return principal complex roots. For example,
+``x^(1/3)`` may be non-real. In contrast, :func:`cbrt` always returns the real
+cubic root for real inputs.
 
-In real mode, ``x^y`` with negative real ``x`` is only defined when ``y`` can
-be reduced to a rational with odd denominator; otherwise the result is ``NaN``.
-
-When complex mode is disabled, :const:`i` and :const:`j` are unavailable as
-built-in constants. Previously stored variables may still contain complex
-values.
+:const:`i` and :const:`j` are built-in constants for the imaginary unit.

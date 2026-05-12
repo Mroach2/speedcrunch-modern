@@ -42,8 +42,8 @@ Constants in the widget can be filtered by category and subcategory.
 .. constant:: i
 .. constant:: j
 
-   When complex mode is enabled, these are aliases for the imaginary unit such
-   that ``i ^ 2 = -1`` and ``j ^ 2 = -1``.
+   These are aliases for the imaginary unit such that ``i ^ 2 = -1`` and
+   ``j ^ 2 = -1``.
 
    The displayed symbol used in formatted results can be selected in
    :menuselection:`Settings --> Results --> Complex Numbers` as either ``i`` (default) or ``j``.

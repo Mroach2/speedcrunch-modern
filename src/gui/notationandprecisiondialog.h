@@ -28,8 +28,6 @@ private:
         char notation = '\0';
         int precision = -1;
         bool enabled = true;
-        bool complexEnabled = false;
-        char complexForm = 'c';
     };
 
     int currentSlotIndex() const;
@@ -46,7 +44,6 @@ private:
     QCheckBox* m_autoPrecision;
     QSpinBox* m_precision;
     QLabel* m_precisionLabel;
-    QComboBox* m_complex;
     QGroupBox* m_selectorGroup;
     QGroupBox* m_settingsGroup;
     QCheckBox* m_advancedMode;

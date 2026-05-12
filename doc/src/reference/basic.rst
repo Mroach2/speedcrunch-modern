@@ -6,7 +6,7 @@ General
 
 .. function:: abs(x)
 
-    Return the absolute value of ``x``, commonly written as \|x\|. In real mode, it flips the sign of a negative number, thus forcing it to be positive. When given a complex number as argument, it returns the modulus of the number.
+    Return the absolute value of ``x``, commonly written as \|x\|. When given a real number, it returns a non-negative real value. When given a complex number, it returns the modulus of the number.
 
     The argument can have a dimension.
 
@@ -20,7 +20,7 @@ General
 
 .. function:: sqrt(x)
 
-    Return the square root of ``x``. If complex numbers are disabled, this function is only defined for *x > 0*. In *complex mode*, any complex number may be specified, yielding the complex root in the upper half plane.
+    Return the square root of ``x``. Any complex number may be specified, yielding the complex root in the upper half plane.
 
     Alias: ``√(x)``.
 
@@ -30,12 +30,12 @@ General
 
 .. function:: cbrt(x)
 
-    Compute the third (cubic) root of ``x``. In *real mode*, it accepts any real number. Negative numbers will yield a negative cubic root::
+    Compute the third (cubic) root of ``x``. Negative real numbers yield a negative real cubic root::
 
         cbrt(-27)
         = -3
 
-    In *complex mode*, this function accepts any complex input. The result will generally be the first complex root, i.e. the one with a phase between 0 and π/3. Real negative arguments however will still yield a real (negative) result, matching the function's behavior in *real mode*. Use ``x^(1/3)`` to get the first complex root.
+    This function accepts any complex input. The result will generally be the first complex root, i.e. the one with a phase between 0 and π/3. Real negative arguments however will still yield a real (negative) result. Use ``x^(1/3)`` to get the first complex root.
 
     Alias: ``∛(x)``.
 
@@ -52,21 +52,21 @@ General
 
 .. function:: ln(x)
 
-    Compute the natural logarithm. In *real mode*, the argument must be real, with *x > 0*.
+    Compute the natural logarithm.
 
-    In *complex mode*, any non-zero number may be given. The result will be the principal value. The branch cut runs across the negative real axis. Nevertheless, in SpeedCrunch :func:`ln` is defined for negative real numbers as *ln(-x) = ln(\|x\|)) + πj*, extending the branch from the *upper* half-plane.
+    Any non-zero number may be given. The result will be the principal value. The branch cut runs across the negative real axis. Nevertheless, in SpeedCrunch :func:`ln` is defined for negative real numbers as *ln(-x) = ln(\|x\|)) + πj*, extending the branch from the *upper* half-plane.
 
 .. function:: lb(x)
 
-    Compute the binary logarithm. In *complex mode* the same rules apply as for :func:`ln`.
+    Compute the binary logarithm. The same complex-number rules apply as for :func:`ln`.
 
 .. function:: lg(x)
 
-    Compute the decimal logarithm. In *complex mode* the same rules apply as for :func:`ln`.
+    Compute the decimal logarithm. The same complex-number rules apply as for :func:`ln`.
 
 .. function:: log(n; x)
 
-    Compute the logarithm of base ``n`` . In *complex mode* the same rules apply as for :func:`ln`.
+    Compute the logarithm of base ``n``. The same complex-number rules apply as for :func:`ln`.
 
 .. function:: datetime(unix_timestamp [; offset])
 
@@ -433,11 +433,11 @@ current angle mode.
 
 .. function:: arccos(x)
 
-    Returns the inverse cosine of ``x``, such that *cos(arccos(x)) = x*. The behavior of the function depends on both the angle mode setting and on whether complex numbers are enabled.
+    Returns the inverse cosine of ``x``, such that *cos(arccos(x)) = x*. The behavior of the function depends on the angle mode setting.
 
     In *degrees*, *gradians*, or *turns* modes, :func:`arccos` takes a real argument from *[-1, 1]*, and the return value is in the range *[0, 180]*, *[0, 200]*, or *[0, 0.5]*, respectively. Real arguments outside *[-1, 1]* and complex numbers are allowed only in *radians* mode.
 
-    When *radians* are set as the angle mode, :func:`arccos` maps an element from *[-1, 1]* to a value in *[0, π]*. When complex numbers are enabled in addition, :func:`arccos` may take any argument from the complex plane. In complex mode, *arccos(-1) = π* and *arccos(1) = 0* will yield the same result as in real mode.
+    When *radians* are set as the angle mode, :func:`arccos` maps an element from *[-1, 1]* to a value in *[0, π]* and may take any argument from the complex plane. *arccos(-1) = π* and *arccos(1) = 0* match the real-valued results.
 
     The argument of :func:`arccos` must be dimensionless.
 
@@ -445,11 +445,11 @@ current angle mode.
 
 .. function:: arcsin(x)
 
-    Returns the inverse sine of ``x``, such that *sin(arcsin(x)) = x*. The behavior of the function depends on both the angle mode setting and on whether complex numbers are enabled.
+    Returns the inverse sine of ``x``, such that *sin(arcsin(x)) = x*. The behavior of the function depends on the angle mode setting.
 
     In *degrees*, *gradians*, or *turns* modes, :func:`arcsin` takes a real argument from *[-1, 1]*, and the return value is in the range *[-90, 90]*, *[-100, 100]*, or *[-0.25, 0.25]*, respectively. Real arguments outside *[-1, 1]* and complex numbers are allowed only in *radians* mode.
 
-    When *radians* are set as the angle mode, :func:`arcsin` maps an element from *[-1, 1]* to a value in *[-π/2, π/2]*. When complex numbers are enabled in addition, :func:`arcsin` may take any argument from the complex plane. In complex mode, *arcsin(-1) = π/2* and *arcsin(1) = π/2* will yield the same result as in real mode.
+    When *radians* are set as the angle mode, :func:`arcsin` maps an element from *[-1, 1]* to a value in *[-π/2, π/2]* and may take any argument from the complex plane. *arcsin(-1) = π/2* and *arcsin(1) = π/2* match the real-valued results.
 
     The argument of :func:`arccos` must be dimensionless.
 
@@ -458,11 +458,11 @@ current angle mode.
 
 .. function:: arctan(x)
 
-    Returns the inverse tangent of ``x``, such that *tan(arctan(x)) = x*. The behavior of the function depends on both the angle mode setting and on whether complex numbers are enabled.
+    Returns the inverse tangent of ``x``, such that *tan(arctan(x)) = x*. The behavior of the function depends on the angle mode setting.
 
-    In *degrees*, *gradians*, or *turns* modes, :func:`arctan` takes a real argument from *[-1, 1]*, and the return value is in the range *[-90, 90]*, *[-100, 100]*, or *[-0.25, 0.25]*, respectively. Real arguments outside *[-1, 1]* and complex numbers are not allowed only in *radians* mode.
+    In *degrees*, *gradians*, or *turns* modes, :func:`arctan` takes a real argument from *[-1, 1]*, and the return value is in the range *[-90, 90]*, *[-100, 100]*, or *[-0.25, 0.25]*, respectively. Real arguments outside *[-1, 1]* and complex numbers are allowed only in *radians* mode.
 
-    When *radians* are set as the angle mode, :func:`arctan` maps a real number to a value in *[-π/2, π/2]*. When complex numbers are enabled in addition, :func:`arctan` may take any argument from the complex plane, except for *+j* and *-j*.
+    When *radians* are set as the angle mode, :func:`arctan` maps a real number to a value in *[-π/2, π/2]* and may take any argument from the complex plane, except for *+j* and *-j*.
 
     The argument of :func:`arctan` must be dimensionless.
 
@@ -484,7 +484,7 @@ Hyperbolic & Inverse Hyperbolic
 
 .. function:: sinh(x)
 
-    Return the hyperbolic sine of ``x``. In *complex mode*, any complex number may be used as the argument.
+    Return the hyperbolic sine of ``x``. Any complex number may be used as the argument.
 
     The argument must be dimensionless.
 
@@ -493,7 +493,7 @@ Hyperbolic & Inverse Hyperbolic
 
 .. function:: cosh(x)
 
-    Return the hyperbolic cosine of ``x``. In *complex mode*, any complex number may be used as the argument.
+    Return the hyperbolic cosine of ``x``. Any complex number may be used as the argument.
 
     The argument must be dimensionless.
 
@@ -502,7 +502,7 @@ Hyperbolic & Inverse Hyperbolic
 
 .. function:: tanh(x)
 
-    Return the hyperbolic tangent of ``x``. In *complex mode*, any complex number may be used as the argument.
+    Return the hyperbolic tangent of ``x``. Any complex number may be used as the argument.
 
     The argument must be dimensionless.
 
@@ -513,7 +513,7 @@ Hyperbolic & Inverse Hyperbolic
 
     Compute the area hyperbolic sine of ``x``, the inverse function to :func:`sinh`. *arsinh(x)* is the only solution to *cosh(y) = x*.
 
-    In complex mode, the function is defined for any complex ``z`` as *arsinh(z) = ln[z + (z* :sup:`2` *+1)* :sup:`1/2` *]*.
+    The function is defined for any complex ``z`` as *arsinh(z) = ln[z + (z* :sup:`2` *+1)* :sup:`1/2` *]*.
 
     The function only accepts dimensionless arguments.
 
@@ -522,16 +522,16 @@ Hyperbolic & Inverse Hyperbolic
 
     Compute the area hyperbolic cosine of ``x``, the inverse function to :func:`cosh`. *arcosh(x)* is the positive solution to *cosh(y) = x*. Except for *x=1*, the second solution to this equation will be given by *-arcosh(x)*.
 
-    In real mode, the parameter ``x`` must be *> 1*. In complex mode, the function is defined for any complex ``z`` as *arcosh(z) = ln[z + (z* :sup:`2` *-1)* :sup:`2` *]*.
+    The function is defined for any complex ``z`` as *arcosh(z) = ln[z + (z* :sup:`2` *-1)* :sup:`2` *]*.
 
     The function only accepts dimensionless arguments.
 
 
 .. function:: artanh(x)
 
-    Compute the area hyperbolic tangent of ``x``, the inverse function to :func:`tanh`. *artanh(x)* is the only solution to *tanh(y) = x*. In real mode, the parameter ``x`` has to fulfill *-1 < x < 1*.
+    Compute the area hyperbolic tangent of ``x``, the inverse function to :func:`tanh`. *artanh(x)* is the only solution to *tanh(y) = x*.
 
-    In complex mode, this function accepts any argument except for -1 and +1. In the complex plane, it is defined as *artanh(z) = 1/2 \* ln[(z+1)/(z-1)]*.
+    This function accepts any argument except for -1 and +1. In the complex plane, it is defined as *artanh(z) = 1/2 \* ln[(z+1)/(z-1)]*.
 
     The function only accepts dimensionless arguments.
 
@@ -587,7 +587,7 @@ Complex Numbers
 
     Return the complex conjugate of a complex number ``x``.
 
-    In *complex mode*, this function accepts any real or complex input. In *real mode*, the imaginary portion of ``x`` is stripped to ensure that the value returned is purely real.
+    This function accepts any real or complex input.
 
 .. function:: phase(x)
 
@@ -602,11 +602,11 @@ Complex Numbers
 
     Converts the complex number ``x`` to polar form.
 
-    In the ``Polar (Exponential)`` complex-number display mode, values are
+    In the ``Polar (r·e^(iθ))`` complex-number display mode, values are
     shown as *r e* :sup:`uɸ`, where ``u`` is the selected imaginary-unit
     symbol (``i`` or ``j``), and ɸ is in radians.
 
-    In the ``Polar (Angle)`` complex-number display mode, values are shown as
+    In the ``Polar (r∠θ)`` complex-number display mode, values are shown as
     *r ∠ ɸ*, and ɸ follows the global angle-unit setting.
 
 .. function:: cart(x)

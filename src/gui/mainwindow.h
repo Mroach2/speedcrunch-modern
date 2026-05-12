@@ -165,7 +165,6 @@ private slots:
     void setRadixCharacterDot();
     void setRadixCharacterBoth();
     void setResultFormatBinary();
-    void setResultFormatComplexDisabled();
     void setResultFormatCartesian();
     void setResultFormat(char);
     void setResultFormatEngineering();
@@ -310,7 +309,6 @@ private:
     void saveSessionLayout(bool captureCurrentViewport = true);
     bool configureCustomKeypad();
     void setActionsText();
-    void updateComplexDisabledActionText();
     void updateKeypadDisabledActionText();
     void setMenusText();
     void setStatusBarText();
@@ -440,7 +438,6 @@ private:
         QAction* settingsBehaviorSimplifyResultExpressions;
         QAction* settingsBehaviorHistorySizeLimit;
         QAction* settingsRadixCharBoth;
-        QAction* settingsResultFormatComplexDisabled;
         QAction* settingsDisplayZoomIn;
         QAction* settingsDisplayZoomOut;
         QAction* settingsDisplayFont;
@@ -481,6 +478,7 @@ private:
     struct {
         QMenu* angleUnit;
         QMenu* complexForm;
+        QMenu* imaginaryUnit;
         QMenu* complexNumbers;
         QMenu* editing;
         QMenu* autoCompletion;

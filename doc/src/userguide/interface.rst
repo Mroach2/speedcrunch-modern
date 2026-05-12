@@ -284,22 +284,25 @@ determines the angle format of the arguments.
 
     .. versionadded:: 1.0
     
+.. _complex_numbers:
+
 Complex Numbers
 +++++++++++++++
 
 Configure global complex-number behavior via
-:menuselection:`Settings --> Complex Numbers`.
-On first launch, complex numbers are disabled by default.
+:menuselection:`Settings --> Results --> Complex Numbers`.
+Complex numbers are always enabled.
 
-* :menuselection:`Disable` (shown as ``Disabled`` when selected)
-    Disable complex-number output globally.
-* :menuselection:`Imaginary Unit i`
+* :menuselection:`Imaginary Unit --> i`
     Use ``i`` as the imaginary unit symbol.
-* :menuselection:`Imaginary Unit j`
+* :menuselection:`Imaginary Unit --> j`
     Use ``j`` as the imaginary unit symbol.
-
-Complex output form (Rectangular/Polar) is selected per result line in
-:menuselection:`Settings --> Results --> Notation & Precision...`.
+* :menuselection:`Complex Format --> Rectangular (a + bi)`
+    Display complex results in rectangular form.
+* :menuselection:`Complex Format --> Polar (r·e^(iθ))`
+    Display complex results in polar exponential form.
+* :menuselection:`Complex Format --> Polar (r∠θ)`
+    Display complex results in polar angle form.
 
 .. _radix_character:
 
@@ -381,7 +384,7 @@ This section contains settings that control result output and post-evaluation be
     separator and digit grouping. See :ref:`radix_character`.
 
 * :menuselection:`Notation & Precision...`
-    Open a unified dialog to configure notation, precision, and complex form.
+    Open a unified dialog to configure notation and precision.
     The precision row label changes by notation: ``Decimal places`` for
     decimal notations, otherwise ``Fractional digits``.
     By default, the dialog shows only ``Main Line`` settings. Enable
@@ -427,8 +430,16 @@ This section contains settings that control result output and post-evaluation be
 
     This setting affects result formatting (including live previews). It does
     not change the behavior of the :func:`round` and :func:`trunc` functions.
-    Like other result-format settings, changes apply to subsequent calculations
-    and previews; already stored history entries keep their original display.
+    Like other result-format settings, changes apply to subsequent
+    calculations and previews; already stored history entries keep their
+    original display.
+
+* :menuselection:`Complex Numbers`
+    Configure the imaginary unit and complex result format. See
+    :ref:`complex_numbers`.
+
+* :menuselection:`Unit Exponent Style`
+    Configure how unit exponents are displayed.
 * :menuselection:`Automatically Copy New Results to Clipboard`
     Automatically copy each newly evaluated result to the clipboard.
 * :menuselection:`Simplify Displayed Expressions`
@@ -591,12 +602,10 @@ Widgets and Docks
     Show/hide user units widget.
 * :kbd:`Control+B`
     Show/hide the status bar.
-    The status bar provides quick selectors for :menuselection:`Angle Mode`
-    and :menuselection:`Results --> Notation`. When
-    :menuselection:`Settings --> Complex Numbers` is enabled, it also shows
-    a :menuselection:`Complex Form` selector with the same options as
-    :menuselection:`Notation & Precision...`. On narrow windows, selectors
-    that do not fully fit are hidden automatically.
+    The status bar provides quick selectors for :menuselection:`Angle Mode`,
+    :menuselection:`Results --> Notation`, and
+    :menuselection:`Results --> Complex Numbers --> Complex Format`. On narrow
+    windows, selectors that do not fully fit are hidden automatically.
 
 Scrolling
 +++++++++

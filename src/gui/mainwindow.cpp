@@ -1509,7 +1509,6 @@ void MainWindow::createActions()
     m_actions.settingsBehaviorAutoResultToClipboard = new QAction(this);
     m_actions.settingsBehaviorSimplifyResultExpressions = new QAction(this);
     m_actions.settingsBehaviorHistorySizeLimit = new QAction(this);
-    m_actions.settingsResultFormatComplexDisabled = new QAction(this);
     m_actions.settingsDisplayFont = new QAction(this);
     m_actions.settingsDisplayColorSchemeCustom = new QAction(this);
     m_actions.settingsLanguage = new QAction(this);
@@ -1593,7 +1592,6 @@ void MainWindow::createActions()
     m_actions.settingsBehaviorDigitGroupingIntegerPartOnly->setCheckable(true);
     m_actions.settingsBehaviorAutoResultToClipboard->setCheckable(true);
     m_actions.settingsBehaviorSimplifyResultExpressions->setCheckable(true);
-    m_actions.settingsResultFormatComplexDisabled->setCheckable(true);
     m_actions.settingsRadixCharComma->setCheckable(true);
     m_actions.settingsRadixCharDefault->setCheckable(true);
     m_actions.settingsRadixCharDot->setCheckable(true);
@@ -1706,7 +1704,7 @@ void MainWindow::setStatusBarText()
         m_status.angleUnitLabel->setText(MainWindow::tr("Angle Mode:"));
         m_status.resultFormatLabel->setText(MainWindow::tr("Notation:"));
         m_status.resultPrecisionLabel->setText(MainWindow::tr("Precision:"));
-        m_status.complexFormLabel->setText(MainWindow::tr("Complex Form:"));
+        m_status.complexFormLabel->setText(MainWindow::tr("Complex Format:"));
         m_status.angleUnit->setText(statusBarAngleUnitValue());
         m_status.resultFormat->setText(statusBarResultFormatValue());
         m_status.resultPrecision->setText(statusBarResultPrecisionValue());
@@ -1715,7 +1713,7 @@ void MainWindow::setStatusBarText()
         m_status.angleUnit->setToolTip(MainWindow::tr("Angle unit"));
         m_status.resultFormat->setToolTip(MainWindow::tr("Result notation"));
         m_status.resultPrecision->setToolTip(MainWindow::tr("Result precision"));
-        m_status.complexForm->setToolTip(MainWindow::tr("Complex form"));
+        m_status.complexForm->setToolTip(MainWindow::tr("Complex format"));
         updateStatusBarSectionVisibility();
     }
 }
@@ -1738,7 +1736,7 @@ void MainWindow::updateStatusBarSectionVisibility()
         { m_status.resultFormatSection, true },
         { m_status.resultPrecisionSection, true },
         { m_status.angleUnitSection, true },
-        { m_status.complexFormSection, m_settings->complexNumbers }
+        { m_status.complexFormSection, true }
     };
 
     int usedWidth = 0;
@@ -1796,10 +1794,10 @@ QString MainWindow::statusBarResultPrecisionValue() const
 QString MainWindow::statusBarComplexFormValue() const
 {
     if (m_settings->resultFormatComplex == 'p')
-        return MainWindow::tr("Polar (Exponential)");
+        return MainWindow::tr("Polar (r·e^(iθ))");
     if (m_settings->resultFormatComplex == 'a')
-        return MainWindow::tr("Polar (Angle)");
-    return MainWindow::tr("Rectangular (Cartesian)");
+        return MainWindow::tr("Polar (r∠θ)");
+    return MainWindow::tr("Rectangular (a + bi)");
 }
 
 void MainWindow::setActionsText()
@@ -1878,7 +1876,6 @@ void MainWindow::setActionsText()
     m_actions.settingsBehaviorAutoResultToClipboard->setText(MainWindow::tr("Automatically Copy New Results to Clipboard"));
     m_actions.settingsBehaviorSimplifyResultExpressions->setText(MainWindow::tr("Simplify Displayed Expressions"));
     m_actions.settingsBehaviorHistorySizeLimit->setText(MainWindow::tr("History Size &Limit..."));
-    updateComplexDisabledActionText();
     m_actions.settingsRadixCharComma->setText(MainWindow::tr("&Comma"));
     m_actions.settingsRadixCharDefault->setText(MainWindow::tr("&System Default"));
     m_actions.settingsRadixCharDot->setText(MainWindow::tr("&Dot"));
@@ -1911,11 +1908,11 @@ void MainWindow::setActionsText()
         MainWindow::tr("Superscript &Exponents"));
     m_actions.settingsUnitNegativeExponentFraction->setText(
         MainWindow::tr("&Fraction Form"));
-    m_actions.settingsResultFormatCartesian->setText(MainWindow::tr("&Rectangular (Cartesian)"));
-    m_actions.settingsResultFormatPolar->setText(MainWindow::tr("Polar (&Exponential)"));
-    m_actions.settingsResultFormatPolarAngle->setText(MainWindow::tr("Polar (&Angle)"));
-    m_actions.settingsImaginaryUnitI->setText(MainWindow::tr("Imaginary Unit &i"));
-    m_actions.settingsImaginaryUnitJ->setText(MainWindow::tr("Imaginary Unit &j"));
+    m_actions.settingsResultFormatCartesian->setText(MainWindow::tr("&Rectangular (a + bi)"));
+    m_actions.settingsResultFormatPolar->setText(MainWindow::tr("Polar (r·e^(iθ))"));
+    m_actions.settingsResultFormatPolarAngle->setText(MainWindow::tr("Polar (r∠θ)"));
+    m_actions.settingsImaginaryUnitI->setText(MainWindow::tr("&i"));
+    m_actions.settingsImaginaryUnitJ->setText(MainWindow::tr("&j"));
     m_actions.settingsDisplayFont->setText(MainWindow::tr("&Font..."));
     m_actions.settingsDisplayColorSchemeCustom->setText(MainWindow::tr("&Theme..."));
     m_actions.settingsLanguage->setText(MainWindow::tr("&Language..."));
@@ -1952,7 +1949,6 @@ void MainWindow::createActionGroups()
     m_actionGroups.complexFormat->addAction(m_actions.settingsResultFormatPolarAngle);
 
     m_actionGroups.imaginaryUnit = new QActionGroup(this);
-    m_actionGroups.imaginaryUnit->addAction(m_actions.settingsResultFormatComplexDisabled);
     m_actionGroups.imaginaryUnit->addAction(m_actions.settingsImaginaryUnitI);
     m_actionGroups.imaginaryUnit->addAction(m_actions.settingsImaginaryUnitJ);
 
@@ -2138,17 +2134,25 @@ void MainWindow::createMenus()
     m_menus.results->addAction(m_actions.settingsBehaviorNumberFormat);
     m_menus.results->addAction(m_actions.settingsBehaviorResultSlots);
     m_menus.results->addSeparator();
-    m_menus.unitNegativeExponentStyle = m_menus.results->addMenu("");
-    m_menus.unitNegativeExponentStyle->addAction(
-        m_actions.settingsUnitNegativeExponentSuperscript);
-    m_menus.unitNegativeExponentStyle->addAction(
-        m_actions.settingsUnitNegativeExponentFraction);
     m_menus.resultRoundingMode = m_menus.results->addMenu("");
     m_menus.resultRoundingMode->addAction(m_actions.settingsResultRoundingHalfAwayFromZero);
     m_menus.resultRoundingMode->addAction(m_actions.settingsResultRoundingHalfEven);
     m_menus.resultRoundingMode->addAction(m_actions.settingsResultRoundingTowardZero);
     m_menus.resultRoundingMode->addAction(m_actions.settingsResultRoundingTowardPositiveInfinity);
     m_menus.resultRoundingMode->addAction(m_actions.settingsResultRoundingTowardNegativeInfinity);
+    m_menus.complexNumbers = m_menus.results->addMenu("");
+    m_menus.complexForm = m_menus.complexNumbers->addMenu("");
+    m_menus.complexForm->addAction(m_actions.settingsResultFormatCartesian);
+    m_menus.complexForm->addAction(m_actions.settingsResultFormatPolar);
+    m_menus.complexForm->addAction(m_actions.settingsResultFormatPolarAngle);
+    m_menus.imaginaryUnit = m_menus.complexNumbers->addMenu("");
+    m_menus.imaginaryUnit->addAction(m_actions.settingsImaginaryUnitI);
+    m_menus.imaginaryUnit->addAction(m_actions.settingsImaginaryUnitJ);
+    m_menus.unitNegativeExponentStyle = m_menus.results->addMenu("");
+    m_menus.unitNegativeExponentStyle->addAction(
+        m_actions.settingsUnitNegativeExponentSuperscript);
+    m_menus.unitNegativeExponentStyle->addAction(
+        m_actions.settingsUnitNegativeExponentFraction);
     m_menus.results->addSeparator();
 
     // Deprecated direct menus kept as internal context menus only; users should
@@ -2176,16 +2180,6 @@ void MainWindow::createMenus()
     m_menus.precision->addSeparator();
     m_menus.precision->addAction(m_actions.settingsResultFormatCustomDigits);
 
-    m_menus.complexForm = new QMenu("", this);
-    m_menus.complexForm->addAction(m_actions.settingsResultFormatCartesian);
-    m_menus.complexForm->addAction(m_actions.settingsResultFormatPolar);
-    m_menus.complexForm->addAction(m_actions.settingsResultFormatPolarAngle);
-
-    m_menus.complexNumbers = new QMenu("", this);
-    m_menus.complexNumbers->addAction(m_actions.settingsResultFormatComplexDisabled);
-    m_menus.complexNumbers->addAction(m_actions.settingsImaginaryUnitI);
-    m_menus.complexNumbers->addAction(m_actions.settingsImaginaryUnitJ);
-
     m_menus.results->addAction(m_actions.settingsBehaviorPartialResults);
     m_menus.results->addAction(m_actions.settingsBehaviorSimplifyResultExpressions);
     m_menus.results->addAction(m_actions.settingsBehaviorAutoResultToClipboard);
@@ -2199,8 +2193,6 @@ void MainWindow::createMenus()
     m_menus.angleUnit->addAction(m_actions.settingsAngleUnitGradian);
     m_menus.angleUnit->addAction(m_actions.settingsAngleUnitTurn);
     m_menus.angleUnit->addAction(m_actions.settingsAngleUnitRevolution);
-
-    m_menus.settings->addMenu(m_menus.complexNumbers);
 
     m_menus.history = m_menus.settings->addMenu("");
     m_menus.history->addAction(m_actions.settingsBehaviorHistorySizeLimit);
@@ -2249,6 +2241,8 @@ void MainWindow::setMenusText()
     m_menus.precision->setTitle(MainWindow::tr("&Precision"));
     m_menus.angleUnit->setTitle(MainWindow::tr("&Angle Mode"));
     m_menus.complexNumbers->setTitle(MainWindow::tr("Complex &Numbers"));
+    m_menus.complexForm->setTitle(MainWindow::tr("Complex &Format"));
+    m_menus.imaginaryUnit->setTitle(MainWindow::tr("&Imaginary Unit"));
     m_menus.window->setTitle(MainWindow::tr("&Window"));
     m_menus.editing->setTitle(MainWindow::tr("&Editing"));
     m_menus.autoCompletion->setTitle(MainWindow::tr("A&utocomplete"));
@@ -2256,14 +2250,6 @@ void MainWindow::setMenusText()
     m_menus.history->setTitle(MainWindow::tr("&History"));
     m_menus.display->setTitle(MainWindow::tr("&Appearance"));
     m_menus.help->setTitle(MainWindow::tr("&Help"));
-}
-
-void MainWindow::updateComplexDisabledActionText()
-{
-    if (m_actions.settingsResultFormatComplexDisabled->isChecked())
-        m_actions.settingsResultFormatComplexDisabled->setText(MainWindow::tr("&Disabled"));
-    else
-        m_actions.settingsResultFormatComplexDisabled->setText(MainWindow::tr("&Disable"));
 }
 
 void MainWindow::updateKeypadDisabledActionText()
@@ -3974,11 +3960,6 @@ void MainWindow::createFixedConnections()
     connect(m_actions.settingsResultFormatCustomDigits, SIGNAL(triggered()), SLOT(setResultPrecisionCustom()));
     connect(m_actions.settingsResultFormatAutoPrecision, SIGNAL(triggered()), SLOT(setResultPrecisionAutomatic()));
     connect(m_actions.settingsResultFormatBinary, SIGNAL(triggered()), SLOT(setResultFormatBinary()));
-    connect(m_actions.settingsResultFormatComplexDisabled, &QAction::toggled,
-            this, [this](bool) {
-                updateComplexDisabledActionText();
-                setResultFormatComplexDisabled();
-            });
     connect(m_actions.settingsResultFormatCartesian, SIGNAL(triggered()), SLOT(setResultFormatCartesian()));
     connect(m_actions.settingsResultFormatEngineering, SIGNAL(triggered()), SLOT(setResultFormatEngineering()));
     connect(m_actions.settingsResultFormatFixed, SIGNAL(triggered()), SLOT(setResultFormatFixed()));
@@ -4367,15 +4348,27 @@ void MainWindow::checkInitialResultFormat()
 
 void MainWindow::checkInitialComplexFormat()
 {
-    m_actions.settingsResultFormatComplexDisabled->setChecked(!m_settings->complexNumbers);
-    updateComplexDisabledActionText();
+    m_settings->complexNumbers = true;
+    m_settings->secondaryComplexNumbers = true;
+    m_settings->tertiaryComplexNumbers = true;
+    m_settings->quaternaryComplexNumbers = true;
+    m_settings->quinaryComplexNumbers = true;
+    m_settings->secondaryResultFormatComplex = m_settings->resultFormatComplex;
+    m_settings->tertiaryResultFormatComplex = m_settings->resultFormatComplex;
+    m_settings->quaternaryResultFormatComplex = m_settings->resultFormatComplex;
+    m_settings->quinaryResultFormatComplex = m_settings->resultFormatComplex;
+    DMath::complexMode = true;
+
+    if (m_settings->resultFormatComplex == 'p')
+        m_actions.settingsResultFormatPolar->setChecked(true);
+    else if (m_settings->resultFormatComplex == 'a')
+        m_actions.settingsResultFormatPolarAngle->setChecked(true);
+    else
+        m_actions.settingsResultFormatCartesian->setChecked(true);
 }
 
 void MainWindow::checkInitialImaginaryUnit()
 {
-    if (!m_settings->complexNumbers)
-        return;
-
     if (m_settings->imaginaryUnit == 'j')
         m_actions.settingsImaginaryUnitJ->setChecked(true);
     else
@@ -7453,36 +7446,23 @@ void MainWindow::setResultFormatBinary()
     setStatusBarText();
 }
 
-void MainWindow::setResultFormatComplexDisabled()
-{
-    const bool shouldDisable = m_actions.settingsResultFormatComplexDisabled->isChecked();
-    const bool isDisabled = !m_settings->complexNumbers;
-    if (shouldDisable == isDisabled)
-        return;
-
-    m_settings->complexNumbers = !shouldDisable;
-    DMath::complexMode = !shouldDisable;
-    m_evaluator->initializeBuiltInVariables();
-    setStatusBarText();
-    emit complexNumbersChanged();
-    emit resultFormatChanged();
-}
-
 void MainWindow::setResultFormatCartesian()
 {
-    if (m_settings->complexNumbers && m_settings->resultFormatComplex == 'c')
+    if (m_settings->resultFormatComplex == 'c')
         return;
 
-    const bool complexWasDisabled = !m_settings->complexNumbers;
     m_settings->complexNumbers = true;
+    m_settings->secondaryComplexNumbers = true;
+    m_settings->tertiaryComplexNumbers = true;
+    m_settings->quaternaryComplexNumbers = true;
+    m_settings->quinaryComplexNumbers = true;
     m_settings->resultFormatComplex = 'c';
-    if (complexWasDisabled) {
-        DMath::complexMode = true;
-        m_evaluator->initializeBuiltInVariables();
-    }
+    m_settings->secondaryResultFormatComplex = 'c';
+    m_settings->tertiaryResultFormatComplex = 'c';
+    m_settings->quaternaryResultFormatComplex = 'c';
+    m_settings->quinaryResultFormatComplex = 'c';
+    DMath::complexMode = true;
     setStatusBarText();
-    if (complexWasDisabled)
-        emit complexNumbersChanged();
     emit resultFormatChanged();
 }
 
@@ -7511,7 +7491,7 @@ void MainWindow::setResultFormatHexadecimal()
 
 void MainWindow::setImaginaryUnitI()
 {
-    if (m_settings->complexNumbers && m_settings->imaginaryUnit == 'i')
+    if (m_settings->imaginaryUnit == 'i')
         return;
 
     m_settings->complexNumbers = true;
@@ -7526,7 +7506,7 @@ void MainWindow::setImaginaryUnitI()
 
 void MainWindow::setImaginaryUnitJ()
 {
-    if (m_settings->complexNumbers && m_settings->imaginaryUnit == 'j')
+    if (m_settings->imaginaryUnit == 'j')
         return;
 
     m_settings->complexNumbers = true;
@@ -7547,37 +7527,41 @@ void MainWindow::setResultFormatOctal()
 
 void MainWindow::setResultFormatPolar()
 {
-    if (m_settings->complexNumbers && m_settings->resultFormatComplex == 'p')
+    if (m_settings->resultFormatComplex == 'p')
         return;
 
-    const bool complexWasDisabled = !m_settings->complexNumbers;
     m_settings->complexNumbers = true;
+    m_settings->secondaryComplexNumbers = true;
+    m_settings->tertiaryComplexNumbers = true;
+    m_settings->quaternaryComplexNumbers = true;
+    m_settings->quinaryComplexNumbers = true;
     m_settings->resultFormatComplex = 'p';
-    if (complexWasDisabled) {
-        DMath::complexMode = true;
-        m_evaluator->initializeBuiltInVariables();
-    }
+    m_settings->secondaryResultFormatComplex = 'p';
+    m_settings->tertiaryResultFormatComplex = 'p';
+    m_settings->quaternaryResultFormatComplex = 'p';
+    m_settings->quinaryResultFormatComplex = 'p';
+    DMath::complexMode = true;
     setStatusBarText();
-    if (complexWasDisabled)
-        emit complexNumbersChanged();
     emit resultFormatChanged();
 }
 
 void MainWindow::setResultFormatPolarAngle()
 {
-    if (m_settings->complexNumbers && m_settings->resultFormatComplex == 'a')
+    if (m_settings->resultFormatComplex == 'a')
         return;
 
-    const bool complexWasDisabled = !m_settings->complexNumbers;
     m_settings->complexNumbers = true;
+    m_settings->secondaryComplexNumbers = true;
+    m_settings->tertiaryComplexNumbers = true;
+    m_settings->quaternaryComplexNumbers = true;
+    m_settings->quinaryComplexNumbers = true;
     m_settings->resultFormatComplex = 'a';
-    if (complexWasDisabled) {
-        DMath::complexMode = true;
-        m_evaluator->initializeBuiltInVariables();
-    }
+    m_settings->secondaryResultFormatComplex = 'a';
+    m_settings->tertiaryResultFormatComplex = 'a';
+    m_settings->quaternaryResultFormatComplex = 'a';
+    m_settings->quinaryResultFormatComplex = 'a';
+    DMath::complexMode = true;
     setStatusBarText();
-    if (complexWasDisabled)
-        emit complexNumbersChanged();
     emit resultFormatChanged();
 }
 
@@ -8360,9 +8344,9 @@ void MainWindow::editHistoryEntryContext(int index)
     };
 
     auto addComplexFormItems = [](QComboBox* combo) {
-        combo->addItem(QObject::tr("Rectangular (Cartesian)"), QStringLiteral("c"));
-        combo->addItem(QObject::tr("Polar (Exponential)"), QStringLiteral("p"));
-        combo->addItem(QObject::tr("Polar (Angle)"), QStringLiteral("a"));
+        combo->addItem(QObject::tr("Rectangular (a + bi)"), QStringLiteral("c"));
+        combo->addItem(QObject::tr("Polar (r·e^(iθ))"), QStringLiteral("p"));
+        combo->addItem(QObject::tr("Polar (r∠θ)"), QStringLiteral("a"));
     };
 
     QComboBox* angle = new QComboBox(&dialog);
@@ -8394,10 +8378,6 @@ void MainWindow::editHistoryEntryContext(int index)
     imagUnit->addItem(QStringLiteral("j"), QStringLiteral("j"));
     imagUnit->setCurrentIndex(ctx.unit == 'j' ? 1 : 0);
     globalForm->addRow(tr("Complex unit:"), imagUnit);
-
-    QCheckBox* complexOn = new QCheckBox(tr("Enable complex numbers"), &dialog);
-    complexOn->setChecked(ctx.complexOn);
-    globalForm->addRow(QString(), complexOn);
 
     struct LineUiState {
         bool enabled = true;
@@ -8450,7 +8430,7 @@ void MainWindow::editHistoryEntryContext(int index)
     lineForm->addRow(QString(), lineEnabled);
     lineForm->addRow(tr("Notation:"), lineFmt);
     lineForm->addRow(tr("Decimal places:"), precisionRow);
-    lineForm->addRow(tr("Complex form:"), lineCplx);
+    lineForm->addRow(tr("Complex format:"), lineCplx);
     root->addWidget(lineGroup);
 
     int activeLineIndex = 0;
@@ -8474,7 +8454,7 @@ void MainWindow::editHistoryEntryContext(int index)
         lineAutoPrecision->setEnabled(allow);
         linePrecision->setEnabled(allow && st.prec >= 0);
         lineCplx->setCurrentIndex(qMax(0, lineCplx->findData(QString(QChar(st.cplx)))));
-        lineCplx->setEnabled(allow && complexOn->isChecked());
+        lineCplx->setEnabled(allow);
 
         lineEnabled->blockSignals(false);
         lineFmt->blockSignals(false);
@@ -8504,17 +8484,11 @@ void MainWindow::editHistoryEntryContext(int index)
         lineFmt->setEnabled(allow);
         lineAutoPrecision->setEnabled(allow);
         linePrecision->setEnabled(allow && !lineAutoPrecision->isChecked());
-        lineCplx->setEnabled(allow && complexOn->isChecked());
-    });
-    connect(complexOn, &QCheckBox::toggled, &dialog, [&](bool enabled) {
-        imagUnit->setEnabled(enabled);
-        const bool allow = (activeLineIndex == 0) || lineEnabled->isChecked();
-        lineCplx->setEnabled(allow && enabled);
+        lineCplx->setEnabled(allow);
     });
     lineSelector->setCurrentIndex(0);
     activeLineIndex = 0;
     loadLineUi(0);
-    imagUnit->setEnabled(complexOn->isChecked());
 
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     root->addWidget(buttons);
@@ -8528,7 +8502,7 @@ void MainWindow::editHistoryEntryContext(int index)
     ctx.main.fmt = lines[0].fmt;
     ctx.main.prec = lines[0].prec;
     ctx.main.cplx = lines[0].cplx;
-    ctx.complexOn = complexOn->isChecked();
+    ctx.complexOn = true;
     ctx.unit = imagUnit->currentData().toString().at(0).toLatin1();
     ctx.angle = angle->currentData().toString().at(0).toLatin1();
     ctx.unitExp = unitExp->currentData().toString().at(0).toLatin1();

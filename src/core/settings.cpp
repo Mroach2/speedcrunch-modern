@@ -260,7 +260,7 @@ Settings::Settings()
     numberFormatStyle = NumberFormatNoGroupingDot;
     hasNumberFormatStyleSetting = false;
     simplifyResultExpressions = true;
-    complexNumbers = false;
+    complexNumbers = true;
     imaginaryUnit = 'i';
     autoCompletionBuiltInFunctions = true;
     autoCompletionBuiltInVariables = true;
@@ -278,13 +278,13 @@ Settings::Settings()
     quaternaryResultEnabled = false;
     quinaryResultEnabled = false;
     multipleResultLinesEnabled = false;
-    secondaryComplexNumbers = false;
+    secondaryComplexNumbers = true;
     secondaryResultFormatComplex = 'c';
-    tertiaryComplexNumbers = false;
+    tertiaryComplexNumbers = true;
     tertiaryResultFormatComplex = 'c';
-    quaternaryComplexNumbers = false;
+    quaternaryComplexNumbers = true;
     quaternaryResultFormatComplex = 'c';
-    quinaryComplexNumbers = false;
+    quinaryComplexNumbers = true;
     quinaryResultFormatComplex = 'c';
 
     setRuntimeUnitNegativeExponentStyle(unitNegativeExponentStyle);
@@ -357,7 +357,7 @@ void Settings::load()
     autoResultToClipboard = settings->value(key + QLatin1String("AutoResultToClipboard"), false).toBool();
     simplifyResultExpressions = settings->value(key + QLatin1String("SimplifyResultExpressions"), true).toBool();
     windowPositionSave = settings->value(key + QLatin1String("WindowPositionSave"), true).toBool();
-    complexNumbers = settings->value(key + QLatin1String("ComplexNumbers"), false).toBool();
+    complexNumbers = true;
     QString imaginaryUnitStr = settings->value(key + QLatin1String("ImaginaryUnit"), 'i').toString();
     if (imaginaryUnitStr != QLatin1String("i") && imaginaryUnitStr != QLatin1String("j"))
         imaginaryUnit = 'i';
@@ -496,10 +496,10 @@ void Settings::load()
     tertiaryResultPrecision = settings->value(key + QLatin1String("TertiaryPrecision"), -1).toInt();
     quaternaryResultPrecision = settings->value(key + QLatin1String("QuaternaryPrecision"), -1).toInt();
     quinaryResultPrecision = settings->value(key + QLatin1String("QuinaryPrecision"), -1).toInt();
-    secondaryComplexNumbers = settings->value(key + QLatin1String("SecondaryComplexEnabled"), false).toBool();
-    tertiaryComplexNumbers = settings->value(key + QLatin1String("TertiaryComplexEnabled"), false).toBool();
-    quaternaryComplexNumbers = settings->value(key + QLatin1String("QuaternaryComplexEnabled"), false).toBool();
-    quinaryComplexNumbers = settings->value(key + QLatin1String("QuinaryComplexEnabled"), false).toBool();
+    secondaryComplexNumbers = true;
+    tertiaryComplexNumbers = true;
+    quaternaryComplexNumbers = true;
+    quinaryComplexNumbers = true;
     QString secondaryComplexForm = settings->value(key + QLatin1String("SecondaryComplexForm"), "c").toString();
     QString tertiaryComplexForm = settings->value(key + QLatin1String("TertiaryComplexForm"), "c").toString();
     QString quaternaryComplexForm = settings->value(key + QLatin1String("QuaternaryComplexForm"), "c").toString();
@@ -520,6 +520,10 @@ void Settings::load()
         quinaryResultFormatComplex = 'c';
     else
         quinaryResultFormatComplex = quinaryComplexForm.at(0).toLatin1();
+    secondaryResultFormatComplex = resultFormatComplex;
+    tertiaryResultFormatComplex = resultFormatComplex;
+    quaternaryResultFormatComplex = resultFormatComplex;
+    quinaryResultFormatComplex = resultFormatComplex;
 
     if (resultPrecision > DECPRECISION)
         resultPrecision = DECPRECISION;
@@ -631,7 +635,7 @@ void Settings::save()
     settings->setValue(key + QLatin1String("SimplifyResultExpressions"), simplifyResultExpressions);
     settings->setValue(key + QLatin1String("Language"), language);
     settings->setValue(key + QLatin1String("WindowPositionSave"), windowPositionSave);
-    settings->setValue(key + QLatin1String("ComplexNumbers"), complexNumbers);
+    settings->setValue(key + QLatin1String("ComplexNumbers"), true);
     settings->setValue(key + QLatin1String("ImaginaryUnit"), QString(QChar(imaginaryUnit)));
     settings->setValue(key + QLatin1String("AngleMode"), QString(QChar(angleUnit)));
 
@@ -661,13 +665,13 @@ void Settings::save()
     settings->setValue(key + QLatin1String("TertiaryPrecision"), tertiaryResultPrecision);
     settings->setValue(key + QLatin1String("QuaternaryPrecision"), quaternaryResultPrecision);
     settings->setValue(key + QLatin1String("QuinaryPrecision"), quinaryResultPrecision);
-    settings->setValue(key + QLatin1String("SecondaryComplexEnabled"), secondaryComplexNumbers);
+    settings->setValue(key + QLatin1String("SecondaryComplexEnabled"), true);
     settings->setValue(key + QLatin1String("SecondaryComplexForm"), QString(QChar(secondaryResultFormatComplex)));
-    settings->setValue(key + QLatin1String("TertiaryComplexEnabled"), tertiaryComplexNumbers);
+    settings->setValue(key + QLatin1String("TertiaryComplexEnabled"), true);
     settings->setValue(key + QLatin1String("TertiaryComplexForm"), QString(QChar(tertiaryResultFormatComplex)));
-    settings->setValue(key + QLatin1String("QuaternaryComplexEnabled"), quaternaryComplexNumbers);
+    settings->setValue(key + QLatin1String("QuaternaryComplexEnabled"), true);
     settings->setValue(key + QLatin1String("QuaternaryComplexForm"), QString(QChar(quaternaryResultFormatComplex)));
-    settings->setValue(key + QLatin1String("QuinaryComplexEnabled"), quinaryComplexNumbers);
+    settings->setValue(key + QLatin1String("QuinaryComplexEnabled"), true);
     settings->setValue(key + QLatin1String("QuinaryComplexForm"), QString(QChar(quinaryResultFormatComplex)));
 
     key = KEY + QLatin1String("/Layout/");
