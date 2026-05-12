@@ -1888,9 +1888,9 @@ void MainWindow::setActionsText()
     m_actions.settingsResultFormatHexadecimal->setText(MainWindow::tr("&Hexadecimal"));
     m_actions.settingsResultFormatSexagesimal->setText(MainWindow::tr("&Sexagesimal"));
     m_actions.settingsUnitNegativeExponentSuperscript->setText(
-        MainWindow::tr("Superscript &Exponents"));
+        MainWindow::tr("&Exponential (m·s⁻¹)"));
     m_actions.settingsUnitNegativeExponentFraction->setText(
-        MainWindow::tr("&Fraction Form"));
+        MainWindow::tr("&Fractional (m/s)"));
     m_actions.settingsResultFormatCartesian->setText(MainWindow::tr("&Rectangular (a + bi)"));
     m_actions.settingsResultFormatPolar->setText(MainWindow::tr("Exponential (reⁱᶿ)"));
     m_actions.settingsResultFormatPolarAngle->setText(MainWindow::tr("Phasor (r∠θ)"));
@@ -2217,7 +2217,7 @@ void MainWindow::setMenusText()
     m_menus.settings->setTitle(MainWindow::tr("Se&ttings"));
     m_menus.results->setTitle(MainWindow::tr("&Results"));
     m_menus.symbols->setTitle(MainWindow::tr("&Symbols"));
-    m_menus.unitNegativeExponentStyle->setTitle(MainWindow::tr("Unit Exponent Style"));
+    m_menus.unitNegativeExponentStyle->setTitle(MainWindow::tr("Unit Notation"));
     m_menus.resultRoundingMode->setTitle(MainWindow::tr("Rounding Mode"));
     m_menus.resultFormat->setTitle(MainWindow::tr("&Notation"));
     m_menus.decimal->setTitle(MainWindow::tr("&Decimal"));

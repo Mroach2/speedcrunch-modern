@@ -33,16 +33,16 @@ render denominator form for readability:
 
 * ``C⁴⋅m⁴⋅J⁻³`` may display as ``C⁴⋅m⁴ / J³``
 
-Unit Exponent Style
--------------------
+Unit Notation
+-------------
 
 In :menuselection:`Settings --> Results`, SpeedCrunch provides a
-``Unit Exponent Style`` submenu with two display styles:
+``Unit Notation`` submenu with two display styles:
 
-* ``Superscript Exponents`` (default): keeps products with signed exponents,
+* ``Exponential (m·s⁻¹)`` (default): keeps products with signed exponents,
   such as ``kg⋅m²⋅s⁻³``.
-* ``Fraction Form``: moves negative exponents to the denominator when there is
-  at least one positive exponent, such as ``kg⋅m² / s³``.
+* ``Fractional (m/s)``: moves negative exponents to the denominator when there
+  is at least one positive exponent, such as ``kg⋅m² / s³``.
 
 This is a display preference only; numeric values and dimensions are unchanged.
 

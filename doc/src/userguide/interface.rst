@@ -444,8 +444,9 @@ This section contains settings that control result output and post-evaluation be
     Configure the imaginary unit and complex result form. See
     :ref:`complex_numbers`.
 
-* :menuselection:`Unit Exponent Style`
-    Configure how unit exponents are displayed.
+* :menuselection:`Unit Notation`
+    Configure whether unit results use exponential notation, such as
+    ``m·s⁻¹``, or fractional notation, such as ``m/s``.
 * :menuselection:`Automatically Copy New Results to Clipboard`
     Automatically copy each newly evaluated result to the clipboard.
 * :menuselection:`Simplify Displayed Expressions`
