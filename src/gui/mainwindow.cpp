@@ -187,6 +187,9 @@ bool readValidSessionJson(const QString& filePath, QJsonObject* json)
     return true;
 }
 
+QString sessionFilePath(const QString& sessionName);
+QString firstAvailableUntitledSessionName(const QHash<QString, Session*>& sessions);
+
 void migrateLegacyHistoryIfNeeded()
 {
     const QDir dataDir(Settings::getDataPath());
@@ -213,14 +216,20 @@ void migrateLegacyHistoryIfNeeded()
     if (!ensureSessionsPath())
         return;
 
-    QFile mainSession(QDir(sessionDirPath).filePath(QStringLiteral("main.json")));
-    if (!mainSession.open(QIODevice::WriteOnly))
+    QJsonObject sessionJson = QJsonDocument::fromJson(data).object();
+    const QHash<QString, Session*> loadedSessions;
+    const QString sessionName = firstAvailableUntitledSessionName(loadedSessions);
+    sessionJson[QLatin1String(SessionJsonKeys::Session)] = sessionName;
+    const QByteArray migratedData = QJsonDocument(sessionJson).toJson(QJsonDocument::Compact);
+
+    QFile migratedSession(sessionFilePath(sessionName));
+    if (!migratedSession.open(QIODevice::WriteOnly))
         return;
 
-    if (mainSession.write(data) != data.size())
+    if (migratedSession.write(migratedData) != migratedData.size())
         return;
 
-    mainSession.close();
+    migratedSession.close();
     legacyFile.remove();
 }
 
@@ -4754,6 +4763,7 @@ MainWindow::MainWindow()
     windowIds().insert(objectName(), QPointer<MainWindow>(this));
 
     m_session = new Session();
+    m_session->setName(firstAvailableUntitledSessionName(m_loadedSessions));
     m_loadedSessions.insert(m_session->name(), m_session);
     m_constants = Constants::instance();
     m_evaluator = m_session->evaluator();
