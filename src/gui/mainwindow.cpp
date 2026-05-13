@@ -8887,13 +8887,17 @@ void MainWindow::setRadixCharacterBoth()
 void MainWindow::closeEvent(QCloseEvent* e)
 {
     if (primaryMainWindow() == this) {
-        // Mark shutdown before saving/restoring layouts so child close events
-        // caused by QApplication::quit() do not rewrite the multi-window layout
-        // as if each child had been closed manually.
-        qApp->setProperty("speedcrunchShutdownInProgress", true);
-        appShutdownInProgress() = true;
+        const bool shutdownAlreadyInProgress = applicationShutdownInProgress();
+        if (!shutdownAlreadyInProgress) {
+            // Mark shutdown before saving/restoring layouts so child close events
+            // caused by QApplication::quit() do not rewrite the multi-window layout
+            // as if each child had been closed manually.
+            qApp->setProperty("speedcrunchShutdownInProgress", true);
+            appShutdownInProgress() = true;
+        }
         persistSessionAndSettingsForShutdown();
-        qApp->quit();
+        if (!shutdownAlreadyInProgress)
+            qApp->quit();
     } else {
         if (!applicationShutdownInProgress()) {
             allMainWindows().removeAll(QPointer<MainWindow>(this));
@@ -8918,9 +8922,8 @@ void MainWindow::persistSessionAndSettingsForShutdown()
         return;
 
     m_shutdownStateSaved = true;
-    if (m_widgets.manual) {
-        m_widgets.manual->close();
-    }
+    if (m_widgets.manual)
+        m_settings->manualWindowGeometry = m_settings->windowPositionSave ? m_widgets.manual->saveGeometry() : QByteArray();
     ensureSessionsPath();
     QSet<Session*> savedSessions;
     // Shutdown has to persist every restored window, not just the primary one.

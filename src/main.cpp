@@ -329,7 +329,10 @@ int main(int argc, char* argv[])
     if (pendingActivation)
         activateMainWindow(g_mainWindow);
 
-    application.connect(&application, SIGNAL(lastWindowClosed()), &application, SLOT(quit()));
+    QObject::connect(&application, &QGuiApplication::lastWindowClosed, &application, [&]() {
+        if (!shutdownInProgress())
+            application.quit();
+    });
 
     g_eventLoopRunning.store(true);
     const int result = application.exec();
