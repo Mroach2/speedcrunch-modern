@@ -5490,6 +5490,8 @@ void test_format()
     const char savedImaginaryUnit = settings->imaginaryUnit;
 
     const QString phasorOp(MathDsl::PhasorOp);
+    const QString piOver2 = QStringLiteral("pi") + space + MathDsl::DivOp + space + QStringLiteral("2");
+    const QString piOver4 = QStringLiteral("pi") + space + MathDsl::DivOp + space + QStringLiteral("4");
     settings->imaginaryUnit = 'i';
     CMath::setImaginaryUnitSymbol(QLatin1Char('i'));
 
@@ -5511,13 +5513,27 @@ void test_format()
     settings->resultComplexForm = ComplexForm::Phasor;
     settings->angleUnit = 'r';
     Evaluator::instance()->initializeAngleUnits();
-    CHECK_EVAL_FORMAT_EXACT("1+1j", QString::fromUtf8("1.4142135623730950488 ∠ 0.78539816339744830962"));
+    CHECK_EVAL_FORMAT_EXACT("1+1j", QString::fromUtf8("1.4142135623730950488 ∠ (") + piOver4 + QStringLiteral(")"));
     CHECK_EVAL_FORMAT_EXACT("rectform(1+1j)", QString::fromUtf8("1+1i"));
-    CHECK_EVAL_FORMAT_EXACT("expform(1+1j)", QString::fromUtf8("1.4142135623730950488 · exp(i · 0.78539816339744830962)"));
-    CHECK_EVAL_FORMAT_EXACT("trigform(1+1j)", QString::fromUtf8("1.4142135623730950488 · (cos(0.78539816339744830962) + i · sin(0.78539816339744830962))"));
-    CHECK_EVAL_FORMAT_EXACT("cisform(1+1j)", QString::fromUtf8("1.4142135623730950488 · cis(0.78539816339744830962)"));
-    CHECK_EVAL_FORMAT_EXACT("phasorform(1+1j)", QString::fromUtf8("1.4142135623730950488 ∠ 0.78539816339744830962"));
+    CHECK_EVAL_FORMAT_EXACT("expform(1+1j)", QString::fromUtf8("1.4142135623730950488 · exp(i · ") + piOver4 + QStringLiteral(")"));
+    CHECK_EVAL_FORMAT_EXACT("trigform(1+1j)", QString::fromUtf8("1.4142135623730950488 · (cos(") + piOver4 + QString::fromUtf8(") + i · sin(") + piOver4 + QStringLiteral("))"));
+    CHECK_EVAL_FORMAT_EXACT("cisform(1+1j)", QString::fromUtf8("1.4142135623730950488 · cis(") + piOver4 + QStringLiteral(")"));
+    CHECK_EVAL_FORMAT_EXACT("phasorform(1+1j)", QString::fromUtf8("1.4142135623730950488 ∠ (") + piOver4 + QStringLiteral(")"));
 
+    settings->imaginaryUnit = 'j';
+    CMath::setImaginaryUnitSymbol(QLatin1Char('j'));
+    settings->resultComplexForm = ComplexForm::Cis;
+    CHECK_EVAL_FORMAT_EXACT("sqrt(-1)", QString::fromUtf8("1 · cis(") + piOver2 + QStringLiteral(")"));
+    settings->resultComplexForm = ComplexForm::Phasor;
+    CHECK_EVAL_FORMAT_EXACT("sqrt(-1)", QString::fromUtf8("1 ∠ (") + piOver2 + QStringLiteral(")"));
+    settings->resultComplexForm = ComplexForm::Exponential;
+    CHECK_EVAL_FORMAT_EXACT("sqrt(-1)", QString::fromUtf8("1 · exp(j · ") + piOver2 + QStringLiteral(")"));
+    settings->resultComplexForm = ComplexForm::Trigonometric;
+    CHECK_EVAL_FORMAT_EXACT("sqrt(-1)", QString::fromUtf8("1 · (cos(") + piOver2 + QString::fromUtf8(") + j · sin(") + piOver2 + QStringLiteral("))"));
+
+    settings->imaginaryUnit = 'i';
+    CMath::setImaginaryUnitSymbol(QLatin1Char('i'));
+    settings->resultComplexForm = ComplexForm::Phasor;
     settings->angleUnit = 'd';
     Evaluator::instance()->initializeAngleUnits();
     CHECK_EVAL_FORMAT_EXACT("1+1j", QString::fromUtf8("1.4142135623730950488 ∠ 45"));

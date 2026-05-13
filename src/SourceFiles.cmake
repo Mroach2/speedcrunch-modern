@@ -4,6 +4,7 @@ resources/speedcrunch.qrc
 
 set(speedcrunch_HEADERS
 core/book.h
+core/complexform.h
 core/constants.h
 core/colorscheme.h
 core/evaluator.h
@@ -17,6 +18,7 @@ core/settings.h
 core/opcode.h
 core/sessionhistory.h
 core/sessionjsonkeys.h
+core/symbolicnumberformat.h
 core/userdefinitions.h
 core/variable.h
 core/userfunction.h

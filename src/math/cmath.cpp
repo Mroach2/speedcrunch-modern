@@ -4,6 +4,7 @@
 
 #include "cmath.h"
 
+#include "core/symbolicnumberformat.h"
 #include "core/unicodechars.h"
 #include "core/mathdsl.h"
 #include "cnumberparser.h"
@@ -19,6 +20,32 @@
 namespace {
 QChar s_imaginaryUnitSymbol = QLatin1Char('j');
 char s_polarAngleUnit = 'r';
+
+QString formatRadianPhase(const HNumber& phase, const CNumber::Format& format)
+{
+    const QString symbolic = SymbolicNumberFormat::formatPiMultiple(phase);
+    return symbolic.isEmpty() ? HMath::format(phase, format) : symbolic;
+}
+
+QString formatAngleModePhase(HNumber phase, const CNumber::Format& format)
+{
+    if (CMath::polarAngleUnit() == 'r')
+        return formatRadianPhase(phase, format);
+    if (CMath::polarAngleUnit() == 'd')
+        phase = CMath::rad2deg(phase).real;
+    else if (CMath::polarAngleUnit() == 'g')
+        phase = CMath::rad2gon(phase).real;
+    else if (CMath::polarAngleUnit() == 't' || CMath::polarAngleUnit() == 'v')
+        phase /= HNumber(2) * HMath::pi();
+    return HMath::format(phase, format);
+}
+
+QString parenthesizePhasorPhaseIfNeeded(const QString& phase)
+{
+    if (phase.contains(MathDsl::DivOp) || phase.contains(MathDsl::MulDotOp))
+        return QStringLiteral("(%1)").arg(phase);
+    return phase;
+}
 }
 
 void CMath::setImaginaryUnitSymbol(QChar symbol)
@@ -489,22 +516,12 @@ QString CMath::format(const CNumber& cn, CNumber::Format format)
     else if (cn.imag.isNearZero()) // Number is real.
         return HMath::format(cn.real, format);
 
-    auto phaseInAngleMode = [](HNumber phase) {
-        if (CMath::polarAngleUnit() == 'd')
-            phase = CMath::rad2deg(phase).real;
-        else if (CMath::polarAngleUnit() == 'g')
-            phase = CMath::rad2gon(phase).real;
-        else if (CMath::polarAngleUnit() == 't' || CMath::polarAngleUnit() == 'v')
-            phase /= HNumber(2) * HMath::pi();
-        return phase;
-    };
-
     if (format.notation == CNumber::Format::Notation::Polar) {
         QString strRadius = HMath::format(CMath::abs(cn).real, format);
         HNumber phase = CMath::phase(cn).real;
         if (phase.isZero())
             return strRadius;
-        QString strPhase = HMath::format(phase, format);
+        QString strPhase = formatRadianPhase(phase, format);
         const QString imagUnit(CMath::imaginaryUnitSymbol());
         const QString operatorSpace(MathDsl::MulDotWrapSp);
         const QString dotOperator(MathDsl::MulDotOp);
@@ -515,7 +532,7 @@ QString CMath::format(const CNumber& cn, CNumber::Format format)
         HNumber phase = CMath::phase(cn).real;
         if (phase.isZero())
             return strRadius;
-        QString strPhase = HMath::format(phaseInAngleMode(phase), format);
+        QString strPhase = formatAngleModePhase(phase, format);
         const QString imagUnit(CMath::imaginaryUnitSymbol());
         const QString operatorSpace(MathDsl::MulDotWrapSp);
         const QString dotOperator(MathDsl::MulDotOp);
@@ -526,7 +543,7 @@ QString CMath::format(const CNumber& cn, CNumber::Format format)
         HNumber phase = CMath::phase(cn).real;
         if (phase.isZero())
             return strRadius;
-        QString strPhase = HMath::format(phaseInAngleMode(phase), format);
+        QString strPhase = formatAngleModePhase(phase, format);
         const QString operatorSpace(MathDsl::MulDotWrapSp);
         const QString dotOperator(MathDsl::MulDotOp);
         return QStringLiteral("%1%2%3%2cis(%4)")
@@ -537,7 +554,7 @@ QString CMath::format(const CNumber& cn, CNumber::Format format)
         if (phase.isZero())
             return strRadius;
 
-        QString strPhase = HMath::format(phaseInAngleMode(phase), format);
+        QString strPhase = parenthesizePhasorPhaseIfNeeded(formatAngleModePhase(phase, format));
         const QString operatorSpace(MathDsl::AddWrap);
         return QStringLiteral("%1%2∠%2%3").arg(strRadius, operatorSpace, strPhase);
     } else {

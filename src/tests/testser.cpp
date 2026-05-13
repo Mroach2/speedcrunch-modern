@@ -138,10 +138,10 @@ int main(int, char**)
     /* Quantity deserialization tests */
     CHECK_DESER_QUANTITY(q_json_blob, "0b1010 foot");
     CHECK_DESER_QUANTITY(q_json_blob_rect, "1+1j");
-    CHECK_DESER_QUANTITY(q_json_blob2, "1.4142135623730950488 · exp(j · 0.78539816339744830962)");
-    CHECK_DESER_QUANTITY(q_json_blob3, "1.4142135623730950488 · (cos(0.78539816339744830962) + j · sin(0.78539816339744830962))");
-    CHECK_DESER_QUANTITY(q_json_blob4, "1.4142135623730950488 · cis(0.78539816339744830962)");
-    CHECK_DESER_QUANTITY(q_json_blob_phasor, "1.4142135623730950488 ∠ 0.78539816339744830962");
+    CHECK_DESER_QUANTITY(q_json_blob2, "1.4142135623730950488 · exp(j · pi / 4)");
+    CHECK_DESER_QUANTITY(q_json_blob3, "1.4142135623730950488 · (cos(pi / 4) + j · sin(pi / 4))");
+    CHECK_DESER_QUANTITY(q_json_blob4, "1.4142135623730950488 · cis(pi / 4)");
+    CHECK_DESER_QUANTITY(q_json_blob_phasor, "1.4142135623730950488 ∠ (pi / 4)");
 
     /* Serialization + deserialization tests */
     CHECK_SER_DESER_HNUMBER(HNumber("3"), "3.00000000000000000000000000000000000000000000000000");
