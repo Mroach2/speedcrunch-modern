@@ -47,6 +47,7 @@ class QPushButton;
 class QResizeEvent;
 class QSplitter;
 class QTabBar;
+class QTimer;
 class QTranslator;
 class QVBoxLayout;
 
@@ -87,6 +88,8 @@ private slots:
     void deleteVariables();
     void deleteUserFunctions();
     void evaluateEditorExpression();
+    void handleBulkEvaluationStarted();
+    void handleBulkEvaluationFinished();
     void cancelHistoryEntryEdit();
     void exportHtml();
     void exportPlainText();
@@ -320,6 +323,7 @@ private:
     void updateSplitterStyleSheet();
     void refreshPaneThemes();
     void saveSessionLayout(bool captureCurrentViewport = true);
+    void flushPendingSessionSave();
     bool configureCustomKeypad();
     void setActionsText();
     void updateKeypadDisabledActionText();
@@ -583,6 +587,13 @@ private:
     VersionCheck* m_versionCheck;
     int m_pendingHistoryEditIndex;
     bool m_shutdownStateSaved;
+    QTimer* m_deferredSessionSaveTimer;
+    bool m_sessionSavePending;
+    bool m_bulkEvaluationInProgress;
+    bool m_bulkHistoryChanged;
+    bool m_bulkVariablesChanged;
+    bool m_bulkFunctionsChanged;
+    bool m_bulkUnitsChanged;
 };
 
 #endif // GUI_MAINWINDOW_H

@@ -72,6 +72,8 @@ signals:
     void shiftUpPressed();
     void shiftPageDownPressed();
     void shiftPageUpPressed();
+    void bulkEvaluationStarted();
+    void bulkEvaluationFinished();
 
 public slots:
     void autoCalcSelection(const QString& custom = QString());

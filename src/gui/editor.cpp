@@ -1944,10 +1944,12 @@ void Editor::insertFromMimeData(const QMimeData* source)
         insert(normalizedPastedExpression(expressions.at(0)));
         return;
     }
+    emit bulkEvaluationStarted();
     for (int i = 0; i < expressions.size(); ++i) {
         insert(normalizedPastedExpression(expressions.at(i)));
         evaluate();
     }
+    emit bulkEvaluationFinished();
 }
 
 void Editor::autoCalc()

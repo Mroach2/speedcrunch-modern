@@ -2746,6 +2746,8 @@ void MainWindow::configureEditorDisplayPane(ResultDisplay* display, Editor* edit
         setActiveEditorDisplayPane(display, editor);
         evaluateEditorExpression();
     });
+    connect(editor, &Editor::bulkEvaluationStarted, this, &MainWindow::handleBulkEvaluationStarted);
+    connect(editor, &Editor::bulkEvaluationFinished, this, &MainWindow::handleBulkEvaluationFinished);
     connect(editor, &Editor::escapePressed, this, [this, display, editor]() {
         setActiveEditorDisplayPane(display, editor);
         handleEditorEscapePressed();
@@ -4870,6 +4872,16 @@ MainWindow::MainWindow()
     m_pendingHistoryEditIndex = -1;
     m_shutdownStateSaved = false;
     m_versionCheck = 0;
+    m_deferredSessionSaveTimer = new QTimer(this);
+    m_deferredSessionSaveTimer->setSingleShot(true);
+    m_deferredSessionSaveTimer->setInterval(200);
+    m_sessionSavePending = false;
+    m_bulkEvaluationInProgress = false;
+    m_bulkHistoryChanged = false;
+    m_bulkVariablesChanged = false;
+    m_bulkFunctionsChanged = false;
+    m_bulkUnitsChanged = false;
+    connect(m_deferredSessionSaveTimer, &QTimer::timeout, this, &MainWindow::flushPendingSessionSave);
 
     createUi();
     applySettings();
@@ -8487,10 +8499,16 @@ void MainWindow::evaluateEditorExpression()
 
     if (m_evaluator->isUserFunctionAssign()) {
         result = CMath::nan();
-        emit functionsChanged();
+        if (m_bulkEvaluationInProgress)
+            m_bulkFunctionsChanged = true;
+        else
+            emit functionsChanged();
     } else if (m_evaluator->isUserUnitAssign()) {
         result = CMath::nan();
-        emit unitsChanged();
+        if (m_bulkEvaluationInProgress)
+            m_bulkUnitsChanged = true;
+        else
+            emit unitsChanged();
     } else if (result.isNan() && !isCommentOnly)
         return;
 
@@ -8500,13 +8518,24 @@ void MainWindow::evaluateEditorExpression()
     historyEntry.setRenderedLines(renderedLinesForHistoryEntry(historyEntry, m_settings, m_evaluator));
     m_session->addHistoryEntry(historyEntry);
     const bool userVariableAssign = m_evaluator->isUserVariableAssign();
-    emit historyChanged();
+    if (m_bulkEvaluationInProgress)
+        m_bulkHistoryChanged = true;
+    else
+        emit historyChanged();
     if (!startedFromHistoryEdit)
         m_widgets.display->verticalScrollBar()->setValue(m_widgets.display->verticalScrollBar()->maximum());
-    if (userVariableAssign)
-        emit variablesChanged();
-    if (m_evaluator->isUserUnitAssign())
-        emit unitsChanged();
+    if (userVariableAssign) {
+        if (m_bulkEvaluationInProgress)
+            m_bulkVariablesChanged = true;
+        else
+            emit variablesChanged();
+    }
+    if (m_evaluator->isUserUnitAssign()) {
+        if (m_bulkEvaluationInProgress)
+            m_bulkUnitsChanged = true;
+        else
+            emit unitsChanged();
+    }
 
     if (m_settings->bitfieldVisible)
         m_widgets.bitField->updateBits(result);
@@ -8533,7 +8562,10 @@ void MainWindow::evaluateEditorExpression()
                    "You can increase the limit from Session > History Size Limit."));
         });
     }
-    saveSessionToDefaultPath();
+    if (m_bulkEvaluationInProgress)
+        m_sessionSavePending = true;
+    else
+        saveSessionToDefaultPath();
 }
 
 void MainWindow::startHistoryEntryEdit(int index)
@@ -8549,6 +8581,35 @@ void MainWindow::startHistoryEntryEdit(int index)
     m_widgets.editor->setFocus();
     m_widgets.editor->setCursorPosition(m_widgets.editor->text().size());
     showStateLabel(tr("Editing calculation. Press Esc twice to cancel."));
+}
+
+void MainWindow::handleBulkEvaluationStarted()
+{
+    m_bulkEvaluationInProgress = true;
+    m_bulkHistoryChanged = false;
+    m_bulkVariablesChanged = false;
+    m_bulkFunctionsChanged = false;
+    m_bulkUnitsChanged = false;
+}
+
+void MainWindow::handleBulkEvaluationFinished()
+{
+    m_bulkEvaluationInProgress = false;
+
+    if (m_bulkHistoryChanged)
+        emit historyChanged();
+    if (m_bulkVariablesChanged)
+        emit variablesChanged();
+    if (m_bulkFunctionsChanged)
+        emit functionsChanged();
+    if (m_bulkUnitsChanged)
+        emit unitsChanged();
+
+    if (m_bulkHistoryChanged && m_widgets.display)
+        m_widgets.display->verticalScrollBar()->setValue(m_widgets.display->verticalScrollBar()->maximum());
+
+    if (m_bulkHistoryChanged || m_bulkVariablesChanged || m_bulkFunctionsChanged || m_bulkUnitsChanged || m_sessionSavePending)
+        saveSessionToDefaultPath();
 }
 
 void MainWindow::editHistoryEntryContext(int index)
@@ -9153,6 +9214,9 @@ void MainWindow::persistSessionAndSettingsForShutdown()
         return;
 
     m_shutdownStateSaved = true;
+    if (m_sessionSavePending)
+        flushPendingSessionSave();
+
     if (m_widgets.manual)
         m_settings->manualWindowGeometry = m_settings->windowPositionSave ? m_widgets.manual->saveGeometry() : QByteArray();
     ensureSessionsPath();
@@ -9182,6 +9246,16 @@ void MainWindow::persistSessionAndSettingsForShutdown()
 
 void MainWindow::saveSessionToDefaultPath()
 {
+    m_sessionSavePending = true;
+    m_deferredSessionSaveTimer->start();
+}
+
+void MainWindow::flushPendingSessionSave()
+{
+    if (!m_sessionSavePending)
+        return;
+
+    m_sessionSavePending = false;
     ensureSessionsPath();
     captureEditorTextInCurrentSession();
 
