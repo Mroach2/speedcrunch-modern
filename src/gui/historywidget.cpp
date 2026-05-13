@@ -30,6 +30,7 @@ HistoryWidget::HistoryWidget(QWidget *parent)
 {
     m_list->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_list->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    m_list->setUniformItemSizes(true);
     DockListStyle::apply(m_list);
     m_list->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -61,15 +62,67 @@ void HistoryWidget::updateHistory()
 {
     const int historySize = m_session != nullptr ? m_session->historySize() : 0;
 
+    if (historySize == 0) {
+        m_list->clear();
+        m_list->clearSelection();
+        return;
+    }
+
+    if (historySize == m_list->count() + 1) {
+        appendHistoryItem(historySize - 1);
+        m_list->scrollToBottom();
+        return;
+    }
+
+    if (historySize == m_list->count()) {
+        const int count = historySize;
+        if (count == 1) {
+            const QString expression = m_session->historyEntryAtRef(0).expr();
+            QListWidgetItem* item = m_list->item(0);
+            if (item != nullptr && item->data(Qt::UserRole).toString() != expression) {
+                item->setText(groupedExpressionForHistory(expression));
+                item->setData(Qt::UserRole, expression);
+            }
+            m_list->scrollToBottom();
+            return;
+        }
+
+        QListWidgetItem* secondItem = m_list->item(1);
+        if (secondItem != nullptr
+            && secondItem->data(Qt::UserRole).toString() == m_session->historyEntryAtRef(0).expr()) {
+            delete m_list->takeItem(0);
+            appendHistoryItem(historySize - 1);
+            m_list->scrollToBottom();
+            return;
+        }
+    }
+
+    rebuildHistory();
+}
+
+void HistoryWidget::appendHistoryItem(int index)
+{
+    if (m_session == nullptr || index < 0 || index >= m_session->historySize())
+        return;
+
+    const QString expression = m_session->historyEntryAtRef(index).expr();
+    QListWidgetItem* item = new QListWidgetItem(groupedExpressionForHistory(expression));
+    item->setData(Qt::UserRole, expression);
+    m_list->addItem(item);
+}
+
+void HistoryWidget::rebuildHistory()
+{
+    const int historySize = m_session != nullptr ? m_session->historySize() : 0;
+
+    m_list->setUpdatesEnabled(false);
     m_list->clear();
     m_list->clearSelection();
 
-    for (int i = 0; i < historySize; ++i) {
-        const QString expression = m_session->historyEntryAtRef(i).expr();
-        QListWidgetItem* item = new QListWidgetItem(groupedExpressionForHistory(expression));
-        item->setData(Qt::UserRole, expression);
-        m_list->addItem(item);
-    }
+    for (int i = 0; i < historySize; ++i)
+        appendHistoryItem(i);
+
+    m_list->setUpdatesEnabled(true);
     m_list->scrollToBottom();
 }
 
@@ -79,6 +132,8 @@ void HistoryWidget::setSession(const Session* session)
         return;
 
     m_session = session;
+    m_list->clear();
+    m_list->clearSelection();
     updateHistory();
 }
 

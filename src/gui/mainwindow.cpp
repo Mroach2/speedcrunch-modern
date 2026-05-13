@@ -83,9 +83,12 @@
 #include <QListWidget>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMetaObject>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QMimeData>
+#include <QMutex>
+#include <QMutexLocker>
 #include <QPainter>
 #include <QPlainTextEdit>
 #include <QPointer>
@@ -106,6 +109,7 @@
 #include <QTabBar>
 #include <QToolButton>
 #include <QToolTip>
+#include <QThread>
 #include <QVBoxLayout>
 #include <QWidgetAction>
 #include <QJsonArray>
@@ -115,6 +119,7 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
+#include <memory>
 #ifdef Q_OS_WIN32
 #include "windows.h"
 #include <shlobj.h>
@@ -257,6 +262,110 @@ QString sessionFilePath(const QString& sessionName)
 {
     ensureSessionsPath();
     return QDir(sessionsPath()).filePath(sessionFileBaseName(sessionName) + QLatin1String(".json"));
+}
+
+QMutex& asyncSessionIoMutex()
+{
+    static QMutex mutex;
+    return mutex;
+}
+
+QHash<QString, quint64>& asyncSessionSaveGenerations()
+{
+    static QHash<QString, quint64> generations;
+    return generations;
+}
+
+QList<QThread*>& asyncSessionIoThreads()
+{
+    static QList<QThread*> threads;
+    return threads;
+}
+
+struct SessionLoadSpec {
+    QString name;
+    QString filePath;
+    QJsonObject tab;
+};
+
+bool g_restoringExtraWindows = false;
+bool g_multiWindowSpawnDone = false;
+
+bool asyncSessionSaveIsCurrent(const QString& filePath, quint64 generation)
+{
+    QMutexLocker locker(&asyncSessionIoMutex());
+    return asyncSessionSaveGenerations().value(filePath) == generation;
+}
+
+void unregisterAsyncSessionIoThread(QThread* thread)
+{
+    QMutexLocker locker(&asyncSessionIoMutex());
+    asyncSessionIoThreads().removeAll(thread);
+}
+
+void writeSessionJsonToFile(const QJsonObject& json, const QString& filePath, quint64 generation = 0)
+{
+    const QByteArray data = QJsonDocument(json).toJson(QJsonDocument::Compact);
+
+    if (generation != 0 && !asyncSessionSaveIsCurrent(filePath, generation))
+        return;
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly))
+        return;
+    file.write(data);
+    file.close();
+}
+
+void saveSessionAsync(const Session& session, const QString& filePath)
+{
+    ensureSessionsPath();
+
+    QJsonObject json;
+    session.serialize(json);
+
+    quint64 generation = 0;
+    {
+        QMutexLocker locker(&asyncSessionIoMutex());
+        generation = asyncSessionSaveGenerations().value(filePath) + 1;
+        asyncSessionSaveGenerations().insert(filePath, generation);
+    }
+
+    QThread* thread = QThread::create([json, filePath, generation]() {
+        if (!asyncSessionSaveIsCurrent(filePath, generation))
+            return;
+        writeSessionJsonToFile(json, filePath, generation);
+    });
+
+    {
+        QMutexLocker locker(&asyncSessionIoMutex());
+        asyncSessionIoThreads().append(thread);
+    }
+    QObject::connect(thread, &QThread::finished, thread, [thread]() {
+        unregisterAsyncSessionIoThread(thread);
+        thread->deleteLater();
+    });
+    thread->start();
+}
+
+void waitForAsyncSessionIo()
+{
+    while (true) {
+        QList<QThread*> threads;
+        {
+            QMutexLocker locker(&asyncSessionIoMutex());
+            threads = asyncSessionIoThreads();
+        }
+        if (threads.isEmpty())
+            return;
+
+        for (QThread* thread : threads) {
+            if (thread != nullptr) {
+                thread->wait();
+                unregisterAsyncSessionIoThread(thread);
+            }
+        }
+    }
 }
 
 bool loadedSessionNameExists(const QHash<QString, Session*>& sessions, const QString& name)
@@ -2053,6 +2162,7 @@ void MainWindow::createMenus()
     menuBar()->addMenu(m_menus.session);
     m_menus.session->addAction(m_actions.sessionLoad);
     m_menus.session->addAction(m_actions.sessionSave);
+    m_menus.session->addAction(m_actions.settingsBehaviorHistorySizeLimit);
     m_menus.session->addSeparator();
     m_menus.session->addAction(m_actions.sessionImport);
     m_menus.sessionExport = m_menus.session->addMenu("");
@@ -2191,9 +2301,6 @@ void MainWindow::createMenus()
     m_menus.angleUnit->addAction(m_actions.settingsAngleUnitTurn);
     m_menus.angleUnit->addAction(m_actions.settingsAngleUnitRevolution);
 
-    m_menus.history = m_menus.settings->addMenu("");
-    m_menus.history->addAction(m_actions.settingsBehaviorHistorySizeLimit);
-
     m_menus.window = m_menus.settings->addMenu("");
     m_menus.window->addAction(m_actions.settingsBehaviorSaveWindowPositionOnExit);
     if (!isWaylandPlatform())
@@ -2244,7 +2351,6 @@ void MainWindow::setMenusText()
     m_menus.editing->setTitle(MainWindow::tr("&Editing"));
     m_menus.autoCompletion->setTitle(MainWindow::tr("A&utocomplete"));
     m_menus.upDownArrowBehavior->setTitle(MainWindow::tr("Up/Down Arrow History"));
-    m_menus.history->setTitle(MainWindow::tr("&History"));
     m_menus.display->setTitle(MainWindow::tr("&Appearance"));
     m_menus.help->setTitle(MainWindow::tr("&Help"));
 }
@@ -4413,19 +4519,9 @@ void MainWindow::saveSettings()
 void MainWindow::saveSession(QString & fname)
 {
     captureEditorTextInCurrentSession();
-
-    QFile file(fname);
-    if (!file.open(QIODevice::WriteOnly)) {
-        return;
-    }
-
-
     QJsonObject json;
     m_session->serialize(json);
-    QJsonDocument doc(json);
-    file.write(doc.toJson(QJsonDocument::Compact));
-
-    file.close();
+    writeSessionJsonToFile(json, fname);
 }
 
 void MainWindow::saveSessionLayout(bool captureCurrentViewport)
@@ -5977,12 +6073,6 @@ void MainWindow::showSessionLoadDialog()
     if (fname.isEmpty())
         return;
 
-    QFile file(fname);
-    if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(this, tr("Error"), tr("Can't read from file %1").arg(fname));
-        return;
-    }
-
     // Ask for merge with current session.
     bool merge;
     QString mergeMsg = tr(
@@ -5999,15 +6089,59 @@ void MainWindow::showSessionLoadDialog()
         merge = false;
     else return;
 
-    QByteArray data = file.readAll();
-    QJsonDocument doc(QJsonDocument::fromJson(data));
-    m_session->deSerialize(doc.object(), merge);
+    QPointer<MainWindow> windowGuard(this);
+    QThread* thread = QThread::create([windowGuard, fname, merge]() {
+        QJsonObject json;
+        const bool ok = readValidSessionJson(fname, &json);
 
-    file.close();
-    emit historyChanged();
-    emit variablesChanged();
-    emit functionsChanged();
-    emit unitsChanged();
+        if (!windowGuard)
+            return;
+
+        QMetaObject::invokeMethod(windowGuard.data(), [windowGuard, ok, json, merge]() mutable {
+            if (!windowGuard)
+                return;
+            if (!ok) {
+                QMessageBox::critical(windowGuard.data(), MainWindow::tr("Error"),
+                                      MainWindow::tr("Can't read the selected session file."));
+                return;
+            }
+
+            MainWindow* window = windowGuard.data();
+            Session loadedSession;
+            loadedSession.deSerialize(json, false);
+            if (merge) {
+                const QList<HistoryEntry> history = loadedSession.historyToList();
+                for (const HistoryEntry& entry : history)
+                    window->m_session->addHistoryEntry(entry);
+                for (const Variable& variable : loadedSession.variablesToList()) {
+                    if (variable.type() != Variable::BuiltIn)
+                        window->m_session->addVariable(variable);
+                }
+                for (const UserFunction& function : loadedSession.UserFunctionsToList())
+                    window->m_session->addUserFunction(function);
+                for (const UserUnit& unit : loadedSession.userUnitsToList())
+                    window->m_session->addUserUnit(unit);
+            } else {
+                *window->m_session = loadedSession;
+                window->restoreEditorTextFromCurrentSession();
+            }
+
+            emit window->historyChanged();
+            emit window->variablesChanged();
+            emit window->functionsChanged();
+            emit window->unitsChanged();
+            window->m_conditions.autoAns = !window->m_session->historyIsEmpty();
+        }, Qt::QueuedConnection);
+    });
+    {
+        QMutexLocker locker(&asyncSessionIoMutex());
+        asyncSessionIoThreads().append(thread);
+    }
+    QObject::connect(thread, &QThread::finished, thread, [thread]() {
+        unregisterAsyncSessionIoThread(thread);
+        thread->deleteLater();
+    });
+    thread->start();
 
 }
 
@@ -6669,11 +6803,11 @@ void MainWindow::setAutoCalcEnabled(bool b)
 void MainWindow::setHistorySizeLimit()
 {
     bool ok = false;
-    const int current = m_settings->maxHistoryEntries;
+    const int current = m_session->historyLimit();
     const int value = QInputDialog::getInt(
         this,
         tr("History Size Limit"),
-        tr("Maximum number of history entries (0 = unlimited):"),
+        tr("Maximum number of history entries for this session (0 = unlimited):"),
         current,
         0,
         1000000,
@@ -6683,8 +6817,7 @@ void MainWindow::setHistorySizeLimit()
     if (!ok || value == current)
         return;
 
-    m_settings->maxHistoryEntries = value;
-    m_session->applyHistoryLimit();
+    m_session->setHistoryLimit(value);
     m_conditions.autoAns = !m_session->historyIsEmpty();
     emit historyChanged();
     saveSessionToDefaultPath();
@@ -7813,32 +7946,63 @@ void MainWindow::restoreSession(bool restoreHistory) {
     if (restoreSessionLayout(restoreHistory))
         return;
 
-    QFile file(sessionFilePath(m_session->name()));
-    if (!file.open(QIODevice::ReadOnly))
-        return;
+    const QString name = m_session->name();
+    const QString filePath = sessionFilePath(name);
+    QPointer<MainWindow> windowGuard(this);
+    QThread* thread = QThread::create([windowGuard, filePath, name, restoreHistory]() {
+        QJsonObject json;
+        const bool ok = readValidSessionJson(filePath, &json);
+        if (ok && !restoreHistory)
+            json.remove(QLatin1String(SessionJsonKeys::History));
 
-    QByteArray data = file.readAll();
-    QJsonDocument doc(QJsonDocument::fromJson(data));
-    QJsonObject json = doc.object();
-    if (!restoreHistory)
-        json.remove(QLatin1String(SessionJsonKeys::History));
-    m_session->deSerialize(json, true);
-    m_session->setEditorText(json.value(QLatin1String(SessionJsonKeys::Editor)).toString());
+        if (!windowGuard)
+            return;
 
-    file.close();
-    emit historyChanged();
-    emit variablesChanged();
-    emit functionsChanged();
-    emit unitsChanged();
-    restoreEditorTextFromCurrentSession();
+        QMetaObject::invokeMethod(windowGuard.data(), [windowGuard, ok, json, name, restoreHistory]() mutable {
+            if (!windowGuard)
+                return;
+            if (!ok)
+                return;
 
-    m_conditions.autoAns = restoreHistory && !m_session->historyIsEmpty();
+            Session* loadedSession = new Session();
+            loadedSession->deSerialize(json, false);
+            loadedSession->setName(name);
+            MainWindow* window = windowGuard.data();
+            Session* oldSession = window->m_session;
+            window->m_loadedSessions.remove(oldSession ? oldSession->name() : QString());
+            window->m_loadedSessions.insert(name, loadedSession);
+            window->m_session = loadedSession;
+            window->m_evaluator = loadedSession->evaluator();
+            if (window->m_widgets.display)
+                window->m_widgets.display->setSession(loadedSession);
+            if (window->m_widgets.editor)
+                window->m_widgets.editor->setSession(loadedSession);
+            if (window->m_docks.history)
+                window->m_docks.history->widget()->setSession(loadedSession);
+            if (oldSession != nullptr)
+                delete oldSession;
+
+            emit window->historyChanged();
+            emit window->variablesChanged();
+            emit window->functionsChanged();
+            emit window->unitsChanged();
+            window->restoreEditorTextFromCurrentSession();
+            window->m_conditions.autoAns = restoreHistory && !loadedSession->historyIsEmpty();
+        }, Qt::QueuedConnection);
+    });
+    {
+        QMutexLocker locker(&asyncSessionIoMutex());
+        asyncSessionIoThreads().append(thread);
+    }
+    QObject::connect(thread, &QThread::finished, thread, [thread]() {
+        unregisterAsyncSessionIoThread(thread);
+        thread->deleteLater();
+    });
+    thread->start();
 }
 
 bool MainWindow::restoreSessionLayout(bool restoreHistory)
 {
-    static bool restoringExtraWindows = false;
-    static bool multiWindowSpawnDone = false;
     if (m_settings->sessionLayoutJson.isEmpty())
         return false;
 
@@ -7902,11 +8066,9 @@ bool MainWindow::restoreSessionLayout(bool restoreHistory)
     if (tabs.isEmpty())
         return false;
 
-    QHash<QString, Session*> restoredSessions;
-    m_sessionViewportAnchors.clear();
-    m_sessionScrollValues.clear();
     QString activeSessionName = normalizedSessionName(root.value(QStringLiteral("active")).toString());
-    Session* activeSession = nullptr;
+    QList<SessionLoadSpec> sessionLoadSpecs;
+    QStringList loadNames;
 
     for (const QJsonValue& value : tabs) {
         if (!value.isObject())
@@ -7914,49 +8076,108 @@ bool MainWindow::restoreSessionLayout(bool restoreHistory)
 
         const QJsonObject tab = value.toObject();
         const QString name = normalizedSessionName(tab.value(QStringLiteral("name")).toString());
-        if (loadedSessionNameExists(restoredSessions, name))
+        if (loadNames.contains(name, Qt::CaseInsensitive))
             continue;
+        loadNames.append(name);
 
         QString fileName = tab.value(QStringLiteral("file")).toString();
         if (fileName.isEmpty())
             fileName = sessionFileBaseName(name) + QLatin1String(".json");
 
-        QJsonObject sessionJson;
         const QString filePath = QDir(sessionsPath()).filePath(fileName);
-        if (!readValidSessionJson(filePath, &sessionJson))
-            continue;
-
-        if (!restoreHistory)
-            sessionJson.remove(QLatin1String(SessionJsonKeys::History));
-
-        Session* session = nullptr;
-        if (name == m_session->name() && restoredSessions.isEmpty()) {
-            session = m_session;
-        } else {
-            session = new Session();
-        }
-
-        session->deSerialize(sessionJson, false);
-        session->setName(name);
-        restoredSessions.insert(name, session);
-        const QJsonObject scroll = tab.value(QStringLiteral("scroll")).toObject();
-        const int block = scroll.value(QStringLiteral("block")).toInt(-1);
-        const int offset = scroll.value(QStringLiteral("offset")).toInt(0);
-        const int scrollValue = scroll.value(QStringLiteral("value")).toInt(-1);
-        if (block >= 0)
-            m_sessionViewportAnchors.insert(name, qMakePair(block, offset));
-        if (scrollValue >= 0)
-            m_sessionScrollValues.insert(name, scrollValue);
-        if (name == activeSessionName)
-            activeSession = session;
+        sessionLoadSpecs.append(SessionLoadSpec{ name, filePath, tab });
     }
 
-    if (restoredSessions.isEmpty())
+    if (sessionLoadSpecs.isEmpty())
         return false;
 
+    QPointer<MainWindow> windowGuard(this);
+    QThread* thread = QThread::create([windowGuard, sessionLoadSpecs, activeSessionName,
+                                       layout, window, root, tabs, restoreHistory]() {
+        QHash<QString, QJsonObject> sessionJsons;
+        QHash<QString, QPair<int, int>> viewportAnchors;
+        QHash<QString, int> scrollValues;
+
+        for (const SessionLoadSpec& spec : sessionLoadSpecs) {
+            QJsonObject sessionJson;
+            if (!readValidSessionJson(spec.filePath, &sessionJson))
+                continue;
+
+            if (!restoreHistory)
+                sessionJson.remove(QLatin1String(SessionJsonKeys::History));
+
+            sessionJson.insert(QLatin1String(SessionJsonKeys::Session), spec.name);
+            sessionJsons.insert(spec.name, sessionJson);
+
+            const QJsonObject scroll = spec.tab.value(QStringLiteral("scroll")).toObject();
+            const int block = scroll.value(QStringLiteral("block")).toInt(-1);
+            const int offset = scroll.value(QStringLiteral("offset")).toInt(0);
+            const int scrollValue = scroll.value(QStringLiteral("value")).toInt(-1);
+            if (block >= 0)
+                viewportAnchors.insert(spec.name, qMakePair(block, offset));
+            if (scrollValue >= 0)
+                scrollValues.insert(spec.name, scrollValue);
+        }
+
+        if (!windowGuard)
+            return;
+
+        QMetaObject::invokeMethod(windowGuard.data(), [windowGuard, layout, window, root, tabs,
+                                                       activeSessionName, restoreHistory,
+                                                       sessionJsons, viewportAnchors,
+                                                       scrollValues]() mutable {
+            if (!windowGuard)
+                return;
+            windowGuard->finishRestoreSessionLayout(layout, window, root, tabs, activeSessionName,
+                                                    restoreHistory, sessionJsons, viewportAnchors,
+                                                    scrollValues);
+        }, Qt::QueuedConnection);
+    });
+    {
+        QMutexLocker locker(&asyncSessionIoMutex());
+        asyncSessionIoThreads().append(thread);
+    }
+    QObject::connect(thread, &QThread::finished, thread, [thread]() {
+        unregisterAsyncSessionIoThread(thread);
+        thread->deleteLater();
+    });
+    thread->start();
+    return true;
+}
+
+void MainWindow::finishRestoreSessionLayout(const QJsonObject& layout,
+                                            const QJsonObject& window,
+                                            const QJsonObject& root,
+                                            const QJsonArray& tabs,
+                                            const QString& activeSessionName,
+                                            bool restoreHistory,
+                                            QHash<QString, QJsonObject> sessionJsons,
+                                            QHash<QString, QPair<int, int>> viewportAnchors,
+                                            QHash<QString, int> scrollValues)
+{
+    const QJsonArray windows = layout.value(QStringLiteral("windows")).toArray();
+    const QString rootType = root.value(QStringLiteral("type")).toString();
+
+    if (sessionJsons.isEmpty())
+        return;
+
+    QHash<QString, Session*> restoredSessions;
+    for (auto it = sessionJsons.constBegin(); it != sessionJsons.constEnd(); ++it) {
+        Session* session = new Session();
+        session->deSerialize(it.value(), false);
+        session->setName(it.key());
+        restoredSessions.insert(it.key(), session);
+    }
+
+    m_sessionViewportAnchors = viewportAnchors;
+    m_sessionScrollValues = scrollValues;
+
+    QString activeSessionNameToRestore = activeSessionName;
+    Session* activeSession = restoredSessions.value(activeSessionNameToRestore, nullptr);
+
     if (activeSession == nullptr) {
-        activeSessionName = restoredSessions.keys().constFirst();
-        activeSession = restoredSessions.value(activeSessionName);
+        activeSessionNameToRestore = restoredSessions.keys().constFirst();
+        activeSession = restoredSessions.value(activeSessionNameToRestore);
     }
 
     const QFont displayFont = m_widgets.display->font();
@@ -8015,7 +8236,7 @@ bool MainWindow::restoreSessionLayout(bool restoreHistory)
         return QString();
     };
 
-    const auto createPane = [this, &displayFont, &editorFont, &activeSessionName, &paneNamesFromNode,
+    const auto createPane = [this, &displayFont, &editorFont, &activeSessionNameToRestore, &paneNamesFromNode,
                              &activeDisplay, &activeEditor, &firstDisplay, &firstEditor,
                              &firstLoadedName](const QJsonObject& node) -> QWidget* {
         const QStringList names = paneNamesFromNode(node);
@@ -8063,7 +8284,7 @@ bool MainWindow::restoreSessionLayout(bool restoreHistory)
             firstDisplay = display;
             firstEditor = editor;
         }
-        if (activeName == activeSessionName) {
+        if (activeName == activeSessionNameToRestore) {
             activeDisplay = display;
             activeEditor = editor;
         }
@@ -8140,7 +8361,7 @@ bool MainWindow::restoreSessionLayout(bool restoreHistory)
 
         QJsonObject pane;
         pane.insert(QStringLiteral("type"), QStringLiteral("pane"));
-        pane.insert(QStringLiteral("active"), activeSessionName);
+        pane.insert(QStringLiteral("active"), activeSessionNameToRestore);
         pane.insert(QStringLiteral("tabs"), tabs);
         m_widgets.splitContainer->addWidget(createPane(pane));
     }
@@ -8164,9 +8385,9 @@ bool MainWindow::restoreSessionLayout(bool restoreHistory)
     emit functionsChanged();
     emit unitsChanged();
 
-    if (this == primaryMainWindow() && !restoringExtraWindows && !multiWindowSpawnDone && windows.size() > 1) {
-        multiWindowSpawnDone = true;
-        restoringExtraWindows = true;
+    if (this == primaryMainWindow() && !g_restoringExtraWindows && !g_multiWindowSpawnDone && windows.size() > 1) {
+        g_multiWindowSpawnDone = true;
+        g_restoringExtraWindows = true;
         for (int i = 0; i < windows.size(); ++i) {
             const QJsonValue value = windows.at(i);
             if (!value.isObject())
@@ -8187,9 +8408,8 @@ bool MainWindow::restoreSessionLayout(bool restoreHistory)
             if (!geometryBase64.isEmpty())
                 extraWindow->restoreGeometry(QByteArray::fromBase64(geometryBase64.toLatin1()));
         }
-        restoringExtraWindows = false;
+        g_restoringExtraWindows = false;
     }
-    return true;
 }
 
 void MainWindow::evaluateEditorExpression()
@@ -8275,6 +8495,7 @@ void MainWindow::evaluateEditorExpression()
         return;
 
     const QString interpretedExpr = m_evaluator->interpretedExpression();
+    const bool warnHistoryLimitReached = m_session->nextHistoryEntryReachesLimit();
     HistoryEntry historyEntry(enteredExpr, result, interpretedExpr, evalContext);
     historyEntry.setRenderedLines(renderedLinesForHistoryEntry(historyEntry, m_settings, m_evaluator));
     m_session->addHistoryEntry(historyEntry);
@@ -8302,6 +8523,16 @@ void MainWindow::evaluateEditorExpression()
     m_widgets.editor->stopAutoComplete();
     if (!result.isNan())
         m_conditions.autoAns = true;
+    if (warnHistoryLimitReached) {
+        QTimer::singleShot(0, this, [this]() {
+            QMessageBox::information(
+                this,
+                tr("History Size Limit Reached"),
+                tr("This calculation fills the last available history slot. "
+                   "Future calculations will remove the oldest calculation from history. "
+                   "You can increase the limit from Session > History Size Limit."));
+        });
+    }
     saveSessionToDefaultPath();
 }
 
@@ -8941,16 +9172,10 @@ void MainWindow::persistSessionAndSettingsForShutdown()
                 continue;
             savedSessions.insert(session);
 
-            QJsonObject json;
-            session->serialize(json);
-
-            QFile file(sessionFilePath(it.key()));
-            if (!file.open(QIODevice::WriteOnly))
-                continue;
-            file.write(QJsonDocument(json).toJson(QJsonDocument::Compact));
-            file.close();
+            saveSessionAsync(*session, sessionFilePath(it.key()));
         }
     }
+    waitForAsyncSessionIo();
     saveSessionLayout();
     saveSettings();
 }
@@ -8958,13 +9183,13 @@ void MainWindow::persistSessionAndSettingsForShutdown()
 void MainWindow::saveSessionToDefaultPath()
 {
     ensureSessionsPath();
+    captureEditorTextInCurrentSession();
 
-    QJsonObject json;
-    m_session->serialize(json);
-    const QString sessionName = json.value(QLatin1String(SessionJsonKeys::Session)).toString(
-        QLatin1String(SessionJsonKeys::SessionValueMain));
+    const QString sessionName = m_session->name().isEmpty()
+        ? QLatin1String(SessionJsonKeys::SessionValueMain)
+        : m_session->name();
     QString dataPath = sessionFilePath(sessionName);
-    saveSession(dataPath);
+    saveSessionAsync(*m_session, dataPath);
 }
 
 void MainWindow::setResultPrecision(int p)

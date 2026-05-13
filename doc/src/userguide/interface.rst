@@ -355,20 +355,23 @@ copy/paste from other applications. In clear mixed-separator cases, it
 accepts the number and normalizes it by ignoring non-digit grouping
 characters as needed.
 
-History
-+++++++
+History Size Limit
+++++++++++++++++++
 
-This section contains settings that control how calculation history is stored.
+This setting controls how calculation history is stored for the active session.
+It is available from :menuselection:`Session --> History Size Limit...`.
 
 Calculation history is saved automatically when a session changes and restored
 on the next launch.
 
-* :menuselection:`History Size Limit...`
-    Sets the maximum number of stored history entries. By default, SpeedCrunch keeps
-    up to 100 entries and automatically removes the oldest ones when this limit is
-    exceeded. Set the value to ``0`` to disable the limit.
+The history size limit sets the maximum number of stored history entries for
+that session. By default, SpeedCrunch keeps up to 100 entries per session and
+automatically removes the oldest ones when this limit is exceeded. When a
+calculation fills the last available history slot, SpeedCrunch warns that future
+calculations will remove the oldest calculation from that session. Set the value
+to ``0`` to disable the limit for the active session.
 
-    .. versionadded:: 1.0
+.. versionadded:: 1.0
 
 
 Window

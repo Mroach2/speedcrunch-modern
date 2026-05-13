@@ -40,6 +40,9 @@ protected:
 private:
     Q_DISABLE_COPY(HistoryWidget)
 
+    void appendHistoryItem(int index);
+    void rebuildHistory();
+
     QListWidget *m_list;
     const Session* m_session;
 };

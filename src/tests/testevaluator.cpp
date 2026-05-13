@@ -6601,14 +6601,29 @@ void test_expression_operator_normalization()
 
 void test_session_history_limit()
 {
-    Settings* settings = Settings::instance();
-    const int oldMaxHistoryEntries = settings->maxHistoryEntries;
-
-    settings->maxHistoryEntries = 3;
     Session session;
+    session.setHistoryLimit(3);
+    ++eval_total_tests;
+    if (session.nextHistoryEntryReachesLimit()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\thistory limit warning before first entry\t[NEW]" << endl;
+    }
     session.addHistoryEntry(HistoryEntry("1+1", Quantity(2)));
     session.addHistoryEntry(HistoryEntry("2+2", Quantity(4)));
+    ++eval_total_tests;
+    if (!session.nextHistoryEntryReachesLimit()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\thistory limit warning at final free slot\t[NEW]" << endl;
+    }
     session.addHistoryEntry(HistoryEntry("3+3", Quantity(6)));
+    ++eval_total_tests;
+    if (session.nextHistoryEntryReachesLimit()) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\thistory limit warning after limit reached\t[NEW]" << endl;
+    }
     session.addHistoryEntry(HistoryEntry("4+4", Quantity(8)));
     session.addHistoryEntry(HistoryEntry("5+5", Quantity(10)));
 
@@ -6620,8 +6635,16 @@ void test_session_history_limit()
         cerr << __FILE__ << "[" << __LINE__ << "]\thistory trim on add\t[NEW]" << endl;
     }
 
-    settings->maxHistoryEntries = 2;
-    session.applyHistoryLimit();
+    QJsonObject serializedSession;
+    session.serialize(serializedSession);
+    ++eval_total_tests;
+    if (serializedSession.value(QLatin1String(SessionJsonKeys::Limit)).toInt(-1) != 3) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tsession serializes history limit\t[NEW]" << endl;
+    }
+
+    session.setHistoryLimit(2);
 
     ++eval_total_tests;
     const QList<HistoryEntry> trimmedHistory = session.historyToList();
@@ -6639,6 +6662,7 @@ void test_session_history_limit()
         histEntries.append(entry);
     }
     json["speedcrunch"] = QString(SPEEDCRUNCH_VERSION);
+    json[QLatin1String(SessionJsonKeys::Limit)] = 2;
     json["history"] = histEntries;
 
     Session loaded;
@@ -6646,7 +6670,10 @@ void test_session_history_limit()
 
     ++eval_total_tests;
     const QList<HistoryEntry> loadedHistory = loaded.historyToList();
-    if (loadedHistory.size() != 2 || loadedHistory.at(0).expr() != "3" || loadedHistory.at(1).expr() != "4") {
+    if (loaded.historyLimit() != 2
+        || loadedHistory.size() != 2
+        || loadedHistory.at(0).expr() != "3"
+        || loadedHistory.at(1).expr() != "4") {
         ++eval_failed_tests;
         ++eval_new_failed_tests;
         cerr << __FILE__ << "[" << __LINE__ << "]\thistory trim on deserialize\t[NEW]" << endl;
@@ -6668,6 +6695,7 @@ void test_session_history_limit()
     jsonWithCommentTail["history"] = histWithCommentTail;
 
     Session loadedWithCommentTail;
+    loadedWithCommentTail.setHistoryLimit(0);
     loadedWithCommentTail.deSerialize(jsonWithCommentTail, false);
 
     ++eval_total_tests;
@@ -6678,8 +6706,8 @@ void test_session_history_limit()
         cerr << __FILE__ << "[" << __LINE__ << "]\tans recovery on deserialize with comment tail\t[NEW]" << endl;
     }
 
-    settings->maxHistoryEntries = 0;
     Session unlimited;
+    unlimited.setHistoryLimit(0);
     for (int i = 0; i < 4; ++i)
         unlimited.addHistoryEntry(HistoryEntry(QString("u%1").arg(i), Quantity(i)));
 
@@ -6689,8 +6717,6 @@ void test_session_history_limit()
         ++eval_new_failed_tests;
         cerr << __FILE__ << "[" << __LINE__ << "]\thistory unlimited mode\t[NEW]" << endl;
     }
-
-    settings->maxHistoryEntries = oldMaxHistoryEntries;
 }
 
 void test_session_deserialize_without_history()

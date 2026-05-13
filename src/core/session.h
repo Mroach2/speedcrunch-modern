@@ -24,6 +24,7 @@ private:
     std::unique_ptr<Evaluator> m_evaluator;
     QString m_name;
     QString m_editorText;
+    int m_historyLimit = 100; // 0: unlimited.
     int physicalHistoryIndex(int logicalIndex) const;
     void normalizeHistoryOrder();
     void bindEvaluator();
@@ -47,6 +48,8 @@ public:
     void setName(const QString& name);
     QString editorText() const { return m_editorText; }
     void setEditorText(const QString& text) { m_editorText = text; }
+    int historyLimit() const { return m_historyLimit; }
+    void setHistoryLimit(int limit);
 
 
     void addVariable(const Variable & var);
@@ -58,6 +61,7 @@ public:
     bool isBuiltInVariable(const QString &id) const;
 
     void addHistoryEntry(const HistoryEntry & entry);
+    bool nextHistoryEntryReachesLimit() const;
     void insertHistoryEntry(const int index, const HistoryEntry & entry);
     void removeHistoryEntryAt(const int index);
     int historySize() const { return m_history.size(); }

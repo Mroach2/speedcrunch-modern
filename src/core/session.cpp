@@ -97,14 +97,8 @@ void applyEvaluationContextToSettings(const EvaluationContext& ctx)
 }
 }
 
-static int historyLimit()
+static void trimHistory(QList<HistoryEntry>& history, int limit)
 {
-    return std::max(0, Settings::instance()->maxHistoryEntries);
-}
-
-static void trimHistory(QList<HistoryEntry>& history)
-{
-    const int limit = historyLimit();
     if (limit == 0 || history.size() <= limit)
         return;
     history.remove(0, history.size() - limit);
@@ -130,6 +124,7 @@ void SessionSerialization::serialize(const Session& session, QJsonObject& json)
         ? QLatin1String(SessionJsonKeys::SessionValueMain)
         : session.name();
     json[QLatin1String(SessionJsonKeys::Editor)] = session.editorText();
+    json[QLatin1String(SessionJsonKeys::Limit)] = session.historyLimit();
 
     QJsonArray hist_entries;
     for (int i = 0; i < session.historySize(); ++i) {
@@ -214,6 +209,7 @@ int SessionSerialization::deserialize(Session& session, const QJsonObject& json,
     }
     if (!hasType(SessionJsonKeys::Session, &QJsonValue::isString)
             || !hasType(SessionJsonKeys::Editor, &QJsonValue::isString)
+            || !hasType(SessionJsonKeys::Limit, &QJsonValue::isDouble)
             || !hasType(SessionJsonKeys::History, &QJsonValue::isArray)
             || !hasType(SessionJsonKeys::Variables, &QJsonValue::isArray)
             || !hasType(SessionJsonKeys::Functions, &QJsonValue::isArray)
@@ -237,12 +233,16 @@ int SessionSerialization::deserialize(Session& session, const QJsonObject& json,
         session.setName(json[QLatin1String(SessionJsonKeys::Session)].toString());
     if (!merge)
         session.setEditorText(json[QLatin1String(SessionJsonKeys::Editor)].toString());
+    if (json.contains(QLatin1String(SessionJsonKeys::Limit)))
+        session.setHistoryLimit(json[QLatin1String(SessionJsonKeys::Limit)].toInt(100));
 
     session.evaluator()->initializeBuiltInVariables();
 
     QJsonArray hist_obj = json[QLatin1String(SessionJsonKeys::History)].toArray();
     int n = hist_obj.size();
-    for (int i = 0; i < n; ++i)
+    const int limit = session.historyLimit();
+    const int firstHistoryIndex = limit > 0 ? std::max(0, n - limit) : 0;
+    for (int i = firstHistoryIndex; i < n; ++i)
         session.addHistoryEntry(HistoryEntry(hist_obj[i].toObject()));
 
     QJsonArray var_obj = json[QLatin1String(SessionJsonKeys::Variables)].toArray();
@@ -339,6 +339,7 @@ Session::Session(const Session& other)
     , m_evaluator(new Evaluator)
     , m_name(other.m_name)
     , m_editorText(other.m_editorText)
+    , m_historyLimit(other.m_historyLimit)
 {
     bindEvaluator();
     m_evaluator->copySymbolContextFrom(*other.m_evaluator);
@@ -353,6 +354,7 @@ Session& Session::operator=(const Session& other)
     m_historyHead = other.m_historyHead;
     m_name = other.m_name;
     m_editorText = other.m_editorText;
+    m_historyLimit = other.m_historyLimit;
     bindEvaluator();
     m_evaluator->copySymbolContextFrom(*other.m_evaluator);
     return *this;
@@ -405,6 +407,12 @@ void Session::setName(const QString& name)
     m_name = trimmed.isEmpty()
         ? QLatin1String(SessionJsonKeys::SessionValueMain)
         : trimmed;
+}
+
+void Session::setHistoryLimit(int limit)
+{
+    m_historyLimit = std::max(0, limit);
+    applyHistoryLimit();
 }
 
 void Session::addVariable(const Variable &var)
@@ -464,11 +472,17 @@ void Session::addHistoryEntry(const HistoryEntry &entry)
     m_history.append(entry);
 }
 
+bool Session::nextHistoryEntryReachesLimit() const
+{
+    const int limit = historyLimit();
+    return limit > 0 && m_history.size() == limit - 1;
+}
+
 void Session::insertHistoryEntry(const int index, const HistoryEntry &entry)
 {
     normalizeHistoryOrder();
     m_history.insert(index, entry);
-    trimHistory(m_history);
+    trimHistory(m_history, historyLimit());
 }
 
 void Session::removeHistoryEntryAt(const int index)
@@ -502,7 +516,7 @@ QList<HistoryEntry> Session::historyToList() const
 void Session::applyHistoryLimit()
 {
     normalizeHistoryOrder();
-    trimHistory(m_history);
+    trimHistory(m_history, historyLimit());
 }
 
 void Session::clearHistory()

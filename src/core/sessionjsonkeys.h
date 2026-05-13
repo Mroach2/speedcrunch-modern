@@ -8,12 +8,17 @@
   "$id": "https://speedcrunch.org/schemas/session.json",
   "title": "SpeedCrunch Session",
   "type": "object",
-  "required": ["scheme", "session", "editor", "history", "variables", "functions", "units", "globals"],
+  "required": ["scheme", "session", "editor", "limit", "history", "variables", "functions", "units", "globals"],
   "additionalProperties": false,
   "properties": {
     "scheme": { "type": "integer", "const": 1 },
     "session": { "type": "string", "minLength": 1 },
     "editor": { "type": "string" },
+    "limit": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum stored history entries for this session; 0 means unlimited."
+    },
     "history": {
       "type": "array",
       "items": { "$ref": "#/$defs/historyEntry" }
@@ -210,6 +215,7 @@ inline constexpr int SchemaVersionValue = 1;
 inline constexpr const char* Session = "session";
 inline constexpr const char* SessionValueMain = "main";
 inline constexpr const char* Editor = "editor";
+inline constexpr const char* Limit = "limit";
 inline constexpr const char* History = "history";
 inline constexpr const char* Variables = "variables";
 inline constexpr const char* Functions = "functions";

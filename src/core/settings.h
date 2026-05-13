@@ -150,7 +150,6 @@ public:
     bool digitGroupingIntegerPartOnly;
     NumberFormatStyle numberFormatStyle;
     bool hasNumberFormatStyleSetting;
-    int maxHistoryEntries; // 0: unlimited.
     bool leaveLastExpression;
     bool showEmptyHistoryHint;
     bool syntaxHighlighting;

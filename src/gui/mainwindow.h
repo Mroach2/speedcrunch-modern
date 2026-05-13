@@ -9,7 +9,10 @@
 #include "math/quantity.h"
 
 #include <QHash>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QMainWindow>
+#include <QPair>
 #include <QStringList>
 
 class AutoHideLabel;
@@ -279,6 +282,15 @@ private:
     void saveSettings();
     void saveSessionToDefaultPath();
     void saveSession(QString &fname);
+    void finishRestoreSessionLayout(const QJsonObject& layout,
+                                    const QJsonObject& window,
+                                    const QJsonObject& root,
+                                    const QJsonArray& tabs,
+                                    const QString& activeSessionName,
+                                    bool restoreHistory,
+                                    QHash<QString, QJsonObject> sessionJsons,
+                                    QHash<QString, QPair<int, int>> viewportAnchors,
+                                    QHash<QString, int> scrollValues);
     void activateSession(Session* session);
     void captureEditorTextInCurrentSession();
     void restoreEditorTextFromCurrentSession();
@@ -484,7 +496,6 @@ private:
         QMenu* complexNumbers;
         QMenu* editing;
         QMenu* autoCompletion;
-        QMenu* history;
         QMenu* colorScheme;
         QMenu* decimal;
         QMenu* digitGrouping;

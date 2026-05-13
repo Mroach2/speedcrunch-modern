@@ -382,9 +382,6 @@ void Settings::load()
     if (numberFormatStyle == NumberFormatSystem)
         numberFormatStyle = NumberFormatNoGroupingDot;
     applyNumberFormatStyle();
-    maxHistoryEntries = settings->value(key + QLatin1String("MaxHistoryEntries"), 100).toInt();
-    maxHistoryEntries = std::max(0, maxHistoryEntries);
-
     key = KEY + QLatin1String("/Format/");
 
     // Format special case.
@@ -613,7 +610,6 @@ void Settings::save()
     settings->setValue(key + QLatin1String("DigitGrouping"), digitGrouping);
     settings->setValue(key + QLatin1String("DigitGroupingIntegerPartOnly"), digitGroupingIntegerPartOnly);
     settings->setValue(key + QLatin1String("NumberFormatStyle"), static_cast<int>(numberFormatStyle));
-    settings->setValue(key + QLatin1String("MaxHistoryEntries"), maxHistoryEntries);
     settings->setValue(key + QLatin1String("AutoResultToClipboard"), autoResultToClipboard);
     settings->setValue(key + QLatin1String("SimplifyResultExpressions"), simplifyResultExpressions);
     settings->setValue(key + QLatin1String("Language"), language);
