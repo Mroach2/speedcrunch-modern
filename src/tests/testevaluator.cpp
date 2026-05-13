@@ -5537,6 +5537,7 @@ void test_format()
     settings->angleUnit = 'd';
     Evaluator::instance()->initializeAngleUnits();
     CHECK_EVAL_FORMAT_EXACT("1+1j", QString::fromUtf8("1.4142135623730950488 ∠ 45"));
+    CHECK_EVAL_FORMAT_EXACT("expform(1+1j)", QString::fromUtf8("1.4142135623730950488 · exp(i · 0.78539816339744830962)"));
     CHECK_EVAL_FORMAT_EXACT("trigform(1+1j)", QString::fromUtf8("1.4142135623730950488 · (cos(45) + i · sin(45))"));
     CHECK_EVAL_FORMAT_EXACT("cisform(1+1j)", QString::fromUtf8("1.4142135623730950488 · cis(45)"));
     CHECK_EVAL("cis(180)", "-1");

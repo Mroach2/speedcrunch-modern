@@ -4,6 +4,7 @@
 
 #include "cmath.h"
 
+#include "core/anglemode.h"
 #include "core/symbolicnumberformat.h"
 #include "core/unicodechars.h"
 #include "core/mathdsl.h"
@@ -21,21 +22,27 @@ namespace {
 QChar s_imaginaryUnitSymbol = QLatin1Char('j');
 char s_polarAngleUnit = 'r';
 
-QString formatRadianPhase(const HNumber& phase, const CNumber::Format& format)
+QString formatRadianPhase(const HNumber& phase, const CNumber::Format& format,
+                          bool allowSymbolicPiMultiples)
 {
-    const QString symbolic = SymbolicNumberFormat::formatPiMultiple(phase);
-    return symbolic.isEmpty() ? HMath::format(phase, format) : symbolic;
+    if (allowSymbolicPiMultiples) {
+        const QString symbolic = SymbolicNumberFormat::formatPiMultiple(phase);
+        if (!symbolic.isEmpty())
+            return symbolic;
+    }
+    return HMath::format(phase, format);
 }
 
 QString formatAngleModePhase(HNumber phase, const CNumber::Format& format)
 {
-    if (CMath::polarAngleUnit() == 'r')
-        return formatRadianPhase(phase, format);
-    if (CMath::polarAngleUnit() == 'd')
+    const char angleMode = CMath::polarAngleUnit();
+    if (angleMode == AngleMode::Radian)
+        return formatRadianPhase(phase, format, true);
+    if (angleMode == AngleMode::Degree)
         phase = CMath::rad2deg(phase).real;
-    else if (CMath::polarAngleUnit() == 'g')
+    else if (angleMode == AngleMode::Gradian)
         phase = CMath::rad2gon(phase).real;
-    else if (CMath::polarAngleUnit() == 't' || CMath::polarAngleUnit() == 'v')
+    else if (angleMode == AngleMode::Turn || angleMode == AngleMode::Revolution)
         phase /= HNumber(2) * HMath::pi();
     return HMath::format(phase, format);
 }
@@ -61,9 +68,9 @@ QChar CMath::imaginaryUnitSymbol()
 
 void CMath::setPolarAngleUnit(char angleUnit)
 {
-    s_polarAngleUnit = (angleUnit == 'd' || angleUnit == 'g' || angleUnit == 't' || angleUnit == 'v')
+    s_polarAngleUnit = AngleMode::isValid(angleUnit) && angleUnit != AngleMode::Radian
         ? angleUnit
-        : 'r';
+        : AngleMode::Radian;
 }
 
 char CMath::polarAngleUnit()
@@ -521,7 +528,8 @@ QString CMath::format(const CNumber& cn, CNumber::Format format)
         HNumber phase = CMath::phase(cn).real;
         if (phase.isZero())
             return strRadius;
-        QString strPhase = formatRadianPhase(phase, format);
+        const bool allowSymbolicPiMultiples = CMath::polarAngleUnit() == AngleMode::Radian;
+        QString strPhase = formatRadianPhase(phase, format, allowSymbolicPiMultiples);
         const QString imagUnit(CMath::imaginaryUnitSymbol());
         const QString operatorSpace(MathDsl::MulDotWrapSp);
         const QString dotOperator(MathDsl::MulDotOp);

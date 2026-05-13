@@ -595,6 +595,11 @@ equivalent to ``r * cis(θ)``: the left operand is the magnitude, and the right
 operand is the phase angle. Unitless phases follow the global angle mode, while
 explicit angle units override it.
 
+When the angle mode is *radians*, complex forms display simple phase multiples
+of ``pi`` symbolically, for example ``cis(pi / 2)``, ``exp(i · pi / 2)``, or
+``1 ∠ (pi / 2)``. Other angle modes display numeric phase values; exponential
+form continues to use radians.
+
 .. function:: real(x)
 
     Return the real part of a complex number ``x``.

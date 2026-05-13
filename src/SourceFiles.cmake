@@ -3,6 +3,7 @@ resources/speedcrunch.qrc
 )
 
 set(speedcrunch_HEADERS
+core/anglemode.h
 core/book.h
 core/complexform.h
 core/constants.h

@@ -315,6 +315,10 @@ Complex numbers are always enabled.
 * :menuselection:`Form --> Phasor (r∠θ)`
     Display complex results in phasor form.
 
+When the angle mode is set to radians, simple phase multiples of ``pi`` are
+shown symbolically in these complex forms. Other angle modes show their numeric
+phase values.
+
 .. _radix_character:
 
 Number Format
