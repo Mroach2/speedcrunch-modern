@@ -4698,6 +4698,7 @@ void MainWindow::saveSessionLayout(bool captureCurrentViewport)
                       windowObject->statusBar() != nullptr && windowObject->statusBar()->isVisible());
         window.insert(QStringLiteral("bitfieldVisible"), windowObject->m_widgets.bitField != nullptr);
         window.insert(QStringLiteral("keypadVisible"), windowObject->m_widgets.keypad != nullptr);
+        window.insert(QStringLiteral("windowState"), QString::fromLatin1(windowObject->saveState().toBase64()));
         if (windowObject->m_settings->windowPositionSave)
             window.insert(QStringLiteral("geometry"), QString::fromLatin1(windowObject->saveGeometry().toBase64()));
         windows.append(window);
@@ -7157,6 +7158,34 @@ bool MainWindow::event(QEvent* e)
             m_evaluator = m_session->evaluator();
             m_evaluator->initializeBuiltInVariables();
         }
+
+        const QSignalBlocker statusBarBlocker(m_actions.viewStatusBar);
+        QStatusBar* existingStatusBar = findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly);
+        m_actions.viewStatusBar->setChecked(existingStatusBar != nullptr && existingStatusBar->isVisible());
+
+        const QSignalBlocker keypadBlocker(m_actionGroups.keypad);
+        if (m_widgets.keypad == nullptr) {
+            m_actions.viewKeypadDisabled->setChecked(true);
+        } else {
+            switch (m_settings->keypadMode) {
+            case Settings::KeypadModeBasicWide:
+                m_actions.viewKeypadBasicWide->setChecked(true);
+                break;
+            case Settings::KeypadModeScientificWide:
+                m_actions.viewKeypadScientificWide->setChecked(true);
+                break;
+            case Settings::KeypadModeScientificNarrow:
+                m_actions.viewKeypadScientificNarrow->setChecked(true);
+                break;
+            case Settings::KeypadModeCustom:
+                m_actions.viewKeypadCustom->setChecked(true);
+                break;
+            case Settings::KeypadModeDisabled:
+            default:
+                m_actions.viewKeypadDisabled->setChecked(true);
+                break;
+            }
+        }
     }
 
     return QMainWindow::event(e);
@@ -7305,22 +7334,29 @@ void MainWindow::deleteKeypad()
 
 void MainWindow::deleteStatusBar()
 {
-    statusBar()->hide();
-    m_status.angleUnitSection->deleteLater();
+    QStatusBar* existingStatusBar = findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly);
+    if (existingStatusBar != nullptr)
+        existingStatusBar->hide();
+
+    if (m_status.angleUnitSection)
+        m_status.angleUnitSection->deleteLater();
     m_status.angleUnit = 0;
     m_status.angleUnitSection = 0;
     m_status.angleUnitLabel = 0;
 
-    m_status.resultFormatSection->deleteLater();
+    if (m_status.resultFormatSection)
+        m_status.resultFormatSection->deleteLater();
     m_status.resultFormat = 0;
     m_status.resultFormatSection = 0;
     m_status.resultFormatLabel = 0;
-    m_status.resultPrecisionSection->deleteLater();
+    if (m_status.resultPrecisionSection)
+        m_status.resultPrecisionSection->deleteLater();
     m_status.resultPrecision = 0;
     m_status.resultPrecisionSection = 0;
     m_status.resultPrecisionLabel = 0;
 
-    setStatusBar(0);
+    if (existingStatusBar != nullptr)
+        setStatusBar(0);
 }
 
 void MainWindow::deleteBitField()
@@ -8386,6 +8422,11 @@ void MainWindow::finishRestoreSessionLayout(const QJsonObject& layout,
     activateSession(activeSession);
     m_conditions.autoAns = restoreHistory && !m_session->historyIsEmpty();
     updatePaneEditorCursorVisibility();
+    const QString windowStateBase64 = window.value(QStringLiteral("windowState")).toString();
+    if (!windowStateBase64.isEmpty())
+        restoreState(QByteArray::fromBase64(windowStateBase64.toLatin1()));
+    else
+        restoreState(m_settings->windowState);
     if (window.contains(QStringLiteral("statusBarVisible")))
         setStatusBarVisible(window.value(QStringLiteral("statusBarVisible")).toBool(true));
     if (window.contains(QStringLiteral("bitfieldVisible")))
