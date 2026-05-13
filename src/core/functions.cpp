@@ -65,7 +65,10 @@ enum class StatisticalNormalization {
 
 enum class ScalarRoundingMode {
     HalfAwayFromZero,
-    HalfEven
+    HalfEven,
+    TowardZero,
+    TowardPositiveInfinity,
+    TowardNegativeInfinity
 };
 
 #define ENSURE_MINIMUM_ARGUMENT_COUNT(i) \
@@ -376,46 +379,10 @@ Quantity function_int(Function* f, const Function::ArgumentList& args)
     return DMath::integer(args[0]);
 }
 
-Quantity function_trunc(Function* f, const Function::ArgumentList& args)
-{
-    /* TODO : complex mode switch for this function */
-    ENSURE_EITHER_ARGUMENT_COUNT(1, 2);
-    Quantity num = args.at(0);
-    if (args.count() == 2) {
-        Quantity argprec = args.at(1);
-        if (argprec != 0) {
-            if (!argprec.isInteger()) {
-                f->setError(OutOfDomain);
-                return DMath::nan();
-            }
-            int prec = argprec.numericValue().toInt();
-            if (prec)
-                return DMath::trunc(num, prec);
-            // The second parameter exceeds the integer limits.
-            if (argprec < 0)
-                return Quantity(0);
-            return num;
-        }
-    }
-    return DMath::trunc(num);
-}
-
 Quantity function_frac(Function* f, const Function::ArgumentList& args)
 {
     ENSURE_ARGUMENT_COUNT(1);
     return DMath::frac(args[0]);
-}
-
-Quantity function_floor(Function* f, const Function::ArgumentList& args)
-{
-    ENSURE_ARGUMENT_COUNT(1);
-    return DMath::floor(args[0]);
-}
-
-Quantity function_ceil(Function* f, const Function::ArgumentList& args)
-{
-    ENSURE_ARGUMENT_COUNT(1);
-    return DMath::ceil(args[0]);
 }
 
 Quantity function_gcd(Function* f, const Function::ArgumentList& args)
@@ -444,7 +411,15 @@ Quantity function_lcm(Function* f, const Function::ArgumentList& args)
 
 static Quantity s_roundScalar(Function* f, const Function::ArgumentList& args, ScalarRoundingMode mode)
 {
-    ENSURE_EITHER_ARGUMENT_COUNT(1, 2);
+    const bool acceptsPrecision = mode == ScalarRoundingMode::HalfAwayFromZero
+        || mode == ScalarRoundingMode::HalfEven
+        || mode == ScalarRoundingMode::TowardZero;
+    if (acceptsPrecision) {
+        ENSURE_EITHER_ARGUMENT_COUNT(1, 2);
+    } else {
+        ENSURE_ARGUMENT_COUNT(1);
+    }
+
     Quantity num = args.at(0);
     int prec = 0;
     if (args.count() == 2) {
@@ -458,8 +433,13 @@ static Quantity s_roundScalar(Function* f, const Function::ArgumentList& args, S
             if (prec == 0)
                 return num;
             // The second parameter exceeds the integer limits.
-            if (argprec < 0)
-                return Quantity(0);
+            if (argprec < 0) {
+                Quantity result(0);
+                result.copyDimension(num);
+                if (num.hasUnit())
+                    result.setDisplayUnit(num.unit(), num.unitName());
+                return result;
+            }
         }
     }
 
@@ -468,27 +448,61 @@ static Quantity s_roundScalar(Function* f, const Function::ArgumentList& args, S
         return DMath::nan();
     }
 
+    const CNumber unitValue = num.unit();
+    const CNumber scaledValue = num.hasUnit()
+        ? num.numericValue() / unitValue
+        : num.numericValue();
+    if (!scaledValue.isNearReal()) {
+        f->setError(OutOfDomain);
+        return DMath::nan();
+    }
+
     HNumber rounded;
     switch (mode) {
     case ScalarRoundingMode::HalfAwayFromZero: {
         const HNumber scale = HMath::raise(HNumber(10), prec);
-        const HNumber scaled = num.numericValue().real * scale;
+        const HNumber scaled = scaledValue.real * scale;
         const HNumber absRounded = HMath::floor(HMath::abs(scaled) + HNumber("0.5"));
         rounded = (scaled.isNegative() ? -absRounded : absRounded) / scale;
         break;
     }
     case ScalarRoundingMode::HalfEven:
+        rounded = HMath::round(scaledValue.real, prec);
+        break;
+    case ScalarRoundingMode::TowardZero:
+        rounded = HMath::trunc(scaledValue.real, prec);
+        break;
+    case ScalarRoundingMode::TowardPositiveInfinity:
+        rounded = HMath::ceil(scaledValue.real);
+        break;
+    case ScalarRoundingMode::TowardNegativeInfinity:
     default:
-        rounded = HMath::round(num.numericValue().real, prec);
+        rounded = HMath::floor(scaledValue.real);
         break;
     }
 
-    Quantity result(num);
-    result = Quantity(CNumber(rounded));
+    Quantity result(num.hasUnit()
+        ? CNumber(rounded) * unitValue
+        : CNumber(rounded));
     result.copyDimension(num);
     if (num.hasUnit())
-        result.setDisplayUnit(num.unit(), num.unitName());
+        result.setDisplayUnit(unitValue, num.unitName());
     return result;
+}
+
+Quantity function_trunc(Function* f, const Function::ArgumentList& args)
+{
+    return s_roundScalar(f, args, ScalarRoundingMode::TowardZero);
+}
+
+Quantity function_floor(Function* f, const Function::ArgumentList& args)
+{
+    return s_roundScalar(f, args, ScalarRoundingMode::TowardNegativeInfinity);
+}
+
+Quantity function_ceil(Function* f, const Function::ArgumentList& args)
+{
+    return s_roundScalar(f, args, ScalarRoundingMode::TowardPositiveInfinity);
 }
 
 Quantity function_round(Function* f, const Function::ArgumentList& args)

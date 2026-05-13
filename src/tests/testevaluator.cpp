@@ -5554,9 +5554,11 @@ void test_result_rounding_mode_formatting()
     checkFixed0("half-away -2.5", "-2.5", "-3");
     CHECK_EVAL("round(2.5)", "3");
     CHECK_EVAL("round(2.5[m])", "3 metre");
+    CHECK_EVAL("round(123.45[cm]; 1)", "1.2 metre");
     CHECK_EVAL("roundeven(2.5)", "2");
     CHECK_EVAL("roundeven(3.5)", "4");
     CHECK_EVAL("roundeven(2.5[m])", "2 metre");
+    CHECK_EVAL("roundeven(124.5[cm])", "1 metre");
 
     settings->resultRoundingMode = Settings::ResultRoundingHalfEven;
     setRuntimeResultRoundingMode(settings->resultRoundingMode);
@@ -5572,16 +5574,25 @@ void test_result_rounding_mode_formatting()
     checkFixed0("toward-zero +2.9", "2.9", "2");
     checkFixed0("toward-zero -2.9", "-2.9", "-2");
     checkFixed0("toward-zero +2.5", "2.5", "2");
+    CHECK_EVAL("trunc(2.9[m])", "2 metre");
+    CHECK_EVAL("trunc(-2.9[m])", "-2 metre");
+    CHECK_EVAL("trunc(123.45[cm]; 1)", "1.2 metre");
 
     settings->resultRoundingMode = Settings::ResultRoundingTowardPositiveInfinity;
     setRuntimeResultRoundingMode(settings->resultRoundingMode);
     checkFixed0("toward-plus-inf +2.1", "2.1", "3");
     checkFixed0("toward-plus-inf -2.1", "-2.1", "-2");
+    CHECK_EVAL("ceil(2.1[m])", "3 metre");
+    CHECK_EVAL("ceil(-2.1[m])", "-2 metre");
+    CHECK_EVAL("ceil(123.1[cm])", "2 metre");
 
     settings->resultRoundingMode = Settings::ResultRoundingTowardNegativeInfinity;
     setRuntimeResultRoundingMode(settings->resultRoundingMode);
     checkFixed0("toward-minus-inf +2.9", "2.9", "2");
     checkFixed0("toward-minus-inf -2.1", "-2.1", "-3");
+    CHECK_EVAL("floor(2.9[m])", "2 metre");
+    CHECK_EVAL("floor(-2.1[m])", "-3 metre");
+    CHECK_EVAL("floor(123.9[cm])", "1 metre");
 
     settings->resultRoundingMode = savedMode;
     setRuntimeResultRoundingMode(savedMode);

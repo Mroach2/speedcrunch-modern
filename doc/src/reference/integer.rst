@@ -178,22 +178,34 @@ Rounding
 
 .. function:: ceil(x)
 
-    Round ``x`` to the next largest integer. This is the expression-level
-    counterpart to :menuselection:`Settings --> Results --> Rounding Mode -->
-    Toward +∞ (ceil)`. Only real, dimensionless arguments are allowed.
+    Round ``x`` upward to the least integer value greater than or equal to
+    ``x``. For quantities with dimensions, the numeric value is rounded and the
+    original dimensions are preserved.
+
+    This is the expression-level counterpart to
+    :menuselection:`Settings --> Results --> Rounding Mode --> Toward +∞
+    (ceil)`. Only real arguments are allowed.
 
 .. function:: floor(x)
 
-    Round ``x`` to the next smallest integer. This is the expression-level
-    counterpart to :menuselection:`Settings --> Results --> Rounding Mode -->
-    Toward −∞ (floor)`. Only real, dimensionless arguments are allowed.
+    Round ``x`` downward to the greatest integer value less than or equal to
+    ``x``. For quantities with dimensions, the numeric value is rounded and the
+    original dimensions are preserved.
+
+    This is the expression-level counterpart to
+    :menuselection:`Settings --> Results --> Rounding Mode --> Toward −∞
+    (floor)`. Only real arguments are allowed.
 
 
 .. function:: round(x [; n])
 
-    Round ``x`` to the nearest number with ``n`` fractional digits using
+    Round ``x`` to the nearest value with ``n`` fractional digits using
     half-away-from-zero rounding; ``n`` may be omitted, in which case ``x`` is
-    rounded to the closest integer.
+    rounded to the closest integer. When a value is exactly halfway between two
+    candidates, the result with the larger absolute value is chosen.
+
+    For quantities with dimensions, the numeric value is rounded and the
+    original dimensions are preserved.
 
     This is the expression-level counterpart to
     :menuselection:`Settings --> Results --> Rounding Mode --> Nearest, Half
@@ -220,9 +232,12 @@ Rounding
 
 .. function:: roundeven(x [; n])
 
-    Round ``x`` to the nearest number with ``n`` fractional digits using
+    Round ``x`` to the nearest value with ``n`` fractional digits using
     half-even, also known as banker's rounding; ``n`` may be omitted, in which
     case ``x`` is rounded to the closest integer.
+
+    For quantities with dimensions, the numeric value is rounded and the
+    original dimensions are preserved.
 
     Ties are rounded to the value whose last kept digit is even. This is the
     expression-level counterpart to
@@ -248,11 +263,16 @@ Rounding
 
 .. function:: trunc(x [; n])
 
-    Truncate (round toward zero) ``x`` to the next number with ``n``
-    fractional digits; ``n`` may be omitted, in which case ``x`` is rounded to
-    integer. This is the expression-level counterpart to
+    Truncate ``x`` toward zero to the next value with ``n`` fractional digits;
+    ``n`` may be omitted, in which case ``x`` is rounded to an integer. This
+    discards extra digits without increasing the absolute value.
+
+    For quantities with dimensions, the numeric value is rounded and the
+    original dimensions are preserved.
+
+    This is the expression-level counterpart to
     :menuselection:`Settings --> Results --> Rounding Mode --> Toward Zero
-    (trunc)`. Only real, dimensionless arguments are allowed.
+    (trunc)`. ``x`` must be real. ``n`` must be a real, dimensionless integer.
 
     .. seealso::
        | :func:`int`
