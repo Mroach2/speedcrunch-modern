@@ -307,7 +307,11 @@ Complex numbers are always enabled.
 * :menuselection:`Form --> Rectangular (a + bi)`
     Display complex results in rectangular form.
 * :menuselection:`Form --> Exponential (reⁱᶿ)`
-    Display complex results in polar exponential form.
+    Display complex results in exponential form.
+* :menuselection:`Form --> Trigonometric (r(cos θ + i·sin θ))`
+    Display complex results in trigonometric form.
+* :menuselection:`Form --> Cis (r·cis(θ))`
+    Display complex results in cis form.
 * :menuselection:`Form --> Phasor (r∠θ)`
     Display complex results in phasor form.
 

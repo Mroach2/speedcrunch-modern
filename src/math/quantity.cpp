@@ -2266,6 +2266,12 @@ void Quantity::Format::serialize(QJsonObject& json) const
     case Notation::Polar:
         json["form"] = QStringLiteral("Polar");
         break;
+    case Notation::Trigonometric:
+        json["form"] = QStringLiteral("Trigonometric");
+        break;
+    case Notation::Cis:
+        json["form"] = QStringLiteral("Cis");
+        break;
     case Notation::PolarAngle:
         json["form"] = QStringLiteral("PolarAngle");
         break;
@@ -2323,6 +2329,10 @@ Quantity::Format Quantity::Format::deSerialize(const QJsonObject& json)
             result.notation = Notation::Cartesian;
         else if (strNotation == "Polar")
             result.notation = Notation::Polar;
+        else if (strNotation == "Trigonometric")
+            result.notation = Notation::Trigonometric;
+        else if (strNotation == "Cis")
+            result.notation = Notation::Cis;
         else if (strNotation == "PolarAngle")
             result.notation = Notation::PolarAngle;
         else

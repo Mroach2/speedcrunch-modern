@@ -126,7 +126,7 @@ public:
     int tertiaryResultPrecision; // Tertiary precision.
     int quaternaryResultPrecision; // Extra line #3 precision.
     int quinaryResultPrecision; // Extra line #4 precision.
-    char resultFormatComplex; // Main complex form: 'c' cartesian; 'p' polar exponential; 'a' polar angle.
+    char resultFormatComplex; // Main complex form: 'c' cartesian; 'p' exponential; 't' trigonometric; 's' cis; 'a' phasor.
     bool secondaryComplexNumbers;
     char secondaryResultFormatComplex; // Secondary complex form.
     bool tertiaryComplexNumbers;

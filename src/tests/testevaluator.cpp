@@ -2295,11 +2295,18 @@ void test_extra_result_lines_profile_formatting()
     } else {
         const QString cartesian = NumberFormatter::format(complexValue, 'f', 3, true, 'c');
         const QString polarExp = NumberFormatter::format(complexValue, 'f', 3, true, 'p');
+        const QString trigonometric = NumberFormatter::format(complexValue, 'f', 3, true, 't');
+        const QString cis = NumberFormatter::format(complexValue, 'f', 3, true, 's');
         const QString polarAngle = NumberFormatter::format(complexValue, 'f', 3, true, 'a');
         checkCondition(__FILE__, __LINE__, "cartesian complex form", cartesian.contains(QLatin1Char('j')),
                        cartesian, QStringLiteral("contains imaginary unit j"));
         checkCondition(__FILE__, __LINE__, "polar exponential complex form", polarExp.contains(QStringLiteral("exp(")),
                        polarExp, QStringLiteral("contains exp("));
+        checkCondition(__FILE__, __LINE__, "trigonometric complex form", trigonometric.contains(QStringLiteral("cos("))
+                       && trigonometric.contains(QStringLiteral("sin(")),
+                       trigonometric, QStringLiteral("contains cos( and sin("));
+        checkCondition(__FILE__, __LINE__, "cis complex form", cis.contains(QStringLiteral("cis(")),
+                       cis, QStringLiteral("contains cis("));
         checkCondition(__FILE__, __LINE__, "polar angle complex form", polarAngle.contains(QString::fromUtf8("∠")),
                        polarAngle, QString::fromUtf8("contains ∠"));
     }
@@ -5471,8 +5478,10 @@ void test_format()
     CHECK_EVAL_FAIL("eng(0.000123456; 2)");
 
     CHECK_EVAL("expform(3+4j)", "5 · exp(i · 0.92729521800161223243)");
-    CHECK_EVAL("rect(3+4j)", "3+4i");
-    CHECK_EVAL_FORMAT_EXACT("phasor(3+4j)", QString::fromUtf8("5 ∠ 0.92729521800161223243"));
+    CHECK_EVAL("rectform(3+4j)", "3+4i");
+    CHECK_EVAL("trigform(3+4j)", "5 · (cos(0.92729521800161223243) + i · sin(0.92729521800161223243))");
+    CHECK_EVAL("cisform(3+4j)", "5 · cis(0.92729521800161223243)");
+    CHECK_EVAL_FORMAT_EXACT("phasorform(3+4j)", QString::fromUtf8("5 ∠ 0.92729521800161223243"));
     CHECK_EVAL("cis(pi)", "-1");
 
     const char savedComplexForm = settings->resultFormatComplex;
@@ -5502,13 +5511,17 @@ void test_format()
     settings->angleUnit = 'r';
     Evaluator::instance()->initializeAngleUnits();
     CHECK_EVAL_FORMAT_EXACT("1+1j", QString::fromUtf8("1.4142135623730950488 ∠ 0.78539816339744830962"));
-    CHECK_EVAL_FORMAT_EXACT("rect(1+1j)", QString::fromUtf8("1+1i"));
+    CHECK_EVAL_FORMAT_EXACT("rectform(1+1j)", QString::fromUtf8("1+1i"));
     CHECK_EVAL_FORMAT_EXACT("expform(1+1j)", QString::fromUtf8("1.4142135623730950488 · exp(i · 0.78539816339744830962)"));
-    CHECK_EVAL_FORMAT_EXACT("phasor(1+1j)", QString::fromUtf8("1.4142135623730950488 ∠ 0.78539816339744830962"));
+    CHECK_EVAL_FORMAT_EXACT("trigform(1+1j)", QString::fromUtf8("1.4142135623730950488 · (cos(0.78539816339744830962) + i · sin(0.78539816339744830962))"));
+    CHECK_EVAL_FORMAT_EXACT("cisform(1+1j)", QString::fromUtf8("1.4142135623730950488 · cis(0.78539816339744830962)"));
+    CHECK_EVAL_FORMAT_EXACT("phasorform(1+1j)", QString::fromUtf8("1.4142135623730950488 ∠ 0.78539816339744830962"));
 
     settings->angleUnit = 'd';
     Evaluator::instance()->initializeAngleUnits();
     CHECK_EVAL_FORMAT_EXACT("1+1j", QString::fromUtf8("1.4142135623730950488 ∠ 45"));
+    CHECK_EVAL_FORMAT_EXACT("trigform(1+1j)", QString::fromUtf8("1.4142135623730950488 · (cos(45) + i · sin(45))"));
+    CHECK_EVAL_FORMAT_EXACT("cisform(1+1j)", QString::fromUtf8("1.4142135623730950488 · cis(45)"));
     CHECK_EVAL("cis(180)", "-1");
 
     settings->angleUnit = 'g';

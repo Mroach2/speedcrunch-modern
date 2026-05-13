@@ -86,7 +86,7 @@ public:
     // - real and imag have the same NaN error.
 
     struct Format : public HNumber::Format  {
-        enum class Notation {Null, Cartesian, Polar, PolarAngle};
+        enum class Notation {Null, Cartesian, Polar, Trigonometric, Cis, PolarAngle};
         Notation notation;
 
         Format();
@@ -95,6 +95,8 @@ public:
         Format operator+(const Format&) const;
 
         static Format Polar();
+        static Format Trigonometric();
+        static Format Cis();
         static Format PolarAngle();
         static Format Cartesian();
     };

@@ -453,7 +453,14 @@ void Settings::load()
         // Backward compatibility with legacy key.
         cmplxFormat = settings->value(key + QLatin1String("ComplexForm"), 'c').toString();
     }
-    if (cmplxFormat != "c" && cmplxFormat != "p" && cmplxFormat != "a")
+    auto isValidComplexForm = [](const QString& form) {
+        return form == "c"
+            || form == "p"
+            || form == "t"
+            || form == "s"
+            || form == "a";
+    };
+    if (!isValidComplexForm(cmplxFormat))
         resultFormatComplex = 'c';
     else
         resultFormatComplex = cmplxFormat.at(0).toLatin1();
@@ -504,19 +511,19 @@ void Settings::load()
     QString tertiaryComplexForm = settings->value(key + QLatin1String("TertiaryComplexForm"), "c").toString();
     QString quaternaryComplexForm = settings->value(key + QLatin1String("QuaternaryComplexForm"), "c").toString();
     QString quinaryComplexForm = settings->value(key + QLatin1String("QuinaryComplexForm"), "c").toString();
-    if (secondaryComplexForm != "c" && secondaryComplexForm != "p" && secondaryComplexForm != "a")
+    if (!isValidComplexForm(secondaryComplexForm))
         secondaryResultFormatComplex = 'c';
     else
         secondaryResultFormatComplex = secondaryComplexForm.at(0).toLatin1();
-    if (tertiaryComplexForm != "c" && tertiaryComplexForm != "p" && tertiaryComplexForm != "a")
+    if (!isValidComplexForm(tertiaryComplexForm))
         tertiaryResultFormatComplex = 'c';
     else
         tertiaryResultFormatComplex = tertiaryComplexForm.at(0).toLatin1();
-    if (quaternaryComplexForm != "c" && quaternaryComplexForm != "p" && quaternaryComplexForm != "a")
+    if (!isValidComplexForm(quaternaryComplexForm))
         quaternaryResultFormatComplex = 'c';
     else
         quaternaryResultFormatComplex = quaternaryComplexForm.at(0).toLatin1();
-    if (quinaryComplexForm != "c" && quinaryComplexForm != "p" && quinaryComplexForm != "a")
+    if (!isValidComplexForm(quinaryComplexForm))
         quinaryResultFormatComplex = 'c';
     else
         quinaryResultFormatComplex = quinaryComplexForm.at(0).toLatin1();

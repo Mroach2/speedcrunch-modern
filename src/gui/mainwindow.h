@@ -175,6 +175,8 @@ private slots:
     void setImaginaryUnitJ();
     void setResultFormatOctal();
     void setResultFormatPolar();
+    void setResultFormatTrigonometric();
+    void setResultFormatCis();
     void setResultFormatPolarAngle();
     void setResultFormatRational();
     void setResultFormatScientific();
@@ -396,6 +398,8 @@ private:
         QAction* settingsResultFormatOctal;
         QAction* settingsResultFormatCartesian;
         QAction* settingsResultFormatPolar;
+        QAction* settingsResultFormatTrigonometric;
+        QAction* settingsResultFormatCis;
         QAction* settingsResultFormatPolarAngle;
         QAction* settingsImaginaryUnitI;
         QAction* settingsImaginaryUnitJ;

@@ -1417,10 +1417,16 @@ Quantity function_octpad(Function* f, const Function::ArgumentList& args)
     return s_nonDecimalPad(f, args, Quantity::Format::Fixed() + Quantity::Format::Octal());
 }
 
-Quantity function_rect(Function* f, const Function::ArgumentList& args)
+Quantity function_rectform(Function* f, const Function::ArgumentList& args)
 {
     ENSURE_ARGUMENT_COUNT(1);
     return Quantity(args.at(0)).setFormat(Quantity::Format::Cartesian() + Quantity(args.at(0)).format());
+}
+
+Quantity function_trigform(Function* f, const Function::ArgumentList& args)
+{
+    ENSURE_ARGUMENT_COUNT(1);
+    return Quantity(args.at(0)).setFormat(Quantity::Format::Trigonometric() + Quantity(args.at(0)).format());
 }
 
 Quantity function_expform(Function* f, const Function::ArgumentList& args)
@@ -1429,7 +1435,13 @@ Quantity function_expform(Function* f, const Function::ArgumentList& args)
     return Quantity(args.at(0)).setFormat(Quantity::Format::Polar() + Quantity(args.at(0)).format());
 }
 
-Quantity function_phasor(Function* f, const Function::ArgumentList& args)
+Quantity function_cisform(Function* f, const Function::ArgumentList& args)
+{
+    ENSURE_ARGUMENT_COUNT(1);
+    return Quantity(args.at(0)).setFormat(Quantity::Format::Cis() + Quantity(args.at(0)).format());
+}
+
+Quantity function_phasorform(Function* f, const Function::ArgumentList& args)
 {
     ENSURE_ARGUMENT_COUNT(1);
     return Quantity(args.at(0)).setFormat(Quantity::Format::PolarAngle() + Quantity(args.at(0)).format());
@@ -2002,12 +2014,14 @@ void FunctionRepo::createFunctions()
 
     // Complex.
     FUNCTION_INSERT(FunctionDomain::Complex, conj);
-    FUNCTION_INSERT(FunctionDomain::Complex, expform);
     FUNCTION_INSERT(FunctionDomain::Complex, imag);
     FUNCTION_INSERT(FunctionDomain::Complex, phase);
-    FUNCTION_INSERT(FunctionDomain::Complex, phasor);
     FUNCTION_INSERT(FunctionDomain::Complex, real);
-    FUNCTION_INSERT(FunctionDomain::Complex, rect);
+    FUNCTION_INSERT(FunctionDomain::Complex, rectform);
+    FUNCTION_INSERT(FunctionDomain::Complex, trigform);
+    FUNCTION_INSERT(FunctionDomain::Complex, expform);
+    FUNCTION_INSERT(FunctionDomain::Complex, cisform);
+    FUNCTION_INSERT(FunctionDomain::Complex, phasorform);
 
     // Date & Time.
     FUNCTION_INSERT(FunctionDomain::DateTime, datetime);
@@ -2245,6 +2259,7 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(cbrt, "x");
     FUNCTION_USAGE(ceil, "x");
     FUNCTION_USAGE(cis, "x");
+    FUNCTION_USAGE(cisform, "x");
     FUNCTION_USAGE(conj, "x");
     FUNCTION_USAGE(cos, "x");
     FUNCTION_USAGE(cosh, "x");
@@ -2317,12 +2332,12 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(popcount, "n");
     FUNCTION_USAGE(product, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(phase, "x");
-    FUNCTION_USAGE(phasor, "x");
+    FUNCTION_USAGE(phasorform, "x");
     FUNCTION_USAGE(radians, "x");
     FUNCTION_USAGE(rank, "matrix");
     FUNCTION_USAGE(real, "x");
     FUNCTION_USAGE(rat, "x");
-    FUNCTION_USAGE(rect, "x");
+    FUNCTION_USAGE(rectform, "x");
     FUNCTION_USAGE(sci, "x");
     FUNCTION_USAGE(sec, "x)");
     FUNCTION_USAGE(sgn, "x");
@@ -2336,6 +2351,7 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(stdevs, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(sum, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(tan, "x");
+    FUNCTION_USAGE(trigform, "x");
     FUNCTION_USAGE(turns, "x");
     FUNCTION_USAGE(tanh, "x");
     FUNCTION_USAGE(trunc, "x");
@@ -2402,6 +2418,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(cbrt, tr("Cube Root"));
     FUNCTION_NAME(ceil, tr("Ceiling"));
     FUNCTION_NAME(cis, tr("Cosine plus Imaginary Sine"));
+    FUNCTION_NAME(cisform, tr("Convert to Cis Complex Form"));
     FUNCTION_NAME(conj, tr("Complex Conjugate"));
     FUNCTION_NAME(cos, tr("Cosine"));
     FUNCTION_NAME(cosh, tr("Hyperbolic Cosine"));
@@ -2494,12 +2511,12 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(poimean, tr("Poissonian Distribution Mean"));
     FUNCTION_NAME(poipmf, tr("Poissonian Probability Mass Function"));
     FUNCTION_NAME(poivar, tr("Poissonian Distribution Variance"));
-    FUNCTION_NAME(phasor, tr("Convert to Phasor Complex Form"));
+    FUNCTION_NAME(phasorform, tr("Convert to Phasor Complex Form"));
     FUNCTION_NAME(product, tr("Product"));
     FUNCTION_NAME(radians, tr("Radians"));
     FUNCTION_NAME(rank, tr("Matrix Rank"));
     FUNCTION_NAME(real, tr("Real Part"));
-    FUNCTION_NAME(rect, tr("Convert to Rectangular Complex Form"));
+    FUNCTION_NAME(rectform, tr("Convert to Rectangular Complex Form"));
     FUNCTION_NAME(round, tr("Rounding"));
     FUNCTION_NAME(roundeven, tr("Rounding Half Even"));
     FUNCTION_NAME(sci, tr("Convert to Scientific Notation"));
@@ -2517,6 +2534,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(stdevs, tr("Sample Standard Deviation (n-1)"));
     FUNCTION_NAME(sum, tr("Sum"));
     FUNCTION_NAME(tan, tr("Tangent"));
+    FUNCTION_NAME(trigform, tr("Convert to Trigonometric Complex Form"));
     FUNCTION_NAME(turns, tr("Turns"));
     FUNCTION_NAME(tanh, tr("Hyperbolic Tangent"));
     FUNCTION_NAME(trunc, tr("Truncation"));

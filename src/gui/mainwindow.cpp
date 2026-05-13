@@ -1539,6 +1539,8 @@ void MainWindow::createActions()
     m_actions.settingsResultFormatScientific = new QAction(this);
     m_actions.settingsResultFormatCartesian= new QAction(this);
     m_actions.settingsResultFormatPolar = new QAction(this);
+    m_actions.settingsResultFormatTrigonometric = new QAction(this);
+    m_actions.settingsResultFormatCis = new QAction(this);
     m_actions.settingsResultFormatPolarAngle = new QAction(this);
     m_actions.settingsImaginaryUnitI = new QAction(this);
     m_actions.settingsImaginaryUnitJ = new QAction(this);
@@ -1622,6 +1624,8 @@ void MainWindow::createActions()
     m_actions.settingsResultFormatHexadecimal->setCheckable(true);
     m_actions.settingsResultFormatOctal->setCheckable(true);
     m_actions.settingsResultFormatPolar->setCheckable(true);
+    m_actions.settingsResultFormatTrigonometric->setCheckable(true);
+    m_actions.settingsResultFormatCis->setCheckable(true);
     m_actions.settingsResultFormatPolarAngle->setCheckable(true);
     m_actions.settingsImaginaryUnitI->setCheckable(true);
     m_actions.settingsImaginaryUnitJ->setCheckable(true);
@@ -1895,6 +1899,9 @@ void MainWindow::setActionsText()
         MainWindow::tr("&Fractional (m/s)"));
     m_actions.settingsResultFormatCartesian->setText(MainWindow::tr("&Rectangular (a + bi)"));
     m_actions.settingsResultFormatPolar->setText(MainWindow::tr("Exponential (reⁱᶿ)"));
+    m_actions.settingsResultFormatTrigonometric->setText(
+        MainWindow::tr("Trigonometric (r(cos θ + i·sin θ))"));
+    m_actions.settingsResultFormatCis->setText(MainWindow::tr("Cis (r·cis(θ))"));
     m_actions.settingsResultFormatPolarAngle->setText(MainWindow::tr("Phasor (r∠θ)"));
     m_actions.settingsImaginaryUnitI->setText(MainWindow::tr("&i"));
     m_actions.settingsImaginaryUnitJ->setText(MainWindow::tr("&j"));
@@ -1931,6 +1938,8 @@ void MainWindow::createActionGroups()
     m_actionGroups.complexFormat = new QActionGroup(this);
     m_actionGroups.complexFormat->addAction(m_actions.settingsResultFormatCartesian);
     m_actionGroups.complexFormat->addAction(m_actions.settingsResultFormatPolar);
+    m_actionGroups.complexFormat->addAction(m_actions.settingsResultFormatTrigonometric);
+    m_actionGroups.complexFormat->addAction(m_actions.settingsResultFormatCis);
     m_actionGroups.complexFormat->addAction(m_actions.settingsResultFormatPolarAngle);
 
     m_actionGroups.imaginaryUnit = new QActionGroup(this);
@@ -2129,6 +2138,8 @@ void MainWindow::createMenus()
     m_menus.complexForm = m_menus.complexNumbers->addMenu("");
     m_menus.complexForm->addAction(m_actions.settingsResultFormatCartesian);
     m_menus.complexForm->addAction(m_actions.settingsResultFormatPolar);
+    m_menus.complexForm->addAction(m_actions.settingsResultFormatTrigonometric);
+    m_menus.complexForm->addAction(m_actions.settingsResultFormatCis);
     m_menus.complexForm->addAction(m_actions.settingsResultFormatPolarAngle);
     m_menus.imaginaryUnit = m_menus.complexNumbers->addMenu("");
     m_menus.imaginaryUnit->addAction(m_actions.settingsImaginaryUnitI);
@@ -3933,6 +3944,8 @@ void MainWindow::createFixedConnections()
     connect(m_actions.settingsImaginaryUnitJ, SIGNAL(triggered()), SLOT(setImaginaryUnitJ()));
     connect(m_actions.settingsResultFormatOctal, SIGNAL(triggered()), SLOT(setResultFormatOctal()));
     connect(m_actions.settingsResultFormatPolar, SIGNAL(triggered()), SLOT(setResultFormatPolar()));
+    connect(m_actions.settingsResultFormatTrigonometric, SIGNAL(triggered()), SLOT(setResultFormatTrigonometric()));
+    connect(m_actions.settingsResultFormatCis, SIGNAL(triggered()), SLOT(setResultFormatCis()));
     connect(m_actions.settingsResultFormatPolarAngle, SIGNAL(triggered()), SLOT(setResultFormatPolarAngle()));
     connect(m_actions.settingsResultFormatRational, SIGNAL(triggered()), SLOT(setResultFormatRational()));
     connect(m_actions.settingsResultFormatSexagesimal, SIGNAL(triggered()), SLOT(setResultFormatSexagesimal()));
@@ -4321,6 +4334,10 @@ void MainWindow::checkInitialComplexFormat()
 
     if (m_settings->resultFormatComplex == 'p')
         m_actions.settingsResultFormatPolar->setChecked(true);
+    else if (m_settings->resultFormatComplex == 't')
+        m_actions.settingsResultFormatTrigonometric->setChecked(true);
+    else if (m_settings->resultFormatComplex == 's')
+        m_actions.settingsResultFormatCis->setChecked(true);
     else if (m_settings->resultFormatComplex == 'a')
         m_actions.settingsResultFormatPolarAngle->setChecked(true);
     else
@@ -7487,6 +7504,46 @@ void MainWindow::setResultFormatPolar()
     m_settings->tertiaryResultFormatComplex = 'p';
     m_settings->quaternaryResultFormatComplex = 'p';
     m_settings->quinaryResultFormatComplex = 'p';
+    DMath::complexMode = true;
+    setStatusBarText();
+    emit resultFormatChanged();
+}
+
+void MainWindow::setResultFormatTrigonometric()
+{
+    if (m_settings->resultFormatComplex == 't')
+        return;
+
+    m_settings->complexNumbers = true;
+    m_settings->secondaryComplexNumbers = true;
+    m_settings->tertiaryComplexNumbers = true;
+    m_settings->quaternaryComplexNumbers = true;
+    m_settings->quinaryComplexNumbers = true;
+    m_settings->resultFormatComplex = 't';
+    m_settings->secondaryResultFormatComplex = 't';
+    m_settings->tertiaryResultFormatComplex = 't';
+    m_settings->quaternaryResultFormatComplex = 't';
+    m_settings->quinaryResultFormatComplex = 't';
+    DMath::complexMode = true;
+    setStatusBarText();
+    emit resultFormatChanged();
+}
+
+void MainWindow::setResultFormatCis()
+{
+    if (m_settings->resultFormatComplex == 's')
+        return;
+
+    m_settings->complexNumbers = true;
+    m_settings->secondaryComplexNumbers = true;
+    m_settings->tertiaryComplexNumbers = true;
+    m_settings->quaternaryComplexNumbers = true;
+    m_settings->quinaryComplexNumbers = true;
+    m_settings->resultFormatComplex = 's';
+    m_settings->secondaryResultFormatComplex = 's';
+    m_settings->tertiaryResultFormatComplex = 's';
+    m_settings->quaternaryResultFormatComplex = 's';
+    m_settings->quinaryResultFormatComplex = 's';
     DMath::complexMode = true;
     setStatusBarText();
     emit resultFormatChanged();

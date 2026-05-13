@@ -624,7 +624,7 @@ explicit angle units override it.
     .. seealso::
        | :func:`abs` (absolute value)
 
-.. function:: rect(x)
+.. function:: rectform(x)
 
     Format the complex number ``x`` in rectangular form, i.e. the form
     *a + b u*, where ``u`` is the currently selected imaginary-unit symbol
@@ -633,6 +633,16 @@ explicit angle units override it.
     This corresponds to
     :menuselection:`Settings --> Results --> Complex Numbers --> Form -->
     Rectangular (a + bi)`.
+
+.. function:: trigform(x)
+
+    Format the complex number ``x`` in trigonometric form, shown as
+    *r(cos ɸ + u sin ɸ)*, where ``u`` is the selected imaginary-unit symbol
+    (``i`` or ``j``). The angle ɸ follows the global angle mode.
+
+    This corresponds to
+    :menuselection:`Settings --> Results --> Complex Numbers --> Form -->
+    Trigonometric (r(cos θ + i·sin θ))`.
 
 .. function:: expform(x)
 
@@ -644,7 +654,16 @@ explicit angle units override it.
     :menuselection:`Settings --> Results --> Complex Numbers --> Form -->
     Exponential (reⁱᶿ)`.
 
-.. function:: phasor(x)
+.. function:: cisform(x)
+
+    Format the complex number ``x`` in cis form, shown as *r cis(ɸ)*. The
+    angle ɸ follows the global angle mode.
+
+    This corresponds to
+    :menuselection:`Settings --> Results --> Complex Numbers --> Form -->
+    Cis (r·cis(θ))`.
+
+.. function:: phasorform(x)
 
     Format the complex number ``x`` in phasor form, shown as *r ∠ ɸ*. The
     angle ɸ follows the global angle mode.

@@ -525,6 +525,10 @@ QString NumberFormatter::format(Quantity q, char resultFormatOverride,
                 format.notation = Quantity::Format::Notation::Cartesian;
             else if (complexNotationOverride == 'p')
                 format.notation = Quantity::Format::Notation::Polar;
+            else if (complexNotationOverride == 't')
+                format.notation = Quantity::Format::Notation::Trigonometric;
+            else if (complexNotationOverride == 's')
+                format.notation = Quantity::Format::Notation::Cis;
             else if (complexNotationOverride == 'a')
                 format.notation = Quantity::Format::Notation::PolarAngle;
         }

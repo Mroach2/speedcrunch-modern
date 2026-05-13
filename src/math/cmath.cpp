@@ -417,6 +417,20 @@ CNumber::Format CNumber::Format::Polar()
     return result;
 }
 
+CNumber::Format CNumber::Format::Trigonometric()
+{
+    Format result;
+    result.notation = Format::Notation::Trigonometric;
+    return result;
+}
+
+CNumber::Format CNumber::Format::Cis()
+{
+    Format result;
+    result.notation = Format::Notation::Cis;
+    return result;
+}
+
 CNumber::Format CNumber::Format::PolarAngle()
 {
     Format result;
@@ -474,6 +488,17 @@ QString CMath::format(const CNumber& cn, CNumber::Format format)
         return "NaN";
     else if (cn.imag.isNearZero()) // Number is real.
         return HMath::format(cn.real, format);
+
+    auto phaseInAngleMode = [](HNumber phase) {
+        if (CMath::polarAngleUnit() == 'd')
+            phase = CMath::rad2deg(phase).real;
+        else if (CMath::polarAngleUnit() == 'g')
+            phase = CMath::rad2gon(phase).real;
+        else if (CMath::polarAngleUnit() == 't' || CMath::polarAngleUnit() == 'v')
+            phase /= HNumber(2) * HMath::pi();
+        return phase;
+    };
+
     if (format.notation == CNumber::Format::Notation::Polar) {
         QString strRadius = HMath::format(CMath::abs(cn).real, format);
         HNumber phase = CMath::phase(cn).real;
@@ -485,20 +510,34 @@ QString CMath::format(const CNumber& cn, CNumber::Format format)
         const QString dotOperator(MathDsl::MulDotOp);
         return QStringLiteral("%1%2%3%2exp(%4%2%3%2%5)")
             .arg(strRadius, operatorSpace, dotOperator, imagUnit, strPhase);
+    } else if (format.notation == CNumber::Format::Notation::Trigonometric) {
+        QString strRadius = HMath::format(CMath::abs(cn).real, format);
+        HNumber phase = CMath::phase(cn).real;
+        if (phase.isZero())
+            return strRadius;
+        QString strPhase = HMath::format(phaseInAngleMode(phase), format);
+        const QString imagUnit(CMath::imaginaryUnitSymbol());
+        const QString operatorSpace(MathDsl::MulDotWrapSp);
+        const QString dotOperator(MathDsl::MulDotOp);
+        return QStringLiteral("%1%2%3%2(cos(%4) + %5%2%3%2sin(%4))")
+            .arg(strRadius, operatorSpace, dotOperator, strPhase, imagUnit);
+    } else if (format.notation == CNumber::Format::Notation::Cis) {
+        QString strRadius = HMath::format(CMath::abs(cn).real, format);
+        HNumber phase = CMath::phase(cn).real;
+        if (phase.isZero())
+            return strRadius;
+        QString strPhase = HMath::format(phaseInAngleMode(phase), format);
+        const QString operatorSpace(MathDsl::MulDotWrapSp);
+        const QString dotOperator(MathDsl::MulDotOp);
+        return QStringLiteral("%1%2%3%2cis(%4)")
+            .arg(strRadius, operatorSpace, dotOperator, strPhase);
     } else if (format.notation == CNumber::Format::Notation::PolarAngle) {
         QString strRadius = HMath::format(CMath::abs(cn).real, format);
         HNumber phase = CMath::phase(cn).real;
         if (phase.isZero())
             return strRadius;
 
-        if (CMath::polarAngleUnit() == 'd')
-            phase = CMath::rad2deg(phase).real;
-        else if (CMath::polarAngleUnit() == 'g')
-            phase = CMath::rad2gon(phase).real;
-        else if (CMath::polarAngleUnit() == 't' || CMath::polarAngleUnit() == 'v')
-            phase /= HNumber(2) * HMath::pi();
-
-        QString strPhase = HMath::format(phase, format);
+        QString strPhase = HMath::format(phaseInAngleMode(phase), format);
         const QString operatorSpace(MathDsl::AddWrap);
         return QStringLiteral("%1%2∠%2%3").arg(strRadius, operatorSpace, strPhase);
     } else {

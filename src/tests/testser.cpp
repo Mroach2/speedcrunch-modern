@@ -115,6 +115,12 @@ int main(int, char**)
     b.setFormat(Format::Polar());
     const char q_json_blob2[] = "{\"format\":{\"form\":\"Polar\"},\"val\":\"1.000000000000000000000000000000000000000000000000000000000000000000000000000000+1.000000000000000000000000000000000000000000000000000000000000000000000000000000j\"}";
     CHECK_SER(b, q_json_blob2);
+    b.setFormat(Format::Trigonometric());
+    const char q_json_blob3[] = "{\"format\":{\"form\":\"Trigonometric\"},\"val\":\"1.000000000000000000000000000000000000000000000000000000000000000000000000000000+1.000000000000000000000000000000000000000000000000000000000000000000000000000000j\"}";
+    CHECK_SER(b, q_json_blob3);
+    b.setFormat(Format::Cis());
+    const char q_json_blob4[] = "{\"format\":{\"form\":\"Cis\"},\"val\":\"1.000000000000000000000000000000000000000000000000000000000000000000000000000000+1.000000000000000000000000000000000000000000000000000000000000000000000000000000j\"}";
+    CHECK_SER(b, q_json_blob4);
 
     /* HNumber deserialization tests */
     CHECK_DESER_HNUMBER("{\"format\": \"g\",\"value\": \"1\"}", "1");
@@ -126,6 +132,8 @@ int main(int, char**)
     /* Quantity deserialization tests */
     CHECK_DESER_QUANTITY(q_json_blob, "0b1010 foot");
     CHECK_DESER_QUANTITY(q_json_blob2, "1.4142135623730950488 · exp(j · 0.78539816339744830962)");
+    CHECK_DESER_QUANTITY(q_json_blob3, "1.4142135623730950488 · (cos(0.78539816339744830962) + j · sin(0.78539816339744830962))");
+    CHECK_DESER_QUANTITY(q_json_blob4, "1.4142135623730950488 · cis(0.78539816339744830962)");
 
     /* Serialization + deserialization tests */
     CHECK_SER_DESER_HNUMBER(HNumber("3"), "3.00000000000000000000000000000000000000000000000000");
