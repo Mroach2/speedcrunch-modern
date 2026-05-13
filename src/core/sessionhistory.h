@@ -13,13 +13,14 @@
 #include <QVector>
 #include <QtGlobal>
 
+#include "core/complexform.h"
 #include "math/quantity.h"
 
 struct ResultLineContext
 {
     char fmt = 'g';
     int prec = -1;
-    char cplx = 'c';
+    char cplx = ComplexForm::Default;
 };
 
 struct EvaluationContext

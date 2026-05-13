@@ -1389,7 +1389,7 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
                                     's',
                                     settings->resultPrecision,
                                     settings->complexNumbers,
-                                    settings->resultFormatComplex)));
+                                    settings->resultComplexForm)));
         appendUniqueLine(QStringLiteral("= ")
             + normalizedSexagesimal
             + conversionTargetSuffixForDisplay(sourceExpression));
@@ -1402,7 +1402,7 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
         settings->resultFormat,
         settings->resultPrecision,
         settings->complexNumbers,
-        settings->resultFormatComplex,
+        settings->resultComplexForm,
         stripUnitBracketsInNumericLines,
         settings,
         evaluator));
@@ -1416,7 +1416,7 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
             settings->alternativeResultFormat,
             settings->secondaryResultPrecision,
             settings->complexNumbers && settings->secondaryComplexNumbers,
-            settings->secondaryResultFormatComplex,
+            settings->secondaryResultComplexForm,
             stripUnitBracketsInNumericLines,
             settings,
             evaluator));
@@ -1430,7 +1430,7 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
             settings->tertiaryResultFormat,
             settings->tertiaryResultPrecision,
             settings->complexNumbers && settings->tertiaryComplexNumbers,
-            settings->tertiaryResultFormatComplex,
+            settings->tertiaryResultComplexForm,
             stripUnitBracketsInNumericLines,
             settings,
             evaluator));
@@ -1444,7 +1444,7 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
             settings->quaternaryResultFormat,
             settings->quaternaryResultPrecision,
             settings->complexNumbers && settings->quaternaryComplexNumbers,
-            settings->quaternaryResultFormatComplex,
+            settings->quaternaryResultComplexForm,
             stripUnitBracketsInNumericLines,
             settings,
             evaluator));
@@ -1458,7 +1458,7 @@ inline QStringList formatResultLinesForDisplay(const QString& sourceExpression,
             settings->quinaryResultFormat,
             settings->quinaryResultPrecision,
             settings->complexNumbers && settings->quinaryComplexNumbers,
-            settings->quinaryResultFormatComplex,
+            settings->quinaryResultComplexForm,
             stripUnitBracketsInNumericLines,
             settings,
             evaluator));

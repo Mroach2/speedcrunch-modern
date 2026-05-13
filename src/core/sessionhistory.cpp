@@ -3,6 +3,7 @@
 
 
 #include "sessionhistory.h"
+#include "core/complexform.h"
 #include "core/settings.h"
 #include "core/sessionjsonkeys.h"
 #include "math/cmath.h"
@@ -15,16 +16,16 @@ EvaluationContext contextFromCurrentSettings()
     EvaluationContext ctx;
     ctx.main.fmt = settings->resultFormat;
     ctx.main.prec = settings->resultPrecision;
-    ctx.main.cplx = settings->resultFormatComplex;
+    ctx.main.cplx = settings->resultComplexForm;
     if (settings->multipleResultLinesEnabled) {
         if (settings->secondaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->alternativeResultFormat, settings->secondaryResultPrecision, settings->secondaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->alternativeResultFormat, settings->secondaryResultPrecision, settings->secondaryResultComplexForm});
         if (settings->tertiaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->tertiaryResultFormat, settings->tertiaryResultPrecision, settings->tertiaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->tertiaryResultFormat, settings->tertiaryResultPrecision, settings->tertiaryResultComplexForm});
         if (settings->quaternaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->quaternaryResultFormat, settings->quaternaryResultPrecision, settings->quaternaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->quaternaryResultFormat, settings->quaternaryResultPrecision, settings->quaternaryResultComplexForm});
         if (settings->quinaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->quinaryResultFormat, settings->quinaryResultPrecision, settings->quinaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->quinaryResultFormat, settings->quinaryResultPrecision, settings->quinaryResultComplexForm});
     }
     ctx.complexOn = settings->complexNumbers;
     ctx.unit = settings->imaginaryUnit;
@@ -39,7 +40,7 @@ QJsonObject serializeResultLineContext(const ResultLineContext& line)
     QJsonObject json;
     json[QLatin1String(SessionJsonKeys::EvaluationContext::Line::Notation)] = QString(QChar(line.fmt));
     json[QLatin1String(SessionJsonKeys::EvaluationContext::Line::Precision)] = line.prec;
-    json[QLatin1String(SessionJsonKeys::EvaluationContext::Line::ComplexFormat)] = QString(QChar(line.cplx));
+    json[QLatin1String(SessionJsonKeys::EvaluationContext::Line::ComplexFormat)] = ComplexForm::toString(line.cplx);
     return json;
 }
 
@@ -50,9 +51,8 @@ ResultLineContext deserializeResultLineContext(const QJsonObject& json)
     if (fmt.size() == 1)
         line.fmt = fmt.at(0).toLatin1();
     line.prec = json[QLatin1String(SessionJsonKeys::EvaluationContext::Line::Precision)].toInt(-1);
-    const QString cplx = json[QLatin1String(SessionJsonKeys::EvaluationContext::Line::ComplexFormat)].toString();
-    if (cplx.size() == 1)
-        line.cplx = cplx.at(0).toLatin1();
+    line.cplx = ComplexForm::fromString(
+        json[QLatin1String(SessionJsonKeys::EvaluationContext::Line::ComplexFormat)].toString());
     return line;
 }
 

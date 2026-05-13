@@ -3,6 +3,7 @@
 
 
 #include "core/evaluator.h"
+#include "core/complexform.h"
 #include "core/numberformatter.h"
 #include "core/settings.h"
 #include "core/session.h"
@@ -356,7 +357,7 @@ void test_result_display_history_mapping_after_multiple_lines_toggle_with_commen
     const int oldSecondaryResultPrecision = settings->secondaryResultPrecision;
     const bool oldComplexNumbers = settings->complexNumbers;
     const bool oldSecondaryComplexNumbers = settings->secondaryComplexNumbers;
-    const char oldSecondaryResultFormatComplex = settings->secondaryResultFormatComplex;
+    const char oldSecondaryResultComplexForm = settings->secondaryResultComplexForm;
 
     settings->multipleResultLinesEnabled = true;
     settings->secondaryResultEnabled = true;
@@ -364,7 +365,7 @@ void test_result_display_history_mapping_after_multiple_lines_toggle_with_commen
     settings->secondaryResultPrecision = -1;
     settings->complexNumbers = false;
     settings->secondaryComplexNumbers = false;
-    settings->secondaryResultFormatComplex = 'c';
+    settings->secondaryResultComplexForm = ComplexForm::Rectangular;
 
     session->clearHistory();
     session->addHistoryEntry(HistoryEntry(QStringLiteral("2/3"), Quantity(2) / Quantity(3)));
@@ -423,7 +424,7 @@ void test_result_display_history_mapping_after_multiple_lines_toggle_with_commen
     settings->secondaryResultPrecision = oldSecondaryResultPrecision;
     settings->complexNumbers = oldComplexNumbers;
     settings->secondaryComplexNumbers = oldSecondaryComplexNumbers;
-    settings->secondaryResultFormatComplex = oldSecondaryResultFormatComplex;
+    settings->secondaryResultComplexForm = oldSecondaryResultComplexForm;
 }
 
 static void checkDisplaySimplifiedInterpreted(const char* file, int line, const char* msg,
@@ -2196,10 +2197,10 @@ void test_extra_result_lines_profile_formatting()
     const bool oldTertiaryComplexNumbers = settings->tertiaryComplexNumbers;
     const bool oldQuaternaryComplexNumbers = settings->quaternaryComplexNumbers;
     const bool oldQuinaryComplexNumbers = settings->quinaryComplexNumbers;
-    const char oldSecondaryResultFormatComplex = settings->secondaryResultFormatComplex;
-    const char oldTertiaryResultFormatComplex = settings->tertiaryResultFormatComplex;
-    const char oldQuaternaryResultFormatComplex = settings->quaternaryResultFormatComplex;
-    const char oldQuinaryResultFormatComplex = settings->quinaryResultFormatComplex;
+    const char oldSecondaryResultComplexForm = settings->secondaryResultComplexForm;
+    const char oldTertiaryResultComplexForm = settings->tertiaryResultComplexForm;
+    const char oldQuaternaryResultComplexForm = settings->quaternaryResultComplexForm;
+    const char oldQuinaryResultComplexForm = settings->quinaryResultComplexForm;
     const char oldImaginaryUnit = settings->imaginaryUnit;
     const Settings::NumberFormatStyle oldNumberFormatStyle = settings->numberFormatStyle;
 
@@ -2223,10 +2224,10 @@ void test_extra_result_lines_profile_formatting()
     settings->tertiaryComplexNumbers = true;
     settings->quaternaryComplexNumbers = true;
     settings->quinaryComplexNumbers = true;
-    settings->secondaryResultFormatComplex = 'c';
-    settings->tertiaryResultFormatComplex = 'p';
-    settings->quaternaryResultFormatComplex = 'a';
-    settings->quinaryResultFormatComplex = 'c';
+    settings->secondaryResultComplexForm = ComplexForm::Rectangular;
+    settings->tertiaryResultComplexForm = ComplexForm::Exponential;
+    settings->quaternaryResultComplexForm = ComplexForm::Phasor;
+    settings->quinaryResultComplexForm = ComplexForm::Rectangular;
     settings->imaginaryUnit = 'j';
     CMath::setImaginaryUnitSymbol(QLatin1Char('j'));
     DMath::complexMode = true;
@@ -2257,22 +2258,22 @@ void test_extra_result_lines_profile_formatting()
                                                       settings->alternativeResultFormat,
                                                       settings->secondaryResultPrecision,
                                                       settings->complexNumbers && settings->secondaryComplexNumbers,
-                                                      settings->secondaryResultFormatComplex);
+                                                      settings->secondaryResultComplexForm);
         const QString line3 = NumberFormatter::format(realValue,
                                                       settings->tertiaryResultFormat,
                                                       settings->tertiaryResultPrecision,
                                                       settings->complexNumbers && settings->tertiaryComplexNumbers,
-                                                      settings->tertiaryResultFormatComplex);
+                                                      settings->tertiaryResultComplexForm);
         const QString line4 = NumberFormatter::format(realValue,
                                                       settings->quaternaryResultFormat,
                                                       settings->quaternaryResultPrecision,
                                                       settings->complexNumbers && settings->quaternaryComplexNumbers,
-                                                      settings->quaternaryResultFormatComplex);
+                                                      settings->quaternaryResultComplexForm);
         const QString line5 = NumberFormatter::format(realValue,
                                                       settings->quinaryResultFormat,
                                                       settings->quinaryResultPrecision,
                                                       settings->complexNumbers && settings->quinaryComplexNumbers,
-                                                      settings->quinaryResultFormatComplex);
+                                                      settings->quinaryResultComplexForm);
 
         checkCondition(__FILE__, __LINE__, "line2 fixed precision", line2 == QStringLiteral("1234.57"),
                        line2, QStringLiteral("1234.57"));
@@ -2293,21 +2294,21 @@ void test_extra_result_lines_profile_formatting()
         cerr << __FILE__ << "[" << __LINE__ << "]\tcomplex value eval for extra line profiles\t[NEW]" << endl
              << "\tError: " << qPrintable(eval->error()) << endl;
     } else {
-        const QString cartesian = NumberFormatter::format(complexValue, 'f', 3, true, 'c');
-        const QString polarExp = NumberFormatter::format(complexValue, 'f', 3, true, 'p');
-        const QString trigonometric = NumberFormatter::format(complexValue, 'f', 3, true, 't');
-        const QString cis = NumberFormatter::format(complexValue, 'f', 3, true, 's');
-        const QString polarAngle = NumberFormatter::format(complexValue, 'f', 3, true, 'a');
-        checkCondition(__FILE__, __LINE__, "cartesian complex form", cartesian.contains(QLatin1Char('j')),
+        const QString cartesian = NumberFormatter::format(complexValue, 'f', 3, true, ComplexForm::Rectangular);
+        const QString polarExp = NumberFormatter::format(complexValue, 'f', 3, true, ComplexForm::Exponential);
+        const QString trigonometric = NumberFormatter::format(complexValue, 'f', 3, true, ComplexForm::Trigonometric);
+        const QString cis = NumberFormatter::format(complexValue, 'f', 3, true, ComplexForm::Cis);
+        const QString polarAngle = NumberFormatter::format(complexValue, 'f', 3, true, ComplexForm::Phasor);
+        checkCondition(__FILE__, __LINE__, "rectangular complex form", cartesian.contains(QLatin1Char('j')),
                        cartesian, QStringLiteral("contains imaginary unit j"));
-        checkCondition(__FILE__, __LINE__, "polar exponential complex form", polarExp.contains(QStringLiteral("exp(")),
+        checkCondition(__FILE__, __LINE__, "exponential complex form", polarExp.contains(QStringLiteral("exp(")),
                        polarExp, QStringLiteral("contains exp("));
         checkCondition(__FILE__, __LINE__, "trigonometric complex form", trigonometric.contains(QStringLiteral("cos("))
                        && trigonometric.contains(QStringLiteral("sin(")),
                        trigonometric, QStringLiteral("contains cos( and sin("));
         checkCondition(__FILE__, __LINE__, "cis complex form", cis.contains(QStringLiteral("cis(")),
                        cis, QStringLiteral("contains cis("));
-        checkCondition(__FILE__, __LINE__, "polar angle complex form", polarAngle.contains(QString::fromUtf8("∠")),
+        checkCondition(__FILE__, __LINE__, "phasor complex form", polarAngle.contains(QString::fromUtf8("∠")),
                        polarAngle, QString::fromUtf8("contains ∠"));
     }
 
@@ -2329,10 +2330,10 @@ void test_extra_result_lines_profile_formatting()
     settings->tertiaryComplexNumbers = oldTertiaryComplexNumbers;
     settings->quaternaryComplexNumbers = oldQuaternaryComplexNumbers;
     settings->quinaryComplexNumbers = oldQuinaryComplexNumbers;
-    settings->secondaryResultFormatComplex = oldSecondaryResultFormatComplex;
-    settings->tertiaryResultFormatComplex = oldTertiaryResultFormatComplex;
-    settings->quaternaryResultFormatComplex = oldQuaternaryResultFormatComplex;
-    settings->quinaryResultFormatComplex = oldQuinaryResultFormatComplex;
+    settings->secondaryResultComplexForm = oldSecondaryResultComplexForm;
+    settings->tertiaryResultComplexForm = oldTertiaryResultComplexForm;
+    settings->quaternaryResultComplexForm = oldQuaternaryResultComplexForm;
+    settings->quinaryResultComplexForm = oldQuinaryResultComplexForm;
     settings->imaginaryUnit = oldImaginaryUnit;
     CMath::setImaginaryUnitSymbol(QChar(oldImaginaryUnit));
     DMath::complexMode = oldComplexNumbers;
@@ -2626,7 +2627,7 @@ void test_rational_format()
     const int resultPrecision = settings->resultPrecision;
     const bool complexNumbers = settings->complexNumbers;
     const char imaginaryUnit = settings->imaginaryUnit;
-    const char resultFormatComplex = settings->resultFormatComplex;
+    const char resultComplexForm = settings->resultComplexForm;
     const bool complexMode = DMath::complexMode;
 
     settings->resultFormat = 'r';
@@ -2756,7 +2757,7 @@ void test_rational_format()
     settings->complexNumbers = true;
     settings->imaginaryUnit = 'i';
     CMath::setImaginaryUnitSymbol(QLatin1Char('i'));
-    settings->resultFormatComplex = 'c';
+    settings->resultComplexForm = ComplexForm::Rectangular;
     DMath::complexMode = true;
     eval->initializeBuiltInVariables();
     CHECK_EVAL_FORMAT("1+i", "1+1i");
@@ -2777,7 +2778,7 @@ void test_rational_format()
     settings->complexNumbers = complexNumbers;
     settings->imaginaryUnit = imaginaryUnit;
     CMath::setImaginaryUnitSymbol(QChar(imaginaryUnit));
-    settings->resultFormatComplex = resultFormatComplex;
+    settings->resultComplexForm = resultComplexForm;
     DMath::complexMode = complexMode;
     eval->initializeBuiltInVariables();
     Evaluator::instance()->initializeAngleUnits();
@@ -5484,7 +5485,7 @@ void test_format()
     CHECK_EVAL_FORMAT_EXACT("phasorform(3+4j)", QString::fromUtf8("5 ∠ 0.92729521800161223243"));
     CHECK_EVAL("cis(pi)", "-1");
 
-    const char savedComplexForm = settings->resultFormatComplex;
+    const char savedComplexForm = settings->resultComplexForm;
     const char savedAngleUnit = settings->angleUnit;
     const char savedImaginaryUnit = settings->imaginaryUnit;
 
@@ -5507,7 +5508,7 @@ void test_format()
         QStringLiteral("3") + phasorOp + QString::fromUtf8("90°"),
         QStringLiteral("3") + space + phasorOp + space + QString::fromUtf8("90°"));
 
-    settings->resultFormatComplex = 'a';
+    settings->resultComplexForm = ComplexForm::Phasor;
     settings->angleUnit = 'r';
     Evaluator::instance()->initializeAngleUnits();
     CHECK_EVAL_FORMAT_EXACT("1+1j", QString::fromUtf8("1.4142135623730950488 ∠ 0.78539816339744830962"));
@@ -5535,7 +5536,7 @@ void test_format()
     Evaluator::instance()->initializeAngleUnits();
     CHECK_EVAL_FORMAT_EXACT("1+1j", QString::fromUtf8("1.4142135623730950488 ∠ 0.125"));
 
-    settings->resultFormatComplex = savedComplexForm;
+    settings->resultComplexForm = savedComplexForm;
     settings->angleUnit = savedAngleUnit;
     settings->imaginaryUnit = savedImaginaryUnit;
     CMath::setImaginaryUnitSymbol(QChar(savedImaginaryUnit));
@@ -7499,7 +7500,7 @@ void test_result_display_highlights_primary_result_with_extra_result_line()
     const int oldSecondaryResultPrecision = settings->secondaryResultPrecision;
     const bool oldComplexNumbers = settings->complexNumbers;
     const bool oldSecondaryComplexNumbers = settings->secondaryComplexNumbers;
-    const char oldSecondaryResultFormatComplex = settings->secondaryResultFormatComplex;
+    const char oldSecondaryResultComplexForm = settings->secondaryResultComplexForm;
 
     settings->syntaxHighlighting = true;
     settings->simplifyResultExpressions = true;
@@ -7509,7 +7510,7 @@ void test_result_display_highlights_primary_result_with_extra_result_line()
     settings->secondaryResultPrecision = -1;
     settings->complexNumbers = false;
     settings->secondaryComplexNumbers = false;
-    settings->secondaryResultFormatComplex = 'c';
+    settings->secondaryResultComplexForm = ComplexForm::Rectangular;
 
     QJsonObject colors;
     colors.insert(QStringLiteral("number"), QStringLiteral("#101010"));
@@ -7570,7 +7571,7 @@ void test_result_display_highlights_primary_result_with_extra_result_line()
     settings->secondaryResultPrecision = oldSecondaryResultPrecision;
     settings->complexNumbers = oldComplexNumbers;
     settings->secondaryComplexNumbers = oldSecondaryComplexNumbers;
-    settings->secondaryResultFormatComplex = oldSecondaryResultFormatComplex;
+    settings->secondaryResultComplexForm = oldSecondaryResultComplexForm;
 }
 
 void test_result_display_highlights_primary_sexagesimal_result_with_extra_result_line()
@@ -7588,8 +7589,8 @@ void test_result_display_highlights_primary_sexagesimal_result_with_extra_result
     const int oldSecondaryResultPrecision = settings->secondaryResultPrecision;
     const bool oldComplexNumbers = settings->complexNumbers;
     const bool oldSecondaryComplexNumbers = settings->secondaryComplexNumbers;
-    const char oldResultFormatComplex = settings->resultFormatComplex;
-    const char oldSecondaryResultFormatComplex = settings->secondaryResultFormatComplex;
+    const char oldResultComplexForm = settings->resultComplexForm;
+    const char oldSecondaryResultComplexForm = settings->secondaryResultComplexForm;
 
     settings->syntaxHighlighting = true;
     settings->simplifyResultExpressions = true;
@@ -7601,8 +7602,8 @@ void test_result_display_highlights_primary_sexagesimal_result_with_extra_result
     settings->secondaryResultPrecision = -1;
     settings->complexNumbers = false;
     settings->secondaryComplexNumbers = false;
-    settings->resultFormatComplex = 'c';
-    settings->secondaryResultFormatComplex = 'c';
+    settings->resultComplexForm = ComplexForm::Rectangular;
+    settings->secondaryResultComplexForm = ComplexForm::Rectangular;
 
     QJsonObject colors;
     colors.insert(QStringLiteral("number"), QStringLiteral("#101010"));
@@ -7665,8 +7666,8 @@ void test_result_display_highlights_primary_sexagesimal_result_with_extra_result
     settings->secondaryResultPrecision = oldSecondaryResultPrecision;
     settings->complexNumbers = oldComplexNumbers;
     settings->secondaryComplexNumbers = oldSecondaryComplexNumbers;
-    settings->resultFormatComplex = oldResultFormatComplex;
-    settings->secondaryResultFormatComplex = oldSecondaryResultFormatComplex;
+    settings->resultComplexForm = oldResultComplexForm;
+    settings->secondaryResultComplexForm = oldSecondaryResultComplexForm;
 }
 
 void test_result_display_highlights_primary_radian_result_with_pi_factor_line()
@@ -7685,8 +7686,8 @@ void test_result_display_highlights_primary_radian_result_with_pi_factor_line()
     const int oldSecondaryResultPrecision = settings->secondaryResultPrecision;
     const bool oldComplexNumbers = settings->complexNumbers;
     const bool oldSecondaryComplexNumbers = settings->secondaryComplexNumbers;
-    const char oldResultFormatComplex = settings->resultFormatComplex;
-    const char oldSecondaryResultFormatComplex = settings->secondaryResultFormatComplex;
+    const char oldResultComplexForm = settings->resultComplexForm;
+    const char oldSecondaryResultComplexForm = settings->secondaryResultComplexForm;
 
     settings->syntaxHighlighting = true;
     settings->simplifyResultExpressions = true;
@@ -7699,8 +7700,8 @@ void test_result_display_highlights_primary_radian_result_with_pi_factor_line()
     settings->secondaryResultPrecision = -1;
     settings->complexNumbers = false;
     settings->secondaryComplexNumbers = false;
-    settings->resultFormatComplex = 'c';
-    settings->secondaryResultFormatComplex = 'c';
+    settings->resultComplexForm = ComplexForm::Rectangular;
+    settings->secondaryResultComplexForm = ComplexForm::Rectangular;
     Evaluator::instance()->initializeAngleUnits();
 
     QJsonObject colors;
@@ -7777,8 +7778,8 @@ void test_result_display_highlights_primary_radian_result_with_pi_factor_line()
     settings->secondaryResultPrecision = oldSecondaryResultPrecision;
     settings->complexNumbers = oldComplexNumbers;
     settings->secondaryComplexNumbers = oldSecondaryComplexNumbers;
-    settings->resultFormatComplex = oldResultFormatComplex;
-    settings->secondaryResultFormatComplex = oldSecondaryResultFormatComplex;
+    settings->resultComplexForm = oldResultComplexForm;
+    settings->secondaryResultComplexForm = oldSecondaryResultComplexForm;
     Evaluator::instance()->initializeAngleUnits();
 }
 
@@ -8475,7 +8476,7 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
     const char oldAngleUnit = settings->angleUnit;
     const char oldImaginaryUnit = settings->imaginaryUnit;
     const char oldResultFormat = settings->resultFormat;
-    const char oldResultFormatComplex = settings->resultFormatComplex;
+    const char oldResultComplexForm = settings->resultComplexForm;
     const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
     Session* session = evalSession;
     session->clearHistory();
@@ -8798,7 +8799,7 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
         settings->angleUnit = 'r';
         settings->imaginaryUnit = 'j';
         settings->resultFormat = 'g';
-        settings->resultFormatComplex = 'c';
+        settings->resultComplexForm = ComplexForm::Rectangular;
         CMath::setImaginaryUnitSymbol(QLatin1Char('j'));
         Evaluator::instance()->initializeAngleUnits();
 
@@ -8870,7 +8871,7 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
         settings->angleUnit = 'r';
         settings->imaginaryUnit = 'j';
         settings->resultFormat = 'g';
-        settings->resultFormatComplex = 'c';
+        settings->resultComplexForm = ComplexForm::Rectangular;
         CMath::setImaginaryUnitSymbol(QLatin1Char('j'));
         Evaluator::instance()->initializeAngleUnits();
 
@@ -9118,7 +9119,7 @@ void test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input()
     settings->angleUnit = oldAngleUnit;
     settings->imaginaryUnit = oldImaginaryUnit;
     settings->resultFormat = oldResultFormat;
-    settings->resultFormatComplex = oldResultFormatComplex;
+    settings->resultComplexForm = oldResultComplexForm;
     settings->simplifyResultExpressions = oldSimplifyResultExpressions;
     CMath::setImaginaryUnitSymbol(QChar(oldImaginaryUnit));
     Evaluator::instance()->initializeAngleUnits();

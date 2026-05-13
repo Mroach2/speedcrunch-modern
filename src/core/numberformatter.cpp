@@ -4,6 +4,7 @@
 
 #include "core/numberformatter.h"
 
+#include "core/complexform.h"
 #include "core/regexpatterns.h"
 #include "core/unitdisplayformat.h"
 #include "core/settings.h"
@@ -441,7 +442,7 @@ QString NumberFormatter::format(Quantity q, char resultFormatOverride)
                   resultFormatOverride,
                   settings->resultPrecision,
                   settings->complexNumbers,
-                  settings->resultFormatComplex);
+                  settings->resultComplexForm);
 }
 
 QString NumberFormatter::format(Quantity q, char resultFormatOverride,
@@ -521,15 +522,15 @@ QString NumberFormatter::format(Quantity q, char resultFormatOverride,
         format.precision = precisionOverride;
     if (format.notation == Quantity::Format::Notation::Null) {
         if (useComplexNotation) {
-            if (complexNotationOverride == 'c')
+            if (complexNotationOverride == ComplexForm::Rectangular)
                 format.notation = Quantity::Format::Notation::Cartesian;
-            else if (complexNotationOverride == 'p')
+            else if (complexNotationOverride == ComplexForm::Exponential)
                 format.notation = Quantity::Format::Notation::Polar;
-            else if (complexNotationOverride == 't')
+            else if (complexNotationOverride == ComplexForm::Trigonometric)
                 format.notation = Quantity::Format::Notation::Trigonometric;
-            else if (complexNotationOverride == 's')
+            else if (complexNotationOverride == ComplexForm::Cis)
                 format.notation = Quantity::Format::Notation::Cis;
-            else if (complexNotationOverride == 'a')
+            else if (complexNotationOverride == ComplexForm::Phasor)
                 format.notation = Quantity::Format::Notation::PolarAngle;
         }
     }

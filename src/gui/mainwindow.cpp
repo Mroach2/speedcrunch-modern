@@ -4,6 +4,7 @@
 
 #include "gui/mainwindow.h"
 
+#include "core/complexform.h"
 #include "core/constants.h"
 #include "core/evaluator.h"
 #include "core/functions.h"
@@ -376,16 +377,16 @@ EvaluationContext currentEvaluationContext(const Settings* settings)
     EvaluationContext ctx;
     ctx.main.fmt = settings->resultFormat;
     ctx.main.prec = settings->resultPrecision;
-    ctx.main.cplx = settings->resultFormatComplex;
+    ctx.main.cplx = settings->resultComplexForm;
     if (settings->multipleResultLinesEnabled) {
         if (settings->secondaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->alternativeResultFormat, settings->secondaryResultPrecision, settings->secondaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->alternativeResultFormat, settings->secondaryResultPrecision, settings->secondaryResultComplexForm});
         if (settings->tertiaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->tertiaryResultFormat, settings->tertiaryResultPrecision, settings->tertiaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->tertiaryResultFormat, settings->tertiaryResultPrecision, settings->tertiaryResultComplexForm});
         if (settings->quaternaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->quaternaryResultFormat, settings->quaternaryResultPrecision, settings->quaternaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->quaternaryResultFormat, settings->quaternaryResultPrecision, settings->quaternaryResultComplexForm});
         if (settings->quinaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->quinaryResultFormat, settings->quinaryResultPrecision, settings->quinaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->quinaryResultFormat, settings->quinaryResultPrecision, settings->quinaryResultComplexForm});
     }
     ctx.complexOn = settings->complexNumbers;
     ctx.unit = settings->imaginaryUnit;
@@ -399,7 +400,7 @@ void applyEvaluationContext(Settings* settings, const EvaluationContext& ctx)
 {
     settings->resultFormat = ctx.main.fmt;
     settings->resultPrecision = ctx.main.prec;
-    settings->resultFormatComplex = ctx.main.cplx;
+    settings->resultComplexForm = ctx.main.cplx;
 
     settings->multipleResultLinesEnabled = !ctx.extras.isEmpty();
     settings->secondaryResultEnabled = false;
@@ -412,22 +413,22 @@ void applyEvaluationContext(Settings* settings, const EvaluationContext& ctx)
             settings->secondaryResultEnabled = true;
             settings->alternativeResultFormat = line.fmt;
             settings->secondaryResultPrecision = line.prec;
-            settings->secondaryResultFormatComplex = line.cplx;
+            settings->secondaryResultComplexForm = line.cplx;
         } else if (index == 1) {
             settings->tertiaryResultEnabled = true;
             settings->tertiaryResultFormat = line.fmt;
             settings->tertiaryResultPrecision = line.prec;
-            settings->tertiaryResultFormatComplex = line.cplx;
+            settings->tertiaryResultComplexForm = line.cplx;
         } else if (index == 2) {
             settings->quaternaryResultEnabled = true;
             settings->quaternaryResultFormat = line.fmt;
             settings->quaternaryResultPrecision = line.prec;
-            settings->quaternaryResultFormatComplex = line.cplx;
+            settings->quaternaryResultComplexForm = line.cplx;
         } else if (index == 3) {
             settings->quinaryResultEnabled = true;
             settings->quinaryResultFormat = line.fmt;
             settings->quinaryResultPrecision = line.prec;
-            settings->quinaryResultFormatComplex = line.cplx;
+            settings->quinaryResultComplexForm = line.cplx;
         }
     };
     for (int i = 0; i < ctx.extras.size() && i < 4; ++i)
@@ -4332,13 +4333,13 @@ void MainWindow::checkInitialComplexFormat()
     m_settings->quinaryComplexNumbers = true;
     DMath::complexMode = true;
 
-    if (m_settings->resultFormatComplex == 'p')
+    if (m_settings->resultComplexForm == ComplexForm::Exponential)
         m_actions.settingsResultFormatPolar->setChecked(true);
-    else if (m_settings->resultFormatComplex == 't')
+    else if (m_settings->resultComplexForm == ComplexForm::Trigonometric)
         m_actions.settingsResultFormatTrigonometric->setChecked(true);
-    else if (m_settings->resultFormatComplex == 's')
+    else if (m_settings->resultComplexForm == ComplexForm::Cis)
         m_actions.settingsResultFormatCis->setChecked(true);
-    else if (m_settings->resultFormatComplex == 'a')
+    else if (m_settings->resultComplexForm == ComplexForm::Phasor)
         m_actions.settingsResultFormatPolarAngle->setChecked(true);
     else
         m_actions.settingsResultFormatCartesian->setChecked(true);
@@ -7412,7 +7413,7 @@ void MainWindow::setResultFormatBinary()
 
 void MainWindow::setResultFormatCartesian()
 {
-    if (m_settings->resultFormatComplex == 'c')
+    if (m_settings->resultComplexForm == ComplexForm::Rectangular)
         return;
 
     m_settings->complexNumbers = true;
@@ -7420,11 +7421,11 @@ void MainWindow::setResultFormatCartesian()
     m_settings->tertiaryComplexNumbers = true;
     m_settings->quaternaryComplexNumbers = true;
     m_settings->quinaryComplexNumbers = true;
-    m_settings->resultFormatComplex = 'c';
-    m_settings->secondaryResultFormatComplex = 'c';
-    m_settings->tertiaryResultFormatComplex = 'c';
-    m_settings->quaternaryResultFormatComplex = 'c';
-    m_settings->quinaryResultFormatComplex = 'c';
+    m_settings->resultComplexForm = ComplexForm::Rectangular;
+    m_settings->secondaryResultComplexForm = ComplexForm::Rectangular;
+    m_settings->tertiaryResultComplexForm = ComplexForm::Rectangular;
+    m_settings->quaternaryResultComplexForm = ComplexForm::Rectangular;
+    m_settings->quinaryResultComplexForm = ComplexForm::Rectangular;
     DMath::complexMode = true;
     setStatusBarText();
     emit resultFormatChanged();
@@ -7491,7 +7492,7 @@ void MainWindow::setResultFormatOctal()
 
 void MainWindow::setResultFormatPolar()
 {
-    if (m_settings->resultFormatComplex == 'p')
+    if (m_settings->resultComplexForm == ComplexForm::Exponential)
         return;
 
     m_settings->complexNumbers = true;
@@ -7499,11 +7500,11 @@ void MainWindow::setResultFormatPolar()
     m_settings->tertiaryComplexNumbers = true;
     m_settings->quaternaryComplexNumbers = true;
     m_settings->quinaryComplexNumbers = true;
-    m_settings->resultFormatComplex = 'p';
-    m_settings->secondaryResultFormatComplex = 'p';
-    m_settings->tertiaryResultFormatComplex = 'p';
-    m_settings->quaternaryResultFormatComplex = 'p';
-    m_settings->quinaryResultFormatComplex = 'p';
+    m_settings->resultComplexForm = ComplexForm::Exponential;
+    m_settings->secondaryResultComplexForm = ComplexForm::Exponential;
+    m_settings->tertiaryResultComplexForm = ComplexForm::Exponential;
+    m_settings->quaternaryResultComplexForm = ComplexForm::Exponential;
+    m_settings->quinaryResultComplexForm = ComplexForm::Exponential;
     DMath::complexMode = true;
     setStatusBarText();
     emit resultFormatChanged();
@@ -7511,7 +7512,7 @@ void MainWindow::setResultFormatPolar()
 
 void MainWindow::setResultFormatTrigonometric()
 {
-    if (m_settings->resultFormatComplex == 't')
+    if (m_settings->resultComplexForm == ComplexForm::Trigonometric)
         return;
 
     m_settings->complexNumbers = true;
@@ -7519,11 +7520,11 @@ void MainWindow::setResultFormatTrigonometric()
     m_settings->tertiaryComplexNumbers = true;
     m_settings->quaternaryComplexNumbers = true;
     m_settings->quinaryComplexNumbers = true;
-    m_settings->resultFormatComplex = 't';
-    m_settings->secondaryResultFormatComplex = 't';
-    m_settings->tertiaryResultFormatComplex = 't';
-    m_settings->quaternaryResultFormatComplex = 't';
-    m_settings->quinaryResultFormatComplex = 't';
+    m_settings->resultComplexForm = ComplexForm::Trigonometric;
+    m_settings->secondaryResultComplexForm = ComplexForm::Trigonometric;
+    m_settings->tertiaryResultComplexForm = ComplexForm::Trigonometric;
+    m_settings->quaternaryResultComplexForm = ComplexForm::Trigonometric;
+    m_settings->quinaryResultComplexForm = ComplexForm::Trigonometric;
     DMath::complexMode = true;
     setStatusBarText();
     emit resultFormatChanged();
@@ -7531,7 +7532,7 @@ void MainWindow::setResultFormatTrigonometric()
 
 void MainWindow::setResultFormatCis()
 {
-    if (m_settings->resultFormatComplex == 's')
+    if (m_settings->resultComplexForm == ComplexForm::Cis)
         return;
 
     m_settings->complexNumbers = true;
@@ -7539,11 +7540,11 @@ void MainWindow::setResultFormatCis()
     m_settings->tertiaryComplexNumbers = true;
     m_settings->quaternaryComplexNumbers = true;
     m_settings->quinaryComplexNumbers = true;
-    m_settings->resultFormatComplex = 's';
-    m_settings->secondaryResultFormatComplex = 's';
-    m_settings->tertiaryResultFormatComplex = 's';
-    m_settings->quaternaryResultFormatComplex = 's';
-    m_settings->quinaryResultFormatComplex = 's';
+    m_settings->resultComplexForm = ComplexForm::Cis;
+    m_settings->secondaryResultComplexForm = ComplexForm::Cis;
+    m_settings->tertiaryResultComplexForm = ComplexForm::Cis;
+    m_settings->quaternaryResultComplexForm = ComplexForm::Cis;
+    m_settings->quinaryResultComplexForm = ComplexForm::Cis;
     DMath::complexMode = true;
     setStatusBarText();
     emit resultFormatChanged();
@@ -7551,7 +7552,7 @@ void MainWindow::setResultFormatCis()
 
 void MainWindow::setResultFormatPolarAngle()
 {
-    if (m_settings->resultFormatComplex == 'a')
+    if (m_settings->resultComplexForm == ComplexForm::Phasor)
         return;
 
     m_settings->complexNumbers = true;
@@ -7559,11 +7560,11 @@ void MainWindow::setResultFormatPolarAngle()
     m_settings->tertiaryComplexNumbers = true;
     m_settings->quaternaryComplexNumbers = true;
     m_settings->quinaryComplexNumbers = true;
-    m_settings->resultFormatComplex = 'a';
-    m_settings->secondaryResultFormatComplex = 'a';
-    m_settings->tertiaryResultFormatComplex = 'a';
-    m_settings->quaternaryResultFormatComplex = 'a';
-    m_settings->quinaryResultFormatComplex = 'a';
+    m_settings->resultComplexForm = ComplexForm::Phasor;
+    m_settings->secondaryResultComplexForm = ComplexForm::Phasor;
+    m_settings->tertiaryResultComplexForm = ComplexForm::Phasor;
+    m_settings->quaternaryResultComplexForm = ComplexForm::Phasor;
+    m_settings->quinaryResultComplexForm = ComplexForm::Phasor;
     DMath::complexMode = true;
     setStatusBarText();
     emit resultFormatChanged();
@@ -8375,7 +8376,7 @@ void MainWindow::editHistoryEntryContext(int index)
         bool enabled = true;
         char fmt = 'g';
         int prec = -1;
-        char cplx = 'c';
+        char cplx = ComplexForm::Default;
     };
     std::array<LineUiState, 5> lines;
     lines[0].enabled = true;

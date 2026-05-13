@@ -4,6 +4,7 @@
 
 #include "core/settings.h"
 
+#include "core/complexform.h"
 #include "math/floatnum/floatconfig.h"
 #include "core/mathdsl.h"
 
@@ -279,13 +280,14 @@ Settings::Settings()
     quinaryResultEnabled = false;
     multipleResultLinesEnabled = false;
     secondaryComplexNumbers = true;
-    secondaryResultFormatComplex = 'c';
+    resultComplexForm = ComplexForm::Default;
+    secondaryResultComplexForm = ComplexForm::Default;
     tertiaryComplexNumbers = true;
-    tertiaryResultFormatComplex = 'c';
+    tertiaryResultComplexForm = ComplexForm::Default;
     quaternaryComplexNumbers = true;
-    quaternaryResultFormatComplex = 'c';
+    quaternaryResultComplexForm = ComplexForm::Default;
     quinaryComplexNumbers = true;
-    quinaryResultFormatComplex = 'c';
+    quinaryResultComplexForm = ComplexForm::Default;
 
     setRuntimeUnitNegativeExponentStyle(unitNegativeExponentStyle);
     setRuntimeResultRoundingMode(resultRoundingMode);
@@ -448,22 +450,9 @@ void Settings::load()
         key + QLatin1String("MultipleLinesEnabled"), false).toBool();
 
     // Complex format special case.
-    QString cmplxFormat = settings->value(key + QLatin1String("MainComplexForm"), 'c').toString();
-    if (cmplxFormat.isEmpty()) {
-        // Backward compatibility with legacy key.
-        cmplxFormat = settings->value(key + QLatin1String("ComplexForm"), 'c').toString();
-    }
-    auto isValidComplexForm = [](const QString& form) {
-        return form == "c"
-            || form == "p"
-            || form == "t"
-            || form == "s"
-            || form == "a";
-    };
-    if (!isValidComplexForm(cmplxFormat))
-        resultFormatComplex = 'c';
-    else
-        resultFormatComplex = cmplxFormat.at(0).toLatin1();
+    resultComplexForm = ComplexForm::fromString(
+        settings->value(key + QLatin1String("MainComplexForm"),
+                        ComplexForm::toString(ComplexForm::Default)).toString());
 
     resultPrecision = settings->value(key + QLatin1String("MainPrecision"), -1).toInt();
     if (!settings->contains(key + QLatin1String("MainPrecision"))) {
@@ -507,26 +496,18 @@ void Settings::load()
     tertiaryComplexNumbers = true;
     quaternaryComplexNumbers = true;
     quinaryComplexNumbers = true;
-    QString secondaryComplexForm = settings->value(key + QLatin1String("SecondaryComplexForm"), "c").toString();
-    QString tertiaryComplexForm = settings->value(key + QLatin1String("TertiaryComplexForm"), "c").toString();
-    QString quaternaryComplexForm = settings->value(key + QLatin1String("QuaternaryComplexForm"), "c").toString();
-    QString quinaryComplexForm = settings->value(key + QLatin1String("QuinaryComplexForm"), "c").toString();
-    if (!isValidComplexForm(secondaryComplexForm))
-        secondaryResultFormatComplex = 'c';
-    else
-        secondaryResultFormatComplex = secondaryComplexForm.at(0).toLatin1();
-    if (!isValidComplexForm(tertiaryComplexForm))
-        tertiaryResultFormatComplex = 'c';
-    else
-        tertiaryResultFormatComplex = tertiaryComplexForm.at(0).toLatin1();
-    if (!isValidComplexForm(quaternaryComplexForm))
-        quaternaryResultFormatComplex = 'c';
-    else
-        quaternaryResultFormatComplex = quaternaryComplexForm.at(0).toLatin1();
-    if (!isValidComplexForm(quinaryComplexForm))
-        quinaryResultFormatComplex = 'c';
-    else
-        quinaryResultFormatComplex = quinaryComplexForm.at(0).toLatin1();
+    secondaryResultComplexForm = ComplexForm::fromString(
+        settings->value(key + QLatin1String("SecondaryComplexForm"),
+                        ComplexForm::toString(ComplexForm::Default)).toString());
+    tertiaryResultComplexForm = ComplexForm::fromString(
+        settings->value(key + QLatin1String("TertiaryComplexForm"),
+                        ComplexForm::toString(ComplexForm::Default)).toString());
+    quaternaryResultComplexForm = ComplexForm::fromString(
+        settings->value(key + QLatin1String("QuaternaryComplexForm"),
+                        ComplexForm::toString(ComplexForm::Default)).toString());
+    quinaryResultComplexForm = ComplexForm::fromString(
+        settings->value(key + QLatin1String("QuinaryComplexForm"),
+                        ComplexForm::toString(ComplexForm::Default)).toString());
     if (resultPrecision > DECPRECISION)
         resultPrecision = DECPRECISION;
     if (secondaryResultPrecision > DECPRECISION)
@@ -657,7 +638,7 @@ void Settings::save()
     settings->setValue(key + QLatin1String("QuaternaryEnabled"), quaternaryResultEnabled);
     settings->setValue(key + QLatin1String("QuinaryEnabled"), quinaryResultEnabled);
     settings->setValue(key + QLatin1String("MultipleLinesEnabled"), multipleResultLinesEnabled);
-    settings->setValue(key + QLatin1String("MainComplexForm"), QString(QChar(resultFormatComplex)));
+    settings->setValue(key + QLatin1String("MainComplexForm"), ComplexForm::toString(resultComplexForm));
     settings->setValue(key + QLatin1String("MainPrecision"), resultPrecision);
     settings->setValue(key + QLatin1String("ResultRoundingMode"),
         QString(QChar(resultRoundingMode)));
@@ -668,13 +649,13 @@ void Settings::save()
     settings->setValue(key + QLatin1String("QuaternaryPrecision"), quaternaryResultPrecision);
     settings->setValue(key + QLatin1String("QuinaryPrecision"), quinaryResultPrecision);
     settings->setValue(key + QLatin1String("SecondaryComplexEnabled"), true);
-    settings->setValue(key + QLatin1String("SecondaryComplexForm"), QString(QChar(secondaryResultFormatComplex)));
+    settings->setValue(key + QLatin1String("SecondaryComplexForm"), ComplexForm::toString(secondaryResultComplexForm));
     settings->setValue(key + QLatin1String("TertiaryComplexEnabled"), true);
-    settings->setValue(key + QLatin1String("TertiaryComplexForm"), QString(QChar(tertiaryResultFormatComplex)));
+    settings->setValue(key + QLatin1String("TertiaryComplexForm"), ComplexForm::toString(tertiaryResultComplexForm));
     settings->setValue(key + QLatin1String("QuaternaryComplexEnabled"), true);
-    settings->setValue(key + QLatin1String("QuaternaryComplexForm"), QString(QChar(quaternaryResultFormatComplex)));
+    settings->setValue(key + QLatin1String("QuaternaryComplexForm"), ComplexForm::toString(quaternaryResultComplexForm));
     settings->setValue(key + QLatin1String("QuinaryComplexEnabled"), true);
-    settings->setValue(key + QLatin1String("QuinaryComplexForm"), QString(QChar(quinaryResultFormatComplex)));
+    settings->setValue(key + QLatin1String("QuinaryComplexForm"), ComplexForm::toString(quinaryResultComplexForm));
 
     key = KEY + QLatin1String("/Layout/");
 

@@ -111,7 +111,7 @@ QStringList formatResultLines(const HistoryEntry& entry, const Evaluator* evalua
     const char oldAngleUnit = settings->angleUnit;
     const char oldResultFormat = settings->resultFormat;
     const int oldResultPrecision = settings->resultPrecision;
-    const char oldResultFormatComplex = settings->resultFormatComplex;
+    const char oldResultComplexForm = settings->resultComplexForm;
     const char oldUnitExp = settings->unitNegativeExponentStyle;
     const char oldRound = settings->resultRoundingMode;
     const bool oldMultiple = settings->multipleResultLinesEnabled;
@@ -127,10 +127,10 @@ QStringList formatResultLines(const HistoryEntry& entry, const Evaluator* evalua
     const int oldTertiaryPrecision = settings->tertiaryResultPrecision;
     const int oldQuaternaryPrecision = settings->quaternaryResultPrecision;
     const int oldQuinaryPrecision = settings->quinaryResultPrecision;
-    const char oldSecondaryComplex = settings->secondaryResultFormatComplex;
-    const char oldTertiaryComplex = settings->tertiaryResultFormatComplex;
-    const char oldQuaternaryComplex = settings->quaternaryResultFormatComplex;
-    const char oldQuinaryComplex = settings->quinaryResultFormatComplex;
+    const char oldSecondaryComplex = settings->secondaryResultComplexForm;
+    const char oldTertiaryComplex = settings->tertiaryResultComplexForm;
+    const char oldQuaternaryComplex = settings->quaternaryResultComplexForm;
+    const char oldQuinaryComplex = settings->quinaryResultComplexForm;
 
     const EvaluationContext& ctx = entry.contextRef();
     settings->complexNumbers = ctx.complexOn;
@@ -138,7 +138,7 @@ QStringList formatResultLines(const HistoryEntry& entry, const Evaluator* evalua
     settings->angleUnit = ctx.angle;
     settings->resultFormat = ctx.main.fmt;
     settings->resultPrecision = ctx.main.prec;
-    settings->resultFormatComplex = ctx.main.cplx;
+    settings->resultComplexForm = ctx.main.cplx;
     settings->unitNegativeExponentStyle = isValidUnitNegativeExponentStyle(ctx.unitExp)
         ? ctx.unitExp
         : Settings::UnitNegativeExponentSuperscript;
@@ -157,25 +157,25 @@ QStringList formatResultLines(const HistoryEntry& entry, const Evaluator* evalua
         settings->secondaryResultEnabled = true;
         settings->alternativeResultFormat = ctx.extras.at(0).fmt;
         settings->secondaryResultPrecision = ctx.extras.at(0).prec;
-        settings->secondaryResultFormatComplex = ctx.extras.at(0).cplx;
+        settings->secondaryResultComplexForm = ctx.extras.at(0).cplx;
     }
     if (ctx.extras.size() > 1) {
         settings->tertiaryResultEnabled = true;
         settings->tertiaryResultFormat = ctx.extras.at(1).fmt;
         settings->tertiaryResultPrecision = ctx.extras.at(1).prec;
-        settings->tertiaryResultFormatComplex = ctx.extras.at(1).cplx;
+        settings->tertiaryResultComplexForm = ctx.extras.at(1).cplx;
     }
     if (ctx.extras.size() > 2) {
         settings->quaternaryResultEnabled = true;
         settings->quaternaryResultFormat = ctx.extras.at(2).fmt;
         settings->quaternaryResultPrecision = ctx.extras.at(2).prec;
-        settings->quaternaryResultFormatComplex = ctx.extras.at(2).cplx;
+        settings->quaternaryResultComplexForm = ctx.extras.at(2).cplx;
     }
     if (ctx.extras.size() > 3) {
         settings->quinaryResultEnabled = true;
         settings->quinaryResultFormat = ctx.extras.at(3).fmt;
         settings->quinaryResultPrecision = ctx.extras.at(3).prec;
-        settings->quinaryResultFormatComplex = ctx.extras.at(3).cplx;
+        settings->quinaryResultComplexForm = ctx.extras.at(3).cplx;
     }
 
     const QStringList lines = ResultLineFormatUtils::formatResultLinesForDisplay(
@@ -191,7 +191,7 @@ QStringList formatResultLines(const HistoryEntry& entry, const Evaluator* evalua
     settings->angleUnit = oldAngleUnit;
     settings->resultFormat = oldResultFormat;
     settings->resultPrecision = oldResultPrecision;
-    settings->resultFormatComplex = oldResultFormatComplex;
+    settings->resultComplexForm = oldResultComplexForm;
     settings->unitNegativeExponentStyle = oldUnitExp;
     settings->resultRoundingMode = oldRound;
     settings->multipleResultLinesEnabled = oldMultiple;
@@ -207,10 +207,10 @@ QStringList formatResultLines(const HistoryEntry& entry, const Evaluator* evalua
     settings->tertiaryResultPrecision = oldTertiaryPrecision;
     settings->quaternaryResultPrecision = oldQuaternaryPrecision;
     settings->quinaryResultPrecision = oldQuinaryPrecision;
-    settings->secondaryResultFormatComplex = oldSecondaryComplex;
-    settings->tertiaryResultFormatComplex = oldTertiaryComplex;
-    settings->quaternaryResultFormatComplex = oldQuaternaryComplex;
-    settings->quinaryResultFormatComplex = oldQuinaryComplex;
+    settings->secondaryResultComplexForm = oldSecondaryComplex;
+    settings->tertiaryResultComplexForm = oldTertiaryComplex;
+    settings->quaternaryResultComplexForm = oldQuaternaryComplex;
+    settings->quinaryResultComplexForm = oldQuinaryComplex;
     setRuntimeUnitNegativeExponentStyle(settings->unitNegativeExponentStyle);
     setRuntimeResultRoundingMode(settings->resultRoundingMode);
     return lines;
@@ -432,7 +432,7 @@ void ResultDisplay::append(const QString& expression, Quantity& value,
         EvaluationContext ctx;
         ctx.main.fmt = settings->resultFormat;
         ctx.main.prec = settings->resultPrecision;
-        ctx.main.cplx = settings->resultFormatComplex;
+        ctx.main.cplx = settings->resultComplexForm;
         ctx.complexOn = settings->complexNumbers;
         ctx.unit = settings->imaginaryUnit;
         ctx.angle = settings->angleUnit;

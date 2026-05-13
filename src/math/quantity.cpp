@@ -5,6 +5,7 @@
 
 #include "quantity.h"
 
+#include "core/complexform.h"
 #include "core/unicodechars.h"
 #include "core/mathdsl.h"
 #include "core/settings.h"
@@ -2261,19 +2262,19 @@ void Quantity::Format::serialize(QJsonObject& json) const
 
     switch (notation) {
     case Notation::Cartesian:
-        json["form"] = QStringLiteral("Cartesian");
+        json["form"] = ComplexForm::toString(ComplexForm::Rectangular);
         break;
     case Notation::Polar:
-        json["form"] = QStringLiteral("Polar");
+        json["form"] = ComplexForm::toString(ComplexForm::Exponential);
         break;
     case Notation::Trigonometric:
-        json["form"] = QStringLiteral("Trigonometric");
+        json["form"] = ComplexForm::toString(ComplexForm::Trigonometric);
         break;
     case Notation::Cis:
-        json["form"] = QStringLiteral("Cis");
+        json["form"] = ComplexForm::toString(ComplexForm::Cis);
         break;
     case Notation::PolarAngle:
-        json["form"] = QStringLiteral("PolarAngle");
+        json["form"] = ComplexForm::toString(ComplexForm::Phasor);
         break;
     case Notation::Null:
     default:
@@ -2324,16 +2325,16 @@ Quantity::Format Quantity::Format::deSerialize(const QJsonObject& json)
         result.base = Base::Null;
 
     if (json.contains("form")) {
-        auto strNotation = json["form"].toString();
-        if (strNotation == "Cartesian")
+        const char form = ComplexForm::fromString(json["form"].toString(), '\0');
+        if (form == ComplexForm::Rectangular)
             result.notation = Notation::Cartesian;
-        else if (strNotation == "Polar")
+        else if (form == ComplexForm::Exponential)
             result.notation = Notation::Polar;
-        else if (strNotation == "Trigonometric")
+        else if (form == ComplexForm::Trigonometric)
             result.notation = Notation::Trigonometric;
-        else if (strNotation == "Cis")
+        else if (form == ComplexForm::Cis)
             result.notation = Notation::Cis;
-        else if (strNotation == "PolarAngle")
+        else if (form == ComplexForm::Phasor)
             result.notation = Notation::PolarAngle;
         else
             result.notation = Notation::Null;

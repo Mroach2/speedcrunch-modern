@@ -10,6 +10,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QList>
 
+#include "core/complexform.h"
 #include "math/floatnum/floatconvert.h"
 
 class Settings {
@@ -126,15 +127,15 @@ public:
     int tertiaryResultPrecision; // Tertiary precision.
     int quaternaryResultPrecision; // Extra line #3 precision.
     int quinaryResultPrecision; // Extra line #4 precision.
-    char resultFormatComplex; // Main complex form: 'c' cartesian; 'p' exponential; 't' trigonometric; 's' cis; 'a' phasor.
+    char resultComplexForm; // Global complex form: 'r' rectangular; 'e' exponential; 't' trigonometric; 'c' cis; 'p' phasor.
     bool secondaryComplexNumbers;
-    char secondaryResultFormatComplex; // Secondary complex form.
+    char secondaryResultComplexForm; // Secondary complex form.
     bool tertiaryComplexNumbers;
-    char tertiaryResultFormatComplex; // Tertiary complex form.
+    char tertiaryResultComplexForm; // Tertiary complex form.
     bool quaternaryComplexNumbers;
-    char quaternaryResultFormatComplex; // Extra line #3 complex form.
+    char quaternaryResultComplexForm; // Extra line #3 complex form.
     bool quinaryComplexNumbers;
-    char quinaryResultFormatComplex; // Extra line #4 complex form.
+    char quinaryResultComplexForm; // Extra line #4 complex form.
 
     bool autoAns;
     bool autoCalc;

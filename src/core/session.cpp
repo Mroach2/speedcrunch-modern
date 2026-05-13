@@ -22,17 +22,17 @@ EvaluationContext currentEvaluationContextFromSettings()
     EvaluationContext ctx;
     ctx.main.fmt = settings->resultFormat;
     ctx.main.prec = settings->resultPrecision;
-    ctx.main.cplx = settings->resultFormatComplex;
+    ctx.main.cplx = settings->resultComplexForm;
 
     if (settings->multipleResultLinesEnabled) {
         if (settings->secondaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->alternativeResultFormat, settings->secondaryResultPrecision, settings->secondaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->alternativeResultFormat, settings->secondaryResultPrecision, settings->secondaryResultComplexForm});
         if (settings->tertiaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->tertiaryResultFormat, settings->tertiaryResultPrecision, settings->tertiaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->tertiaryResultFormat, settings->tertiaryResultPrecision, settings->tertiaryResultComplexForm});
         if (settings->quaternaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->quaternaryResultFormat, settings->quaternaryResultPrecision, settings->quaternaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->quaternaryResultFormat, settings->quaternaryResultPrecision, settings->quaternaryResultComplexForm});
         if (settings->quinaryResultEnabled)
-            ctx.extras.append(ResultLineContext{settings->quinaryResultFormat, settings->quinaryResultPrecision, settings->quinaryResultFormatComplex});
+            ctx.extras.append(ResultLineContext{settings->quinaryResultFormat, settings->quinaryResultPrecision, settings->quinaryResultComplexForm});
     }
 
     ctx.complexOn = settings->complexNumbers;
@@ -48,7 +48,7 @@ void applyEvaluationContextToSettings(const EvaluationContext& ctx)
     Settings* settings = Settings::instance();
     settings->resultFormat = ctx.main.fmt;
     settings->resultPrecision = ctx.main.prec;
-    settings->resultFormatComplex = ctx.main.cplx;
+    settings->resultComplexForm = ctx.main.cplx;
 
     settings->multipleResultLinesEnabled = !ctx.extras.isEmpty();
     settings->secondaryResultEnabled = false;
@@ -60,25 +60,25 @@ void applyEvaluationContextToSettings(const EvaluationContext& ctx)
         settings->secondaryResultEnabled = true;
         settings->alternativeResultFormat = ctx.extras.at(0).fmt;
         settings->secondaryResultPrecision = ctx.extras.at(0).prec;
-        settings->secondaryResultFormatComplex = ctx.extras.at(0).cplx;
+        settings->secondaryResultComplexForm = ctx.extras.at(0).cplx;
     }
     if (ctx.extras.size() > 1) {
         settings->tertiaryResultEnabled = true;
         settings->tertiaryResultFormat = ctx.extras.at(1).fmt;
         settings->tertiaryResultPrecision = ctx.extras.at(1).prec;
-        settings->tertiaryResultFormatComplex = ctx.extras.at(1).cplx;
+        settings->tertiaryResultComplexForm = ctx.extras.at(1).cplx;
     }
     if (ctx.extras.size() > 2) {
         settings->quaternaryResultEnabled = true;
         settings->quaternaryResultFormat = ctx.extras.at(2).fmt;
         settings->quaternaryResultPrecision = ctx.extras.at(2).prec;
-        settings->quaternaryResultFormatComplex = ctx.extras.at(2).cplx;
+        settings->quaternaryResultComplexForm = ctx.extras.at(2).cplx;
     }
     if (ctx.extras.size() > 3) {
         settings->quinaryResultEnabled = true;
         settings->quinaryResultFormat = ctx.extras.at(3).fmt;
         settings->quinaryResultPrecision = ctx.extras.at(3).prec;
-        settings->quinaryResultFormatComplex = ctx.extras.at(3).cplx;
+        settings->quinaryResultComplexForm = ctx.extras.at(3).cplx;
     }
 
     settings->complexNumbers = ctx.complexOn;
