@@ -4735,6 +4735,9 @@ void MainWindow::activateSession(Session* session)
         }
     }
 
+    const bool displayAlreadyShowsSession =
+        m_widgets.display != nullptr && m_widgets.display->session() == session;
+
     m_session = session;
     m_evaluator = m_session->evaluator();
     m_evaluator->initializeBuiltInVariables();
@@ -4760,12 +4763,16 @@ void MainWindow::activateSession(Session* session)
     if (m_widgets.editor != nullptr)
         m_widgets.editor->setHistoryArrowNavigationEnabled(true);
     restoreEditorTextFromCurrentSession();
-    emit historyChanged();
+    if (m_widgets.editor != nullptr)
+        m_widgets.editor->updateHistory();
+    if (m_widgets.display != nullptr && !displayAlreadyShowsSession)
+        m_widgets.display->refresh();
+    if (m_docks.history)
+        m_docks.history->widget()->updateHistory();
     emit variablesChanged();
     emit functionsChanged();
     emit unitsChanged();
     QTimer::singleShot(0, this, [this]() {
-        emit historyChanged();
         emit variablesChanged();
         emit functionsChanged();
         emit unitsChanged();
@@ -4777,19 +4784,21 @@ void MainWindow::activateSession(Session* session)
     }
 
     m_widgets.display->viewport()->update();
-    const QPair<int, int> anchor = m_sessionViewportAnchors.value(m_session->name(), qMakePair(-1, 0));
-    const int scrollValue = m_sessionScrollValues.value(m_session->name(), -1);
-    if (anchor.first >= 0) {
-        m_widgets.display->restoreViewportTopAnchor(anchor);
-        QTimer::singleShot(0, this, [this, anchor]() {
+    if (!displayAlreadyShowsSession) {
+        const QPair<int, int> anchor = m_sessionViewportAnchors.value(m_session->name(), qMakePair(-1, 0));
+        const int scrollValue = m_sessionScrollValues.value(m_session->name(), -1);
+        if (anchor.first >= 0) {
             m_widgets.display->restoreViewportTopAnchor(anchor);
-        });
-    }
-    if (scrollValue >= 0) {
-        m_widgets.display->restoreScrollValue(scrollValue);
-        QTimer::singleShot(0, this, [this, scrollValue]() {
+            QTimer::singleShot(0, this, [this, anchor]() {
+                m_widgets.display->restoreViewportTopAnchor(anchor);
+            });
+        }
+        if (scrollValue >= 0) {
             m_widgets.display->restoreScrollValue(scrollValue);
-        });
+            QTimer::singleShot(0, this, [this, scrollValue]() {
+                m_widgets.display->restoreScrollValue(scrollValue);
+            });
+        }
     }
     m_conditions.autoAns = !m_session->historyIsEmpty();
     updatePaneEditorCursorVisibility();
@@ -9085,9 +9094,9 @@ void MainWindow::handleManualClosed()
 
 void MainWindow::handleDisplaySelectionChange()
 {
-    clearTextEditSelection(m_widgets.editor);
     const QTextCursor displayCursor = m_widgets.display->textCursor();
     if (displayCursor.hasSelection()) {
+        clearTextEditSelection(m_widgets.editor);
         const QString rawSelected = displayCursor.selectedText();
         if (rawSelected.contains(RegExpPatterns::lineBreak())) {
             m_widgets.editor->autoCalcSelection(rawSelected);
@@ -9104,9 +9113,10 @@ void MainWindow::handleDisplaySelectionChange()
 
 void MainWindow::handleEditorSelectionChange()
 {
-    clearTextEditSelection(m_widgets.display);
-    if (m_widgets.editor->textCursor().hasSelection())
+    if (m_widgets.editor->textCursor().hasSelection()) {
+        clearTextEditSelection(m_widgets.display);
         return;
+    }
 
     if (m_widgets.editor->text().trimmed().isEmpty()) {
         hideStateLabel();
