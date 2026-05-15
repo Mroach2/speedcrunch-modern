@@ -501,6 +501,7 @@ QString applySuperscriptStyleToUnitName(QString unitName)
     };
 
     struct UnitAliasSpec {
+        UnitId id;
         QString longName;
         QString localized;
         Quantity value;
@@ -775,6 +776,7 @@ struct UnitRegistry {
             preferred display units for computed dimensions.
      */
     QHash<QString, Quantity> valuesByIdentifier;
+    QHash<QString, UnitId> idsByIdentifier;
     QHash<QString, QString> localizedByIdentifier;
     QHash<QString, QString> displaySymbolsByIdentifier;
     QHash<QString, AffineDefinition> affineByIdentifier;
@@ -1576,6 +1578,45 @@ void Units::findUnit(Quantity& q)
         }
         return false;
     };
+
+    const auto isSpeedDimension = [](const QMap<UnitQuantity, Rational>& dimension) {
+        return dimension.size() == 2
+               && dimension.value(UnitQuantity::Length) == Rational(1)
+               && dimension.value(UnitQuantity::Time) == Rational(-1);
+    };
+    const auto tryNamedSpeedDisplayUnit = [&](QString* displayUnitName,
+                                              CNumber* displayUnitValue) {
+        static const QList<UnitId> candidates = {
+            UnitId::MilePerHour,
+            UnitId::KilometrePerHour,
+            UnitId::Knot
+        };
+        for (const UnitId id : candidates) {
+            const QString name = unitName(id);
+            const Quantity value = unitValue(id);
+            if (value.numericValue() != q.numericValue())
+                continue;
+            if (displayUnitName)
+                *displayUnitName = name;
+            if (displayUnitValue)
+                *displayUnitValue = value.numericValue();
+            return true;
+        }
+        return false;
+    };
+    if (isSpeedDimension(dim))
+    {
+        QString speedUnitName;
+        CNumber speedUnitValue;
+        if (tryNamedSpeedDisplayUnit(&speedUnitName, &speedUnitValue)) {
+            q.setDisplayUnit(speedUnitValue, speedUnitName);
+            return;
+        }
+        if (!originalUnitName.isEmpty() && originalUnitName.contains(MathDsl::DivOp)) {
+            q.setDisplayUnit(q.numericValue(), originalUnitName);
+            return;
+        }
+    }
     if (m_matchLookup.contains(dim) && !preserveExplicitAngleFactor) {
         Unit temp(m_matchLookup[dim]);
         if (runtimeUnitNegativeExponentStyle() == Settings::UnitNegativeExponentSuperscript)
@@ -1910,10 +1951,13 @@ static UnitRegistry s_buildUnitRegistry()
 
     const auto addUnique = [&](const QString& name,
                                const Quantity& value,
-                               const QString& localizedName = QString()) {
+                               const QString& localizedName = QString(),
+                               UnitId id = UnitId::Unknown) {
         if (name.isEmpty() || registry.valuesByIdentifier.contains(name))
             return;
         registry.valuesByIdentifier.insert(name, value);
+        if (id != UnitId::Unknown)
+            registry.idsByIdentifier.insert(name, id);
         if (!localizedName.isEmpty())
             registry.localizedByIdentifier.insert(name, localizedName);
     };
@@ -1937,18 +1981,18 @@ static UnitRegistry s_buildUnitRegistry()
         // canonical name/symbol/aliases are all registered from this single source.
         const Quantity value = spec.linearValue ? spec.linearValue() : Quantity(1);
         const QString localized = localizedFromSpec(spec);
-        addUnique(spec.name, value, localized);
+        addUnique(spec.name, value, localized, id);
         const QString symbol = spec.symbol;
 
         if (!symbol.isEmpty()) {
-            addUnique(symbol, value, localized);
+            addUnique(symbol, value, localized, id);
             registry.displaySymbolsByIdentifier.insert(spec.name, symbol);
             registry.displaySymbolsByIdentifier.insert(symbol, symbol);
         }
         for (const QString& alias : spec.aliases) {
             if (alias.isEmpty())
                 continue;
-            addUnique(alias, value, localized);
+            addUnique(alias, value, localized, id);
             if (!symbol.isEmpty())
                 registry.displaySymbolsByIdentifier.insert(alias, symbol);
         }
@@ -1959,6 +2003,7 @@ static UnitRegistry s_buildUnitRegistry()
             ? QString()
             : spec.aliases.first();
         unitAliasSpecs.append({
+            id,
             spec.name,
             localized,
             value,
@@ -2022,14 +2067,14 @@ static UnitRegistry s_buildUnitRegistry()
             const Quantity prefixedValue = prefix.value * unit.value;
             const QString localized = prefixedLocalizedName(prefix.longName, unit.localized);
             // Long form: kilo + metre => kilometre
-            addUnique(prefix.longName + unit.longName, prefixedValue, localized);
+            addUnique(prefix.longName + unit.longName, prefixedValue, localized, unit.id);
             if (!unit.shortName.isEmpty()
                 && shouldAddSiPrefixedShortAlias(prefix.symbol, unit.shortName))
                 // Symbol form: k + m => km; k + m² => km²; k + m³ => km³
-                addUnique(prefix.symbol + unit.shortName, prefixedValue, localized);
+                addUnique(prefix.symbol + unit.shortName, prefixedValue, localized, unit.id);
             if (!unit.alternateShortName.isEmpty()
                 && shouldAddSiPrefixedShortAlias(prefix.symbol, unit.alternateShortName))
-                addUnique(prefix.symbol + unit.alternateShortName, prefixedValue, localized);
+                addUnique(prefix.symbol + unit.alternateShortName, prefixedValue, localized, unit.id);
         }
     }
 
@@ -2041,9 +2086,9 @@ static UnitRegistry s_buildUnitRegistry()
                 continue;
             const Quantity prefixedValue = prefix.value * unit.value;
             const QString localized = prefixedLocalizedName(prefix.longName, unit.localized);
-            addUnique(prefix.longName + unit.longName, prefixedValue, localized);
+            addUnique(prefix.longName + unit.longName, prefixedValue, localized, unit.id);
             if (!unit.shortName.isEmpty())
-                addUnique(prefix.symbol + unit.shortName, prefixedValue, localized);
+                addUnique(prefix.symbol + unit.shortName, prefixedValue, localized, unit.id);
         }
     }
 
@@ -2074,11 +2119,23 @@ QHash<QString, Quantity> Units::builtInUnitLookup(char angleMode)
         const QString& identifier = it.key();
         const Quantity& value = it.value();
         Quantity unitValue = value;
-        const bool isInformationUnit =
-            unitValue.getDimensionByQuantity().contains(UnitQuantity::Information);
-        const UnitId id = unitId(normalizeUnitName(identifier));
+        const UnitId id = s_unitRegistry().idsByIdentifier.value(
+            identifier,
+            unitId(normalizeUnitName(identifier)));
         const bool isCanonicalIdentifier =
             id != UnitId::Unknown && identifier == unitName(id);
+        const bool isInformationUnit =
+            unitValue.getDimensionByQuantity().contains(UnitQuantity::Information);
+        const auto specIt = s_unitSpecs().constFind(id);
+        const bool isNonSiIdentifier =
+            specIt != s_unitSpecs().constEnd()
+            && specIt.value().family != UnitFamily::SiBase
+            && specIt.value().family != UnitFamily::SiDerived
+            && id != UnitId::Second
+            && id != UnitId::Minute
+            && id != UnitId::Hour
+            && id != UnitId::Day
+            && id != UnitId::Week;
         const bool keepDisplayUnit =
             (id == UnitId::Steradian)
             || ((id == UnitId::Hertz
@@ -2088,8 +2145,9 @@ QHash<QString, Quantity> Units::builtInUnitLookup(char angleMode)
               || id == UnitId::Pascal
               || id == UnitId::Newton
               || id == UnitId::Metre)
-             && isCanonicalIdentifier)
-            || isInformationUnit;
+            && isCanonicalIdentifier)
+            || isInformationUnit
+            || isNonSiIdentifier;
         if (keepDisplayUnit)
             unitValue.setDisplayUnit(value.numericValue(), identifier);
         lookup.insert(identifier, unitValue);

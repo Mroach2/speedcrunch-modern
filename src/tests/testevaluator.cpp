@@ -925,11 +925,12 @@ void test_units_short_aliases_and_si_prefixes()
     CHECK_EVAL("[kg]", "1 kilogram");
     CHECK_EVAL("[F]", "1 farad");
     CHECK_EVAL("[V]", "1 volt");
-    CHECK_EVAL("[Eh]", "0.00000000000000000436 joule");
+    CHECK_EVAL("[Eh]", "1 Eh");
     CHECK_EVAL("[mol]", "1 mole");
     CHECK_EVAL(QString::fromUtf8("[Ω]"), "1 ohm");
-    CHECK_EVAL("[ha]", u8"10000 metre²");
-    CHECK_EVAL("[in]", "0.0254 metre");
+    CHECK_EVAL("[ha]", "1 ha");
+    CHECK_EVAL("[in]", "1 in");
+    CHECK_EVAL("[ft]", "1 ft");
     CHECK_EVAL("[foot] -> [in]", "12 in");
     CHECK_EVAL("[in] -> [inch]", "1 inch");
 
@@ -1118,9 +1119,9 @@ void test_units_short_aliases_and_si_prefixes()
     CHECK_EVAL("[mile_per_hour] -> [kilometre_per_hour]", "1.609344 kilometre_per_hour");
     CHECK_EVAL("1.609344[kilometre_per_hour] -> [mile_per_hour]", "1 mile_per_hour");
     CHECK_EVAL("1e15[Btu] -> [quad]", "1 quad");
-    CHECK_EVAL_FORMAT("1[Btu]", u8"1055.05585262[J]");
+    CHECK_EVAL_FORMAT("1[Btu]", u8"1[Btu]");
     CHECK_EVAL_FORMAT("1[Btu] -> [J]", u8"1055.05585262[J]");
-    CHECK_EVAL_FORMAT("1[british_thermal_unit]", u8"1055.05585262[J]");
+    CHECK_EVAL_FORMAT("1[british_thermal_unit]", u8"1[Btu]");
     CHECK_EVAL("1[Btu] -> [joule]", "1055.05585262 joule");
     CHECK_EVAL("1[british_thermal_unit] -> [joule]", "1055.05585262 joule");
     CHECK_EVAL_FORMAT("1[british_thermal_unit] -> [J]", u8"1055.05585262[J]");
@@ -1248,12 +1249,12 @@ void test_units_derived_si_recognition_and_disambiguation()
 {
     CHECK_EVAL("[metre]", "1 metre");
     CHECK_EVAL("[kilogram]", "1 kilogram");
-    CHECK_EVAL("[tonne]", "1000 kilogram");
-    CHECK_EVAL("[t]", "1000 kilogram");
+    CHECK_EVAL("[tonne]", "1 tonne");
+    CHECK_EVAL("[t]", "1 t");
     CHECK_EVAL("1[tonne] -> [kilogram]", "1000 kilogram");
     CHECK_EVAL("1[t] -> [kilogram]", "1000 kilogram");
     CHECK_EVAL("1000[kilogram] -> [tonne]", "1 tonne");
-    CHECK_EVAL("2.51 [t] + 3.2 [kg] + 2342.7 [g]", "2515.5427 kilogram");
+    CHECK_EVAL("2.51 [t] + 3.2 [kg] + 2342.7 [g]", "2.5155427 t");
     CHECK_EVAL("[second]", "1 second");
     CHECK_EVAL("[coulomb/second]", "1 ampere");
     CHECK_EVAL("[lumen/steradian]", "1 candela");
@@ -1265,6 +1266,16 @@ void test_units_derived_si_recognition_and_disambiguation()
     CHECK_EVAL("[revolution/minute] -> [revolution_per_minute]", "1 revolution_per_minute");
     CHECK_EVAL("[1609.344 metre/hour] -> [mile_per_hour]", "1 mile_per_hour");
     CHECK_EVAL("[1000 metre/hour] -> [kilometre_per_hour]", "1 kilometre_per_hour");
+    CHECK_EVAL("[kilometre/hour]", "1 kilometre_per_hour");
+    CHECK_EVAL("[km/hour]", "1 kilometre_per_hour");
+    CHECK_EVAL("[km/h]", "1 kilometre_per_hour");
+    CHECK_EVAL("[mile/hour]", "1 mile_per_hour");
+    CHECK_EVAL("[mi/h]", "1 mile_per_hour");
+    CHECK_EVAL("[nautical_mile/hour]", "1 knot");
+    CHECK_EVAL("[nmi/h]", "1 knot");
+    CHECK_EVAL("1[km] / 1[h]", "1 kilometre_per_hour");
+    CHECK_EVAL("1[mi] / 1[h]", "1 mile_per_hour");
+    CHECK_EVAL("1[nmi] / 1[h]", "1 knot");
     CHECK_EVAL("[kilowatt*hour] -> [kilowatt_hour]", "1 kilowatt_hour");
     CHECK_EVAL("[133.322387415*pascal] -> [millimetre_of_mercury]", "1 millimetre_of_mercury");
     CHECK_EVAL("[14*pound] -> [stone]", "1 stone");

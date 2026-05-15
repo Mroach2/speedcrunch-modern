@@ -599,6 +599,39 @@ QString composeAnglePerSecondUnitName(const QString& angleUnitName)
     return composeQuotientUnitName(angleUnitName, secondName);
 }
 
+bool isSpeedDimension(const QMap<UnitQuantity, Rational>& dimension)
+{
+    return dimension.size() == 2
+           && dimension.value(UnitQuantity::Length) == Rational(1)
+           && dimension.value(UnitQuantity::Time) == Rational(-1);
+}
+
+bool tryNamedSpeedDisplayUnit(const CNumber& displayUnitValue,
+                              QString* displayUnitName,
+                              CNumber* normalizedDisplayUnitValue)
+{
+    static const QList<UnitId> candidates = {
+        UnitId::MilePerHour,
+        UnitId::KilometrePerHour,
+        UnitId::Knot
+    };
+
+    const auto& units = Units::builtInUnitValues();
+    for (const UnitId id : candidates) {
+        const QString name = unitName(id);
+        const Quantity value = units.value(name);
+        if (value.numericValue() != displayUnitValue)
+            continue;
+
+        if (displayUnitName)
+            *displayUnitName = name;
+        if (normalizedDisplayUnitValue)
+            *normalizedDisplayUnitValue = value.numericValue();
+        return true;
+    }
+    return false;
+}
+
 QMap<UnitQuantity, Rational> dimensionCandela()
 {
     QMap<UnitQuantity, Rational> dim;
@@ -2037,6 +2070,18 @@ Quantity Quantity::operator/(const Quantity& other) const
             if (isPreferredCanonicalDisplayUnit(canonicalId))
             {
                 result.setDisplayUnit(canonical.unit(), canonical.unitName());
+            } else if (isSpeedDimension(result.getDimensionByQuantity())) {
+                QString speedUnitName;
+                CNumber speedUnitValue;
+                if (tryNamedSpeedDisplayUnit(this->unit() / other.unit(),
+                                             &speedUnitName,
+                                             &speedUnitValue))
+                {
+                    result.setDisplayUnit(speedUnitValue, speedUnitName);
+                } else {
+                    result.setDisplayUnit(this->unit() / other.unit(),
+                                          composeQuotientUnitName(this->unitName(), other.unitName()));
+                }
             } else {
                 result.setDisplayUnit(this->unit() / other.unit(),
                                       composeQuotientUnitName(this->unitName(), other.unitName()));
