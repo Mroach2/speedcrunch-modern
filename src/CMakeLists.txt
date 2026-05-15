@@ -138,17 +138,21 @@ add_executable(testdmath ${testdmath_SOURCES})
 target_link_libraries(testdmath ${QT_LIBRARIES})
 add_test(testdmath testdmath)
 
-add_executable(testser ${testser_SOURCES})
-target_link_libraries(testser ${QT_LIBRARIES})
-add_test(testser testser)
+add_executable(testserial ${testserial_SOURCES})
+target_link_libraries(testserial ${QT_LIBRARIES})
+add_test(testserial testserial)
 
 add_executable(testeditorui ${testeditorui_SOURCES})
 target_link_libraries(testeditorui ${QT_LIBRARIES} Qt6::Test)
 add_test(NAME testeditorui COMMAND testeditorui)
 
-add_executable(testdockswidgetsui ${testdockswidgetsui_SOURCES})
-target_link_libraries(testdockswidgetsui ${QT_LIBRARIES} Qt6::Test)
-add_test(NAME testdockswidgetsui COMMAND testdockswidgetsui)
+add_executable(testdocksui ${testdocksui_SOURCES})
+target_link_libraries(testdocksui ${QT_LIBRARIES} Qt6::Test)
+add_test(NAME testdocksui COMMAND testdocksui)
+
+add_executable(testdisplayui ${testdisplayui_SOURCES})
+target_link_libraries(testdisplayui ${QT_LIBRARIES} Qt6::Test)
+add_test(NAME testdisplayui COMMAND testdisplayui)
 
 set_property(TARGET ${APPLICATION_NAME} APPEND PROPERTY COMPILE_DEFINITIONS $<$<CONFIG:Debug>:EVALUATOR_DEBUG>)
 

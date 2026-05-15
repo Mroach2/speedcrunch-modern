@@ -47,6 +47,9 @@ VersionCheck::VersionCheck(QWidget* parentWindow, QObject* parent)
 
 void VersionCheck::checkForUpdateIfDue()
 {
+    if (qEnvironmentVariableIsSet("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK"))
+        return;
+
     if (m_pendingReply) {
         versionCheckDebug() << "Update check skipped: request already in progress.";
         return;

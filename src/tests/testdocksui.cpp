@@ -14,7 +14,7 @@
 #include <QSplitter>
 #include <QTreeWidget>
 
-class TestDocksWidgetsUi : public QObject {
+class TestDocksUi : public QObject {
     Q_OBJECT
 
 private slots:
@@ -23,7 +23,7 @@ private slots:
     void splitter_normalization_removes_single_child_nested_splitter_after_pane_close_shape();
 };
 
-void TestDocksWidgetsUi::user_units_dock_shows_rhs_and_description_after_definition()
+void TestDocksUi::user_units_dock_shows_rhs_and_description_after_definition()
 {
     Session session;
     Evaluator* evaluator = session.evaluator();
@@ -50,7 +50,7 @@ void TestDocksWidgetsUi::user_units_dock_shows_rhs_and_description_after_definit
     QCOMPARE(item->text(2), QStringLiteral("speed alias"));
 }
 
-void TestDocksWidgetsUi::user_variables_dock_keeps_existing_value_text_after_new_definition()
+void TestDocksUi::user_variables_dock_keeps_existing_value_text_after_new_definition()
 {
     Session session;
     Evaluator* evaluator = session.evaluator();
@@ -109,7 +109,7 @@ void TestDocksWidgetsUi::user_variables_dock_keeps_existing_value_text_after_new
     settings->resultPrecision = oldResultPrecision;
 }
 
-void TestDocksWidgetsUi::splitter_normalization_removes_single_child_nested_splitter_after_pane_close_shape()
+void TestDocksUi::splitter_normalization_removes_single_child_nested_splitter_after_pane_close_shape()
 {
     QSplitter root(Qt::Horizontal);
     QWidget* leftPane = new QWidget();
@@ -137,5 +137,13 @@ void TestDocksWidgetsUi::splitter_normalization_removes_single_child_nested_spli
     QVERIFY(qobject_cast<QSplitter*>(root.widget(1)) == nullptr);
 }
 
-QTEST_MAIN(TestDocksWidgetsUi)
-#include "testdockswidgetsui.moc"
+int main(int argc, char** argv)
+{
+    if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM"))
+        qputenv("QT_QPA_PLATFORM", "offscreen");
+    QApplication app(argc, argv);
+    TestDocksUi test;
+    return QTest::qExec(&test, argc, argv);
+}
+
+#include "testdocksui.moc"
