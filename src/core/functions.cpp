@@ -630,6 +630,17 @@ Quantity function_real(Function* f, const Function::ArgumentList& args)
     return DMath::real(args.at(0));
 }
 
+Quantity function_numval(Function* f, const Function::ArgumentList& args)
+{
+    ENSURE_ARGUMENT_COUNT(1);
+    const Quantity value = args.at(0);
+    if (!value.hasUnit())
+        return Quantity(value.numericValue());
+    if (value.unitName().isEmpty())
+        return Quantity(value.numericValue());
+    return Quantity(value.numericValue() / value.unit());
+}
+
 Quantity function_imag(Function* f, const Function::ArgumentList& args)
 {
     ENSURE_ARGUMENT_COUNT(1);
@@ -2066,6 +2077,7 @@ void FunctionRepo::createFunctions()
     FUNCTION_INSERT(FunctionDomain::NumberFormatting, eng);
     FUNCTION_INSERT(FunctionDomain::NumberFormatting, rat);
     FUNCTION_INSERT(FunctionDomain::NumberFormatting, sci);
+    FUNCTION_INSERT(FunctionDomain::NumberFormatting, numval);
 
     // Probability.
     FUNCTION_INSERT(FunctionDomain::Probability, binomcdf);
@@ -2322,6 +2334,7 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(median, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(mean, "x<sub>1</sub>; x<sub>2</sub>; ...");
     FUNCTION_USAGE(min, "x<sub>1</sub>; x<sub>2</sub>; ...");
+    FUNCTION_USAGE(numval, "x");
     FUNCTION_USAGE(ncr, "x<sub>1</sub>; x<sub>2</sub>");
     FUNCTION_USAGE(not, "n");
     FUNCTION_USAGE(npr, "x<sub>1</sub>; x<sub>2</sub>");
@@ -2492,6 +2505,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(median, tr("Median Value (50th Percentile)"));
     FUNCTION_NAME(mean, tr("Mean"));
     FUNCTION_NAME(min, tr("Minimum"));
+    FUNCTION_NAME(numval, tr("Numerical Value of Quantity"));
     FUNCTION_NAME(rand, tr("Random Decimal Number"));
     FUNCTION_NAME(randint, tr("Random Integer Number"));
     FUNCTION_NAME(rat, tr("Convert to Rational Representation"));

@@ -68,6 +68,30 @@ General
 
     Compute the logarithm of base ``n``. The same complex-number rules apply as for :func:`ln`.
 
+.. function:: numval(x)
+
+    Return the numerical value of quantity ``x``.
+
+    For unitless values, this returns the value unchanged. For quantities with
+    units, it returns the numerical value in SI/base units by default.
+
+    If ``x`` includes an explicit conversion target (``-> [unit]``), it returns
+    the numerical value in that target unit.
+
+    Example::
+
+        numval(3)
+        = 3
+
+        numval(3 [m/s])
+        = 3
+
+        numval(3 [km/s])
+        = 3000
+
+        numval(3 [km/s] -> [cm/s])
+        = 300000
+
 .. function:: datetime(unix_timestamp [; offset])
 
     .. versionadded:: 1.0

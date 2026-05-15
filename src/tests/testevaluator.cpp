@@ -1537,6 +1537,12 @@ void test_units()
     // Exponentiation over explicit value+unit attachment is ambiguous.
     CHECK_EVAL_FAIL("2[kg]^2");
     CHECK_EVAL_FAIL(QString::fromUtf8("2[kg]²"));
+
+    // numval: numerical value in base SI unless a target display unit is explicit.
+    CHECK_EVAL("numval(3)", "3");
+    CHECK_EVAL("numval(3 [m/s])", "3");
+    CHECK_EVAL("numval(3 [km/s])", "3000");
+    CHECK_EVAL("numval(3 [km/s] -> [cm/s])", "300000");
 }
 
 void test_percent_operator()
