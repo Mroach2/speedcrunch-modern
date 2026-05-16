@@ -80,6 +80,101 @@ bool isSteradianUnitName(const QString& unitName)
     return unitId(normalizeUnitName(unitName)) == UnitId::Steradian;
 }
 
+bool tryBestSiPrefixForScaledDisplayUnit(const Quantity& source,
+                                         const Quantity& result,
+                                         CNumber* unit,
+                                         QString* unitName)
+{
+    if (!source.hasUnit()
+        || !result.numericValue().isNearReal()
+        || !source.unit().isNearReal()
+        || source.unit().real.isNearZero())
+    {
+        return false;
+    }
+    if (Units::isExplicitAngleUnitName(source.unitName()))
+        return false;
+
+    const UnitId id = unitId(normalizeUnitName(source.unitName()));
+    const int policy = unitPrefixPolicy(id);
+    if (!(policy & AllDecimalSiPrefixes))
+        return false;
+
+    const auto abs = [](const HNumber& value) {
+        return value < HNumber(0) ? -value : value;
+    };
+    struct Score {
+        int bucket = 3;
+        HNumber value = HNumber(0);
+    };
+    const auto scoreForUnit = [&](const CNumber& displayUnit) {
+        Score score;
+        if (!displayUnit.isNearReal() || displayUnit.real.isNearZero())
+            return score;
+        score.value = abs(result.numericValue().real / displayUnit.real);
+        if (score.value >= HNumber(1) && score.value < HNumber(1000)) {
+            score.bucket = 0;
+        } else if (score.value >= HNumber(1000)) {
+            score.bucket = 1;
+        } else {
+            score.bucket = 2;
+        }
+        return score;
+    };
+    const auto better = [](const Score& a, const Score& b) {
+        if (a.bucket != b.bucket)
+            return a.bucket < b.bucket;
+        if (a.bucket == 0 || a.bucket == 1)
+            return a.value < b.value;
+        if (a.bucket == 2)
+            return a.value > b.value;
+        return false;
+    };
+
+    const Score sourceScore = scoreForUnit(source.unit());
+    if (sourceScore.bucket == 0)
+        return false;
+    if (id == UnitId::Metre && sourceScore.bucket == 2 && sourceScore.value >= HNumber("0.001"))
+        return false;
+
+    const QString symbol = unitSiPrefixBaseSymbol(id);
+    if (symbol.isEmpty())
+        return false;
+
+    const CNumber baseUnit = unitSiPrefixBaseValue(id);
+    if (!baseUnit.isNearReal() || baseUnit.real.isNearZero())
+        return false;
+
+    Score bestScore;
+    CNumber bestUnit;
+    QString bestName;
+    for (const UnitPrefixSpec& prefix : siPrefixes()) {
+        if (prefix.power % 3 != 0)
+            continue;
+        if (id == UnitId::Second && prefix.power > 0)
+            continue;
+        if (!unitPrefixPolicyAllows(policy, prefix))
+            continue;
+        const CNumber candidateUnit = baseUnit * prefix.value.numericValue();
+        const Score candidateScore = scoreForUnit(candidateUnit);
+        if (candidateScore.bucket != 0)
+            continue;
+        if (bestName.isEmpty() || better(candidateScore, bestScore)) {
+            bestScore = candidateScore;
+            bestUnit = candidateUnit;
+            bestName = prefix.symbol + symbol;
+        }
+    }
+
+    if (bestName.isEmpty())
+        return false;
+    if (unit)
+        *unit = bestUnit;
+    if (unitName)
+        *unitName = bestName;
+    return true;
+}
+
 enum class AffineTemperatureScale {
     None,
     Celsius,
@@ -632,6 +727,140 @@ bool tryNamedSpeedDisplayUnit(const CNumber& displayUnitValue,
     return false;
 }
 
+bool tryReadableDisplayUnitForLinearSum(const Quantity& left,
+                                        const Quantity& right,
+                                        const Quantity& result,
+                                        CNumber* unit,
+                                        QString* unitName)
+{
+    if (!result.numericValue().isNearReal())
+        return false;
+    if (result.isDimensionless())
+        return false;
+    if (result.sameDimension(Units::kilogram()))
+    {
+        const auto abs = [](const HNumber& value) {
+            return value < HNumber(0) ? -value : value;
+        };
+        const HNumber kilogramValue = abs(result.numericValue().real);
+        if (kilogramValue >= HNumber(1) && kilogramValue < HNumber(1000)) {
+            if (unit)
+                *unit = CNumber(1);
+            if (unitName)
+                *unitName = ::unitName(UnitId::Kilogram);
+            return true;
+        }
+    }
+    if (result.sameDimension(Units::second()))
+    {
+        if (left.format().mode == HNumber::Format::Mode::Sexagesimal
+            || right.format().mode == HNumber::Format::Mode::Sexagesimal)
+        {
+            return false;
+        }
+        if (!left.hasUnit() && !right.hasUnit())
+            return false;
+
+        HNumber seconds = result.numericValue().real;
+        if (seconds < HNumber(0))
+            seconds = -seconds;
+        if (seconds >= HNumber("3600")) {
+            if (unit)
+                *unit = Units::hour().numericValue();
+            if (unitName)
+                *unitName = unitSymbol(UnitId::Hour);
+            return true;
+        }
+        if (seconds >= HNumber("60")) {
+            if (unit)
+                *unit = Units::minute().numericValue();
+            if (unitName)
+                *unitName = ::unitName(UnitId::Minute);
+            return true;
+        }
+    }
+    const auto displayCandidate = [](const Quantity& source) {
+        Quantity candidate(source);
+        if (!candidate.hasUnit()) {
+            candidate.stripUnits();
+            Units::findUnit(candidate);
+        }
+        return candidate;
+    };
+    const Quantity leftCandidate = displayCandidate(left);
+    const Quantity rightCandidate = displayCandidate(right);
+    if (!leftCandidate.hasUnit() || !rightCandidate.hasUnit())
+        return false;
+    HNumber affineValue;
+    if (tryAffineValueFromBase(leftCandidate, &affineValue)
+        || tryAffineValueFromBase(rightCandidate, &affineValue))
+    {
+        return false;
+    }
+    if (informationUnitFamily(leftCandidate.unitName()) != InformationUnitFamily::None
+        || informationUnitFamily(rightCandidate.unitName()) != InformationUnitFamily::None)
+    {
+        return false;
+    }
+
+    const auto abs = [](const HNumber& value) {
+        return value < HNumber(0) ? -value : value;
+    };
+    const auto score = [&](const Quantity& candidate) {
+        struct Score {
+            int bucket = 3;
+            HNumber value = HNumber(0);
+        };
+
+        Score s;
+        if (!candidate.unit().isNearReal() || candidate.unit().real.isNearZero())
+            return s;
+
+        s.value = abs(result.numericValue().real / candidate.unit().real);
+        if (s.value >= HNumber(1) && s.value < HNumber(1000)) {
+            s.bucket = 0;
+        } else if (s.value >= HNumber(1000)) {
+            s.bucket = 1;
+        } else {
+            s.bucket = 2;
+        }
+        return s;
+    };
+    const auto better = [](const auto& a, const auto& b) {
+        if (a.bucket != b.bucket)
+            return a.bucket < b.bucket;
+        if (a.bucket == 0)
+            return a.value < b.value;
+        if (a.bucket == 1)
+            return a.value < b.value;
+        if (a.bucket == 2)
+            return a.value > b.value;
+        return false;
+    };
+
+    Quantity canonical(result);
+    canonical.stripUnits();
+    Units::findUnit(canonical);
+
+    const Quantity* chosen = &leftCandidate;
+    auto chosenScore = score(*chosen);
+    const auto rightScore = score(rightCandidate);
+    if (better(rightScore, chosenScore)) {
+        chosen = &rightCandidate;
+        chosenScore = rightScore;
+    }
+    if (canonical.hasUnit()) {
+        const auto canonicalScore = score(canonical);
+        if (better(canonicalScore, chosenScore))
+            chosen = &canonical;
+    }
+    if (unit)
+        *unit = chosen->unit();
+    if (unitName)
+        *unitName = chosen->unitName();
+    return true;
+}
+
 QMap<UnitQuantity, Rational> dimensionCandela()
 {
     QMap<UnitQuantity, Rational> dim;
@@ -787,6 +1016,11 @@ Quantity operator-(const Quantity& a, const Quantity& b)
     } else {
         res.m_numericValue -= b.m_numericValue;
     }
+    res.cleanDimension();
+    CNumber readableUnit;
+    QString readableUnitName;
+    if (tryReadableDisplayUnitForLinearSum(a, b, res, &readableUnit, &readableUnitName))
+        res.setDisplayUnit(readableUnit, readableUnitName);
     return res;
 }
 
@@ -1392,6 +1626,12 @@ Quantity Quantity::operator+(const Quantity& other) const
             result.setDisplayUnit(this->unit(), this->unitName());
         else
             result.setDisplayUnit(other.unit(), other.unitName());
+    } else {
+        result.cleanDimension();
+        CNumber readableUnit;
+        QString readableUnitName;
+        if (tryReadableDisplayUnitForLinearSum(*this, other, result, &readableUnit, &readableUnitName))
+            result.setDisplayUnit(readableUnit, readableUnitName);
     }
     return result;
 }
@@ -1439,6 +1679,12 @@ Quantity& Quantity::operator+=(const Quantity& other)
         {
             if (this->unit().real < other.unit().real)
                 this->setDisplayUnit(other.unit(), other.unitName());
+        } else {
+            this->cleanDimension();
+            CNumber readableUnit;
+            QString readableUnitName;
+            if (tryReadableDisplayUnitForLinearSum(*this, other, *this, &readableUnit, &readableUnitName))
+                this->setDisplayUnit(readableUnit, readableUnitName);
         }
     }
     return *this;
@@ -1559,6 +1805,12 @@ Quantity Quantity::operator*(const Quantity& other) const
         result.m_unit = new CNumber(source.unit());
         result.m_unitName = source.unitName();
     };
+    const auto chooseBestPrefixForScaledDisplayUnit = [&](const Quantity& source) {
+        CNumber readableUnit;
+        QString readableUnitName;
+        if (tryBestSiPrefixForScaledDisplayUnit(source, result, &readableUnit, &readableUnitName))
+            result.setDisplayUnit(readableUnit, readableUnitName);
+    };
     const auto unitTextContainsExplicitAngleFactor = [](const QString& unitText) {
         if (unitText.isEmpty())
             return false;
@@ -1612,6 +1864,7 @@ Quantity Quantity::operator*(const Quantity& other) const
         {
             result.m_unit = new CNumber(*other.m_unit);
             result.m_unitName = other.m_unitName;
+            chooseBestPrefixForScaledDisplayUnit(other);
         }
     }
 
@@ -1735,8 +1988,10 @@ Quantity Quantity::operator*(const Quantity& other) const
     if (!result.hasUnit()) {
         if (this->isDimensionless() && other.hasUnit()) {
             copyDisplayUnit(other);
+            chooseBestPrefixForScaledDisplayUnit(other);
         } else if (other.isDimensionless() && this->hasUnit()) {
             copyDisplayUnit(*this);
+            chooseBestPrefixForScaledDisplayUnit(*this);
         }
     }
 

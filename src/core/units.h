@@ -267,6 +267,52 @@ QString prefixSymbol(PrefixId id);
 const QList<PrefixId>& siPrefixIds();
 const QList<PrefixId>& binaryPrefixIds();
 
+enum UnitPrefixPolicy {
+    NoPrefixes = 0,
+
+    // Decimal SI prefixes, powers of 1000.
+    NegativeEngineeringSiPrefixes = 1 << 0, // m, µ, n, p, ...
+    PositiveEngineeringSiPrefixes = 1 << 1, // k, M, G, T, ...
+
+    // Decimal SI prefixes, non-engineering powers of 10.
+    SmallNegativeSiPrefixes = 1 << 2, // d, c
+    SmallPositiveSiPrefixes = 1 << 3, // da, h
+
+    // IEC binary prefixes.
+    BinaryIecPrefixes = 1 << 4 // Ki, Mi, Gi, Ti, ...
+};
+
+constexpr int EngineeringSiPrefixes =
+    NegativeEngineeringSiPrefixes |
+    PositiveEngineeringSiPrefixes;
+
+constexpr int SmallSiPrefixes =
+    SmallNegativeSiPrefixes |
+    SmallPositiveSiPrefixes;
+
+constexpr int AllDecimalSiPrefixes =
+    EngineeringSiPrefixes |
+    SmallSiPrefixes;
+
+constexpr int AllPrefixes =
+    AllDecimalSiPrefixes |
+    BinaryIecPrefixes;
+
+struct UnitPrefixSpec {
+    PrefixId id;
+    QString longName;
+    QString symbol;
+    int power;
+    Quantity value;
+};
+
+const QList<UnitPrefixSpec>& siPrefixes();
+const QList<UnitPrefixSpec>& binaryIecPrefixes();
+int unitPrefixPolicy(UnitId id);
+bool unitPrefixPolicyAllows(int policy, const UnitPrefixSpec& prefix, bool binaryPrefix = false);
+QString unitSiPrefixBaseSymbol(UnitId id);
+CNumber unitSiPrefixBaseValue(UnitId id);
+
 struct Unit {
     QString name;
     Quantity value;

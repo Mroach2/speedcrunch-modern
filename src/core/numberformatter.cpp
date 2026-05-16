@@ -37,6 +37,61 @@ bool isCloseTo(const HNumber& value, const HNumber& reference)
     return SymbolicNumberFormat::isCloseToTrigSymbolicValue(value, reference);
 }
 
+void useUnprefixedSiUnitForScientificDisplay(Quantity* quantity)
+{
+    if (!quantity || !quantity->hasUnit())
+        return;
+
+    const auto baseIdForDisplayUnit = [](const QString& unitName) {
+        const QString normalized = normalizeUnitName(unitName);
+        const UnitId directId = unitId(normalized);
+        if (directId != UnitId::Unknown)
+            return directId;
+
+        struct PrefixText {
+            QString text;
+            UnitPrefixSpec spec;
+        };
+        QList<PrefixText> prefixes;
+        for (const UnitPrefixSpec& prefix : siPrefixes()) {
+            prefixes.append(PrefixText{normalizeUnitName(prefix.symbol), prefix});
+            prefixes.append(PrefixText{normalizeUnitName(prefix.longName), prefix});
+        }
+        std::sort(prefixes.begin(), prefixes.end(), [](const PrefixText& a, const PrefixText& b) {
+            return a.text.size() > b.text.size();
+        });
+
+        for (const PrefixText& prefix : prefixes) {
+            if (prefix.text.isEmpty()
+                || !normalized.startsWith(prefix.text)
+                || normalized.size() == prefix.text.size())
+            {
+                continue;
+            }
+
+            const UnitId baseId = unitId(normalized.mid(prefix.text.size()));
+            const int policy = unitPrefixPolicy(baseId);
+            if ((policy & AllDecimalSiPrefixes)
+                && unitPrefixPolicyAllows(policy, prefix.spec))
+            {
+                return baseId;
+            }
+        }
+        return UnitId::Unknown;
+    };
+
+    const UnitId id = baseIdForDisplayUnit(quantity->unitName());
+    if (!(unitPrefixPolicy(id) & AllDecimalSiPrefixes))
+        return;
+
+    const QString baseSymbol = unitSiPrefixBaseSymbol(id);
+    const CNumber baseValue = unitSiPrefixBaseValue(id);
+    if (baseSymbol.isEmpty() || !baseValue.isNearReal() || baseValue.real.isNearZero())
+        return;
+
+    quantity->setDisplayUnit(baseValue, baseSymbol);
+}
+
 QString formatCommonTrigRadical(const HNumber& value)
 {
     const bool negative = value.isNegative();
@@ -463,6 +518,16 @@ QString NumberFormatter::format(Quantity q, char resultFormatOverride,
             else if (complexNotationOverride == ComplexForm::Phasor)
                 format.notation = Quantity::Format::Notation::PolarAngle;
         }
+    }
+
+    if (format.base == Quantity::Format::Base::Decimal
+        && (format.mode == Quantity::Format::Mode::Scientific || activeResultFormat == 'e'))
+    {
+        if (!q.hasUnit() && !q.isDimensionless()) {
+            q.cleanDimension();
+            Units::findUnit(q);
+        }
+        useUnprefixedSiUnitForScientificDisplay(&q);
     }
 
     const bool useSexagesimalOutput =

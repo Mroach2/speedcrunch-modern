@@ -67,6 +67,7 @@ private slots:
     void keeps_scientific_notation_exponent_minus_unwrapped();
     void blocks_shift_operator_tail_after_non_plus_operator();
     void rewrites_superscript_exponent_for_radix_and_inserts_mul_space_globally();
+    void typing_asterisk_after_superscript_power_keeps_explicit_multiplication();
     void auto_inserts_zero_before_dot_in_configured_contexts();
     void allows_unrestricted_typing_inside_question_comment_context();
     void allows_currency_symbols_after_operators();
@@ -88,6 +89,8 @@ private slots:
     void unit_context_completion_excludes_user_functions();
     void unit_context_completion_excludes_built_in_variables();
     void unit_context_completion_includes_angle_units_and_long_forms();
+    void unit_context_completion_includes_small_positive_si_prefixed_symbols();
+    void unit_context_completion_excludes_prefixed_square_and_cubic_metre();
     void completes_binary_prefixed_information_unit_to_short_form_in_unit_context();
     void completes_day_unit_to_short_form_in_unit_context();
     void completes_hour_unit_to_short_form_in_unit_context();
@@ -1890,6 +1893,41 @@ void TestEditorUi::rewrites_superscript_exponent_for_radix_and_inserts_mul_space
              qPrintable(editor.document()->toRawText()));
 }
 
+void TestEditorUi::typing_asterisk_after_superscript_power_keeps_explicit_multiplication()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    const QString multiply = QString(MathDsl::MulCrossWrapSp)
+        + QString(MathDsl::MulCrossOp)
+        + QString(MathDsl::MulCrossWrapSp);
+    editor.setText(QStringLiteral("2")
+                   + multiply
+                   + QStringLiteral("3")
+                   + multiply
+                   + QStringLiteral("10")
+                   + multiply
+                   + QStringLiteral("10")
+                   + QString(MathDsl::Pow2));
+    editor.setCursorPosition(editor.text().size());
+
+    QTest::keyClick(&editor, Qt::Key_Asterisk, Qt::NoModifier);
+
+    QCOMPARE(editor.document()->toRawText(),
+             QStringLiteral("2")
+                 + multiply
+                 + QStringLiteral("3")
+                 + multiply
+                 + QStringLiteral("10")
+                 + multiply
+                 + QStringLiteral("10")
+                 + QString(MathDsl::Pow2)
+                 + multiply);
+    QVERIFY(!editor.document()->toRawText().contains(MathDsl::MulDotOp));
+}
+
 void TestEditorUi::auto_inserts_zero_before_dot_in_configured_contexts()
 {
     Editor editor;
@@ -2407,6 +2445,49 @@ void TestEditorUi::unit_context_completion_includes_angle_units_and_long_forms()
     QCOMPARE(acDescription, tr("acre"));
     QVERIFY(aCDescription != tr("acre"));
     QVERIFY(aCDescription != tr("Unit"));
+}
+
+void TestEditorUi::unit_context_completion_includes_small_positive_si_prefixed_symbols()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    const auto hasCompletionIdentifier = [](const QStringList& choices, const QString& identifier) {
+        for (const QString& choice : choices) {
+            if (choice.startsWith(identifier + QStringLiteral(":")))
+                return true;
+        }
+        return false;
+    };
+
+    const QStringList choices = editor.matchFragment(QStringLiteral("da"), true);
+    QVERIFY(hasCompletionIdentifier(choices, QStringLiteral("dag")));
+    QVERIFY(hasCompletionIdentifier(choices, QStringLiteral("daL")));
+    QVERIFY(hasCompletionIdentifier(choices, QStringLiteral("dam")));
+    QVERIFY(hasCompletionIdentifier(choices, QStringLiteral("daN")));
+    QVERIFY(hasCompletionIdentifier(choices, QStringLiteral("daPa")));
+}
+
+void TestEditorUi::unit_context_completion_excludes_prefixed_square_and_cubic_metre()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    const auto hasCompletionIdentifier = [](const QStringList& choices, const QString& identifier) {
+        for (const QString& choice : choices) {
+            if (choice.startsWith(identifier + QStringLiteral(":")))
+                return true;
+        }
+        return false;
+    };
+
+    const QStringList choices = editor.matchFragment(QStringLiteral("deci"), true);
+    QVERIFY(!hasCompletionIdentifier(choices, QStringLiteral("decisquare_metre")));
+    QVERIFY(!hasCompletionIdentifier(choices, QStringLiteral("decicubic_metre")));
 }
 
 void TestEditorUi::completes_binary_prefixed_information_unit_to_short_form_in_unit_context()

@@ -75,6 +75,58 @@ Time units are handled specially because they also participate in
 sexagesimal/time display. Use an explicit conversion target when you want a
 particular time unit display.
 
+When adding or subtracting compatible units, SpeedCrunch may choose a more
+readable display unit for the result instead of blindly keeping the first
+operand's unit. For example, a tiny tonne value added to kilogram and gram
+values can display in kilograms:
+
+* ``0.00000001[t] + 3.2[kg] + 2342.7[g]`` displays as
+  ``5.54271 kilogram``
+
+Larger mass results can still remain in tonnes when that is the more readable
+display. Explicit conversion remains the way to force a target unit.
+
+Time sums use the same readability principle for explicit time units. Results
+of at least one hour display in hours; results below one hour but at least one
+minute display in minutes; smaller results display in seconds. Sexagesimal
+expressions keep their dedicated sexagesimal display behavior.
+
+For units that support SI prefixes, SpeedCrunch also uses a best-fit
+engineering prefix when the unprefixed unit would make the displayed number
+unnecessarily large or small. The chosen prefix aims to keep the numeric part
+in a readable range, typically from ``1`` up to but not including ``1000``:
+
+* ``1[ps]`` displays as ``1 ps``
+* ``0.0001[s] + 0.89999[ms] + 1[ns] + 1[ps]`` displays as
+  ``999.991001 µs``
+* ``0.0001[s] + 0.899999[ms] + 1[ns] + 1[ps]`` displays as
+  ``1.000000001 ms``
+* ``0.0001[m] + 0.899999[mm] + 1[nm] + 1[pm]`` displays as
+  ``1.000000001 mm``
+* ``0.1[m]`` displays as ``100 mm``, not ``1 dm``
+* ``0.01[m]`` displays as ``10 mm``, not ``1 cm``
+* ``0.1[g]`` displays as ``100 mg``
+* ``0.1[L]`` displays as ``100 mL``
+* ``0.1[s]`` displays as ``100 ms``
+* ``0.1[Pa]`` displays as ``100 mPa``
+
+This prefix selection is not limited to time units. It applies to supported
+SI-prefixable units across dimensions, while still respecting special display
+rules such as hours/minutes/seconds for ordinary time sums and explicit
+conversion targets requested with ``->`` or ``in``. The small SI prefixes
+``d``, ``c``, ``da`` and ``h`` are accepted for input where supported, but
+SpeedCrunch does not choose them automatically for result display.
+
+In scientific notation mode, SpeedCrunch keeps the power of ten in the numeric
+part and displays a single SI-prefixable unit with its unprefixed base symbol:
+
+* ``0.0000000001234234235234[m]`` displays as
+  ``1.234234235234 × 10⁻¹⁰ m``, not ``1.234234235234 × 10² pm``
+
+Scientific notation displayed with a multiplication sign and superscript
+exponent can be reused in unit expressions. For example,
+``1 × 10⁻¹²[s]`` is interpreted like ``1e-12[s]`` and displays as ``1 ps``.
+
 
 Composed Units
 --------------

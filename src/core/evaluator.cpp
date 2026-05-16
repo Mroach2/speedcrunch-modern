@@ -6170,6 +6170,9 @@ void Evaluator::compile(const Tokens& tokens)
                }
                const bool openingUnitBracketToken =
                    token.isOperator() && s_isOpeningUnitBracketToken(token);
+               const bool reducePowerBeforeUnitAttachment =
+                   openingUnitBracketToken
+                   && op.asOperator() == Token::Exponentiation;
                const bool forceReduceCompletedConversionBeforeAddSub =
                    op.asOperator() == Token::UnitConversion
                    && token.isOperator()
@@ -6178,8 +6181,9 @@ void Evaluator::compile(const Tokens& tokens)
                if (a.isOperand() && b.isOperand() && op.isOperator()
                    && ( // Normal operator.
                        (token.isOperator()
-                           && !openingUnitBracketToken
+                           && (!openingUnitBracketToken || reducePowerBeforeUnitAttachment)
                            && (forceReduceCompletedConversionBeforeAddSub
+                               || reducePowerBeforeUnitAttachment
                                || opPrecedence(op.asOperator()) >=
                                    opPrecedence(token.asOperator()))
 #ifdef ALLOW_IMPLICIT_MULT
@@ -6921,6 +6925,27 @@ bool hasMixedStandaloneExplicitAngleTermAddSub(const Tokens& tokens)
     return hasStandaloneExplicitAngleTerm && hasNonStandaloneExplicitAngleTerm;
 }
 
+static void replaceSuperscriptPowersWithCaretEquivalent(QString& expr);
+
+static void replacePowerOfTenScientificNotationWithDecimalExponent(QString& expr)
+{
+    static const QRegularExpression pattern(
+        QStringLiteral(R"((\d+(?:\.\d*)?|\.\d+)\s*[\*×]\s*10([⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺]+))"));
+
+    int offset = 0;
+    while (true) {
+        const QRegularExpressionMatch match = pattern.match(expr, offset);
+        if (!match.hasMatch())
+            break;
+
+        const QString replacement = match.captured(1)
+            + QLatin1Char('e')
+            + superscriptDigitsToAscii(match.captured(2));
+        expr.replace(match.capturedStart(), match.capturedLength(), replacement);
+        offset = match.capturedStart() + replacement.size();
+    }
+}
+
 Quantity Evaluator::evalNoAssign()
 {
     Quantity result;
@@ -6959,6 +6984,8 @@ Quantity Evaluator::evalNoAssign()
                 m_assignVarDescription = description;
             }
         }
+        replacePowerOfTenScientificNotationWithDecimalExponent(expressionToParse);
+        replaceSuperscriptPowersWithCaretEquivalent(expressionToParse);
         Tokens tokens = scan(expressionToParse);
 
         // Invalid expression?

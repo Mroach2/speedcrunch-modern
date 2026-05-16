@@ -484,15 +484,6 @@ QString applySuperscriptStyleToUnitName(QString unitName)
 }
     const UnitRegistry& s_unitRegistry();
 
-    enum SiPrefixPolicy {
-        NoSiPrefixes = 0,
-        PositiveSiPrefixes = 1 << 0,
-        NegativeSiPrefixes = 1 << 1,
-        BinaryPrefixes = 1 << 2
-    };
-    static constexpr SiPrefixPolicy AllSiPrefixes =
-        static_cast<SiPrefixPolicy>(PositiveSiPrefixes | NegativeSiPrefixes);
-
     enum class UnitFamily {
         SiBase,
         SiDerived,
@@ -507,7 +498,7 @@ QString applySuperscriptStyleToUnitName(QString unitName)
         Quantity value;
         QString shortName;
         QString alternateShortName;
-        SiPrefixPolicy siPrefixPolicy;
+        int prefixPolicy;
     };
 
     struct AffineDefinition {
@@ -525,18 +516,12 @@ QString applySuperscriptStyleToUnitName(QString unitName)
         QList<QString> aliases;
         UnitFamily family;
         QList<UnitQuantity> quantities;
-        SiPrefixPolicy siPrefixPolicy;
+        int prefixPolicy;
         const Quantity (*linearValue)();
         AffineDefinition affine = {};
     };
 
-    struct PrefixSpec {
-        PrefixId id;
-        QString longName;
-        QString symbol;
-        int power;
-        Quantity value;
-    };
+    using PrefixSpec = UnitPrefixSpec;
 } // namespace
 
 HNumber s_celsiusToKelvin(const HNumber& c);
@@ -551,146 +536,146 @@ const QHash<UnitId, UnitSpec>& s_unitSpecs()
     // See Sources at top of this file.
     static const QHash<UnitId, UnitSpec> specs = {
         // SI base units
-        {UnitId::Second, UnitSpec{UnitName::Second, QT_TR_NOOP("second"), UnitSymbol::Second, {}, UnitFamily::SiBase, {UnitQuantity::Time}, AllSiPrefixes, &Units::second}},
-        {UnitId::Metre, UnitSpec{UnitName::Metre, QT_TR_NOOP("metre"), UnitSymbol::Metre, {}, UnitFamily::SiBase, {UnitQuantity::Length}, AllSiPrefixes, &Units::metre}},
-        {UnitId::Kilogram, UnitSpec{UnitName::Kilogram, QT_TR_NOOP("kilogram"), UnitSymbol::Kilogram, {}, UnitFamily::SiBase, {UnitQuantity::Mass}, AllSiPrefixes, &Units::kilogram}},
-        {UnitId::Ampere, UnitSpec{UnitName::Ampere, QT_TR_NOOP("Ampere"), UnitSymbol::Ampere, {}, UnitFamily::SiBase, {UnitQuantity::ElectricCurrent}, AllSiPrefixes, &Units::ampere}},
-        {UnitId::Kelvin, UnitSpec{UnitName::Kelvin, QT_TR_NOOP("Kelvin"), UnitSymbol::Kelvin, {}, UnitFamily::SiBase, {UnitQuantity::ThermodynamicTemperature}, AllSiPrefixes, &Units::kelvin}},
-        {UnitId::Mole, UnitSpec{UnitName::Mole, QT_TR_NOOP("mole"), UnitSymbol::Mole, {}, UnitFamily::SiBase, {UnitQuantity::AmountOfSubstance}, AllSiPrefixes, &Units::mole}},
-        {UnitId::Candela, UnitSpec{UnitName::Candela, QT_TR_NOOP("candela"), UnitSymbol::Candela, {}, UnitFamily::SiBase, {UnitQuantity::LuminousIntensity}, AllSiPrefixes, &Units::candela}},
+        {UnitId::Second, UnitSpec{UnitName::Second, QT_TR_NOOP("second"), UnitSymbol::Second, {}, UnitFamily::SiBase, {UnitQuantity::Time}, EngineeringSiPrefixes, &Units::second}},
+        {UnitId::Metre, UnitSpec{UnitName::Metre, QT_TR_NOOP("metre"), UnitSymbol::Metre, {}, UnitFamily::SiBase, {UnitQuantity::Length}, EngineeringSiPrefixes | SmallSiPrefixes, &Units::metre}},
+        {UnitId::Kilogram, UnitSpec{UnitName::Kilogram, QT_TR_NOOP("kilogram"), UnitSymbol::Kilogram, {}, UnitFamily::SiBase, {UnitQuantity::Mass}, NoPrefixes, &Units::kilogram}},
+        {UnitId::Ampere, UnitSpec{UnitName::Ampere, QT_TR_NOOP("Ampere"), UnitSymbol::Ampere, {}, UnitFamily::SiBase, {UnitQuantity::ElectricCurrent}, EngineeringSiPrefixes, &Units::ampere}},
+        {UnitId::Kelvin, UnitSpec{UnitName::Kelvin, QT_TR_NOOP("Kelvin"), UnitSymbol::Kelvin, {}, UnitFamily::SiBase, {UnitQuantity::ThermodynamicTemperature}, EngineeringSiPrefixes, &Units::kelvin}},
+        {UnitId::Mole, UnitSpec{UnitName::Mole, QT_TR_NOOP("mole"), UnitSymbol::Mole, {}, UnitFamily::SiBase, {UnitQuantity::AmountOfSubstance}, EngineeringSiPrefixes, &Units::mole}},
+        {UnitId::Candela, UnitSpec{UnitName::Candela, QT_TR_NOOP("candela"), UnitSymbol::Candela, {}, UnitFamily::SiBase, {UnitQuantity::LuminousIntensity}, EngineeringSiPrefixes, &Units::candela}},
         // SI derived units
-        {UnitId::Radian, UnitSpec{UnitName::Radian, QT_TR_NOOP("radian"), UnitSymbol::Radian, {}, UnitFamily::SiDerived, {UnitQuantity::PlaneAngle}, AllSiPrefixes, &Units::radian}},
-        {UnitId::Steradian, UnitSpec{UnitName::Steradian, QT_TR_NOOP("steradian"), UnitSymbol::Steradian, {}, UnitFamily::SiDerived, {UnitQuantity::SolidAngle}, AllSiPrefixes, &Units::steradian}},
-        {UnitId::Hertz, UnitSpec{UnitName::Hertz, QT_TR_NOOP("Hertz"), UnitSymbol::Hertz, {}, UnitFamily::SiDerived, {UnitQuantity::Frequency}, AllSiPrefixes, &Units::hertz}},
-        {UnitId::Newton, UnitSpec{UnitName::Newton, QT_TR_NOOP("Newton"), UnitSymbol::Newton, {}, UnitFamily::SiDerived, {UnitQuantity::Force}, AllSiPrefixes, &Units::newton}},
-        {UnitId::Pascal, UnitSpec{UnitName::Pascal, QT_TR_NOOP("Pascal"), UnitSymbol::Pascal, {}, UnitFamily::SiDerived, {UnitQuantity::Pressure, UnitQuantity::Stress}, AllSiPrefixes, &Units::pascal}},
-        {UnitId::Joule, UnitSpec{UnitName::Joule, QT_TR_NOOP("Joule"), UnitSymbol::Joule, {}, UnitFamily::SiDerived, {UnitQuantity::Energy, UnitQuantity::Work, UnitQuantity::AmountOfHeat}, AllSiPrefixes, &Units::joule}},
-        {UnitId::Watt, UnitSpec{UnitName::Watt, QT_TR_NOOP("Watt"), UnitSymbol::Watt, {}, UnitFamily::SiDerived, {UnitQuantity::Power, UnitQuantity::RadiantFlux}, AllSiPrefixes, &Units::watt}},
-        {UnitId::Coulomb, UnitSpec{UnitName::Coulomb, QT_TR_NOOP("Coulomb"), UnitSymbol::Coulomb, {}, UnitFamily::SiDerived, {UnitQuantity::ElectricCharge}, AllSiPrefixes, &Units::coulomb}},
-        {UnitId::Volt, UnitSpec{UnitName::Volt, QT_TR_NOOP("Volt"), UnitSymbol::Volt, {}, UnitFamily::SiDerived, {UnitQuantity::ElectricPotentialDifference}, AllSiPrefixes, &Units::volt}},
-        {UnitId::Farad, UnitSpec{UnitName::Farad, QT_TR_NOOP("Farad"), UnitSymbol::Farad, {}, UnitFamily::SiDerived, {UnitQuantity::Capacitance}, AllSiPrefixes, &Units::farad}},
-        {UnitId::Ohm, UnitSpec{UnitName::Ohm, QT_TR_NOOP("Ohm"), UnitSymbol::Ohm, {}, UnitFamily::SiDerived, {UnitQuantity::ElectricResistance}, AllSiPrefixes, &Units::ohm}},
-        {UnitId::Siemens, UnitSpec{UnitName::Siemens, QT_TR_NOOP("Siemens"), UnitSymbol::Siemens, {}, UnitFamily::SiDerived, {UnitQuantity::ElectricConductance}, AllSiPrefixes, &Units::siemens}},
-        {UnitId::Weber, UnitSpec{UnitName::Weber, QT_TR_NOOP("Weber"), UnitSymbol::Weber, {}, UnitFamily::SiDerived, {UnitQuantity::MagneticFlux}, AllSiPrefixes, &Units::weber}},
-        {UnitId::Tesla, UnitSpec{UnitName::Tesla, QT_TR_NOOP("Tesla"), UnitSymbol::Tesla, {}, UnitFamily::SiDerived, {UnitQuantity::MagneticFluxDensity}, AllSiPrefixes, &Units::tesla}},
-        {UnitId::Henry, UnitSpec{UnitName::Henry, QT_TR_NOOP("Henry"), UnitSymbol::Henry, {}, UnitFamily::SiDerived, {UnitQuantity::Inductance}, AllSiPrefixes, &Units::henry}},
-        {UnitId::DegreeCelsius, UnitSpec{UnitName::DegreeCelsius, QT_TR_NOOP("degree Celsius"), UnitSymbol::DegreeCelsius, {UnitAltSymbol::DegreeCelsius1, UnitAltSymbol::DegreeCelsius2, UnitAltSymbol::DegreeCelsius3, UnitAltSymbol::DegreeCelsius4, UnitAltSymbol::DegreeCelsius5}, UnitFamily::SiAccepted, {UnitQuantity::CelsiusTemperature}, NoSiPrefixes, &Units::kelvin, {&s_celsiusToKelvin, &s_kelvinToCelsius}}},
-        {UnitId::Lumen, UnitSpec{UnitName::Lumen, QT_TR_NOOP("lumen"), UnitSymbol::Lumen, {}, UnitFamily::SiDerived, {UnitQuantity::LuminousFlux}, AllSiPrefixes, &Units::lumen}},
-        {UnitId::Lux, UnitSpec{UnitName::Lux, QT_TR_NOOP("lux"), UnitSymbol::Lux, {}, UnitFamily::SiDerived, {UnitQuantity::Illuminance}, AllSiPrefixes, &Units::lux}},
-        {UnitId::Becquerel, UnitSpec{UnitName::Becquerel, QT_TR_NOOP("Becquerel"), UnitSymbol::Becquerel, {}, UnitFamily::SiDerived, {UnitQuantity::ActivityReferredToARadionuclide}, AllSiPrefixes, &Units::becquerel}},
-        {UnitId::Gray, UnitSpec{UnitName::Gray, QT_TR_NOOP("Gray"), UnitSymbol::Gray, {}, UnitFamily::SiDerived, {UnitQuantity::AbsorbedDose, UnitQuantity::Kerma}, AllSiPrefixes, &Units::gray}},
-        {UnitId::Sievert, UnitSpec{UnitName::Sievert, QT_TR_NOOP("sievert"), UnitSymbol::Sievert, {}, UnitFamily::SiDerived, {UnitQuantity::DoseEquivalent}, AllSiPrefixes, &Units::sievert}},
-        {UnitId::Katal, UnitSpec{UnitName::Katal, QT_TR_NOOP("katal"), UnitSymbol::Katal, {}, UnitFamily::SiDerived, {UnitQuantity::CatalyticActivity}, AllSiPrefixes, &Units::katal}},
-        {UnitId::CubicMetre, UnitSpec{UnitName::CubicMetre, QT_TR_NOOP("cubic metre"), UnitSymbol::CubicMetre, {}, UnitFamily::SiDerived, {UnitQuantity::Volume}, AllSiPrefixes, &Units::cubic_metre}},
-        {UnitId::CubicMillimetre, UnitSpec{UnitName::CubicMillimetre, QT_TR_NOOP("cubic millimetre"), UnitSymbol::CubicMillimetre, {}, UnitFamily::SiDerived, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cubic_millimetre}},
-        {UnitId::CubicCentimetre, UnitSpec{UnitName::CubicCentimetre, QT_TR_NOOP("cubic centimetre"), UnitSymbol::CubicCentimetre, {UnitAltSymbol::CubicCentimetre}, UnitFamily::SiDerived, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cubic_centimetre}},
-        {UnitId::CubicDecimetre, UnitSpec{UnitName::CubicDecimetre, QT_TR_NOOP("cubic decimetre"), UnitSymbol::CubicDecimetre, {}, UnitFamily::SiDerived, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cubic_decimetre}},
-        {UnitId::CubicKilometre, UnitSpec{UnitName::CubicKilometre, QT_TR_NOOP("cubic kilometre"), UnitSymbol::CubicKilometre, {}, UnitFamily::SiDerived, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cubic_kilometre}},
-        {UnitId::SquareMillimetre, UnitSpec{UnitName::SquareMillimetre, QT_TR_NOOP("square millimetre"), UnitSymbol::SquareMillimetre, {}, UnitFamily::SiDerived, {UnitQuantity::Area}, NoSiPrefixes, &Units::square_millimetre}},
-        {UnitId::SquareKilometre, UnitSpec{UnitName::SquareKilometre, QT_TR_NOOP("square kilometre"), UnitSymbol::SquareKilometre, {}, UnitFamily::SiDerived, {UnitQuantity::Area}, NoSiPrefixes, &Units::square_kilometre}},
-        {UnitId::SquareMetre, UnitSpec{UnitName::SquareMetre, QT_TR_NOOP("square metre"), UnitSymbol::SquareMetre, {}, UnitFamily::SiDerived, {UnitQuantity::Area}, AllSiPrefixes, &Units::square_metre}},
+        {UnitId::Radian, UnitSpec{UnitName::Radian, QT_TR_NOOP("radian"), UnitSymbol::Radian, {}, UnitFamily::SiDerived, {UnitQuantity::PlaneAngle}, EngineeringSiPrefixes, &Units::radian}},
+        {UnitId::Steradian, UnitSpec{UnitName::Steradian, QT_TR_NOOP("steradian"), UnitSymbol::Steradian, {}, UnitFamily::SiDerived, {UnitQuantity::SolidAngle}, EngineeringSiPrefixes, &Units::steradian}},
+        {UnitId::Hertz, UnitSpec{UnitName::Hertz, QT_TR_NOOP("Hertz"), UnitSymbol::Hertz, {}, UnitFamily::SiDerived, {UnitQuantity::Frequency}, EngineeringSiPrefixes, &Units::hertz}},
+        {UnitId::Newton, UnitSpec{UnitName::Newton, QT_TR_NOOP("Newton"), UnitSymbol::Newton, {}, UnitFamily::SiDerived, {UnitQuantity::Force}, EngineeringSiPrefixes | SmallPositiveSiPrefixes, &Units::newton}},
+        {UnitId::Pascal, UnitSpec{UnitName::Pascal, QT_TR_NOOP("Pascal"), UnitSymbol::Pascal, {}, UnitFamily::SiDerived, {UnitQuantity::Pressure, UnitQuantity::Stress}, EngineeringSiPrefixes | SmallPositiveSiPrefixes, &Units::pascal}},
+        {UnitId::Joule, UnitSpec{UnitName::Joule, QT_TR_NOOP("Joule"), UnitSymbol::Joule, {}, UnitFamily::SiDerived, {UnitQuantity::Energy, UnitQuantity::Work, UnitQuantity::AmountOfHeat}, EngineeringSiPrefixes, &Units::joule}},
+        {UnitId::Watt, UnitSpec{UnitName::Watt, QT_TR_NOOP("Watt"), UnitSymbol::Watt, {}, UnitFamily::SiDerived, {UnitQuantity::Power, UnitQuantity::RadiantFlux}, EngineeringSiPrefixes, &Units::watt}},
+        {UnitId::Coulomb, UnitSpec{UnitName::Coulomb, QT_TR_NOOP("Coulomb"), UnitSymbol::Coulomb, {}, UnitFamily::SiDerived, {UnitQuantity::ElectricCharge}, EngineeringSiPrefixes, &Units::coulomb}},
+        {UnitId::Volt, UnitSpec{UnitName::Volt, QT_TR_NOOP("Volt"), UnitSymbol::Volt, {}, UnitFamily::SiDerived, {UnitQuantity::ElectricPotentialDifference}, EngineeringSiPrefixes, &Units::volt}},
+        {UnitId::Farad, UnitSpec{UnitName::Farad, QT_TR_NOOP("Farad"), UnitSymbol::Farad, {}, UnitFamily::SiDerived, {UnitQuantity::Capacitance}, EngineeringSiPrefixes, &Units::farad}},
+        {UnitId::Ohm, UnitSpec{UnitName::Ohm, QT_TR_NOOP("Ohm"), UnitSymbol::Ohm, {}, UnitFamily::SiDerived, {UnitQuantity::ElectricResistance}, EngineeringSiPrefixes, &Units::ohm}},
+        {UnitId::Siemens, UnitSpec{UnitName::Siemens, QT_TR_NOOP("Siemens"), UnitSymbol::Siemens, {}, UnitFamily::SiDerived, {UnitQuantity::ElectricConductance}, EngineeringSiPrefixes, &Units::siemens}},
+        {UnitId::Weber, UnitSpec{UnitName::Weber, QT_TR_NOOP("Weber"), UnitSymbol::Weber, {}, UnitFamily::SiDerived, {UnitQuantity::MagneticFlux}, EngineeringSiPrefixes, &Units::weber}},
+        {UnitId::Tesla, UnitSpec{UnitName::Tesla, QT_TR_NOOP("Tesla"), UnitSymbol::Tesla, {}, UnitFamily::SiDerived, {UnitQuantity::MagneticFluxDensity}, EngineeringSiPrefixes, &Units::tesla}},
+        {UnitId::Henry, UnitSpec{UnitName::Henry, QT_TR_NOOP("Henry"), UnitSymbol::Henry, {}, UnitFamily::SiDerived, {UnitQuantity::Inductance}, EngineeringSiPrefixes, &Units::henry}},
+        {UnitId::DegreeCelsius, UnitSpec{UnitName::DegreeCelsius, QT_TR_NOOP("degree Celsius"), UnitSymbol::DegreeCelsius, {UnitAltSymbol::DegreeCelsius1, UnitAltSymbol::DegreeCelsius2, UnitAltSymbol::DegreeCelsius3, UnitAltSymbol::DegreeCelsius4, UnitAltSymbol::DegreeCelsius5}, UnitFamily::SiAccepted, {UnitQuantity::CelsiusTemperature}, NoPrefixes, &Units::kelvin, {&s_celsiusToKelvin, &s_kelvinToCelsius}}},
+        {UnitId::Lumen, UnitSpec{UnitName::Lumen, QT_TR_NOOP("lumen"), UnitSymbol::Lumen, {}, UnitFamily::SiDerived, {UnitQuantity::LuminousFlux}, EngineeringSiPrefixes, &Units::lumen}},
+        {UnitId::Lux, UnitSpec{UnitName::Lux, QT_TR_NOOP("lux"), UnitSymbol::Lux, {}, UnitFamily::SiDerived, {UnitQuantity::Illuminance}, EngineeringSiPrefixes, &Units::lux}},
+        {UnitId::Becquerel, UnitSpec{UnitName::Becquerel, QT_TR_NOOP("Becquerel"), UnitSymbol::Becquerel, {}, UnitFamily::SiDerived, {UnitQuantity::ActivityReferredToARadionuclide}, EngineeringSiPrefixes, &Units::becquerel}},
+        {UnitId::Gray, UnitSpec{UnitName::Gray, QT_TR_NOOP("Gray"), UnitSymbol::Gray, {}, UnitFamily::SiDerived, {UnitQuantity::AbsorbedDose, UnitQuantity::Kerma}, EngineeringSiPrefixes, &Units::gray}},
+        {UnitId::Sievert, UnitSpec{UnitName::Sievert, QT_TR_NOOP("sievert"), UnitSymbol::Sievert, {}, UnitFamily::SiDerived, {UnitQuantity::DoseEquivalent}, EngineeringSiPrefixes, &Units::sievert}},
+        {UnitId::Katal, UnitSpec{UnitName::Katal, QT_TR_NOOP("katal"), UnitSymbol::Katal, {}, UnitFamily::SiDerived, {UnitQuantity::CatalyticActivity}, EngineeringSiPrefixes, &Units::katal}},
+        {UnitId::CubicMetre, UnitSpec{UnitName::CubicMetre, QT_TR_NOOP("cubic metre"), UnitSymbol::CubicMetre, {}, UnitFamily::SiDerived, {UnitQuantity::Volume}, EngineeringSiPrefixes | SmallNegativeSiPrefixes, &Units::cubic_metre}},
+        {UnitId::CubicMillimetre, UnitSpec{UnitName::CubicMillimetre, QT_TR_NOOP("cubic millimetre"), UnitSymbol::CubicMillimetre, {}, UnitFamily::SiDerived, {UnitQuantity::Volume}, NoPrefixes, &Units::cubic_millimetre}},
+        {UnitId::CubicCentimetre, UnitSpec{UnitName::CubicCentimetre, QT_TR_NOOP("cubic centimetre"), UnitSymbol::CubicCentimetre, {UnitAltSymbol::CubicCentimetre}, UnitFamily::SiDerived, {UnitQuantity::Volume}, NoPrefixes, &Units::cubic_centimetre}},
+        {UnitId::CubicDecimetre, UnitSpec{UnitName::CubicDecimetre, QT_TR_NOOP("cubic decimetre"), UnitSymbol::CubicDecimetre, {}, UnitFamily::SiDerived, {UnitQuantity::Volume}, NoPrefixes, &Units::cubic_decimetre}},
+        {UnitId::CubicKilometre, UnitSpec{UnitName::CubicKilometre, QT_TR_NOOP("cubic kilometre"), UnitSymbol::CubicKilometre, {}, UnitFamily::SiDerived, {UnitQuantity::Volume}, NoPrefixes, &Units::cubic_kilometre}},
+        {UnitId::SquareMillimetre, UnitSpec{UnitName::SquareMillimetre, QT_TR_NOOP("square millimetre"), UnitSymbol::SquareMillimetre, {}, UnitFamily::SiDerived, {UnitQuantity::Area}, NoPrefixes, &Units::square_millimetre}},
+        {UnitId::SquareKilometre, UnitSpec{UnitName::SquareKilometre, QT_TR_NOOP("square kilometre"), UnitSymbol::SquareKilometre, {}, UnitFamily::SiDerived, {UnitQuantity::Area}, NoPrefixes, &Units::square_kilometre}},
+        {UnitId::SquareMetre, UnitSpec{UnitName::SquareMetre, QT_TR_NOOP("square metre"), UnitSymbol::SquareMetre, {}, UnitFamily::SiDerived, {UnitQuantity::Area}, EngineeringSiPrefixes | SmallNegativeSiPrefixes, &Units::square_metre}},
         // SI-accepted units
-        {UnitId::Minute, UnitSpec{UnitName::Minute, QT_TR_NOOP("minute"), UnitSymbol::Minute, {}, UnitFamily::SiAccepted, {UnitQuantity::Time}, NoSiPrefixes, &Units::minute}},
-        {UnitId::Hour, UnitSpec{UnitName::Hour, QT_TR_NOOP("hour"), UnitSymbol::Hour, {}, UnitFamily::SiAccepted, {UnitQuantity::Time}, NoSiPrefixes, &Units::hour}},
-        {UnitId::Day, UnitSpec{UnitName::Day, QT_TR_NOOP("day"), UnitSymbol::Day, {}, UnitFamily::SiAccepted, {UnitQuantity::Time}, NoSiPrefixes, &Units::day}},
-        {UnitId::AstronomicalUnit, UnitSpec{UnitName::AstronomicalUnit, QT_TR_NOOP("astronomical unit"), UnitSymbol::AstronomicalUnit, {}, UnitFamily::SiAccepted, {UnitQuantity::Length}, NoSiPrefixes, &Units::astronomical_unit}},
-        {UnitId::Degree, UnitSpec{UnitName::Degree, QT_TR_NOOP("degree"), UnitSymbol::Degree, {UnitAltSymbol::Degree1, UnitAltSymbol::Degree2}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::degree}},
-        {UnitId::Arcminute, UnitSpec{UnitName::Arcminute, QT_TR_NOOP("arcminute"), UnitSymbol::Arcminute, {UnitAltSymbol::Arcminute}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::arcminute}},
-        {UnitId::Arcsecond, UnitSpec{UnitName::Arcsecond, QT_TR_NOOP("arcsecond"), UnitSymbol::Arcsecond, {UnitAltSymbol::Arcsecond}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::arcsecond}},
-        {UnitId::Milliarcsecond, UnitSpec{UnitName::Milliarcsecond, QT_TR_NOOP("milliarcsecond"), UnitSymbol::Milliarcsecond, {}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::milliarcsecond}},
-        {UnitId::Microarcsecond, UnitSpec{UnitName::Microarcsecond, QT_TR_NOOP("microarcsecond"), UnitSymbol::Microarcsecond, {UnitAltSymbol::MicroarcsecondAscii}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::microarcsecond}},
-        {UnitId::Hectare, UnitSpec{UnitName::Hectare, QT_TR_NOOP("hectare"), UnitSymbol::Hectare, {}, UnitFamily::SiAccepted, {UnitQuantity::Area}, NoSiPrefixes, &Units::hectare}},
-        {UnitId::Litre, UnitSpec{UnitName::Litre, QT_TR_NOOP("litre"), UnitSymbol::Litre, {UnitAltSymbol::Litre}, UnitFamily::SiAccepted, {UnitQuantity::Volume}, AllSiPrefixes, &Units::litre}},
-        {UnitId::Tonne, UnitSpec{UnitName::Tonne, QT_TR_NOOP("tonne"), UnitSymbol::Tonne, {}, UnitFamily::SiAccepted, {UnitQuantity::Mass}, AllSiPrefixes, &Units::tonne}},
-        {UnitId::Dalton, UnitSpec{UnitName::Dalton, QT_TR_NOOP("Dalton"), UnitSymbol::Dalton, {}, UnitFamily::SiAccepted, {UnitQuantity::Mass}, NoSiPrefixes, &Units::atomic_mass_unit}},
-        {UnitId::Electronvolt, UnitSpec{UnitName::Electronvolt, QT_TR_NOOP("electronvolt"), UnitSymbol::Electronvolt, {}, UnitFamily::SiAccepted, {UnitQuantity::Energy}, AllSiPrefixes, &Units::electronvolt}},
+        {UnitId::Minute, UnitSpec{UnitName::Minute, QT_TR_NOOP("minute"), UnitSymbol::Minute, {}, UnitFamily::SiAccepted, {UnitQuantity::Time}, NoPrefixes, &Units::minute}},
+        {UnitId::Hour, UnitSpec{UnitName::Hour, QT_TR_NOOP("hour"), UnitSymbol::Hour, {}, UnitFamily::SiAccepted, {UnitQuantity::Time}, NoPrefixes, &Units::hour}},
+        {UnitId::Day, UnitSpec{UnitName::Day, QT_TR_NOOP("day"), UnitSymbol::Day, {}, UnitFamily::SiAccepted, {UnitQuantity::Time}, NoPrefixes, &Units::day}},
+        {UnitId::AstronomicalUnit, UnitSpec{UnitName::AstronomicalUnit, QT_TR_NOOP("astronomical unit"), UnitSymbol::AstronomicalUnit, {}, UnitFamily::SiAccepted, {UnitQuantity::Length}, NoPrefixes, &Units::astronomical_unit}},
+        {UnitId::Degree, UnitSpec{UnitName::Degree, QT_TR_NOOP("degree"), UnitSymbol::Degree, {UnitAltSymbol::Degree1, UnitAltSymbol::Degree2}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoPrefixes, &Units::degree}},
+        {UnitId::Arcminute, UnitSpec{UnitName::Arcminute, QT_TR_NOOP("arcminute"), UnitSymbol::Arcminute, {UnitAltSymbol::Arcminute}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoPrefixes, &Units::arcminute}},
+        {UnitId::Arcsecond, UnitSpec{UnitName::Arcsecond, QT_TR_NOOP("arcsecond"), UnitSymbol::Arcsecond, {UnitAltSymbol::Arcsecond}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoPrefixes, &Units::arcsecond}},
+        {UnitId::Milliarcsecond, UnitSpec{UnitName::Milliarcsecond, QT_TR_NOOP("milliarcsecond"), UnitSymbol::Milliarcsecond, {}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoPrefixes, &Units::milliarcsecond}},
+        {UnitId::Microarcsecond, UnitSpec{UnitName::Microarcsecond, QT_TR_NOOP("microarcsecond"), UnitSymbol::Microarcsecond, {UnitAltSymbol::MicroarcsecondAscii}, UnitFamily::SiAccepted, {UnitQuantity::PlaneAngle}, NoPrefixes, &Units::microarcsecond}},
+        {UnitId::Hectare, UnitSpec{UnitName::Hectare, QT_TR_NOOP("hectare"), UnitSymbol::Hectare, {}, UnitFamily::SiAccepted, {UnitQuantity::Area}, NoPrefixes, &Units::hectare}},
+        {UnitId::Litre, UnitSpec{UnitName::Litre, QT_TR_NOOP("litre"), UnitSymbol::Litre, {UnitAltSymbol::Litre}, UnitFamily::SiAccepted, {UnitQuantity::Volume}, EngineeringSiPrefixes | SmallSiPrefixes, &Units::litre}},
+        {UnitId::Tonne, UnitSpec{UnitName::Tonne, QT_TR_NOOP("tonne"), UnitSymbol::Tonne, {}, UnitFamily::SiAccepted, {UnitQuantity::Mass}, NoPrefixes, &Units::tonne}},
+        {UnitId::Dalton, UnitSpec{UnitName::Dalton, QT_TR_NOOP("Dalton"), UnitSymbol::Dalton, {}, UnitFamily::SiAccepted, {UnitQuantity::Mass}, NoPrefixes, &Units::atomic_mass_unit}},
+        {UnitId::Electronvolt, UnitSpec{UnitName::Electronvolt, QT_TR_NOOP("electronvolt"), UnitSymbol::Electronvolt, {}, UnitFamily::SiAccepted, {UnitQuantity::Energy}, EngineeringSiPrefixes, &Units::electronvolt}},
 
-        {UnitId::Acre, UnitSpec{UnitName::Acre, QT_TR_NOOP("acre"), UnitSymbol::Acre, {}, UnitFamily::Other, {UnitQuantity::Area}, NoSiPrefixes, &Units::acre}},
-        {UnitId::Angstrom, UnitSpec{UnitName::Angstrom, QT_TR_NOOP("Angstrom"), UnitSymbol::Angstrom, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::angstrom}},
-        {UnitId::Atmosphere, UnitSpec{UnitName::Atmosphere, QT_TR_NOOP("atmosphere"), UnitSymbol::Atmosphere, {}, UnitFamily::Other, {UnitQuantity::Pressure}, NoSiPrefixes, &Units::atmosphere}},
-        {UnitId::AtomicMassUnit, UnitSpec{UnitName::AtomicMassUnit, QT_TR_NOOP("atomic mass unit"), UnitSymbol::AtomicMassUnit, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoSiPrefixes, &Units::atomic_mass_unit}},
-        {UnitId::Bar, UnitSpec{UnitName::Bar, QT_TR_NOOP("bar"), UnitSymbol::Bar, {}, UnitFamily::Other, {UnitQuantity::Pressure}, AllSiPrefixes, &Units::bar}},
-        {UnitId::Bit, UnitSpec{UnitName::Bit, QT_TR_NOOP("bit"), UnitSymbol::Bit, {}, UnitFamily::Other, {UnitQuantity::Information}, static_cast<SiPrefixPolicy>(PositiveSiPrefixes | BinaryPrefixes), &Units::bit}},
-        {UnitId::BritishThermalUnit, UnitSpec{UnitName::BritishThermalUnit, QT_TR_NOOP("British thermal unit"), UnitSymbol::BritishThermalUnit, {}, UnitFamily::Other, {UnitQuantity::AmountOfHeat}, NoSiPrefixes, &Units::british_thermal_unit}},
-        {UnitId::Byte, UnitSpec{UnitName::Byte, QT_TR_NOOP("byte"), UnitSymbol::Byte, {}, UnitFamily::Other, {UnitQuantity::Information}, static_cast<SiPrefixPolicy>(PositiveSiPrefixes | BinaryPrefixes), &Units::byte}},
-        {UnitId::Calorie, UnitSpec{UnitName::Calorie, QT_TR_NOOP("calorie"), UnitSymbol::Calorie, {}, UnitFamily::Other, {UnitQuantity::AmountOfHeat}, NoSiPrefixes, &Units::calorie}},
-        {UnitId::Carat, UnitSpec{UnitName::Carat, QT_TR_NOOP("carat"), UnitSymbol::Carat, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoSiPrefixes, &Units::carat}},
-        {UnitId::Cup, UnitSpec{UnitName::Cup, QT_TR_NOOP("cup"), UnitSymbol::Cup, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cup}},
-        {UnitId::CupImp, UnitSpec{UnitName::CupImp, QT_TR_NOOP("cup (Imperial)"), UnitSymbol::CupImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cup_imp}},
-        {UnitId::CupJp, UnitSpec{UnitName::CupJp, QT_TR_NOOP("cup (Japanese)"), UnitSymbol::CupJp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cup_jp}},
-        {UnitId::CupUs, UnitSpec{UnitName::CupUs, QT_TR_NOOP("cup (US)"), UnitSymbol::CupUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cup_us}},
-        {UnitId::DegreeFahrenheit, UnitSpec{UnitName::DegreeFahrenheit, QT_TR_NOOP("degree Fahrenheit"), UnitSymbol::DegreeFahrenheit, {UnitAltSymbol::DegreeFahrenheit1, UnitAltSymbol::DegreeFahrenheit2, UnitAltSymbol::DegreeFahrenheit3, UnitAltSymbol::DegreeFahrenheit4, UnitAltSymbol::DegreeFahrenheit5}, UnitFamily::Other, {UnitQuantity::CelsiusTemperature}, NoSiPrefixes, &Units::kelvin, {&s_fahrenheitToKelvin, &s_kelvinToFahrenheit}}},
-        {UnitId::Fathom, UnitSpec{UnitName::Fathom, QT_TR_NOOP("fathom"), UnitSymbol::Fathom, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::fathom}},
-        {UnitId::FluidOunceImp, UnitSpec{UnitName::FluidOunceImp, QT_TR_NOOP("fluid ounce (Imperial)"), UnitSymbol::FluidOunceImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::fluid_ounce_imp}},
-        {UnitId::FluidOunceUs, UnitSpec{UnitName::FluidOunceUs, QT_TR_NOOP("fluid ounce (US)"), UnitSymbol::FluidOunceUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::fluid_ounce_us}},
-        {UnitId::FluidDramImp, UnitSpec{UnitName::FluidDramImp, QT_TR_NOOP("fluid dram (Imperial)"), UnitSymbol::FluidDramImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::fluid_dram_imp}},
-        {UnitId::FluidDramUs, UnitSpec{UnitName::FluidDramUs, QT_TR_NOOP("fluid dram (US)"), UnitSymbol::FluidDramUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::fluid_dram_us}},
-        {UnitId::Foot, UnitSpec{UnitName::Foot, QT_TR_NOOP("foot"), UnitSymbol::Foot, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::foot}},
-        {UnitId::SquareFoot, UnitSpec{UnitName::SquareFoot, QT_TR_NOOP("square foot"), UnitSymbol::SquareFoot, {}, UnitFamily::Other, {UnitQuantity::Area}, NoSiPrefixes, &Units::square_foot}},
-        {UnitId::CubicFoot, UnitSpec{UnitName::CubicFoot, QT_TR_NOOP("cubic foot"), UnitSymbol::CubicFoot, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cubic_foot}},
-        {UnitId::Furlong, UnitSpec{UnitName::Furlong, QT_TR_NOOP("furlong"), UnitSymbol::Furlong, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::furlong}},
-        {UnitId::GallonImp, UnitSpec{UnitName::GallonImp, QT_TR_NOOP("gallon (Imperial)"), UnitSymbol::GallonImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::gallon_imp}},
-        {UnitId::GallonUs, UnitSpec{UnitName::GallonUs, QT_TR_NOOP("gallon (US)"), UnitSymbol::GallonUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::gallon_us}},
-        {UnitId::GillImp, UnitSpec{UnitName::GillImp, QT_TR_NOOP("gill (Imperial)"), UnitSymbol::GillImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::gill_imp}},
-        {UnitId::GillUs, UnitSpec{UnitName::GillUs, QT_TR_NOOP("gill (US)"), UnitSymbol::GillUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::gill_us}},
-        {UnitId::Gradian, UnitSpec{UnitName::Gradian, QT_TR_NOOP("gradian"), UnitSymbol::Gradian, {}, UnitFamily::Other, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::gradian}},
-        {UnitId::Grain, UnitSpec{UnitName::Grain, QT_TR_NOOP("grain"), UnitSymbol::Grain, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoSiPrefixes, &Units::grain}},
-        {UnitId::Gram, UnitSpec{UnitName::Gram, QT_TR_NOOP("gram"), UnitSymbol::Gram, {}, UnitFamily::Other, {UnitQuantity::Mass}, AllSiPrefixes, &Units::gram}},
-        {UnitId::Hartley, UnitSpec{UnitName::Hartley, QT_TR_NOOP("Hartley"), UnitSymbol::Hartley, {}, UnitFamily::Other, {UnitQuantity::Information}, NoSiPrefixes, &Units::hartley}},
-        {UnitId::HartreeEnergyUnit, UnitSpec{UnitName::HartreeEnergyUnit, QT_TR_NOOP("Hartree energy unit"), UnitSymbol::HartreeEnergyUnit, {}, UnitFamily::Other, {UnitQuantity::Energy}, NoSiPrefixes, &s_hartreeEnergyUnit}},
-        {UnitId::Horsepower, UnitSpec{UnitName::Horsepower, QT_TR_NOOP("horsepower"), UnitSymbol::Horsepower, {}, UnitFamily::Other, {UnitQuantity::Power}, NoSiPrefixes, &Units::horsepower}},
-        {UnitId::Inch, UnitSpec{UnitName::Inch, QT_TR_NOOP("inch"), UnitSymbol::Inch, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::inch}},
-        {UnitId::SquareInch, UnitSpec{UnitName::SquareInch, QT_TR_NOOP("square inch"), UnitSymbol::SquareInch, {}, UnitFamily::Other, {UnitQuantity::Area}, NoSiPrefixes, &Units::square_inch}},
-        {UnitId::CubicInch, UnitSpec{UnitName::CubicInch, QT_TR_NOOP("cubic inch"), UnitSymbol::CubicInch, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cubic_inch}},
-        {UnitId::Karat, UnitSpec{UnitName::Karat, QT_TR_NOOP("karat"), UnitSymbol::Karat, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoSiPrefixes, &Units::karat}},
-        {UnitId::Knot, UnitSpec{UnitName::Knot, QT_TR_NOOP("knot"), UnitSymbol::Knot, {}, UnitFamily::Other, {UnitQuantity::Speed, UnitQuantity::Velocity}, NoSiPrefixes, &Units::knot}},
-        {UnitId::Lightminute, UnitSpec{UnitName::Lightminute, QT_TR_NOOP("lightminute"), UnitSymbol::Lightminute, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::lightminute}},
-        {UnitId::Lightsecond, UnitSpec{UnitName::Lightsecond, QT_TR_NOOP("lightsecond"), UnitSymbol::Lightsecond, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::lightsecond}},
-        {UnitId::Lightyear, UnitSpec{UnitName::Lightyear, QT_TR_NOOP("lightyear"), UnitSymbol::Lightyear, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::lightyear}},
-        {UnitId::LongTon, UnitSpec{UnitName::LongTon, QT_TR_NOOP("long ton"), UnitSymbol::LongTon, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoSiPrefixes, &Units::long_ton}},
-        {UnitId::Mile, UnitSpec{UnitName::Mile, QT_TR_NOOP("mile"), UnitSymbol::Mile, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::mile}},
-        {UnitId::SquareMile, UnitSpec{UnitName::SquareMile, QT_TR_NOOP("square mile"), UnitSymbol::SquareMile, {}, UnitFamily::Other, {UnitQuantity::Area}, NoSiPrefixes, &Units::square_mile}},
-        {UnitId::CubicMile, UnitSpec{UnitName::CubicMile, QT_TR_NOOP("cubic mile"), UnitSymbol::CubicMile, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cubic_mile}},
-        {UnitId::MilePerHour, UnitSpec{UnitName::MilePerHour, QT_TR_NOOP("mile per hour"), UnitSymbol::MilePerHour, {}, UnitFamily::Other, {UnitQuantity::Speed, UnitQuantity::Velocity}, NoSiPrefixes, &Units::mile_per_hour}},
-        {UnitId::KilometrePerHour, UnitSpec{UnitName::KilometrePerHour, QT_TR_NOOP("kilometre per hour"), UnitSymbol::KilometrePerHour, {}, UnitFamily::Other, {UnitQuantity::Speed, UnitQuantity::Velocity}, NoSiPrefixes, &Units::kilometre_per_hour}},
-        {UnitId::Nat, UnitSpec{UnitName::Nat, QT_TR_NOOP("nat"), UnitSymbol::Nat, {}, UnitFamily::Other, {UnitQuantity::Information}, NoSiPrefixes, &Units::nat}},
-        {UnitId::NauticalMile, UnitSpec{UnitName::NauticalMile, QT_TR_NOOP("nautical mile"), UnitSymbol::NauticalMile, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::nautical_mile}},
-        {UnitId::Ounce, UnitSpec{UnitName::Ounce, QT_TR_NOOP("ounce"), UnitSymbol::Ounce, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoSiPrefixes, &Units::ounce}},
-        {UnitId::Parsec, UnitSpec{UnitName::Parsec, QT_TR_NOOP("parsec"), UnitSymbol::Parsec, {}, UnitFamily::Other, {UnitQuantity::Length}, PositiveSiPrefixes, &Units::parsec}},
-        {UnitId::PintImp, UnitSpec{UnitName::PintImp, QT_TR_NOOP("pint (Imperial)"), UnitSymbol::PintImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::pint_imp}},
-        {UnitId::PintUs, UnitSpec{UnitName::PintUs, QT_TR_NOOP("pint (US)"), UnitSymbol::PintUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::pint_us}},
-        {UnitId::Pound, UnitSpec{UnitName::Pound, QT_TR_NOOP("pound"), UnitSymbol::Pound, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoSiPrefixes, &Units::pound}},
-        {UnitId::PoundsPerSqinch, UnitSpec{UnitName::PoundsPerSqinch, QT_TR_NOOP("pounds per square inch"), UnitSymbol::PoundsPerSqinch, {}, UnitFamily::Other, {UnitQuantity::Pressure}, NoSiPrefixes, &Units::pounds_per_sqinch}},
-        {UnitId::QuartImp, UnitSpec{UnitName::QuartImp, QT_TR_NOOP("quart (Imperial)"), UnitSymbol::QuartImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::quart_imp}},
-        {UnitId::QuartUs, UnitSpec{UnitName::QuartUs, QT_TR_NOOP("quart (US)"), UnitSymbol::QuartUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::quart_us}},
-        {UnitId::BarrelOil, UnitSpec{UnitName::BarrelOil, QT_TR_NOOP("oil barrel"), UnitSymbol::BarrelOil, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::barrel_oil}},
-        {UnitId::BarrelBeerUs, UnitSpec{UnitName::BarrelBeerUs, QT_TR_NOOP("beer barrel (US)"), UnitSymbol::BarrelBeerUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::barrel_beer_us}},
-        {UnitId::Rod, UnitSpec{UnitName::Rod, QT_TR_NOOP("rod"), UnitSymbol::Rod, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::rod}},
-        {UnitId::SquareYard, UnitSpec{UnitName::SquareYard, QT_TR_NOOP("square yard"), UnitSymbol::SquareYard, {}, UnitFamily::Other, {UnitQuantity::Area}, NoSiPrefixes, &Units::square_yard}},
-        {UnitId::CubicYard, UnitSpec{UnitName::CubicYard, QT_TR_NOOP("cubic yard"), UnitSymbol::CubicYard, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::cubic_yard}},
-        {UnitId::ShortTon, UnitSpec{UnitName::ShortTon, QT_TR_NOOP("short ton"), UnitSymbol::ShortTon, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoSiPrefixes, &Units::short_ton}},
-        {UnitId::Stone, UnitSpec{UnitName::Stone, QT_TR_NOOP("stone"), UnitSymbol::Stone, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoSiPrefixes, &Units::stone}},
-        {UnitId::Tablespoon, UnitSpec{UnitName::Tablespoon, QT_TR_NOOP("tablespoon"), UnitSymbol::Tablespoon, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::tablespoon}},
-        {UnitId::TablespoonAu, UnitSpec{UnitName::TablespoonAu, QT_TR_NOOP("tablespoon (Australian)"), UnitSymbol::TablespoonAu, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::tablespoon_au}},
-        {UnitId::TablespoonImp, UnitSpec{UnitName::TablespoonImp, QT_TR_NOOP("tablespoon (Imperial)"), UnitSymbol::TablespoonImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::tablespoon_imp}},
-        {UnitId::TablespoonUs, UnitSpec{UnitName::TablespoonUs, QT_TR_NOOP("tablespoon (US)"), UnitSymbol::TablespoonUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::tablespoon_us}},
-        {UnitId::DessertSpoon, UnitSpec{UnitName::DessertSpoon, QT_TR_NOOP("dessert spoon"), UnitSymbol::DessertSpoon, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::dessert_spoon}},
-        {UnitId::Teaspoon, UnitSpec{UnitName::Teaspoon, QT_TR_NOOP("teaspoon"), UnitSymbol::Teaspoon, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::teaspoon}},
-        {UnitId::TeaspoonImp, UnitSpec{UnitName::TeaspoonImp, QT_TR_NOOP("teaspoon (Imperial)"), UnitSymbol::TeaspoonImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::teaspoon_imp}},
-        {UnitId::TeaspoonUs, UnitSpec{UnitName::TeaspoonUs, QT_TR_NOOP("teaspoon (US)"), UnitSymbol::TeaspoonUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoSiPrefixes, &Units::teaspoon_us}},
-        {UnitId::Torr, UnitSpec{UnitName::Torr, QT_TR_NOOP("Torr"), UnitSymbol::Torr, {}, UnitFamily::Other, {UnitQuantity::Pressure}, NoSiPrefixes, &Units::torr}},
-        {UnitId::Turn, UnitSpec{UnitName::Turn, QT_TR_NOOP("turn"), UnitSymbol::Turn, {UnitAltSymbol::Turn}, UnitFamily::Other, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::turn}},
-        {UnitId::Revolution, UnitSpec{UnitName::Revolution, QT_TR_NOOP("revolution"), UnitSymbol::Revolution, {}, UnitFamily::Other, {UnitQuantity::PlaneAngle}, NoSiPrefixes, &Units::revolution}},
-        {UnitId::RevolutionPerMinute, UnitSpec{UnitName::RevolutionPerMinute, QT_TR_NOOP("revolution per minute"), UnitSymbol::RevolutionPerMinute, {}, UnitFamily::Other, {UnitQuantity::Frequency}, NoSiPrefixes, &Units::revolution_per_minute}},
-        {UnitId::Week, UnitSpec{UnitName::Week, QT_TR_NOOP("week"), UnitSymbol::Week, {}, UnitFamily::Other, {UnitQuantity::Time}, NoSiPrefixes, &Units::week}},
-        {UnitId::KilowattHour, UnitSpec{UnitName::KilowattHour, QT_TR_NOOP("kilowatt hour"), UnitSymbol::KilowattHour, {}, UnitFamily::Other, {UnitQuantity::Energy, UnitQuantity::Work, UnitQuantity::AmountOfHeat}, NoSiPrefixes, &Units::kilowatt_hour}},
-        {UnitId::MillimetreOfMercury, UnitSpec{UnitName::MillimetreOfMercury, QT_TR_NOOP("millimetre of mercury"), UnitSymbol::MillimetreOfMercury, {}, UnitFamily::Other, {UnitQuantity::Pressure}, NoSiPrefixes, &Units::millimetre_of_mercury}},
-        {UnitId::Quad, UnitSpec{UnitName::Quad, QT_TR_NOOP("quad"), UnitSymbol::Quad, {}, UnitFamily::Other, {UnitQuantity::AmountOfHeat}, NoSiPrefixes, &Units::quad}},
-        {UnitId::Yard, UnitSpec{UnitName::Yard, QT_TR_NOOP("yard"), UnitSymbol::Yard, {}, UnitFamily::Other, {UnitQuantity::Length}, NoSiPrefixes, &Units::yard}},
-        {UnitId::CenturyJulian, UnitSpec{UnitName::CenturyJulian, QT_TR_NOOP("Julian century"), UnitSymbol::CenturyJulian, {}, UnitFamily::Other, {UnitQuantity::Time}, NoSiPrefixes, &Units::julian_century}},
-        {UnitId::YearJulian, UnitSpec{UnitName::YearJulian, QT_TR_NOOP("Julian year"), UnitSymbol::YearJulian, {}, UnitFamily::Other, {UnitQuantity::Time}, NoSiPrefixes, &Units::julian_year}},
-        {UnitId::YearSidereal, UnitSpec{UnitName::YearSidereal, QT_TR_NOOP("sidereal year"), UnitSymbol::YearSidereal, {}, UnitFamily::Other, {UnitQuantity::Time}, NoSiPrefixes, &Units::sidereal_year}},
-        {UnitId::YearTropical, UnitSpec{UnitName::YearTropical, QT_TR_NOOP("tropical year"), UnitSymbol::YearTropical, {}, UnitFamily::Other, {UnitQuantity::Time}, NoSiPrefixes, &Units::tropical_year}},
+        {UnitId::Acre, UnitSpec{UnitName::Acre, QT_TR_NOOP("acre"), UnitSymbol::Acre, {}, UnitFamily::Other, {UnitQuantity::Area}, NoPrefixes, &Units::acre}},
+        {UnitId::Angstrom, UnitSpec{UnitName::Angstrom, QT_TR_NOOP("Angstrom"), UnitSymbol::Angstrom, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::angstrom}},
+        {UnitId::Atmosphere, UnitSpec{UnitName::Atmosphere, QT_TR_NOOP("atmosphere"), UnitSymbol::Atmosphere, {}, UnitFamily::Other, {UnitQuantity::Pressure}, NoPrefixes, &Units::atmosphere}},
+        {UnitId::AtomicMassUnit, UnitSpec{UnitName::AtomicMassUnit, QT_TR_NOOP("atomic mass unit"), UnitSymbol::AtomicMassUnit, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoPrefixes, &Units::atomic_mass_unit}},
+        {UnitId::Bar, UnitSpec{UnitName::Bar, QT_TR_NOOP("bar"), UnitSymbol::Bar, {}, UnitFamily::Other, {UnitQuantity::Pressure}, EngineeringSiPrefixes, &Units::bar}},
+        {UnitId::Bit, UnitSpec{UnitName::Bit, QT_TR_NOOP("bit"), UnitSymbol::Bit, {}, UnitFamily::Other, {UnitQuantity::Information}, PositiveEngineeringSiPrefixes | BinaryIecPrefixes, &Units::bit}},
+        {UnitId::BritishThermalUnit, UnitSpec{UnitName::BritishThermalUnit, QT_TR_NOOP("British thermal unit"), UnitSymbol::BritishThermalUnit, {}, UnitFamily::Other, {UnitQuantity::AmountOfHeat}, NoPrefixes, &Units::british_thermal_unit}},
+        {UnitId::Byte, UnitSpec{UnitName::Byte, QT_TR_NOOP("byte"), UnitSymbol::Byte, {}, UnitFamily::Other, {UnitQuantity::Information}, PositiveEngineeringSiPrefixes | BinaryIecPrefixes, &Units::byte}},
+        {UnitId::Calorie, UnitSpec{UnitName::Calorie, QT_TR_NOOP("calorie"), UnitSymbol::Calorie, {}, UnitFamily::Other, {UnitQuantity::AmountOfHeat}, NoPrefixes, &Units::calorie}},
+        {UnitId::Carat, UnitSpec{UnitName::Carat, QT_TR_NOOP("carat"), UnitSymbol::Carat, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoPrefixes, &Units::carat}},
+        {UnitId::Cup, UnitSpec{UnitName::Cup, QT_TR_NOOP("cup"), UnitSymbol::Cup, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::cup}},
+        {UnitId::CupImp, UnitSpec{UnitName::CupImp, QT_TR_NOOP("cup (Imperial)"), UnitSymbol::CupImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::cup_imp}},
+        {UnitId::CupJp, UnitSpec{UnitName::CupJp, QT_TR_NOOP("cup (Japanese)"), UnitSymbol::CupJp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::cup_jp}},
+        {UnitId::CupUs, UnitSpec{UnitName::CupUs, QT_TR_NOOP("cup (US)"), UnitSymbol::CupUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::cup_us}},
+        {UnitId::DegreeFahrenheit, UnitSpec{UnitName::DegreeFahrenheit, QT_TR_NOOP("degree Fahrenheit"), UnitSymbol::DegreeFahrenheit, {UnitAltSymbol::DegreeFahrenheit1, UnitAltSymbol::DegreeFahrenheit2, UnitAltSymbol::DegreeFahrenheit3, UnitAltSymbol::DegreeFahrenheit4, UnitAltSymbol::DegreeFahrenheit5}, UnitFamily::Other, {UnitQuantity::CelsiusTemperature}, NoPrefixes, &Units::kelvin, {&s_fahrenheitToKelvin, &s_kelvinToFahrenheit}}},
+        {UnitId::Fathom, UnitSpec{UnitName::Fathom, QT_TR_NOOP("fathom"), UnitSymbol::Fathom, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::fathom}},
+        {UnitId::FluidOunceImp, UnitSpec{UnitName::FluidOunceImp, QT_TR_NOOP("fluid ounce (Imperial)"), UnitSymbol::FluidOunceImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::fluid_ounce_imp}},
+        {UnitId::FluidOunceUs, UnitSpec{UnitName::FluidOunceUs, QT_TR_NOOP("fluid ounce (US)"), UnitSymbol::FluidOunceUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::fluid_ounce_us}},
+        {UnitId::FluidDramImp, UnitSpec{UnitName::FluidDramImp, QT_TR_NOOP("fluid dram (Imperial)"), UnitSymbol::FluidDramImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::fluid_dram_imp}},
+        {UnitId::FluidDramUs, UnitSpec{UnitName::FluidDramUs, QT_TR_NOOP("fluid dram (US)"), UnitSymbol::FluidDramUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::fluid_dram_us}},
+        {UnitId::Foot, UnitSpec{UnitName::Foot, QT_TR_NOOP("foot"), UnitSymbol::Foot, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::foot}},
+        {UnitId::SquareFoot, UnitSpec{UnitName::SquareFoot, QT_TR_NOOP("square foot"), UnitSymbol::SquareFoot, {}, UnitFamily::Other, {UnitQuantity::Area}, NoPrefixes, &Units::square_foot}},
+        {UnitId::CubicFoot, UnitSpec{UnitName::CubicFoot, QT_TR_NOOP("cubic foot"), UnitSymbol::CubicFoot, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::cubic_foot}},
+        {UnitId::Furlong, UnitSpec{UnitName::Furlong, QT_TR_NOOP("furlong"), UnitSymbol::Furlong, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::furlong}},
+        {UnitId::GallonImp, UnitSpec{UnitName::GallonImp, QT_TR_NOOP("gallon (Imperial)"), UnitSymbol::GallonImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::gallon_imp}},
+        {UnitId::GallonUs, UnitSpec{UnitName::GallonUs, QT_TR_NOOP("gallon (US)"), UnitSymbol::GallonUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::gallon_us}},
+        {UnitId::GillImp, UnitSpec{UnitName::GillImp, QT_TR_NOOP("gill (Imperial)"), UnitSymbol::GillImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::gill_imp}},
+        {UnitId::GillUs, UnitSpec{UnitName::GillUs, QT_TR_NOOP("gill (US)"), UnitSymbol::GillUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::gill_us}},
+        {UnitId::Gradian, UnitSpec{UnitName::Gradian, QT_TR_NOOP("gradian"), UnitSymbol::Gradian, {}, UnitFamily::Other, {UnitQuantity::PlaneAngle}, NoPrefixes, &Units::gradian}},
+        {UnitId::Grain, UnitSpec{UnitName::Grain, QT_TR_NOOP("grain"), UnitSymbol::Grain, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoPrefixes, &Units::grain}},
+        {UnitId::Gram, UnitSpec{UnitName::Gram, QT_TR_NOOP("gram"), UnitSymbol::Gram, {}, UnitFamily::Other, {UnitQuantity::Mass}, EngineeringSiPrefixes | SmallSiPrefixes, &Units::gram}},
+        {UnitId::Hartley, UnitSpec{UnitName::Hartley, QT_TR_NOOP("Hartley"), UnitSymbol::Hartley, {}, UnitFamily::Other, {UnitQuantity::Information}, NoPrefixes, &Units::hartley}},
+        {UnitId::HartreeEnergyUnit, UnitSpec{UnitName::HartreeEnergyUnit, QT_TR_NOOP("Hartree energy unit"), UnitSymbol::HartreeEnergyUnit, {}, UnitFamily::Other, {UnitQuantity::Energy}, NoPrefixes, &s_hartreeEnergyUnit}},
+        {UnitId::Horsepower, UnitSpec{UnitName::Horsepower, QT_TR_NOOP("horsepower"), UnitSymbol::Horsepower, {}, UnitFamily::Other, {UnitQuantity::Power}, NoPrefixes, &Units::horsepower}},
+        {UnitId::Inch, UnitSpec{UnitName::Inch, QT_TR_NOOP("inch"), UnitSymbol::Inch, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::inch}},
+        {UnitId::SquareInch, UnitSpec{UnitName::SquareInch, QT_TR_NOOP("square inch"), UnitSymbol::SquareInch, {}, UnitFamily::Other, {UnitQuantity::Area}, NoPrefixes, &Units::square_inch}},
+        {UnitId::CubicInch, UnitSpec{UnitName::CubicInch, QT_TR_NOOP("cubic inch"), UnitSymbol::CubicInch, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::cubic_inch}},
+        {UnitId::Karat, UnitSpec{UnitName::Karat, QT_TR_NOOP("karat"), UnitSymbol::Karat, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoPrefixes, &Units::karat}},
+        {UnitId::Knot, UnitSpec{UnitName::Knot, QT_TR_NOOP("knot"), UnitSymbol::Knot, {}, UnitFamily::Other, {UnitQuantity::Speed, UnitQuantity::Velocity}, NoPrefixes, &Units::knot}},
+        {UnitId::Lightminute, UnitSpec{UnitName::Lightminute, QT_TR_NOOP("lightminute"), UnitSymbol::Lightminute, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::lightminute}},
+        {UnitId::Lightsecond, UnitSpec{UnitName::Lightsecond, QT_TR_NOOP("lightsecond"), UnitSymbol::Lightsecond, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::lightsecond}},
+        {UnitId::Lightyear, UnitSpec{UnitName::Lightyear, QT_TR_NOOP("lightyear"), UnitSymbol::Lightyear, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::lightyear}},
+        {UnitId::LongTon, UnitSpec{UnitName::LongTon, QT_TR_NOOP("long ton"), UnitSymbol::LongTon, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoPrefixes, &Units::long_ton}},
+        {UnitId::Mile, UnitSpec{UnitName::Mile, QT_TR_NOOP("mile"), UnitSymbol::Mile, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::mile}},
+        {UnitId::SquareMile, UnitSpec{UnitName::SquareMile, QT_TR_NOOP("square mile"), UnitSymbol::SquareMile, {}, UnitFamily::Other, {UnitQuantity::Area}, NoPrefixes, &Units::square_mile}},
+        {UnitId::CubicMile, UnitSpec{UnitName::CubicMile, QT_TR_NOOP("cubic mile"), UnitSymbol::CubicMile, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::cubic_mile}},
+        {UnitId::MilePerHour, UnitSpec{UnitName::MilePerHour, QT_TR_NOOP("mile per hour"), UnitSymbol::MilePerHour, {}, UnitFamily::Other, {UnitQuantity::Speed, UnitQuantity::Velocity}, NoPrefixes, &Units::mile_per_hour}},
+        {UnitId::KilometrePerHour, UnitSpec{UnitName::KilometrePerHour, QT_TR_NOOP("kilometre per hour"), UnitSymbol::KilometrePerHour, {}, UnitFamily::Other, {UnitQuantity::Speed, UnitQuantity::Velocity}, NoPrefixes, &Units::kilometre_per_hour}},
+        {UnitId::Nat, UnitSpec{UnitName::Nat, QT_TR_NOOP("nat"), UnitSymbol::Nat, {}, UnitFamily::Other, {UnitQuantity::Information}, NoPrefixes, &Units::nat}},
+        {UnitId::NauticalMile, UnitSpec{UnitName::NauticalMile, QT_TR_NOOP("nautical mile"), UnitSymbol::NauticalMile, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::nautical_mile}},
+        {UnitId::Ounce, UnitSpec{UnitName::Ounce, QT_TR_NOOP("ounce"), UnitSymbol::Ounce, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoPrefixes, &Units::ounce}},
+        {UnitId::Parsec, UnitSpec{UnitName::Parsec, QT_TR_NOOP("parsec"), UnitSymbol::Parsec, {}, UnitFamily::Other, {UnitQuantity::Length}, PositiveEngineeringSiPrefixes, &Units::parsec}},
+        {UnitId::PintImp, UnitSpec{UnitName::PintImp, QT_TR_NOOP("pint (Imperial)"), UnitSymbol::PintImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::pint_imp}},
+        {UnitId::PintUs, UnitSpec{UnitName::PintUs, QT_TR_NOOP("pint (US)"), UnitSymbol::PintUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::pint_us}},
+        {UnitId::Pound, UnitSpec{UnitName::Pound, QT_TR_NOOP("pound"), UnitSymbol::Pound, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoPrefixes, &Units::pound}},
+        {UnitId::PoundsPerSqinch, UnitSpec{UnitName::PoundsPerSqinch, QT_TR_NOOP("pounds per square inch"), UnitSymbol::PoundsPerSqinch, {}, UnitFamily::Other, {UnitQuantity::Pressure}, NoPrefixes, &Units::pounds_per_sqinch}},
+        {UnitId::QuartImp, UnitSpec{UnitName::QuartImp, QT_TR_NOOP("quart (Imperial)"), UnitSymbol::QuartImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::quart_imp}},
+        {UnitId::QuartUs, UnitSpec{UnitName::QuartUs, QT_TR_NOOP("quart (US)"), UnitSymbol::QuartUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::quart_us}},
+        {UnitId::BarrelOil, UnitSpec{UnitName::BarrelOil, QT_TR_NOOP("oil barrel"), UnitSymbol::BarrelOil, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::barrel_oil}},
+        {UnitId::BarrelBeerUs, UnitSpec{UnitName::BarrelBeerUs, QT_TR_NOOP("beer barrel (US)"), UnitSymbol::BarrelBeerUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::barrel_beer_us}},
+        {UnitId::Rod, UnitSpec{UnitName::Rod, QT_TR_NOOP("rod"), UnitSymbol::Rod, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::rod}},
+        {UnitId::SquareYard, UnitSpec{UnitName::SquareYard, QT_TR_NOOP("square yard"), UnitSymbol::SquareYard, {}, UnitFamily::Other, {UnitQuantity::Area}, NoPrefixes, &Units::square_yard}},
+        {UnitId::CubicYard, UnitSpec{UnitName::CubicYard, QT_TR_NOOP("cubic yard"), UnitSymbol::CubicYard, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::cubic_yard}},
+        {UnitId::ShortTon, UnitSpec{UnitName::ShortTon, QT_TR_NOOP("short ton"), UnitSymbol::ShortTon, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoPrefixes, &Units::short_ton}},
+        {UnitId::Stone, UnitSpec{UnitName::Stone, QT_TR_NOOP("stone"), UnitSymbol::Stone, {}, UnitFamily::Other, {UnitQuantity::Mass}, NoPrefixes, &Units::stone}},
+        {UnitId::Tablespoon, UnitSpec{UnitName::Tablespoon, QT_TR_NOOP("tablespoon"), UnitSymbol::Tablespoon, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::tablespoon}},
+        {UnitId::TablespoonAu, UnitSpec{UnitName::TablespoonAu, QT_TR_NOOP("tablespoon (Australian)"), UnitSymbol::TablespoonAu, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::tablespoon_au}},
+        {UnitId::TablespoonImp, UnitSpec{UnitName::TablespoonImp, QT_TR_NOOP("tablespoon (Imperial)"), UnitSymbol::TablespoonImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::tablespoon_imp}},
+        {UnitId::TablespoonUs, UnitSpec{UnitName::TablespoonUs, QT_TR_NOOP("tablespoon (US)"), UnitSymbol::TablespoonUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::tablespoon_us}},
+        {UnitId::DessertSpoon, UnitSpec{UnitName::DessertSpoon, QT_TR_NOOP("dessert spoon"), UnitSymbol::DessertSpoon, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::dessert_spoon}},
+        {UnitId::Teaspoon, UnitSpec{UnitName::Teaspoon, QT_TR_NOOP("teaspoon"), UnitSymbol::Teaspoon, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::teaspoon}},
+        {UnitId::TeaspoonImp, UnitSpec{UnitName::TeaspoonImp, QT_TR_NOOP("teaspoon (Imperial)"), UnitSymbol::TeaspoonImp, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::teaspoon_imp}},
+        {UnitId::TeaspoonUs, UnitSpec{UnitName::TeaspoonUs, QT_TR_NOOP("teaspoon (US)"), UnitSymbol::TeaspoonUs, {}, UnitFamily::Other, {UnitQuantity::Volume}, NoPrefixes, &Units::teaspoon_us}},
+        {UnitId::Torr, UnitSpec{UnitName::Torr, QT_TR_NOOP("Torr"), UnitSymbol::Torr, {}, UnitFamily::Other, {UnitQuantity::Pressure}, NoPrefixes, &Units::torr}},
+        {UnitId::Turn, UnitSpec{UnitName::Turn, QT_TR_NOOP("turn"), UnitSymbol::Turn, {UnitAltSymbol::Turn}, UnitFamily::Other, {UnitQuantity::PlaneAngle}, NoPrefixes, &Units::turn}},
+        {UnitId::Revolution, UnitSpec{UnitName::Revolution, QT_TR_NOOP("revolution"), UnitSymbol::Revolution, {}, UnitFamily::Other, {UnitQuantity::PlaneAngle}, NoPrefixes, &Units::revolution}},
+        {UnitId::RevolutionPerMinute, UnitSpec{UnitName::RevolutionPerMinute, QT_TR_NOOP("revolution per minute"), UnitSymbol::RevolutionPerMinute, {}, UnitFamily::Other, {UnitQuantity::Frequency}, NoPrefixes, &Units::revolution_per_minute}},
+        {UnitId::Week, UnitSpec{UnitName::Week, QT_TR_NOOP("week"), UnitSymbol::Week, {}, UnitFamily::Other, {UnitQuantity::Time}, NoPrefixes, &Units::week}},
+        {UnitId::KilowattHour, UnitSpec{UnitName::KilowattHour, QT_TR_NOOP("kilowatt hour"), UnitSymbol::KilowattHour, {}, UnitFamily::Other, {UnitQuantity::Energy, UnitQuantity::Work, UnitQuantity::AmountOfHeat}, NoPrefixes, &Units::kilowatt_hour}},
+        {UnitId::MillimetreOfMercury, UnitSpec{UnitName::MillimetreOfMercury, QT_TR_NOOP("millimetre of mercury"), UnitSymbol::MillimetreOfMercury, {}, UnitFamily::Other, {UnitQuantity::Pressure}, NoPrefixes, &Units::millimetre_of_mercury}},
+        {UnitId::Quad, UnitSpec{UnitName::Quad, QT_TR_NOOP("quad"), UnitSymbol::Quad, {}, UnitFamily::Other, {UnitQuantity::AmountOfHeat}, NoPrefixes, &Units::quad}},
+        {UnitId::Yard, UnitSpec{UnitName::Yard, QT_TR_NOOP("yard"), UnitSymbol::Yard, {}, UnitFamily::Other, {UnitQuantity::Length}, NoPrefixes, &Units::yard}},
+        {UnitId::CenturyJulian, UnitSpec{UnitName::CenturyJulian, QT_TR_NOOP("Julian century"), UnitSymbol::CenturyJulian, {}, UnitFamily::Other, {UnitQuantity::Time}, NoPrefixes, &Units::julian_century}},
+        {UnitId::YearJulian, UnitSpec{UnitName::YearJulian, QT_TR_NOOP("Julian year"), UnitSymbol::YearJulian, {}, UnitFamily::Other, {UnitQuantity::Time}, NoPrefixes, &Units::julian_year}},
+        {UnitId::YearSidereal, UnitSpec{UnitName::YearSidereal, QT_TR_NOOP("sidereal year"), UnitSymbol::YearSidereal, {}, UnitFamily::Other, {UnitQuantity::Time}, NoPrefixes, &Units::sidereal_year}},
+        {UnitId::YearTropical, UnitSpec{UnitName::YearTropical, QT_TR_NOOP("tropical year"), UnitSymbol::YearTropical, {}, UnitFamily::Other, {UnitQuantity::Time}, NoPrefixes, &Units::tropical_year}},
     };
     return specs;
 }
@@ -767,6 +752,10 @@ struct UnitRegistry {
             Maps canonical/alias identifiers to preferred short display symbols
             (e.g. "ohm" -> "Ω"), consumed by unit display-format helpers.
 
+        - prefixedIdentifiers:
+            Generated decimal/binary prefix identifiers whose authored token is
+            itself the preferred display spelling.
+
         - affineByIdentifier:
             Affine conversion metadata for identifiers like degree_celsius and
             degree_fahrenheit, used by affine conversion helpers.
@@ -779,6 +768,7 @@ struct UnitRegistry {
     QHash<QString, UnitId> idsByIdentifier;
     QHash<QString, QString> localizedByIdentifier;
     QHash<QString, QString> displaySymbolsByIdentifier;
+    QSet<QString> prefixedIdentifiers;
     QHash<QString, AffineDefinition> affineByIdentifier;
     QHash<QMap<UnitQuantity, Rational>, Unit> canonicalMatchLookup;
 };
@@ -952,6 +942,45 @@ int s_baseDimensionOutputOrderIndex(UnitQuantity quantity)
     return index < 0 ? 100 : (2 + index);
 }
 
+struct ReadableUnitScore {
+    int bucket = 3;
+    HNumber value = HNumber(0);
+};
+
+ReadableUnitScore readableUnitScore(const HNumber& baseValue, const CNumber& unit)
+{
+    const auto abs = [](const HNumber& value) {
+        return value < HNumber(0) ? -value : value;
+    };
+
+    ReadableUnitScore score;
+    if (!unit.isNearReal() || unit.real.isNearZero())
+        return score;
+
+    score.value = abs(baseValue / unit.real);
+    if (score.value >= HNumber(1) && score.value < HNumber(1000)) {
+        score.bucket = 0;
+    } else if (score.value >= HNumber(1000)) {
+        score.bucket = 1;
+    } else {
+        score.bucket = 2;
+    }
+    return score;
+}
+
+bool isBetterReadableUnitScore(const ReadableUnitScore& a, const ReadableUnitScore& b)
+{
+    if (a.bucket != b.bucket)
+        return a.bucket < b.bucket;
+    if (a.bucket == 0)
+        return a.value < b.value;
+    if (a.bucket == 1)
+        return a.value < b.value;
+    if (a.bucket == 2)
+        return a.value > b.value;
+    return false;
+}
+
 const QList<PrefixSpec>& s_siPrefixes()
 {
     static const QList<PrefixSpec> prefixes = {
@@ -974,19 +1003,61 @@ const QList<PrefixSpec>& s_binaryPrefixes()
     return prefixes;
 }
 
-// Filters SI short-prefix aliases to keep only readable/established forms
-// for deca/hecto combinations.
+const QList<UnitPrefixSpec>& siPrefixes()
+{
+    return s_siPrefixes();
+}
+
+const QList<UnitPrefixSpec>& binaryIecPrefixes()
+{
+    return s_binaryPrefixes();
+}
+
+int unitPrefixPolicy(UnitId id)
+{
+    const auto it = s_unitSpecs().constFind(id);
+    if (it == s_unitSpecs().constEnd())
+        return NoPrefixes;
+    return it.value().prefixPolicy;
+}
+
+bool unitPrefixPolicyAllows(int policy, const UnitPrefixSpec& prefix, bool binaryPrefix)
+{
+    if (binaryPrefix)
+        return policy & BinaryIecPrefixes;
+
+    if (prefix.power == 0)
+        return false;
+
+    const bool engineering = prefix.power % 3 == 0;
+    if (prefix.power < 0)
+        return policy & (engineering ? NegativeEngineeringSiPrefixes : SmallNegativeSiPrefixes);
+    return policy & (engineering ? PositiveEngineeringSiPrefixes : SmallPositiveSiPrefixes);
+}
+
+QString unitSiPrefixBaseSymbol(UnitId id)
+{
+    const UnitId baseId = id == UnitId::Kilogram ? UnitId::Gram : id;
+    const auto it = s_unitSpecs().constFind(baseId);
+    if (it == s_unitSpecs().constEnd() || it.value().prefixPolicy == NoPrefixes)
+        return QString();
+    return it.value().symbol;
+}
+
+CNumber unitSiPrefixBaseValue(UnitId id)
+{
+    const UnitId baseId = id == UnitId::Kilogram ? UnitId::Gram : id;
+    const auto it = s_unitSpecs().constFind(baseId);
+    if (it == s_unitSpecs().constEnd() || !it.value().linearValue)
+        return CNumber(0);
+    return it.value().linearValue().numericValue();
+}
+
 bool shouldAddSiPrefixedShortAlias(const QString& prefixSymbol, const QString& unitShortName)
 {
-    if (prefixSymbol != QLatin1String("da") && prefixSymbol != QLatin1String("h"))
-        return true;
-
-    const QString alias = prefixSymbol + unitShortName;
-    return alias == QLatin1String("hPa")
-           || alias == QLatin1String("hm")
-           || alias == QLatin1String("hL")
-           || alias == QLatin1String("hl")
-           || alias == QLatin1String("dag");
+    Q_UNUSED(prefixSymbol)
+    Q_UNUSED(unitShortName)
+    return true;
 }
 
 enum class AngleUnitKind {
@@ -1604,6 +1675,88 @@ void Units::findUnit(Quantity& q)
         }
         return false;
     };
+    const auto tryReadablePrefixedDisplayUnit = [&]() {
+        if (!q.numericValue().isNearReal())
+            return false;
+        if (dim.isEmpty())
+            return false;
+
+        struct Candidate {
+            QString name;
+            CNumber value;
+            ReadableUnitScore score;
+        };
+
+        const HNumber baseValue = q.numericValue().real;
+        const QHash<UnitId, UnitSpec>& specs = s_unitSpecs();
+        bool canonicalAlreadyReadable = false;
+        Candidate best;
+
+        const auto considerCandidate = [&](const QString& name, const Quantity& value) {
+            if (name.isEmpty())
+                return;
+            Quantity candidate(value);
+            candidate.cleanDimension();
+            const QMap<UnitQuantity, Rational> candidateDim = candidate.getDimensionByQuantity();
+            if (candidateDim != dim || denyAutoCanonicalization(name, candidateDim))
+                return;
+            const ReadableUnitScore candidateScore = readableUnitScore(
+                baseValue,
+                candidate.numericValue());
+            if (candidateScore.bucket != 0)
+                return;
+            if (best.name.isEmpty() || isBetterReadableUnitScore(candidateScore, best.score))
+                best = Candidate{name, candidate.numericValue(), candidateScore};
+        };
+
+        for (const UnitId id : s_unitSpecOrder()) {
+            const UnitSpec& spec = specs.value(id);
+            if (spec.prefixPolicy == NoPrefixes || !spec.linearValue || spec.affine.toBase)
+                continue;
+
+            Quantity baseUnitValue = spec.linearValue();
+            baseUnitValue.cleanDimension();
+            const QMap<UnitQuantity, Rational> candidateDim = baseUnitValue.getDimensionByQuantity();
+            if (candidateDim != dim || denyAutoCanonicalization(spec.name, candidateDim))
+                continue;
+
+            if ((spec.family == UnitFamily::SiBase || spec.family == UnitFamily::SiDerived)
+                && readableUnitScore(baseValue, baseUnitValue.numericValue()).bucket == 0)
+            {
+                canonicalAlreadyReadable = true;
+            }
+
+            if (spec.family != UnitFamily::SiBase && spec.family != UnitFamily::SiDerived)
+                considerCandidate(spec.symbol.isEmpty() ? spec.name : spec.symbol, baseUnitValue);
+
+            // Area and volume have explicit prefixed units, but generating
+            // prefixes from m²/m³ changes powers by the exponent and produces
+            // surprising display choices for ordinary square/cubic units.
+            if (id == UnitId::SquareMetre || id == UnitId::CubicMetre || id == UnitId::Kilogram)
+                continue;
+
+            for (const PrefixSpec& prefix : s_siPrefixes()) {
+                if (prefix.power % 3 != 0)
+                    continue;
+                if (id == UnitId::Second && prefix.power > 0)
+                    continue;
+                if (!unitPrefixPolicyAllows(spec.prefixPolicy, prefix))
+                    continue;
+                if (spec.symbol.isEmpty()
+                    || !shouldAddSiPrefixedShortAlias(prefix.symbol, spec.symbol))
+                {
+                    continue;
+                }
+                considerCandidate(prefix.symbol + spec.symbol, prefix.value * baseUnitValue);
+            }
+        }
+
+        if (canonicalAlreadyReadable || best.name.isEmpty())
+            return false;
+
+        q.setDisplayUnit(best.value, best.name);
+        return true;
+    };
     if (isSpeedDimension(dim))
     {
         QString speedUnitName;
@@ -1614,6 +1767,22 @@ void Units::findUnit(Quantity& q)
         }
         if (!originalUnitName.isEmpty() && originalUnitName.contains(MathDsl::DivOp)) {
             q.setDisplayUnit(q.numericValue(), originalUnitName);
+            return;
+        }
+    }
+    if (tryReadablePrefixedDisplayUnit())
+        return;
+    if (dim.size() == 1
+        && dim.value(UnitQuantity::Mass) == Rational(1)
+        && q.hasUnit()
+        && q.numericValue().isNearReal()
+        && q.unit().isNearReal())
+    {
+        HNumber kilogramValue = q.numericValue().real;
+        if (kilogramValue < HNumber(0))
+            kilogramValue = -kilogramValue;
+        if (kilogramValue >= HNumber(1) && kilogramValue < HNumber(1000)) {
+            q.setDisplayUnit(CNumber(1), unitName(UnitId::Kilogram));
             return;
         }
     }
@@ -1952,7 +2121,8 @@ static UnitRegistry s_buildUnitRegistry()
     const auto addUnique = [&](const QString& name,
                                const Quantity& value,
                                const QString& localizedName = QString(),
-                               UnitId id = UnitId::Unknown) {
+                               UnitId id = UnitId::Unknown,
+                               bool prefixedIdentifier = false) {
         if (name.isEmpty() || registry.valuesByIdentifier.contains(name))
             return;
         registry.valuesByIdentifier.insert(name, value);
@@ -1960,6 +2130,8 @@ static UnitRegistry s_buildUnitRegistry()
             registry.idsByIdentifier.insert(name, id);
         if (!localizedName.isEmpty())
             registry.localizedByIdentifier.insert(name, localizedName);
+        if (prefixedIdentifier)
+            registry.prefixedIdentifiers.insert(name);
     };
 
     const auto localizedFromSpec = [](const UnitSpec& spec) {
@@ -2009,7 +2181,7 @@ static UnitRegistry s_buildUnitRegistry()
             value,
             symbol,
             primaryAlias,
-            spec.siPrefixPolicy
+            spec.prefixPolicy
         });
 
         if (spec.affine.toBase && spec.affine.fromBase) {
@@ -2060,21 +2232,22 @@ static UnitRegistry s_buildUnitRegistry()
     // This is spec-driven via UnitAliasSpec built above from unit specs.
     for (const PrefixSpec& prefix : s_siPrefixes()) {
         for (const UnitAliasSpec& unit : unitAliasSpecs) {
-            if (prefix.power > 0 && !(unit.siPrefixPolicy & PositiveSiPrefixes))
+            if (!unitPrefixPolicyAllows(unit.prefixPolicy, prefix))
                 continue;
-            if (prefix.power < 0 && !(unit.siPrefixPolicy & NegativeSiPrefixes))
+            if (unit.id == UnitId::SquareMetre || unit.id == UnitId::CubicMetre)
                 continue;
             const Quantity prefixedValue = prefix.value * unit.value;
             const QString localized = prefixedLocalizedName(prefix.longName, unit.localized);
+            const bool keepPrefixedDisplay = prefix.power > 0 && prefix.power < 3;
             // Long form: kilo + metre => kilometre
-            addUnique(prefix.longName + unit.longName, prefixedValue, localized, unit.id);
+            addUnique(prefix.longName + unit.longName, prefixedValue, localized, unit.id, keepPrefixedDisplay);
             if (!unit.shortName.isEmpty()
                 && shouldAddSiPrefixedShortAlias(prefix.symbol, unit.shortName))
                 // Symbol form: k + m => km; k + m² => km²; k + m³ => km³
-                addUnique(prefix.symbol + unit.shortName, prefixedValue, localized, unit.id);
+                addUnique(prefix.symbol + unit.shortName, prefixedValue, localized, unit.id, keepPrefixedDisplay);
             if (!unit.alternateShortName.isEmpty()
                 && shouldAddSiPrefixedShortAlias(prefix.symbol, unit.alternateShortName))
-                addUnique(prefix.symbol + unit.alternateShortName, prefixedValue, localized, unit.id);
+                addUnique(prefix.symbol + unit.alternateShortName, prefixedValue, localized, unit.id, keepPrefixedDisplay);
         }
     }
 
@@ -2082,7 +2255,7 @@ static UnitRegistry s_buildUnitRegistry()
     // Standalone binary prefixes (kibi/mebi/...) are not registered as units.
     for (const PrefixSpec& prefix : s_binaryPrefixes()) {
         for (const UnitAliasSpec& unit : unitAliasSpecs) {
-            if (!(unit.siPrefixPolicy & BinaryPrefixes))
+            if (!unitPrefixPolicyAllows(unit.prefixPolicy, prefix, true))
                 continue;
             const Quantity prefixedValue = prefix.value * unit.value;
             const QString localized = prefixedLocalizedName(prefix.longName, unit.localized);
@@ -2138,6 +2311,7 @@ QHash<QString, Quantity> Units::builtInUnitLookup(char angleMode)
             && id != UnitId::Week;
         const bool keepDisplayUnit =
             (id == UnitId::Steradian)
+            || s_unitRegistry().prefixedIdentifiers.contains(identifier)
             || ((id == UnitId::Hertz
               || id == UnitId::Becquerel
               || id == UnitId::Gray

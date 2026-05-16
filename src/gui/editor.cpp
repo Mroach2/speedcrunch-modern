@@ -3368,12 +3368,6 @@ void Editor::keyPressEvent(QKeyEvent* event)
             return;
         }
         auto position = textCursor().position();
-        const QChar prev = previousNonSpaceChar(text(), position);
-        if (MathDsl::isSuperscriptPowerChar(prev)) {
-            insert(MathDsl::buildWrappedToken(MathDsl::MulDotOp, MathDsl::MulDotWrapSp));
-            event->accept();
-            return;
-        }
         const int opIndex = previousNonSpaceIndex(text(), position);
         const QChar op = opIndex >= 0 ? text().at(opIndex) : QChar();
         if (op == MathDsl::MulOpAl1

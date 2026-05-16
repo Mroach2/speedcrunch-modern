@@ -78,7 +78,7 @@ void test_basic()
     CHECK(Units::metre(), "1 metre");
     CHECK(Quantity(5) * Units::metre(), "5 metre");
     CHECK(Units::candela() + Units::second(), "NaN");
-    CHECK(Quantity(3)*Units::mole() - Quantity(HNumber("2.5"))*Units::mole(), "0.5 mole");
+    CHECK(Quantity(3)*Units::mole() - Quantity(HNumber("2.5"))*Units::mole(), "500 mmol");
     CHECK(Units::kilogram()/Units::second(), "1 kilogram·second⁻¹");
     CHECK(Units::metre()*Units::metre(), "1 metre²");
     CHECK(-Quantity(5)*Units::metre(), "-5 metre");
@@ -148,7 +148,7 @@ void test_format()
 
 
     a *= Units::coulomb();
-    CHECK_FORMAT(Format::Binary() + Format::Fixed() + Format::Precision(10), a, "0b101111001010110110110010.0111010011 coulomb");
+    CHECK_FORMAT(Format::Binary() + Format::Fixed() + Format::Precision(10), a, "0b1100.0101110110 MC");
 }
 
 

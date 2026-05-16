@@ -922,7 +922,7 @@ void test_units_display_propagation()
 void test_units_short_aliases_and_si_prefixes()
 {
     CHECK_EVAL("[m]", "1 metre");
-    CHECK_EVAL("[kg]", "1 kilogram");
+    CHECK_EVAL("[kg]", "1 kg");
     CHECK_EVAL("[F]", "1 farad");
     CHECK_EVAL("[V]", "1 volt");
     CHECK_EVAL("[Eh]", "1 Eh");
@@ -1133,6 +1133,8 @@ void test_units_short_aliases_and_si_prefixes()
     CHECK_EVAL(QString::fromUtf8("[m³] -> [m³]"), u8"1 m³");
     CHECK_EVAL(QString::fromUtf8("[mm²] -> [m²]"), u8"0.000001 m²");
     CHECK_EVAL(QString::fromUtf8("[mm³] -> [m³]"), u8"0.000000001 m³");
+    CHECK_EVAL(QString::fromUtf8("1¹ [m]"), "1 metre");
+    CHECK_EVAL("1^(1) [s]", "1 second");
     CHECK_DISPLAY_INTERPRETED(
         QStringLiteral("[m]"),
         QStringLiteral("1")
@@ -1183,6 +1185,14 @@ void test_units_short_aliases_and_si_prefixes()
     CHECK_EVAL_FAIL("[hb] -> [bit]");
     CHECK_EVAL("[hl] -> [litre]", "100 litre");
     CHECK_EVAL("[hL] -> [litre]", "100 litre");
+    CHECK_EVAL("[daL] -> [litre]", "10 litre");
+    CHECK_EVAL("[dam] -> [metre]", "10 metre");
+    CHECK_EVAL("[daN] -> [newton]", "10 newton");
+    CHECK_EVAL("[daPa] -> [pascal]", "10 pascal");
+    CHECK_EVAL("[1 daL]", "1 daL");
+    CHECK_EVAL("[1 dam]", "1 dam");
+    CHECK_EVAL("[1 daN]", "1 daN");
+    CHECK_EVAL("[1 daPa]", "1 daPa");
     CHECK_EVAL("[dag] -> [gram]", "10 gram");
     CHECK_EVAL("[dag] -> [kilogram]", "0.01 kilogram");
     CHECK_EVAL("[KiB] -> [byte]", "1024 byte");
@@ -1248,13 +1258,46 @@ void test_units_named_derived_canonicalization()
 void test_units_derived_si_recognition_and_disambiguation()
 {
     CHECK_EVAL("[metre]", "1 metre");
-    CHECK_EVAL("[kilogram]", "1 kilogram");
+    CHECK_EVAL("[kilogram]", "1 kg");
     CHECK_EVAL("[tonne]", "1 tonne");
     CHECK_EVAL("[t]", "1 t");
     CHECK_EVAL("1[tonne] -> [kilogram]", "1000 kilogram");
     CHECK_EVAL("1[t] -> [kilogram]", "1000 kilogram");
     CHECK_EVAL("1000[kilogram] -> [tonne]", "1 tonne");
     CHECK_EVAL("2.51 [t] + 3.2 [kg] + 2342.7 [g]", "2.5155427 t");
+    CHECK_EVAL("0.00000001 [t] + 3.2 [kg] + 2342.7 [g]", "5.54271 kilogram");
+    CHECK_EVAL("3.2 [kg] + 0.00000001 [t] + 2342.7 [g]", "5.54271 kilogram");
+    CHECK_EVAL("1200 [g] + 0.0005 [t]", "1.7 kilogram");
+    CHECK_EVAL("2 [t] - 500 [kg]", "1.5 t");
+    CHECK_EVAL("0.002 [t] - 500 [g]", "1.5 kilogram");
+    CHECK_EVAL("1 [s] + 1 [min] + 1 [h] - 1 [min]", "1.00027777777777777778 h");
+    CHECK_EVAL("1 [s] + 1 [min] + 1 [h] - 1.1 [min]", "59.91666666666666666667 minute");
+    CHECK_EVAL("1 [s] + 1 [min] - 1.1 [min]", "-5 second");
+    CHECK_EVAL("0.0001 [s] + 0.89999 [ms] + 1 [ns] + 1 [ps]", u8"999.991001 µs");
+    CHECK_EVAL("0.0001 [s] + 0.899999 [ms] + 1 [ns] + 1 [ps]", "1.000000001 ms");
+    CHECK_EVAL("0.0001 [m] + 0.899999 [mm] + 1 [nm] + 1 [pm]", "1.000000001 mm");
+    CHECK_EVAL("0.1 [m]", "100 mm");
+    CHECK_EVAL("0.01 [m]", "10 mm");
+    CHECK_EVAL("0.001 [m]", "1 mm");
+    CHECK_EVAL("0.1 [g]", "100 mg");
+    CHECK_EVAL("0.01 [g]", "10 mg");
+    CHECK_EVAL("0.001 [g]", "1 mg");
+    CHECK_EVAL(QString::fromUtf8("0.0001 [g]"), u8"100 µg");
+    CHECK_EVAL("0.1 [L]", "100 mL");
+    CHECK_EVAL("0.01 [L]", "10 mL");
+    CHECK_EVAL("0.001 [L]", "1 mL");
+    CHECK_EVAL(QString::fromUtf8("0.0001 [L]"), u8"100 µL");
+    CHECK_EVAL("0.1 [s]", "100 ms");
+    CHECK_EVAL("0.01 [s]", "10 ms");
+    CHECK_EVAL("0.001 [s]", "1 ms");
+    CHECK_EVAL(QString::fromUtf8("0.0001 [s]"), u8"100 µs");
+    CHECK_EVAL("0.1 [Pa]", "100 mPa");
+    CHECK_EVAL("0.01 [Pa]", "10 mPa");
+    CHECK_EVAL("0.001 [Pa]", "1 mPa");
+    CHECK_EVAL(QString::fromUtf8("0.0001 [Pa]"), u8"100 µPa");
+    CHECK_EVAL("[ps]", "1 ps");
+    CHECK_EVAL("1 [ps]", "1 ps");
+    CHECK_EVAL(QString::fromUtf8("1 × 10⁻¹² [s]"), "1 ps");
     CHECK_EVAL("[second]", "1 second");
     CHECK_EVAL("[coulomb/second]", "1 ampere");
     CHECK_EVAL("[lumen/steradian]", "1 candela");
@@ -8158,6 +8201,85 @@ void test_result_display_mixed_per_term_time_conversions_in_sexagesimal_notation
     settings->resultFormat = oldResultFormat;
 }
 
+void test_result_display_time_unit_sum_respects_decimal_and_sexagesimal_notation_modes()
+{
+    Settings* settings = Settings::instance();
+    Session* session = evalSession;
+    const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+    const bool oldMultipleResultLinesEnabled = settings->multipleResultLinesEnabled;
+    const char oldResultFormat = settings->resultFormat;
+    const int oldResultPrecision = settings->resultPrecision;
+
+    settings->simplifyResultExpressions = false;
+    settings->multipleResultLinesEnabled = false;
+    settings->resultPrecision = -1;
+
+    struct Case {
+        const char* expression;
+        char resultFormat;
+        QString expectedLine;
+        const char* label;
+    };
+    const Case cases[] = {
+        {
+            "0.00000001 [min] + 1 [s] + 0.9997 [h] ? sexagesimal notation mode",
+            's',
+            QStringLiteral("= 0:59:59.9200006"),
+            "time unit sum in sexagesimal notation"
+        },
+        {
+            "0.00000001 [min] + 1 [s] + 0.9997 [h] ? automatic decimal notation mode",
+            'g',
+            QStringLiteral("= 59.99866667666666666667")
+                + QString(MathDsl::QuantSp)
+                + QStringLiteral("min"),
+            "time unit sum in automatic decimal notation"
+        }
+    };
+
+    for (const Case& tc : cases) {
+        settings->resultFormat = tc.resultFormat;
+        const QString expression = QString::fromLatin1(tc.expression);
+        eval->setExpression(expression);
+        const Quantity value = eval->evalUpdateAns();
+
+        ++eval_total_tests;
+        if (!eval->error().isEmpty()) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tevaluate " << tc.label << "\t[NEW]" << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+            continue;
+        }
+
+        session->clearHistory();
+        session->addHistoryEntry(HistoryEntry(
+            expression,
+            value,
+            eval->interpretedExpression()));
+
+        TestableResultDisplay display;
+        display.resize(800, 600);
+        display.refresh();
+
+        const QString resultLine = display.document()->findBlockByNumber(1).text();
+        ++eval_total_tests;
+        if (resultLine != tc.expectedLine) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\t" << tc.label << "\t[NEW]" << endl
+                 << "\tLine     : " << resultLine.toUtf8().constData() << endl
+                 << "\tExpected : " << tc.expectedLine.toUtf8().constData() << endl;
+        }
+    }
+
+    session->clearHistory();
+    settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    settings->multipleResultLinesEnabled = oldMultipleResultLinesEnabled;
+    settings->resultFormat = oldResultFormat;
+    settings->resultPrecision = oldResultPrecision;
+}
+
 void test_result_display_strips_unit_brackets_and_double_click_restores_canonical_unit_expression()
 {
     Session* session = evalSession;
@@ -8338,6 +8460,71 @@ void test_result_display_uses_base10_exponent_notation()
             ++eval_failed_tests;
             ++eval_new_failed_tests;
             cerr << __FILE__ << "[" << __LINE__ << "]\tresult display uses base-10 exponent notation\t[NEW]" << endl
+                 << "\tExpression: " << tc.expr << endl
+                 << "\tResult   : " << resultLine.toUtf8().constData() << endl
+                 << "\tExpected : " << tc.expectedResultLine.toUtf8().constData() << endl;
+        }
+    }
+
+    settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    settings->resultFormat = oldResultFormat;
+    settings->resultPrecision = oldResultPrecision;
+    session->clearHistory();
+}
+
+void test_result_display_scientific_units_use_unprefixed_si_units()
+{
+    Session* session = evalSession;
+    Settings* settings = Settings::instance();
+    const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+    const char oldResultFormat = settings->resultFormat;
+    const int oldResultPrecision = settings->resultPrecision;
+
+    settings->simplifyResultExpressions = false;
+    settings->resultFormat = 'e';
+    settings->resultPrecision = -1;
+    session->clearHistory();
+
+    const QString quantitySpace(MathDsl::QuantSp);
+    const struct {
+        const char* expr;
+        QString expectedResultLine;
+    } cases[] = {
+        {
+            "0.0000000001234234235234 [m]",
+            QString::fromUtf8("= 1.234234235234 × 10⁻¹⁰") + quantitySpace + QStringLiteral("m")
+        }
+    };
+
+    for (const auto& tc : cases) {
+        eval->setExpression(QString::fromLatin1(tc.expr));
+        const Quantity value = eval->evalUpdateAns();
+        ++eval_total_tests;
+        if (!eval->error().isEmpty()) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tevaluate scientific unit display case\t[NEW]" << endl
+                 << "\tExpression: " << tc.expr << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+            continue;
+        }
+
+        session->clearHistory();
+        session->addHistoryEntry(HistoryEntry(
+            QString::fromLatin1(tc.expr),
+            value,
+            eval->interpretedExpression()));
+
+        TestableResultDisplay display;
+        display.resize(800, 600);
+        display.refresh();
+
+        ++eval_total_tests;
+        const QString resultLine = display.document()->findBlockByNumber(1).text();
+        if (resultLine != tc.expectedResultLine) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tresult display uses unprefixed SI unit in scientific notation\t[NEW]" << endl
                  << "\tExpression: " << tc.expr << endl
                  << "\tResult   : " << resultLine.toUtf8().constData() << endl
                  << "\tExpected : " << tc.expectedResultLine.toUtf8().constData() << endl;
@@ -10104,9 +10291,11 @@ int main(int argc, char* argv[])
     test_sexagesimal_arithmetic_with_per_term_conversion_targets();
     test_result_display_mixed_per_term_time_conversions();
     test_result_display_mixed_per_term_time_conversions_in_sexagesimal_notation();
+    test_result_display_time_unit_sum_respects_decimal_and_sexagesimal_notation_modes();
     test_result_display_strips_unit_brackets_and_double_click_restores_canonical_unit_expression();
     test_result_display_double_click_selects_list_result();
     test_result_display_uses_base10_exponent_notation();
+    test_result_display_scientific_units_use_unprefixed_si_units();
     test_result_display_omits_zero_power_of_ten_generically();
     test_result_display_double_click_preserves_compact_angle_suffix();
     test_result_display_shows_angle_mode_unit_suffix_for_explicit_angle_input();
