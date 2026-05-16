@@ -322,6 +322,8 @@ private:
     void normalizeSplitContainerTree();
     void updateSplitterStyleSheet();
     void refreshPaneThemes();
+    void captureVisibleSessionViewports();
+    void restoreVisibleSessionViewports();
     void saveSessionLayout(bool captureCurrentViewport = true);
     void flushPendingSessionSave();
     bool configureCustomKeypad();

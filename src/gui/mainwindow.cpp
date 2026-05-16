@@ -3695,6 +3695,48 @@ void MainWindow::refreshPaneThemes()
     updateSplitterStyleSheet();
 }
 
+void MainWindow::captureVisibleSessionViewports()
+{
+    for (ResultDisplay* display : splitPaneDisplays()) {
+        if (display == nullptr)
+            continue;
+
+        QString sessionName = m_paneSessionNames.value(display);
+        if (sessionName.isEmpty() && display->session() != nullptr)
+            sessionName = display->session()->name();
+        if (sessionName.isEmpty())
+            continue;
+
+        m_sessionViewportAnchors.insert(sessionName, display->viewportTopAnchor());
+        QScrollBar* bar = display->verticalScrollBar();
+        const int scrollValue = bar->value() == bar->maximum()
+            ? (std::numeric_limits<int>::max)()
+            : bar->value();
+        m_sessionScrollValues.insert(sessionName, scrollValue);
+    }
+}
+
+void MainWindow::restoreVisibleSessionViewports()
+{
+    for (ResultDisplay* display : splitPaneDisplays()) {
+        if (display == nullptr)
+            continue;
+
+        QString sessionName = m_paneSessionNames.value(display);
+        if (sessionName.isEmpty() && display->session() != nullptr)
+            sessionName = display->session()->name();
+        if (sessionName.isEmpty())
+            continue;
+
+        const QPair<int, int> anchor = m_sessionViewportAnchors.value(sessionName, qMakePair(-1, 0));
+        const int scrollValue = m_sessionScrollValues.value(sessionName, -1);
+        if (anchor.first >= 0)
+            display->restoreViewportTopAnchor(anchor);
+        if (scrollValue >= 0)
+            display->restoreScrollValue(scrollValue);
+    }
+}
+
 void MainWindow::createBitField() {
     m_docks.bitField = new GenericDock<BitFieldWidget>("MainWindow", QT_TR_NOOP("Bitfield"), this);
     m_docks.bitField->setObjectName("BitfieldDock");
@@ -4528,13 +4570,16 @@ void MainWindow::saveSession(QString & fname)
 
 void MainWindow::saveSessionLayout(bool captureCurrentViewport)
 {
-    if (captureCurrentViewport && m_session != nullptr && m_widgets.display != nullptr) {
-        m_sessionViewportAnchors.insert(m_session->name(), m_widgets.display->viewportTopAnchor());
-        QScrollBar* bar = m_widgets.display->verticalScrollBar();
-        const int scrollValue = bar->value() == bar->maximum()
-            ? std::numeric_limits<int>::max()
-            : bar->value();
-        m_sessionScrollValues.insert(m_session->name(), scrollValue);
+    if (captureCurrentViewport) {
+        QSet<MainWindow*> capturedWindows;
+        for (const QPointer<MainWindow>& ptr : allMainWindows()) {
+            MainWindow* window = ptr.data();
+            if (window == nullptr || capturedWindows.contains(window))
+                continue;
+
+            capturedWindows.insert(window);
+            window->captureVisibleSessionViewports();
+        }
     }
 
     QStringList sessionNames;
@@ -8446,6 +8491,10 @@ void MainWindow::finishRestoreSessionLayout(const QJsonObject& layout,
     emit variablesChanged();
     emit functionsChanged();
     emit unitsChanged();
+    restoreVisibleSessionViewports();
+    QTimer::singleShot(0, this, [this]() {
+        restoreVisibleSessionViewports();
+    });
 
     if (this == primaryMainWindow() && !g_restoringExtraWindows && !g_multiWindowSpawnDone && windows.size() > 1) {
         g_multiWindowSpawnDone = true;
