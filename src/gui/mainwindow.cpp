@@ -792,6 +792,18 @@ QHash<QString, QPointer<MainWindow>>& windowIds()
     return ids;
 }
 
+QPointer<ResultDisplay>& globallyActiveDisplay()
+{
+    static QPointer<ResultDisplay> display;
+    return display;
+}
+
+QPointer<Editor>& globallyActiveEditor()
+{
+    static QPointer<Editor> editor;
+    return editor;
+}
+
 bool& appShutdownInProgress()
 {
     static bool shuttingDown = false;
@@ -914,6 +926,7 @@ public:
     std::function<MainWindow*()> sourceMainWindow;
     std::function<void(const QString&, const QPoint&)> sessionTabDetached;
     std::function<void(const QString&)> tabCloseRequested;
+    std::function<void(const QString&)> tabActivated;
 
     void refreshCloseButtons()
     {
@@ -996,8 +1009,11 @@ protected:
             m_dragTabIndex = tabAt(event->pos());
             m_dragSessionName = m_dragTabIndex >= 0 ? tabText(m_dragTabIndex) : QString();
         }
+        const QString pressedSession = m_dragSessionName;
 
         QTabBar::mousePressEvent(event);
+        if (event->button() == Qt::LeftButton && !pressedSession.isEmpty() && tabActivated)
+            tabActivated(pressedSession);
         refreshCloseButtons();
     }
 
@@ -1213,6 +1229,12 @@ public:
         : QWidget(parent)
     {
         setAcceptDrops(true);
+        m_inactiveOverlay = new QWidget(this);
+        m_inactiveOverlay->setObjectName(QStringLiteral("InactivePaneOverlay"));
+        m_inactiveOverlay->setAttribute(Qt::WA_TransparentForMouseEvents);
+        m_inactiveOverlay->setStyleSheet(QStringLiteral("background: rgba(0, 0, 0, 64);"));
+        m_inactiveOverlay->hide();
+
         m_overlay = new QWidget(this);
         m_overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
         m_overlay->setStyleSheet(QStringLiteral("background: rgba(0, 0, 0, 80);"));
@@ -1229,6 +1251,23 @@ public:
     PaneDropZone dropZoneForPanePosition(const QPoint& panePos) const
     {
         return dropZoneForPosition(panePos);
+    }
+
+    void setInactive(bool inactive)
+    {
+        if (m_inactiveOverlay == nullptr)
+            return;
+
+        if (!inactive) {
+            m_inactiveOverlay->hide();
+            return;
+        }
+
+        m_inactiveOverlay->setGeometry(rect());
+        m_inactiveOverlay->raise();
+        if (m_overlay != nullptr && m_overlay->isVisible())
+            m_overlay->raise();
+        m_inactiveOverlay->show();
     }
 
     void watchDropTarget(QWidget* widget)
@@ -1265,6 +1304,13 @@ protected:
     {
         hideOverlay();
         QWidget::dragLeaveEvent(event);
+    }
+
+    void resizeEvent(QResizeEvent* event) override
+    {
+        QWidget::resizeEvent(event);
+        if (m_inactiveOverlay != nullptr && m_inactiveOverlay->isVisible())
+            m_inactiveOverlay->setGeometry(rect());
     }
 
     bool eventFilter(QObject* watched, QEvent* event) override
@@ -1408,6 +1454,7 @@ private:
     }
 
     QWidget* m_overlay = nullptr;
+    QWidget* m_inactiveOverlay = nullptr;
     QWidget* m_overlayAreaWidget = nullptr;
 };
 
@@ -2587,6 +2634,9 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
         switchPaneToSession(display, tabBar->tabText(index));
         tabBar->refreshCloseButtons();
     });
+    tabBar->tabActivated = [this, display](const QString& sessionName) {
+        switchPaneToSession(display, sessionName);
+    };
     connect(tabBar, &QTabBar::tabMoved, this, [this, tabBar, display](int, int) {
         QStringList names;
         for (int i = 0; i < tabBar->count(); ++i)
@@ -2750,6 +2800,16 @@ void MainWindow::setActiveEditorDisplayPane(ResultDisplay* display, Editor* edit
 {
     if (display == nullptr || editor == nullptr)
         return;
+
+    globallyActiveDisplay() = display;
+    globallyActiveEditor() = editor;
+    editor->setFocus(Qt::OtherFocusReason);
+    QPointer<Editor> editorGuard(editor);
+    QTimer::singleShot(0, editor, [editorGuard]() {
+        if (editorGuard != nullptr)
+            editorGuard->setFocus(Qt::OtherFocusReason);
+    });
+
     if (m_widgets.display == display && m_widgets.editor == editor) {
         updatePaneEditorCursorVisibility();
         return;
@@ -3648,8 +3708,32 @@ void MainWindow::updatePaneLoadedSessionCounts()
 
 void MainWindow::updatePaneEditorCursorVisibility()
 {
-    for (Editor* editor : splitPaneEditors())
-        editor->setCustomCursorVisible(editor == m_widgets.editor);
+    const QPointer<ResultDisplay> activeDisplay = globallyActiveDisplay();
+    const QPointer<Editor> activeEditor = globallyActiveEditor();
+    QSet<MainWindow*> updatedWindows;
+
+    for (const QPointer<MainWindow>& ptr : allMainWindows()) {
+        MainWindow* window = ptr.data();
+        if (window == nullptr || updatedWindows.contains(window))
+            continue;
+
+        updatedWindows.insert(window);
+        for (ResultDisplay* display : window->splitPaneDisplays()) {
+            QWidget* pane = paneWidgetForDisplay(display);
+            QWidget* page = display->parentWidget();
+            Editor* editor = page
+                ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly)
+                : nullptr;
+            const bool active = activeDisplay != nullptr
+                && activeEditor != nullptr
+                && display == activeDisplay
+                && editor == activeEditor;
+            if (editor != nullptr)
+                editor->setCustomCursorVisible(active);
+            if (SessionPane* sessionPane = dynamic_cast<SessionPane*>(pane))
+                sessionPane->setInactive(activeDisplay != nullptr && !active);
+        }
+    }
 }
 
 void MainWindow::updatePaneTabBars()

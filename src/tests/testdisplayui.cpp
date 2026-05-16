@@ -12,9 +12,25 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QScrollBar>
+#include <QSplitter>
+#include <QTabBar>
 #include <QTest>
 
 namespace {
+QWidget* paneWidgetForDisplay(ResultDisplay* display)
+{
+    QWidget* widget = display;
+    while (widget != nullptr && !qobject_cast<QSplitter*>(widget->parentWidget()))
+        widget = widget->parentWidget();
+    return widget;
+}
+
+QWidget* inactiveOverlayForDisplay(ResultDisplay* display)
+{
+    QWidget* pane = paneWidgetForDisplay(display);
+    return pane ? pane->findChild<QWidget*>(QStringLiteral("InactivePaneOverlay"), Qt::FindDirectChildrenOnly) : nullptr;
+}
+
 void appendPaneScrollValues(const QJsonObject& node, QList<int>* values)
 {
     const QString type = node.value(QStringLiteral("type")).toString();
@@ -172,6 +188,17 @@ void TestDisplayUi::focusing_loaded_pane_preserves_its_current_scroll_position()
 
     const QList<ResultDisplay*> displays = window.findChildren<ResultDisplay*>();
     QCOMPARE(displays.size(), 2);
+    ResultDisplay* secondDisplay = displays.first() == firstDisplay ? displays.last() : displays.first();
+    QWidget* secondPage = secondDisplay->parentWidget();
+    Editor* secondEditor = secondPage ? secondPage->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+    QVERIFY(secondEditor != nullptr);
+    QWidget* firstOverlay = inactiveOverlayForDisplay(firstDisplay);
+    QWidget* secondOverlay = inactiveOverlayForDisplay(secondDisplay);
+    QVERIFY(firstOverlay != nullptr);
+    QVERIFY(secondOverlay != nullptr);
+    QVERIFY(firstOverlay->isVisible());
+    QVERIFY(!secondOverlay->isVisible());
+    QTRY_VERIFY(secondEditor->hasFocus());
 
     // Make the already-loaded first pane diverge from the scroll snapshot that
     // was captured when focus moved to the second pane.
@@ -181,6 +208,20 @@ void TestDisplayUi::focusing_loaded_pane_preserves_its_current_scroll_position()
     QTest::mouseClick(firstDisplay->viewport(), Qt::LeftButton, Qt::NoModifier,
                       firstDisplay->viewport()->rect().center());
     QCoreApplication::processEvents();
+    QTRY_VERIFY(firstEditor->hasFocus());
+    QVERIFY(!firstOverlay->isVisible());
+    QVERIFY(secondOverlay->isVisible());
+
+    QTabBar* secondTabBar = paneWidgetForDisplay(secondDisplay)->findChild<QTabBar*>();
+    QVERIFY(secondTabBar != nullptr);
+    QVERIFY(secondTabBar->isVisible());
+    QTest::mouseClick(secondTabBar, Qt::LeftButton, Qt::NoModifier,
+                      secondTabBar->tabRect(secondTabBar->currentIndex()).center());
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(secondEditor->hasFocus());
+    QVERIFY(firstOverlay->isVisible());
+    QVERIFY(!secondOverlay->isVisible());
+
     QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
     QCoreApplication::processEvents();
 
