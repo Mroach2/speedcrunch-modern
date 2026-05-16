@@ -332,6 +332,7 @@ private:
     void setMenusText();
     void setStatusBarText();
     void updateStatusBarSectionVisibility();
+    void updateColorSchemeActionState();
     QString statusBarAngleUnitValue() const;
     QString statusBarResultPrecisionValue() const;
     QString statusBarResultFormatValue() const;

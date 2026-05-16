@@ -1947,6 +1947,19 @@ void MainWindow::updateStatusBarSectionVisibility()
     }
 }
 
+void MainWindow::updateColorSchemeActionState()
+{
+    const auto schemes = m_actions.settingsDisplayColorSchemes;
+    bool colorSchemeMatched = false;
+    for (auto& action : schemes) {
+        const bool matches = m_settings->colorScheme == action->data().toString();
+        action->setChecked(matches);
+        colorSchemeMatched = colorSchemeMatched || matches;
+    }
+    m_actions.settingsDisplayColorSchemeCustom->setChecked(!colorSchemeMatched
+                                                           && m_settings->colorScheme == QLatin1String("Custom"));
+}
+
 QString MainWindow::statusBarAngleUnitValue() const
 {
     return (m_settings->angleUnit == 'r' ? MainWindow::tr("Radian")
@@ -4525,16 +4538,7 @@ void MainWindow::applySettings()
     if (m_widgets.display != nullptr)
         m_widgets.display->verticalScrollBar()->setValue(m_widgets.display->verticalScrollBar()->maximum());
 
-    const auto schemes = m_actions.settingsDisplayColorSchemes;
-    bool colorSchemeMatched = false;
-    for (auto& action : schemes) {
-        if (m_settings->colorScheme == action->data().toString()) {
-            action->setChecked(true);
-            colorSchemeMatched = true;
-        }
-    }
-    m_actions.settingsDisplayColorSchemeCustom->setChecked(!colorSchemeMatched
-                                                           && m_settings->colorScheme == QLatin1String("Custom"));
+    updateColorSchemeActionState();
     updateSplitterStyleSheet();
 
     if (m_widgets.display != nullptr && m_widgets.display->isEmpty())
@@ -6122,8 +6126,12 @@ void MainWindow::showCustomThemeDialog()
         } else {
             m_settings->colorScheme = selectedSchemeName;
         }
-        m_actions.settingsDisplayColorSchemeCustom->setChecked(m_settings->colorScheme == QLatin1String("Custom"));
-        emit colorSchemeChanged();
+        for (const QPointer<MainWindow>& ptr : allMainWindows()) {
+            if (MainWindow* window = ptr.data()) {
+                window->updateColorSchemeActionState();
+                emit window->colorSchemeChanged();
+            }
+        }
     };
     connect(applyButton, &QPushButton::clicked, this, applyCurrentTheme);
 
