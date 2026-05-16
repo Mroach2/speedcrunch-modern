@@ -1413,6 +1413,15 @@ Quantity function_eng(Function* f, const Function::ArgumentList& args)
     return Quantity(args.at(0)).setFormat(format);
 }
 
+Quantity function_dms(Function* f, const Function::ArgumentList& args)
+{
+    ENSURE_ARGUMENT_COUNT(1);
+    return Quantity(args.at(0)).setFormat(
+        Quantity::Format::Sexagesimal()
+        + Quantity::Format::Decimal()
+        + Quantity(args.at(0)).format());
+}
+
 Quantity function_binpad(Function* f, const Function::ArgumentList& args)
 {
     return s_nonDecimalPad(f, args, Quantity::Format::Fixed() + Quantity::Format::Binary());
@@ -2074,6 +2083,7 @@ void FunctionRepo::createFunctions()
     FUNCTION_INSERT(FunctionDomain::IntegerArithmetic, powmod);
 
     // Number formatting.
+    FUNCTION_INSERT(FunctionDomain::NumberFormatting, dms);
     FUNCTION_INSERT(FunctionDomain::NumberFormatting, eng);
     FUNCTION_INSERT(FunctionDomain::NumberFormatting, rat);
     FUNCTION_INSERT(FunctionDomain::NumberFormatting, sci);
@@ -2287,6 +2297,7 @@ void FunctionRepo::setNonTranslatableFunctionUsages()
     FUNCTION_USAGE(dec, "x");
     FUNCTION_USAGE(degrees, "x");
     FUNCTION_USAGE(det, "matrix");
+    FUNCTION_USAGE(dms, "x");
     FUNCTION_USAGE(dot, "list; list");
     FUNCTION_USAGE(eng, "x [; exponent]");
     FUNCTION_USAGE(erf, "x");
@@ -2429,7 +2440,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(binompmf, tr("Binomial Probability Mass Function"));
     FUNCTION_NAME(binomvar, tr("Binomial Distribution Variance"));
     FUNCTION_NAME(cbrt, tr("Cube Root"));
-    FUNCTION_NAME(ceil, tr("Ceiling"));
+    FUNCTION_NAME(ceil, tr("Round Toward +∞ (Ceiling)"));
     FUNCTION_NAME(cis, tr("Cosine plus Imaginary Sine"));
     FUNCTION_NAME(cisform, tr("Convert to Cis Complex Form"));
     FUNCTION_NAME(conj, tr("Complex Conjugate"));
@@ -2449,13 +2460,14 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(dec, tr("Convert to Decimal Representation"));
     FUNCTION_NAME(degrees, tr("Degrees of Arc"));
     FUNCTION_NAME(det, tr("Determinant"));
+    FUNCTION_NAME(dms, tr("Convert to Sexagesimal Notation"));
     FUNCTION_NAME(dot, tr("Dot Product"));
     FUNCTION_NAME(eng, tr("Convert to Engineering Notation"));
     FUNCTION_NAME(erf, tr("Error Function"));
     FUNCTION_NAME(erfc, tr("Complementary Error Function"));
     FUNCTION_NAME(exp, tr("Exponential"));
     FUNCTION_NAME(expform, tr("Convert to Exponential Complex Form"));
-    FUNCTION_NAME(floor, tr("Floor"));
+    FUNCTION_NAME(floor, tr("Round Toward −∞ (Floor)"));
     FUNCTION_NAME(flatten, tr("Flatten Matrix"));
     FUNCTION_NAME(frac, tr("Fractional Part"));
     FUNCTION_NAME(gamma, tr("Extension of Factorials [= (x-1)!]"));
@@ -2531,8 +2543,8 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(rank, tr("Matrix Rank"));
     FUNCTION_NAME(real, tr("Real Part"));
     FUNCTION_NAME(rectform, tr("Convert to Rectangular Complex Form"));
-    FUNCTION_NAME(round, tr("Rounding"));
-    FUNCTION_NAME(roundeven, tr("Rounding Half Even"));
+    FUNCTION_NAME(round, tr("Round Half Away from Zero"));
+    FUNCTION_NAME(roundeven, tr("Round Half Even"));
     FUNCTION_NAME(sci, tr("Convert to Scientific Notation"));
     FUNCTION_NAME(sec, tr("Secant"));
     FUNCTION_NAME(shl, tr("Arithmetic Shift Left"));
@@ -2551,7 +2563,7 @@ void FunctionRepo::setFunctionNames()
     FUNCTION_NAME(trigform, tr("Convert to Trigonometric Complex Form"));
     FUNCTION_NAME(turns, tr("Turns"));
     FUNCTION_NAME(tanh, tr("Hyperbolic Tangent"));
-    FUNCTION_NAME(trunc, tr("Truncation"));
+    FUNCTION_NAME(trunc, tr("Round Toward Zero (Truncation)"));
     FUNCTION_NAME(trace, tr("Matrix Trace"));
     FUNCTION_NAME(transpose, tr("Transpose Matrix"));
     FUNCTION_NAME(unmask, tr("Sign-extend a value"));

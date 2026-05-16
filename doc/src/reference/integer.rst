@@ -117,6 +117,12 @@ that is used for displaying results, select one of the corresponding settings in
 
     Format ``n`` in scientific notation.
 
+.. function:: dms(n)
+
+    Format ``n`` in sexagesimal notation, using the same convention as the
+    Sexagesimal notation setting. Time quantities display as ``h:mm:ss``;
+    angles and dimensionless values display as degrees, minutes, and seconds.
+
 .. function:: eng(n [; exponent])
 
     Format ``n`` in engineering notation.
@@ -182,9 +188,8 @@ Rounding
     ``x``. For quantities with dimensions, the numeric value is rounded and the
     original dimensions are preserved.
 
-    This is the expression-level counterpart to
-    :menuselection:`Settings --> Results --> Rounding Mode --> Toward +∞
-    (ceil)`. Only real arguments are allowed.
+    This is the expression-level counterpart to the ``Toward +∞ (ceil)``
+    rounding mode. Only real arguments are allowed.
 
 .. function:: floor(x)
 
@@ -192,9 +197,8 @@ Rounding
     ``x``. For quantities with dimensions, the numeric value is rounded and the
     original dimensions are preserved.
 
-    This is the expression-level counterpart to
-    :menuselection:`Settings --> Results --> Rounding Mode --> Toward −∞
-    (floor)`. Only real arguments are allowed.
+    This is the expression-level counterpart to the ``Toward −∞ (floor)``
+    rounding mode. Only real arguments are allowed.
 
 
 .. function:: round(x [; n])
@@ -207,9 +211,8 @@ Rounding
     For quantities with dimensions, the numeric value is rounded and the
     original dimensions are preserved.
 
-    This is the expression-level counterpart to
-    :menuselection:`Settings --> Results --> Rounding Mode --> Nearest, Half
-    Away (round)`. It does not depend on the global rounding mode.
+    This is the expression-level counterpart to the ``Nearest, Half Away
+    (round)`` rounding mode. It does not depend on the global rounding mode.
 
     Example::
 
@@ -240,10 +243,9 @@ Rounding
     original dimensions are preserved.
 
     Ties are rounded to the value whose last kept digit is even. This is the
-    expression-level counterpart to
-    :menuselection:`Settings --> Results --> Rounding Mode --> Nearest, Half
-    Even (roundeven)`. This strategy is commonly known as Banker's rounding.
-    It does not depend on the global rounding mode.
+    expression-level counterpart to the ``Nearest, Half Even (roundeven)``
+    rounding mode. This strategy is commonly known as Banker's rounding. It
+    does not depend on the global rounding mode.
 
     Example::
 
@@ -270,9 +272,9 @@ Rounding
     For quantities with dimensions, the numeric value is rounded and the
     original dimensions are preserved.
 
-    This is the expression-level counterpart to
-    :menuselection:`Settings --> Results --> Rounding Mode --> Toward Zero
-    (trunc)`. ``x`` must be real. ``n`` must be a real, dimensionless integer.
+    This is the expression-level counterpart to the ``Toward Zero (trunc)``
+    rounding mode. ``x`` must be real. ``n`` must be a real, dimensionless
+    integer.
 
     .. seealso::
        | :func:`int`

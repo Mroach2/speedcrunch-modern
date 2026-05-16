@@ -540,6 +540,7 @@ QString NumberFormatter::format(Quantity q, char resultFormatOverride,
         if (dimension.count() == 1 && dimension.firstKey() == UnitQuantity::Time) {
             auto iterator = dimension.begin();
             if ( iterator->numerator() == 1 && iterator->denominator() == 1) {
+                q.stripUnits();
                 q.clearDimension(); // remove unit, formatting itself is unit
                 time = true;
             }

@@ -2679,6 +2679,28 @@ void test_sexagesimal()
     Evaluator::instance()->initializeAngleUnits();
 }
 
+void test_dms_function_formats_like_sexagesimal_notation()
+{
+    Settings* settings = Settings::instance();
+    const char oldAngleUnit = settings->angleUnit;
+    const char oldResultFormat = settings->resultFormat;
+    const int oldResultPrecision = settings->resultPrecision;
+
+    settings->angleUnit = 'd';
+    settings->resultFormat = 'g';
+    settings->resultPrecision = 2;
+    Evaluator::instance()->initializeAngleUnits();
+
+    CHECK_EVAL_FORMAT("dms(62[s])", "0:01:02.00");
+    CHECK_EVAL_FORMAT("dms(12.3[degree])", "12°18′00.00″");
+    CHECK_EVAL_FORMAT("dms(0.25[turn])", "90°00′00.00″");
+
+    settings->angleUnit = oldAngleUnit;
+    settings->resultFormat = oldResultFormat;
+    settings->resultPrecision = oldResultPrecision;
+    Evaluator::instance()->initializeAngleUnits();
+}
+
 void test_rational_format()
 {
     Settings* settings = Settings::instance();
@@ -10229,6 +10251,7 @@ int main(int argc, char* argv[])
     test_settings_default_result_line_behavior();
     test_extra_result_lines_profile_formatting();
     test_sexagesimal();
+    test_dms_function_formats_like_sexagesimal_notation();
     test_rational_format();
 
     test_function_basic();
