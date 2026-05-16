@@ -37,6 +37,33 @@ void appendPaneScrollValues(const QJsonObject& node, QList<int>* values)
             appendPaneScrollValues(childValue.toObject(), values);
     }
 }
+
+void appendPaneEditorTexts(const QJsonObject& node, QStringList* texts)
+{
+    const QString type = node.value(QStringLiteral("type")).toString();
+    if (type == QLatin1String("pane")) {
+        const QString active = node.value(QStringLiteral("active")).toString();
+        const QJsonArray tabs = node.value(QStringLiteral("tabs")).toArray();
+        for (const QJsonValue& tabValue : tabs) {
+            const QJsonObject tab = tabValue.toObject();
+            if (tab.value(QStringLiteral("name")).toString() != active)
+                continue;
+            const QJsonObject editor = tab.value(QStringLiteral("editor")).toObject();
+            if (editor.contains(QStringLiteral("text")))
+                texts->append(editor.value(QStringLiteral("text")).toString());
+        }
+        return;
+    }
+
+    if (type != QLatin1String("split"))
+        return;
+
+    const QJsonArray children = node.value(QStringLiteral("children")).toArray();
+    for (const QJsonValue& childValue : children) {
+        if (childValue.isObject())
+            appendPaneEditorTexts(childValue.toObject(), texts);
+    }
+}
 }
 
 class TestDisplayUi : public QObject {
@@ -274,6 +301,11 @@ void TestDisplayUi::persisting_layout_captures_visible_scroll_positions_for_all_
     secondScrollBar->setValue(15);
     QCOMPARE(secondScrollBar->value(), 15);
 
+    firstEditor->setText(QStringLiteral("first pane draft"));
+    firstEditor->setCursorPosition(5);
+    secondEditor->setText(QStringLiteral("second pane draft"));
+    secondEditor->setCursorPosition(6);
+
     firstScrollBar->setValue(22);
     QCOMPARE(firstScrollBar->value(), 22);
 
@@ -289,6 +321,11 @@ void TestDisplayUi::persisting_layout_captures_visible_scroll_positions_for_all_
 
     QVERIFY(scrollValues.contains(22));
     QVERIFY(scrollValues.contains(15));
+
+    QStringList editorTexts;
+    appendPaneEditorTexts(root, &editorTexts);
+    QVERIFY(editorTexts.contains(QStringLiteral("first pane draft")));
+    QVERIFY(editorTexts.contains(QStringLiteral("second pane draft")));
 }
 
 int main(int argc, char** argv)

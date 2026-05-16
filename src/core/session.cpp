@@ -123,7 +123,6 @@ void SessionSerialization::serialize(const Session& session, QJsonObject& json)
     json[QLatin1String(SessionJsonKeys::Session)] = session.name().isEmpty()
         ? QLatin1String(SessionJsonKeys::SessionValueMain)
         : session.name();
-    json[QLatin1String(SessionJsonKeys::Editor)] = session.editorText();
     json[QLatin1String(SessionJsonKeys::Limit)] = session.historyLimit();
 
     QJsonArray hist_entries;
@@ -208,7 +207,6 @@ int SessionSerialization::deserialize(Session& session, const QJsonObject& json,
         return false;
     }
     if (!hasType(SessionJsonKeys::Session, &QJsonValue::isString)
-            || !hasType(SessionJsonKeys::Editor, &QJsonValue::isString)
             || !hasType(SessionJsonKeys::Limit, &QJsonValue::isDouble)
             || !hasType(SessionJsonKeys::History, &QJsonValue::isArray)
             || !hasType(SessionJsonKeys::Variables, &QJsonValue::isArray)
@@ -231,8 +229,7 @@ int SessionSerialization::deserialize(Session& session, const QJsonObject& json,
     }
     if (!merge)
         session.setName(json[QLatin1String(SessionJsonKeys::Session)].toString());
-    if (!merge)
-        session.setEditorText(json[QLatin1String(SessionJsonKeys::Editor)].toString());
+
     if (json.contains(QLatin1String(SessionJsonKeys::Limit)))
         session.setHistoryLimit(json[QLatin1String(SessionJsonKeys::Limit)].toInt(100));
 

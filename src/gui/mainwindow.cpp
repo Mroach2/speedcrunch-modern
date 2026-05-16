@@ -463,7 +463,40 @@ bool shouldDeleteSessionFileOnClose(const QString& sessionName, const Session* s
     return untitledSessionNumber(sessionName) > 0 && isReusableUntitledSession(session);
 }
 
-QJsonObject sessionLayoutEntry(const QString& name, const QPair<int, int>& viewportAnchor, int scrollValue)
+QJsonObject editorState(Editor* editor)
+{
+    QJsonObject state;
+    if (editor == nullptr)
+        return state;
+
+    state.insert(QStringLiteral("text"), editor->text());
+    state.insert(QStringLiteral("cursor"), editor->cursorPosition());
+    return state;
+}
+
+void restoreEditorState(Editor* editor, const QJsonObject& state, const QString& fallbackText)
+{
+    if (editor == nullptr)
+        return;
+
+    const QString text = state.value(QStringLiteral("text")).toString(fallbackText);
+    const int cursor = state.contains(QStringLiteral("cursor"))
+        ? state.value(QStringLiteral("cursor")).toInt(text.size())
+        : text.size();
+    {
+        const QSignalBlocker blocker(editor);
+        editor->setText(text);
+        editor->setCursorPosition(qBound(0, cursor, text.size()));
+    }
+    if (!text.trimmed().isEmpty())
+        editor->refreshAutoCalc();
+}
+
+QJsonObject sessionLayoutEntry(const QString& name,
+                               const QPair<int, int>& viewportAnchor,
+                               int scrollValue,
+                               const QJsonObject& editor,
+                               bool includeEditor)
 {
     QJsonObject entry;
     entry.insert(QStringLiteral("name"), name);
@@ -478,6 +511,8 @@ QJsonObject sessionLayoutEntry(const QString& name, const QPair<int, int>& viewp
             scroll.insert(QStringLiteral("value"), scrollValue);
         entry.insert(QStringLiteral("scroll"), scroll);
     }
+    if (includeEditor)
+        entry.insert(QStringLiteral("editor"), editor);
     return entry;
 }
 
@@ -4570,6 +4605,12 @@ void MainWindow::saveSession(QString & fname)
 
 void MainWindow::saveSessionLayout(bool captureCurrentViewport)
 {
+    const bool includeEditorState = m_shutdownStateSaved || applicationShutdownInProgress();
+    const auto editorForDisplay = [](ResultDisplay* display) -> Editor* {
+        QWidget* page = display ? display->parentWidget() : nullptr;
+        return page ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+    };
+
     if (captureCurrentViewport) {
         QSet<MainWindow*> capturedWindows;
         for (const QPointer<MainWindow>& ptr : allMainWindows()) {
@@ -4595,12 +4636,20 @@ void MainWindow::saveSessionLayout(bool captureCurrentViewport)
     sessionNames.sort(Qt::CaseInsensitive);
 
     QJsonArray tabs;
+    const QString activePaneSessionName = m_widgets.display != nullptr
+        ? m_paneSessionNames.value(m_widgets.display)
+        : QString();
+    const QJsonObject activeEditorState = includeEditorState
+        ? editorState(editorForDisplay(m_widgets.display))
+        : QJsonObject();
     for (const QString& name : sessionNames)
         tabs.append(sessionLayoutEntry(name,
                                        m_sessionViewportAnchors.value(name, qMakePair(-1, 0)),
-                                       m_sessionScrollValues.value(name, -1)));
+                                       m_sessionScrollValues.value(name, -1),
+                                       activeEditorState,
+                                       includeEditorState && name.compare(activePaneSessionName, Qt::CaseInsensitive) == 0));
 
-    const auto layoutNodeForWidget = [this](QWidget* widget, const auto& layoutNodeForWidgetRef) -> QJsonObject {
+    const auto layoutNodeForWidget = [this, includeEditorState, &editorForDisplay](QWidget* widget, const auto& layoutNodeForWidgetRef) -> QJsonObject {
         QJsonObject node;
         if (widget == nullptr)
             return node;
@@ -4634,10 +4683,15 @@ void MainWindow::saveSessionLayout(bool captureCurrentViewport)
         const QString paneSessionName = m_paneSessionNames.value(display);
         QJsonArray paneTabs;
         const QStringList paneNames = paneSessionNames(display);
+        const QJsonObject paneEditorState = includeEditorState
+            ? editorState(editorForDisplay(display))
+            : QJsonObject();
         for (const QString& name : paneNames) {
             paneTabs.append(sessionLayoutEntry(name,
                                                m_sessionViewportAnchors.value(name, qMakePair(-1, 0)),
-                                               m_sessionScrollValues.value(name, -1)));
+                                               m_sessionScrollValues.value(name, -1),
+                                               paneEditorState,
+                                               includeEditorState && name.compare(paneSessionName, Qt::CaseInsensitive) == 0));
         }
 
         node.insert(QStringLiteral("type"), QStringLiteral("pane"));
@@ -4680,13 +4734,21 @@ void MainWindow::saveSessionLayout(bool captureCurrentViewport)
         if (names.isEmpty())
             names = windowObject->m_loadedSessions.keys();
         names.sort(Qt::CaseInsensitive);
+        const QString windowActivePaneSessionName = windowObject->m_widgets.display != nullptr
+            ? windowObject->m_paneSessionNames.value(windowObject->m_widgets.display)
+            : QString();
+        const QJsonObject windowActiveEditorState = includeEditorState
+            ? editorState(editorForDisplay(windowObject->m_widgets.display))
+            : QJsonObject();
         for (const QString& name : names) {
             windowTabs.append(sessionLayoutEntry(name,
                 windowObject->m_sessionViewportAnchors.value(name, qMakePair(-1, 0)),
-                windowObject->m_sessionScrollValues.value(name, -1)));
+                windowObject->m_sessionScrollValues.value(name, -1),
+                windowActiveEditorState,
+                includeEditorState && name.compare(windowActivePaneSessionName, Qt::CaseInsensitive) == 0));
         }
 
-        const auto nodeForWidget = [windowObject](QWidget* widget, const auto& selfRef) -> QJsonObject {
+        const auto nodeForWidget = [windowObject, includeEditorState, &editorForDisplay](QWidget* widget, const auto& selfRef) -> QJsonObject {
             QJsonObject node;
             if (widget == nullptr)
                 return node;
@@ -4711,12 +4773,18 @@ void MainWindow::saveSessionLayout(bool captureCurrentViewport)
             if (display == nullptr)
                 return node;
             node.insert(QStringLiteral("type"), QStringLiteral("pane"));
-            node.insert(QStringLiteral("active"), windowObject->m_paneSessionNames.value(display));
+            const QString paneSessionName = windowObject->m_paneSessionNames.value(display);
+            node.insert(QStringLiteral("active"), paneSessionName);
             QJsonArray paneTabs;
+            const QJsonObject paneEditorState = includeEditorState
+                ? editorState(editorForDisplay(display))
+                : QJsonObject();
             for (const QString& name : windowObject->paneSessionNames(display)) {
                 paneTabs.append(sessionLayoutEntry(name,
                     windowObject->m_sessionViewportAnchors.value(name, qMakePair(-1, 0)),
-                    windowObject->m_sessionScrollValues.value(name, -1)));
+                    windowObject->m_sessionScrollValues.value(name, -1),
+                    paneEditorState,
+                    includeEditorState && name.compare(paneSessionName, Qt::CaseInsensitive) == 0));
             }
             node.insert(QStringLiteral("tabs"), paneTabs);
             return node;
@@ -4807,7 +4875,8 @@ void MainWindow::activateSession(Session* session)
         m_widgets.display->setEditingHistoryIndex(-1);
     if (m_widgets.editor != nullptr)
         m_widgets.editor->setHistoryArrowNavigationEnabled(true);
-    restoreEditorTextFromCurrentSession();
+    if (!displayAlreadyShowsSession)
+        restoreEditorTextFromCurrentSession();
     if (m_widgets.editor != nullptr)
         m_widgets.editor->updateHistory();
     if (m_widgets.display != nullptr && !displayAlreadyShowsSession)
@@ -8338,9 +8407,22 @@ void MainWindow::finishRestoreSessionLayout(const QJsonObject& layout,
         return QString();
     };
 
+    const auto editorStateFromNode = [](const QJsonObject& node, const QString& activeName) -> QJsonObject {
+        const QJsonArray paneTabs = node.value(QStringLiteral("tabs")).toArray();
+        for (const QJsonValue& tabValue : paneTabs) {
+            if (!tabValue.isObject())
+                continue;
+            const QJsonObject tab = tabValue.toObject();
+            const QString tabName = normalizedSessionName(tab.value(QStringLiteral("name")).toString());
+            if (tabName.compare(activeName, Qt::CaseInsensitive) == 0)
+                return tab.value(QStringLiteral("editor")).toObject();
+        }
+        return QJsonObject();
+    };
+
     const auto createPane = [this, &displayFont, &editorFont, &activeSessionNameToRestore, &paneNamesFromNode,
                              &activeDisplay, &activeEditor, &firstDisplay, &firstEditor,
-                             &firstLoadedName](const QJsonObject& node) -> QWidget* {
+                             &firstLoadedName, &editorStateFromNode](const QJsonObject& node) -> QWidget* {
         const QStringList names = paneNamesFromNode(node);
         QStringList loadedNames;
         for (const QString& name : names) {
@@ -8381,6 +8463,9 @@ void MainWindow::finishRestoreSessionLayout(const QJsonObject& layout,
         display->setSession(paneSession);
         if (paneSession != nullptr)
             editor->setSession(paneSession);
+        restoreEditorState(editor,
+                           editorStateFromNode(node, activeName),
+                           paneSession != nullptr ? paneSession->editorText() : QString());
 
         if (firstDisplay == nullptr) {
             firstDisplay = display;
