@@ -15,6 +15,7 @@ class SyntaxHighlighter;
 class HistoryEntry;
 class Session;
 class QContextMenuEvent;
+class QPainter;
 class QPoint;
 class QMouseEvent;
 class QEvent;
@@ -110,6 +111,7 @@ protected:
     void pageScrollEvent();
     void scrollToDirection(int);
     void stopActiveScrollingAnimation();
+    void drawScrollEdgeGradients(QPainter* painter);
     void repositionScrollToBottomButton();
     void updateScrollToBottomButtonVisibility();
     void updateScrollBarStyleSheet();

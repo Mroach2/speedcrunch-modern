@@ -30,6 +30,7 @@
 #include <QMenuBar>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QLinearGradient>
 #include <QScrollBar>
 #include <QStyle>
 #include <QToolButton>
@@ -38,6 +39,9 @@
 #include <limits>
 
 namespace {
+constexpr int kResultDisplayHorizontalPadding = 14;
+constexpr int kResultDisplayFadeHeight = 28;
+
 QPointF badgeCenter(const QRect& rect)
 {
     return QPointF(rect.x() + rect.width() * 0.5, rect.y() + rect.height() * 0.5);
@@ -293,7 +297,7 @@ ResultDisplay::ResultDisplay(QWidget* parent)
     , m_session(nullptr)
     , m_scrollToBottomButton(new QToolButton(this))
 {
-    setViewportMargins(0, 0, 0, 0);
+    setViewportMargins(kResultDisplayHorizontalPadding, 0, kResultDisplayHorizontalPadding, 0);
     setBackgroundRole(QPalette::Base);
     setLayoutDirection(Qt::LeftToRight);
     setMinimumWidth(150);
@@ -308,10 +312,12 @@ ResultDisplay::ResultDisplay(QWidget* parent)
     bar->installEventFilter(this);
     connect(bar, &QScrollBar::valueChanged, this, [this]() {
         updateScrollToBottomButtonVisibility();
+        viewport()->update();
     });
     connect(bar, &QScrollBar::rangeChanged, this, [this]() {
         repositionScrollToBottomButton();
         updateScrollToBottomButtonVisibility();
+        viewport()->update();
     });
 
     m_scrollToBottomButton->setFocusPolicy(Qt::NoFocus);
@@ -1201,6 +1207,7 @@ void ResultDisplay::paintEvent(QPaintEvent* event)
     QPlainTextEdit::paintEvent(event);
 
     QPainter painter(viewport());
+    drawScrollEdgeGradients(&painter);
 
     if (m_editingHistoryIndex >= 0) {
         const QRect cancelRect = cancelGlyphBadgeRectForEditingIndex();
@@ -1298,6 +1305,7 @@ void ResultDisplay::scrollContentsBy(int dx, int dy)
 {
     QPlainTextEdit::scrollContentsBy(dx, dy);
     updateScrollToBottomButtonVisibility();
+    viewport()->update();
 }
 
 void ResultDisplay::stopActiveScrollingAnimation()
@@ -1306,6 +1314,47 @@ void ResultDisplay::stopActiveScrollingAnimation()
     m_scrolledLines = 0;
     m_scrollDirection = 0;
     updateScrollToBottomButtonVisibility();
+}
+
+void ResultDisplay::drawScrollEdgeGradients(QPainter* painter)
+{
+    if (painter == nullptr)
+        return;
+
+    QScrollBar* bar = verticalScrollBar();
+    if (bar == nullptr || bar->maximum() <= bar->minimum())
+        return;
+
+    const QRect rect = viewport()->rect();
+    const int fadeHeight = qMin(kResultDisplayFadeHeight, rect.height() / 2);
+    if (fadeHeight <= 0)
+        return;
+
+    QColor solid = m_highlighter->colorForRole(ColorScheme::Background);
+    QColor transparent = solid;
+    solid.setAlpha(255);
+    transparent.setAlpha(0);
+
+    painter->save();
+    painter->setPen(Qt::NoPen);
+
+    if (bar->value() > bar->minimum()) {
+        const QRect topRect(rect.left(), rect.top(), rect.width(), fadeHeight);
+        QLinearGradient topGradient(topRect.topLeft(), topRect.bottomLeft());
+        topGradient.setColorAt(0.0, solid);
+        topGradient.setColorAt(1.0, transparent);
+        painter->fillRect(topRect, topGradient);
+    }
+
+    if (bar->value() < bar->maximum()) {
+        const QRect bottomRect(rect.left(), rect.bottom() - fadeHeight + 1, rect.width(), fadeHeight);
+        QLinearGradient bottomGradient(bottomRect.topLeft(), bottomRect.bottomLeft());
+        bottomGradient.setColorAt(0.0, transparent);
+        bottomGradient.setColorAt(1.0, solid);
+        painter->fillRect(bottomRect, bottomGradient);
+    }
+
+    painter->restore();
 }
 
 void ResultDisplay::repositionScrollToBottomButton()
@@ -1341,9 +1390,8 @@ void ResultDisplay::updateScrollBarStyleSheet()
     const int baseScrollBarWidth = qMax(
         1,
         qRound(kBaseScrollBarWidthAt96Dpi * (logicalDpiX() / kReferenceDpi)));
-    const int scrollBarWidth = m_scrollBarHovered
-        ? baseScrollBarWidth * 2
-        : baseScrollBarWidth;
+    const int scrollBarWidth = baseScrollBarWidth * 2;
+    const int handleHorizontalMargin = m_scrollBarHovered ? 0 : baseScrollBarWidth / 2;
 
     verticalScrollBar()->setStyleSheet(QString(
         "QScrollBar:vertical {"
@@ -1354,6 +1402,7 @@ void ResultDisplay::updateScrollBarStyleSheet()
         "}"
         "QScrollBar::handle:vertical {"
         "   background: %2;"
+        "   margin: 0 %4px 0 %4px;"
         "}"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
         "   border: 0;"
@@ -1366,7 +1415,8 @@ void ResultDisplay::updateScrollBarStyleSheet()
         "}"
     ).arg(m_highlighter->colorForRole(ColorScheme::Background).name(),
           m_highlighter->colorForRole(ColorScheme::ScrollBar).name())
-      .arg(scrollBarWidth));
+      .arg(scrollBarWidth)
+      .arg(handleHorizontalMargin));
 }
 
 int ResultDisplay::historyIndexAtPosition(const QPoint& pos) const

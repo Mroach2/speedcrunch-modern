@@ -6,6 +6,7 @@
 #include "gui/editor.h"
 #include "gui/mainwindow.h"
 #include "gui/resultdisplay.h"
+#include "math/quantity.h"
 
 #include <QCoreApplication>
 #include <QJsonArray>
@@ -86,9 +87,47 @@ class TestDisplayUi : public QObject {
     Q_OBJECT
 
 private slots:
+    void result_display_insets_viewport_horizontally();
+    void result_display_scrollbar_hover_keeps_viewport_width_stable();
     void focusing_loaded_pane_preserves_its_current_scroll_position();
     void persisting_layout_captures_visible_scroll_positions_for_all_panes();
 };
+
+void TestDisplayUi::result_display_insets_viewport_horizontally()
+{
+    ResultDisplay display;
+    display.resize(320, 200);
+    display.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&display));
+
+    const QRect viewportGeometry = display.viewport()->geometry();
+    QVERIFY(viewportGeometry.left() > 0);
+    QVERIFY(display.width() - viewportGeometry.right() - 1 > 0);
+}
+
+void TestDisplayUi::result_display_scrollbar_hover_keeps_viewport_width_stable()
+{
+    ResultDisplay display;
+    display.resize(360, 160);
+    display.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&display));
+
+    Quantity value;
+    for (int i = 0; i < 40; ++i)
+        display.append(QStringLiteral("123456789012345678901234567890"), value);
+
+    QScrollBar* scrollBar = display.verticalScrollBar();
+    QVERIFY(scrollBar->maximum() > scrollBar->minimum());
+
+    const QRect initialViewportGeometry = display.viewport()->geometry();
+    QEvent enterEvent(QEvent::Enter);
+    QCoreApplication::sendEvent(scrollBar, &enterEvent);
+    QCOMPARE(display.viewport()->geometry(), initialViewportGeometry);
+
+    QEvent leaveEvent(QEvent::Leave);
+    QCoreApplication::sendEvent(scrollBar, &leaveEvent);
+    QCOMPARE(display.viewport()->geometry(), initialViewportGeometry);
+}
 
 void TestDisplayUi::focusing_loaded_pane_preserves_its_current_scroll_position()
 {
