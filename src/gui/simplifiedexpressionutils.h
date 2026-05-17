@@ -22,7 +22,7 @@ inline bool isNumericSimplifiedExpression(const QString& expression)
 inline bool isPlainNumericArithmeticExpression(const QString& expression)
 {
     static const QRegularExpression pattern(
-        QStringLiteral("^[\\s\\p{Zs}]*[0-9\\.,\\s\\p{Zs}+\\-−*/%()×÷·]+[\\s\\p{Zs}]*$"));
+        QStringLiteral("^[\\s\\p{Zs}]*[0-9\\.,\\s\\p{Zs}+\\-−*/%()^×÷·⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]+[\\s\\p{Zs}]*$"));
     return pattern.match(expression).hasMatch();
 }
 
@@ -74,6 +74,21 @@ inline QString normalizedTokenForCommutativeComparison(const QString& token)
     QString normalized = token;
     normalized.remove(QRegularExpression(QStringLiteral("[\\s\\p{Zs}]")));
     return normalized;
+}
+
+inline QString expressionWithoutTopLevelComment(const QString& expression)
+{
+    int depth = 0;
+    for (int i = 0; i < expression.size(); ++i) {
+        const QChar ch = expression.at(i);
+        if (ch == MathDsl::GroupStart)
+            ++depth;
+        else if (ch == MathDsl::GroupEnd && depth > 0)
+            --depth;
+        else if (ch == MathDsl::CommentSep && depth == 0)
+            return expression.left(i).trimmed();
+    }
+    return expression.trimmed();
 }
 
 inline bool splitSingleTopLevelBinary(const QString& expression, QChar op,
@@ -221,11 +236,13 @@ inline bool isTopLevelAdditiveTermReorder(const QString& interpretedDisplay,
 inline bool shouldSuppressSimplifiedExpressionLine(const QString& interpretedDisplay,
                                                    const QString& simplifiedDisplay)
 {
-    return isCommutativeTopLevelSwap(interpretedDisplay, simplifiedDisplay)
-        || isTopLevelAdditiveTermReorder(interpretedDisplay, simplifiedDisplay)
-        || (isPlainNumericArithmeticExpression(interpretedDisplay)
-        && (isPlainNumericArithmeticExpression(simplifiedDisplay)
-            || isNumericSimplifiedExpression(simplifiedDisplay)));
+    const QString interpretedExpression = expressionWithoutTopLevelComment(interpretedDisplay);
+    const QString simplifiedExpression = expressionWithoutTopLevelComment(simplifiedDisplay);
+    return isCommutativeTopLevelSwap(interpretedExpression, simplifiedExpression)
+        || isTopLevelAdditiveTermReorder(interpretedExpression, simplifiedExpression)
+        || (isPlainNumericArithmeticExpression(interpretedExpression)
+        && (isPlainNumericArithmeticExpression(simplifiedExpression)
+            || isNumericSimplifiedExpression(simplifiedExpression)));
 }
 
 } // namespace SimplifiedExpressionUtils

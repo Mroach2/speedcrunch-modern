@@ -9924,6 +9924,62 @@ void test_non_informative_numeric_simplified_row_suppression()
         __FILE__, __LINE__, "suppress simplified line for unicode multiply/divide arithmetic",
         QString::fromUtf8("2/3×4"), true);
     checkSuppressSimplifiedExpressionLine(
+        __FILE__, __LINE__, "suppress simplified line for numeric arithmetic with superscript power",
+        QString::fromUtf8("213+12312+123+123×123/1×(312.12312312³)"), true);
+    checkSuppressSimplifiedExpressionLine(
+        __FILE__, __LINE__, "suppress simplified line for numeric arithmetic with suffix comment",
+        QString::fromUtf8("213+12312+123+123×123/1×(312.12312312³) ? ?????"), true);
+    ++eval_total_tests;
+    {
+        Settings* settings = Settings::instance();
+        const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+        const bool oldMultipleResultLinesEnabled = settings->multipleResultLinesEnabled;
+        const char oldResultFormat = settings->resultFormat;
+        const int oldResultPrecision = settings->resultPrecision;
+
+        settings->simplifyResultExpressions = true;
+        settings->multipleResultLinesEnabled = false;
+        settings->resultFormat = 'f';
+        settings->resultPrecision = 3;
+
+        const QStringList expressions = {
+            QString::fromUtf8("213+12312+123+123×123/1×(312.12312312³)"),
+            QString::fromUtf8("213+12312+123+123×123/1×(312.12312312³) ? ?????")
+        };
+        for (const QString& expr : expressions) {
+            eval->setExpression(expr);
+            const Quantity value = eval->evalUpdateAns();
+            if (!eval->error().isEmpty()) {
+                ++eval_failed_tests;
+                ++eval_new_failed_tests;
+                cerr << __FILE__ << "[" << __LINE__ << "]\tresult lines suppress duplicate numeric simplification\t[NEW]" << endl
+                     << "\tError: " << qPrintable(eval->error()) << endl;
+            } else {
+                const QStringList lines = ResultLineFormatUtils::formatResultLinesForDisplay(
+                    expr,
+                    eval->interpretedExpression(),
+                    value,
+                    true,
+                    true,
+                    eval);
+                if (lines.size() != 2 || lines.last().contains(QStringLiteral("876131"))) {
+                    ++eval_failed_tests;
+                    ++eval_new_failed_tests;
+                    cerr << __FILE__ << "[" << __LINE__ << "]\tresult lines suppress duplicate numeric simplification\t[NEW]" << endl
+                         << "\tExpression: " << expr.toUtf8().constData() << endl
+                         << "\tLine count: " << lines.size() << endl;
+                    for (const QString& line : lines)
+                        cerr << "\tLine: " << line.toUtf8().constData() << endl;
+                }
+            }
+        }
+
+        settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+        settings->multipleResultLinesEnabled = oldMultipleResultLinesEnabled;
+        settings->resultFormat = oldResultFormat;
+        settings->resultPrecision = oldResultPrecision;
+    }
+    checkSuppressSimplifiedExpressionLine(
         __FILE__, __LINE__, "do not suppress symbolic simplification",
         QStringLiteral("2*e*e-1"), false);
     checkSuppressSimplifiedExpressionLine(
