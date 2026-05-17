@@ -1376,12 +1376,13 @@ void ResultDisplay::repositionScrollToBottomButton()
     if (!m_scrollToBottomButton)
         return;
 
-    const int margin = 10;
+    const int rightMargin = kResultDisplayHorizontalPadding;
+    const int bottomMargin = 10;
     const QRect contentRect = contentsRect();
     const int x = contentRect.left()
-        + qMax(0, contentRect.width() - m_scrollToBottomButton->width() - margin);
+        + qMax(0, contentRect.width() - m_scrollToBottomButton->width() - rightMargin);
     const int y = contentRect.top()
-        + qMax(0, contentRect.height() - m_scrollToBottomButton->height() - margin);
+        + qMax(0, contentRect.height() - m_scrollToBottomButton->height() - bottomMargin);
     m_scrollToBottomButton->move(x, y);
     m_scrollToBottomButton->raise();
 }
