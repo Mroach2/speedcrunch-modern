@@ -3606,7 +3606,7 @@ static QString formatInterpretedExpressionForDisplayImpl(const QString& expressi
         ? expression.left(commentPos).trimmed()
         : expression;
     QString commentSuffix;
-    if (commentPos >= 0) {
+    if (commentPos >= 0 && !simplifyRepeatedMultiplicativeBases) {
         const QString commentText = expression.mid(commentPos + 1).trimmed();
         commentSuffix = QLatin1String(" ?");
         if (!commentText.isEmpty())
@@ -4405,13 +4405,6 @@ QString Evaluator::simplifyInterpretedExpression(const QString& expression)
     const QString expressionPrefix = (commentPos >= 0)
         ? expression.left(commentPos).trimmed()
         : expression;
-    QString commentSuffix;
-    if (commentPos >= 0) {
-        const QString commentText = expression.mid(commentPos + 1).trimmed();
-        commentSuffix = QLatin1String(" ?");
-        if (!commentText.isEmpty())
-            commentSuffix += QLatin1String(" ") + commentText;
-    }
 
     if (expressionPrefix.contains(MathDsl::UnitStart)
         || expressionPrefix.contains(MathDsl::UnitEnd))
@@ -4423,7 +4416,7 @@ QString Evaluator::simplifyInterpretedExpression(const QString& expression)
         const bool hasTrigFunction =
             RegExpPatterns::trigFunctionCall().match(expressionPrefix).hasMatch();
         if (!hasTrigFunction)
-            return expressionPrefix + commentSuffix;
+            return expressionPrefix;
     }
 
     auto scanForDisplay = [](const QString& text) {
@@ -4446,13 +4439,13 @@ QString Evaluator::simplifyInterpretedExpression(const QString& expression)
 
     const Tokens scannedTokens = scanForDisplay(expressionPrefix);
     if (!scannedTokens.valid() || scannedTokens.isEmpty())
-        return expressionPrefix + commentSuffix;
+        return expressionPrefix;
 
     const QString groupedExpression =
         groupHighPrecedenceAdditiveTermsForDisplay(expressionPrefix, scannedTokens);
     const Tokens groupedTokens = scanForDisplay(groupedExpression);
     if (!groupedTokens.valid() || groupedTokens.isEmpty())
-        return groupedExpression + commentSuffix;
+        return groupedExpression;
 
     QString simplifiedExpression =
         simplifyRepeatedMultiplicativeBasesForDisplay(groupedExpression, groupedTokens);
@@ -4500,7 +4493,7 @@ QString Evaluator::simplifyInterpretedExpression(const QString& expression)
             simplifiedExpression = normalized;
     }
 
-    return simplifiedExpression + commentSuffix;
+    return simplifiedExpression;
 }
 
 QString Evaluator::formatInterpretedExpressionForDisplay(const QString& expression)

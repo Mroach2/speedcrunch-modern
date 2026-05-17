@@ -10027,6 +10027,47 @@ void test_non_informative_numeric_simplified_row_suppression()
         QString::fromUtf8("cos(π) · cos(pi) · cos(π) · cos(pi)"),
         QString::fromUtf8("cos⁴(π)"));
     CHECK_DISPLAY_SIMPLIFIED_INTERPRETED(
+        QString::fromUtf8("cos(π) · cos(π) · cos(π) ? foo"),
+        QString::fromUtf8("cos³(π)"));
+    ++eval_total_tests;
+    {
+        Settings* settings = Settings::instance();
+        const bool oldSimplifyResultExpressions = settings->simplifyResultExpressions;
+        settings->simplifyResultExpressions = true;
+
+        const QString expr = QString::fromUtf8("cos(π) · cos(π) · cos(π) ? foo");
+        eval->setExpression(expr);
+        const Quantity value = eval->evalUpdateAns();
+        if (!eval->error().isEmpty()) {
+            ++eval_failed_tests;
+            ++eval_new_failed_tests;
+            cerr << __FILE__ << "[" << __LINE__ << "]\tresult lines omit comment from simplified expression\t[NEW]" << endl
+                 << "\tError: " << qPrintable(eval->error()) << endl;
+        } else {
+            const QStringList lines = ResultLineFormatUtils::formatResultLinesForDisplay(
+                expr,
+                eval->interpretedExpression(),
+                value,
+                true,
+                true,
+                eval);
+            const QString expectedSimplified = QString::fromUtf8("= cos³(π)");
+            if (lines.size() < 3
+                || !lines.first().contains(QStringLiteral("? foo"))
+                || lines.at(1) != expectedSimplified
+                || lines.at(1).contains(QStringLiteral("? foo"))) {
+                ++eval_failed_tests;
+                ++eval_new_failed_tests;
+                cerr << __FILE__ << "[" << __LINE__ << "]\tresult lines omit comment from simplified expression\t[NEW]" << endl
+                     << "\tLine count: " << lines.size() << endl;
+                for (const QString& line : lines)
+                    cerr << "\tLine: " << line.toUtf8().constData() << endl;
+            }
+        }
+
+        settings->simplifyResultExpressions = oldSimplifyResultExpressions;
+    }
+    CHECK_DISPLAY_SIMPLIFIED_INTERPRETED(
         QStringLiteral("(2*cos(pi)/(3*pi*4))*(343+4343)-2*e"),
         QStringLiteral("781")
             + QString(MathDsl::AddWrap)

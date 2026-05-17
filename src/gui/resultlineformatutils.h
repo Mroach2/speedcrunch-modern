@@ -764,8 +764,13 @@ inline QString simplifiedExpressionLineForDisplay(const QString& interpretedExpr
     simplifiedDisplay = collapseValueUnitMultiplicationForDisplay(simplifiedDisplay);
     interpretedDisplay = collapseBracketedCompactAngleSuffixes(interpretedDisplay);
     simplifiedDisplay = collapseBracketedCompactAngleSuffixes(simplifiedDisplay);
-    if (simplifiedDisplay.isEmpty() || simplifiedDisplay == interpretedDisplay)
+    if (simplifiedDisplay.isEmpty()
+        || simplifiedDisplay == interpretedDisplay
+        || simplifiedDisplay == SimplifiedExpressionUtils::expressionWithoutTopLevelComment(
+            interpretedDisplay))
+    {
         return QString();
+    }
 
     if (SimplifiedExpressionUtils::shouldSuppressSimplifiedExpressionLine(
             interpretedDisplay, simplifiedDisplay))
