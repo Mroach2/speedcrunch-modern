@@ -2290,6 +2290,13 @@ static bool parseSimplifiablePowerFactor(const QString& factorText,
     return true;
 }
 
+static QString canonicalSimplifiableBaseKeyForDisplay(QString base)
+{
+    base.replace(RegExpPatterns::piAliasWord(), QString::fromUtf8("π"));
+    base.replace(RegExpPatterns::eAliasWord(), QString::fromUtf8("ℯ"));
+    return base;
+}
+
 static bool approximateRationalFromDouble(double value, int maxDenominator,
                                           qint64* outNumerator, qint64* outDenominator)
 {
@@ -2412,17 +2419,21 @@ static QString simplifyRepeatedBasesInMultiplicativeTermForDisplay(const QString
             return segmentText;
 
         QHash<QString, int> totalExponentsByBase;
+        QHash<QString, QString> representativeBaseByKey;
         for (int i = 0; i < factors.size(); ++i) {
             QString base;
             int exponent = 0;
             if (!parseSimplifiablePowerFactor(factors.at(i), &base, &exponent)) {
                 continue;
             }
-            totalExponentsByBase[base] += exponent;
+            const QString baseKey = canonicalSimplifiableBaseKeyForDisplay(base);
+            if (!representativeBaseByKey.contains(baseKey))
+                representativeBaseByKey.insert(baseKey, base);
+            totalExponentsByBase[baseKey] += exponent;
         }
 
         QString simplified;
-        QSet<QString> emittedBases;
+        QSet<QString> emittedBaseKeys;
         bool hasOutput = false;
         int i = 0;
         while (i < factors.size()) {
@@ -2440,17 +2451,19 @@ static QString simplifyRepeatedBasesInMultiplicativeTermForDisplay(const QString
                 continue;
             }
 
-            if (emittedBases.contains(base)) {
+            const QString baseKey = canonicalSimplifiableBaseKeyForDisplay(base);
+            if (emittedBaseKeys.contains(baseKey)) {
                 ++i;
                 continue;
             }
-            emittedBases.insert(base);
+            emittedBaseKeys.insert(baseKey);
 
             if (hasOutput && i > 0)
                 simplified += operators.at(i - 1);
-            const int totalExponent = totalExponentsByBase.value(base, 0);
+            const int totalExponent = totalExponentsByBase.value(baseKey, 0);
+            const QString representativeBase = representativeBaseByKey.value(baseKey, base);
             if (totalExponent > 1) {
-                simplified += base;
+                simplified += representativeBase;
                 simplified += QStringLiteral("^%1").arg(totalExponent);
             } else {
                 simplified += factors.at(i);
@@ -2949,6 +2962,7 @@ static QString simplifyRepeatedBasesInMultiplicativeTermForDisplay(const QString
             return text;
 
         QHash<QString, int> exponentByBase;
+        QHash<QString, QString> representativeBaseByKey;
         QVector<QString> baseOrder;
         double numericCoefficient = 1.0;
         bool hasNonNumericBase = false;
@@ -3038,9 +3052,12 @@ static QString simplifyRepeatedBasesInMultiplicativeTermForDisplay(const QString
                         return text;
                     numericCoefficient *= std::pow(value, sign * exponent);
                 } else if (!isUnsignedDecimalNumberText(base)) {
-                    if (!exponentByBase.contains(base))
-                        baseOrder.append(base);
-                    exponentByBase[base] += sign * exponent;
+                    const QString baseKey = canonicalSimplifiableBaseKeyForDisplay(base);
+                    if (!exponentByBase.contains(baseKey)) {
+                        baseOrder.append(baseKey);
+                        representativeBaseByKey.insert(baseKey, base);
+                    }
+                    exponentByBase[baseKey] += sign * exponent;
                     hasNonNumericBase = true;
                     if (hasOnlyUnitBases && !isUnitOnlyBase(base))
                         hasOnlyUnitBases = false;
@@ -3055,8 +3072,9 @@ static QString simplifyRepeatedBasesInMultiplicativeTermForDisplay(const QString
 
         QStringList positiveFactors;
         QStringList negativeFactors;
-        for (const QString& base : baseOrder) {
-            const int exponent = exponentByBase.value(base, 0);
+        for (const QString& baseKey : baseOrder) {
+            const int exponent = exponentByBase.value(baseKey, 0);
+            const QString base = representativeBaseByKey.value(baseKey, baseKey);
             if (exponent > 0) {
                 positiveFactors.append(exponent == 1
                     ? base

@@ -84,6 +84,24 @@ inline const QRegularExpression& anyFunctionCall()
     return pattern;
 }
 
+// Matches standalone ASCII "pi" aliases for the π built-in constant.
+// Example input/output: "cos(pi)" -> match "pi"; "pixel" -> no match.
+inline const QRegularExpression& piAliasWord()
+{
+    static const QRegularExpression pattern(
+        QStringLiteral(R"((?<![\p{L}\p{N}_])pi(?![\p{L}\p{N}_]))"));
+    return pattern;
+}
+
+// Matches standalone ASCII "e" aliases for the ℯ built-in constant.
+// Example input/output: "2*e" -> match "e"; "exp" -> no match.
+inline const QRegularExpression& eAliasWord()
+{
+    static const QRegularExpression pattern(
+        QStringLiteral(R"((?<![\p{L}\p{N}_])e(?![\p{L}\p{N}_]))"));
+    return pattern;
+}
+
 // Returns true when identifier text names a trigonometric function.
 // Example input/output: "tan" -> true; "round" -> false.
 inline bool isTrigFunctionIdentifier(QStringView identifier)

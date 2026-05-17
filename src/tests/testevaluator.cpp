@@ -10018,6 +10018,15 @@ void test_non_informative_numeric_simplified_row_suppression()
             + QString(MathDsl::AddWrap)
             + QStringLiteral("cos(pi)"));
     CHECK_DISPLAY_SIMPLIFIED_INTERPRETED(
+        QString::fromUtf8("cos(π) · cos(π) · cos(π) · cos(π)"),
+        QString::fromUtf8("cos⁴(π)"));
+    CHECK_DISPLAY_SIMPLIFIED_INTERPRETED(
+        QString::fromUtf8("cos(π) · cos(π) · cos(π) · cos(pi)"),
+        QString::fromUtf8("cos⁴(π)"));
+    CHECK_DISPLAY_SIMPLIFIED_INTERPRETED(
+        QString::fromUtf8("cos(π) · cos(pi) · cos(π) · cos(pi)"),
+        QString::fromUtf8("cos⁴(π)"));
+    CHECK_DISPLAY_SIMPLIFIED_INTERPRETED(
         QStringLiteral("(2*cos(pi)/(3*pi*4))*(343+4343)-2*e"),
         QStringLiteral("781")
             + QString(MathDsl::AddWrap)
