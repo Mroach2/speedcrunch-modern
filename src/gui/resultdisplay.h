@@ -112,6 +112,7 @@ protected:
     void pageScrollEvent();
     void scrollToDirection(int);
     void stopActiveScrollingAnimation();
+    int scrollEdgeFadeHeightForCurrentFont() const;
     QMenu* createContextMenu(const QPoint& pos);
     void drawScrollEdgeGradients(QPainter* painter);
     void repositionScrollToBottomButton();

@@ -69,6 +69,14 @@ static QColor editorBorderColor(const QColor& background)
         : background.lighter(factor);
 }
 
+static QColor editorFillColorForThemeBackground(const QColor& background)
+{
+    const int factor = 115;
+    return background.lightnessF() < 0.5
+        ? background.lighter(factor)
+        : background.darker(factor);
+}
+
 static void moveCursorToEnd(Editor* editor)
 {
     QTextCursor cursor = editor->textCursor();
@@ -3635,8 +3643,9 @@ void Editor::wheelEvent(QWheelEvent* event)
 void Editor::rehighlight()
 {
     m_highlighter->update();
-    auto color = m_highlighter->colorForRole(ColorScheme::EditorBackground);
-    auto colorName = color.name();
+    const QColor themeBackground = m_highlighter->colorForRole(ColorScheme::Background);
+    const QColor color = editorFillColorForThemeBackground(themeBackground);
+    const QString colorName = color.name();
     QPalette pal = palette();
     pal.setColor(QPalette::Active, QPalette::Base, color);
     pal.setColor(QPalette::Inactive, QPalette::Base, color);

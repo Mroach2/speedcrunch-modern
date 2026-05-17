@@ -1319,6 +1319,17 @@ void ResultDisplay::stopActiveScrollingAnimation()
     updateScrollToBottomButtonVisibility();
 }
 
+int ResultDisplay::scrollEdgeFadeHeightForCurrentFont() const
+{
+    const int defaultLineHeight = QFontMetrics(QApplication::font()).height();
+    const int currentLineHeight = fontMetrics().height();
+    if (defaultLineHeight <= 0 || currentLineHeight <= 0)
+        return kResultDisplayFadeHeight;
+
+    const qreal scale = static_cast<qreal>(currentLineHeight) / static_cast<qreal>(defaultLineHeight);
+    return qMax(1, qRound(kResultDisplayFadeHeight * scale));
+}
+
 void ResultDisplay::drawScrollEdgeGradients(QPainter* painter)
 {
     if (painter == nullptr)
@@ -1329,7 +1340,7 @@ void ResultDisplay::drawScrollEdgeGradients(QPainter* painter)
         return;
 
     const QRect rect = viewport()->rect();
-    const int fadeHeight = qMin(kResultDisplayFadeHeight, rect.height() / 2);
+    const int fadeHeight = qMin(scrollEdgeFadeHeightForCurrentFont(), rect.height() / 2);
     if (fadeHeight <= 0)
         return;
 

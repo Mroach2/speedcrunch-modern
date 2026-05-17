@@ -21,6 +21,7 @@
 #include "tests/testcommon.h"
 
 #include <QApplication>
+#include <QFontMetrics>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMouseEvent>
@@ -330,6 +331,7 @@ public:
     using ResultDisplay::historyIndexAtPosition;
     using ResultDisplay::markHistoryBlockIndexCacheDirty;
     using ResultDisplay::mouseDoubleClickEvent;
+    using ResultDisplay::scrollEdgeFadeHeightForCurrentFont;
 
     QPoint pointForBlockStart(int blockNumber) const
     {
@@ -345,6 +347,44 @@ public:
         return rect.center();
     }
 };
+
+void test_result_display_scroll_edge_gradient_height_scales_with_font_zoom()
+{
+    TestableResultDisplay display;
+
+    QFont font = display.font();
+    font.setPointSize(10);
+    display.setFont(font);
+    const int smallFade = display.scrollEdgeFadeHeightForCurrentFont();
+
+    font.setPointSize(14);
+    display.setFont(font);
+    const int mediumFade = display.scrollEdgeFadeHeightForCurrentFont();
+
+    font.setPointSize(20);
+    display.setFont(font);
+    const int largeFade = display.scrollEdgeFadeHeightForCurrentFont();
+
+    ++eval_total_tests;
+    if (!(smallFade > 0 && mediumFade > 0 && largeFade > 0)) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tscroll edge gradient heights stay positive\t[NEW]" << endl
+             << "\tSmall  : " << smallFade << endl
+             << "\tMedium : " << mediumFade << endl
+             << "\tLarge  : " << largeFade << endl;
+    }
+
+    ++eval_total_tests;
+    if (!(smallFade < mediumFade && mediumFade < largeFade)) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tscroll edge gradient heights scale with font zoom\t[NEW]" << endl
+             << "\tSmall  : " << smallFade << endl
+             << "\tMedium : " << mediumFade << endl
+             << "\tLarge  : " << largeFade << endl;
+    }
+}
 
 void test_result_display_history_mapping_after_multiple_lines_toggle_with_comment_only_entry()
 {
@@ -10386,6 +10426,7 @@ int main(int argc, char* argv[])
     test_comments();
     test_comment_and_description_edge_cases();
     test_result_display_history_mapping_after_multiple_lines_toggle_with_comment_only_entry();
+    test_result_display_scroll_edge_gradient_height_scales_with_font_zoom();
 
     test_user_functions();
     test_user_units();

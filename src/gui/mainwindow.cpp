@@ -727,6 +727,35 @@ QColor splitterHandleColorForScheme(const QString& colorSchemeName)
         : background.lighter(factor);
 }
 
+QColor themeBackgroundColorForScheme(const QString& colorSchemeName)
+{
+    const ColorScheme scheme = ColorScheme::loadByName(colorSchemeName);
+    return scheme.isValid()
+        ? scheme.colorForRole(ColorScheme::Background)
+        : QApplication::palette().color(QPalette::Base);
+}
+
+QColor editorFillColorForThemeBackground(const QColor& background)
+{
+    const int factor = 115;
+    return background.lightnessF() < 0.5
+        ? background.lighter(factor)
+        : background.darker(factor);
+}
+
+void applyThemeBackgroundRoleToWidget(QWidget* widget, const QString& colorSchemeName)
+{
+    if (widget == nullptr)
+        return;
+
+    const QColor background = themeBackgroundColorForScheme(colorSchemeName);
+    QPalette pal = widget->palette();
+    pal.setColor(QPalette::Active, QPalette::Window, background);
+    pal.setColor(QPalette::Inactive, QPalette::Window, background);
+    widget->setPalette(pal);
+    widget->setAutoFillBackground(true);
+}
+
 static void typeTextThroughEditorInputRules(Editor* editor, const QString& text)
 {
     if (!editor || text.isEmpty())
@@ -2628,6 +2657,7 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
 
     QStackedWidget* stack = new QStackedWidget(pane);
     QWidget* page = new QWidget(stack);
+    applyThemeBackgroundRoleToWidget(page, m_settings ? m_settings->colorScheme : QString());
     QVBoxLayout* pageLayout = new QVBoxLayout(page);
     pageLayout->setSpacing(0);
     pageLayout->setContentsMargins(0, 0, 0, 0);
@@ -3819,8 +3849,12 @@ void MainWindow::updateSplitterStyleSheet()
 
 void MainWindow::refreshPaneThemes()
 {
-    for (ResultDisplay* display : splitPaneDisplays())
+    for (ResultDisplay* display : splitPaneDisplays()) {
         display->rehighlight();
+        applyThemeBackgroundRoleToWidget(
+            display->parentWidget(),
+            m_settings ? m_settings->colorScheme : QString());
+    }
     for (Editor* editor : splitPaneEditors())
         editor->rehighlight();
     updatePaneTabBars();
@@ -6003,7 +6037,9 @@ void MainWindow::showCustomThemeDialog()
         previewScrollbarTrack->setStyleSheet(QStringLiteral("background-color: %1;").arg(scheme.colorForRole(ColorScheme::Background).name()));
 
         QPalette editorPalette = editorPreview->palette();
-        editorPalette.setColor(QPalette::Base, scheme.colorForRole(ColorScheme::EditorBackground));
+        editorPalette.setColor(QPalette::Base,
+                               editorFillColorForThemeBackground(
+                                   scheme.colorForRole(ColorScheme::Background)));
         editorPalette.setColor(QPalette::Text, scheme.colorForRole(ColorScheme::Number));
         editorPreview->setPalette(editorPalette);
         editorPreviewHighlighter->rehighlight();

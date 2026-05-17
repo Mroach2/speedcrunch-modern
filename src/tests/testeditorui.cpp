@@ -16,7 +16,10 @@
 
 #include <QApplication>
 #include <QInputMethodEvent>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QKeyEvent>
+#include <QPalette>
 #include <QScrollBar>
 #include <QSignalSpy>
 #include <QTest>
@@ -118,6 +121,8 @@ private slots:
     void keeps_wrapped_cursor_line_visible_at_height_cap();
     void editor_height_adds_only_one_line_height_per_visible_line();
     void adding_second_wrapped_character_keeps_first_line_visible();
+    void editor_fill_color_is_15_percent_lighter_for_dark_background_role();
+    void editor_fill_color_is_15_percent_darker_for_light_background_role();
 };
 
 static QTreeWidget* s_completionPopupTree()
@@ -3460,6 +3465,58 @@ void TestEditorUi::adding_second_wrapped_character_keeps_first_line_visible()
     QCOMPARE(editor.document()->begin().layout()->lineCount(), 2);
     QCOMPARE(firstWrappedScrollValue, 0);
     QCOMPARE(editor.verticalScrollBar()->value(), 0);
+}
+
+void TestEditorUi::editor_fill_color_is_15_percent_lighter_for_dark_background_role()
+{
+    Settings* settings = Settings::instance();
+    const QString oldColorScheme = settings->colorScheme;
+    const QString oldCustomColorSchemeJson = settings->customColorSchemeJson;
+
+    QJsonObject colors;
+    colors.insert(QStringLiteral("background"), QStringLiteral("#202020"));
+    colors.insert(QStringLiteral("editorbackground"), QStringLiteral("#00ff00"));
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson =
+        QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+
+    Editor editor;
+    editor.rehighlight();
+
+    const QColor expected = QColor(QStringLiteral("#202020")).lighter(115);
+    const QColor activeBase = editor.palette().color(QPalette::Active, QPalette::Base);
+    const QColor inactiveBase = editor.palette().color(QPalette::Inactive, QPalette::Base);
+    QCOMPARE(activeBase.name(QColor::HexArgb), expected.name(QColor::HexArgb));
+    QCOMPARE(inactiveBase.name(QColor::HexArgb), expected.name(QColor::HexArgb));
+
+    settings->colorScheme = oldColorScheme;
+    settings->customColorSchemeJson = oldCustomColorSchemeJson;
+}
+
+void TestEditorUi::editor_fill_color_is_15_percent_darker_for_light_background_role()
+{
+    Settings* settings = Settings::instance();
+    const QString oldColorScheme = settings->colorScheme;
+    const QString oldCustomColorSchemeJson = settings->customColorSchemeJson;
+
+    QJsonObject colors;
+    colors.insert(QStringLiteral("background"), QStringLiteral("#d0d0d0"));
+    colors.insert(QStringLiteral("editorbackground"), QStringLiteral("#ff00ff"));
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson =
+        QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+
+    Editor editor;
+    editor.rehighlight();
+
+    const QColor expected = QColor(QStringLiteral("#d0d0d0")).darker(115);
+    const QColor activeBase = editor.palette().color(QPalette::Active, QPalette::Base);
+    const QColor inactiveBase = editor.palette().color(QPalette::Inactive, QPalette::Base);
+    QCOMPARE(activeBase.name(QColor::HexArgb), expected.name(QColor::HexArgb));
+    QCOMPARE(inactiveBase.name(QColor::HexArgb), expected.name(QColor::HexArgb));
+
+    settings->colorScheme = oldColorScheme;
+    settings->customColorSchemeJson = oldCustomColorSchemeJson;
 }
 
 QTEST_MAIN(TestEditorUi)
