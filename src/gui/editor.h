@@ -132,11 +132,13 @@ private:
     bool m_customCursorVisible;
     bool m_shouldPaintCustomCursor;
     bool m_historyArrowNavigationEnabled;
+    bool m_canScrollWrappedText = false;
     bool m_pendingDeadCaretPreedit = false;
     std::unique_ptr<Session> m_ownedSession;
     Session* m_session;
 
     void updateHeightForWrappedText();
+    void updateHeightAndEnsureCursorVisible();
 };
 
 class EditorCompletion : public QObject {

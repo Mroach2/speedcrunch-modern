@@ -17,6 +17,7 @@
 #include <QApplication>
 #include <QInputMethodEvent>
 #include <QKeyEvent>
+#include <QScrollBar>
 #include <QSignalSpy>
 #include <QTest>
 #include <QTextLayout>
@@ -114,6 +115,9 @@ private slots:
     void completion_popup_uses_expected_icons_for_all_symbol_types();
     void wrap_selection_method_wraps_selected_text();
     void wrap_selection_method_wraps_whole_expression_without_selection();
+    void keeps_wrapped_cursor_line_visible_at_height_cap();
+    void editor_height_adds_only_one_line_height_per_visible_line();
+    void adding_second_wrapped_character_keeps_first_line_visible();
 };
 
 static QTreeWidget* s_completionPopupTree()
@@ -3399,6 +3403,63 @@ void TestEditorUi::wrap_selection_method_wraps_whole_expression_without_selectio
 
     editor.wrapSelection();
     QCOMPARE(editor.text(), QStringLiteral("(1+2)"));
+}
+
+void TestEditorUi::keeps_wrapped_cursor_line_visible_at_height_cap()
+{
+    Editor editor;
+    editor.setFixedWidth(220);
+    editor.resize(220, 80);
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral(
+        "12 + 312 + 3 + 12 + 312 + 3 + 123 + 123 + 12 + 3 + 123 + "
+        "123 + 14 + 2 + 123 + 12 + 3 + 12 + 3 + 12 + 3 + "
+        "345345345 + 345345 + 345345345 + 345345345453453453434 + "
+        "234 + 234 + 234 + 23423423 + 4234 + 234"));
+    editor.setCursorPosition(editor.text().size());
+
+    QTRY_VERIFY(editor.document()->begin().layout()->lineCount() > 5);
+    QTRY_VERIFY(editor.cursorRect().top() >= editor.viewport()->rect().top());
+    QTRY_VERIFY(editor.cursorRect().bottom() <= editor.viewport()->rect().bottom());
+}
+
+void TestEditorUi::editor_height_adds_only_one_line_height_per_visible_line()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+
+    editor.setText(QStringLiteral("1"));
+    const int singleLineHeight = editor.height();
+
+    editor.setText(QStringLiteral("1\n2\n3\n4\n5"));
+    QCOMPARE(editor.height() - singleLineHeight, 4 * editor.fontMetrics().lineSpacing());
+}
+
+void TestEditorUi::adding_second_wrapped_character_keeps_first_line_visible()
+{
+    Editor editor;
+    editor.setFixedWidth(260);
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    const QString prefix(QStringLiteral("12345678901234567890"));
+    editor.setText(prefix);
+    editor.setCursorPosition(editor.text().size());
+
+    while (editor.document()->begin().layout()->lineCount() < 2)
+        editor.insert(QStringLiteral("1"));
+
+    const int firstWrappedScrollValue = editor.verticalScrollBar()->value();
+    editor.insert(QStringLiteral("2"));
+
+    QCOMPARE(editor.document()->begin().layout()->lineCount(), 2);
+    QCOMPARE(firstWrappedScrollValue, 0);
+    QCOMPARE(editor.verticalScrollBar()->value(), 0);
 }
 
 QTEST_MAIN(TestEditorUi)

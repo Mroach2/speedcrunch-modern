@@ -25,6 +25,7 @@
 #include <QEvent>
 #include <QFont>
 #include <QFrame>
+#include <QGraphicsDropShadowEffect>
 #include <QHeaderView>
 #include <QInputMethodEvent>
 #include <QKeyEvent>
@@ -46,6 +47,27 @@
 
 #include <algorithm>
 #include <cmath>
+
+constexpr int kEditorOuterLeft = 14;
+constexpr int kEditorOuterTop = 8;
+constexpr int kEditorOuterRight = 14;
+constexpr int kEditorOuterBottom = 14;
+constexpr int kEditorHorizontalPadding = 18;
+constexpr int kEditorVerticalPadding = 10;
+constexpr int kEditorRadius = 13;
+
+static int editorVerticalDecorationHeight()
+{
+    return kEditorOuterTop + kEditorOuterBottom + 2 * kEditorVerticalPadding + 2;
+}
+
+static QColor editorBorderColor(const QColor& background)
+{
+    const int factor = 125;
+    return background.lightnessF() >= 0.5
+        ? background.darker(factor)
+        : background.lighter(factor);
+}
 
 static void moveCursorToEnd(Editor* editor)
 {
@@ -1194,6 +1216,14 @@ Editor::Editor(QWidget* parent)
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setCursorWidth(0);
+    setAttribute(Qt::WA_StyledBackground, true);
+    viewport()->setAutoFillBackground(false);
+    document()->setDocumentMargin(0);
+
+    auto* shadow = new QGraphicsDropShadowEffect(this);
+    shadow->setBlurRadius(20);
+    shadow->setOffset(0, 2);
+    setGraphicsEffect(shadow);
 
     connect(m_completion, &EditorCompletion::selectedCompletion,
             this, &Editor::autoComplete);
@@ -1203,11 +1233,12 @@ Editor::Editor(QWidget* parent)
     connect(this, &Editor::textChanged, this, &Editor::checkAutoCalc);
     connect(this, &Editor::textChanged, this, &Editor::checkAutoComplete);
     connect(this, &Editor::textChanged, this, &Editor::checkMatching);
+    connect(this, &Editor::cursorPositionChanged, this, &Editor::updateHeightAndEnsureCursorVisible);
     connect(document()->documentLayout(), &QAbstractTextDocumentLayout::documentSizeChanged,
-            this, [this](const QSizeF&) { updateHeightForWrappedText(); });
+            this, [this](const QSizeF&) { updateHeightAndEnsureCursorVisible(); });
 
     adjustSize();
-    updateHeightForWrappedText();
+    updateHeightAndEnsureCursorVisible();
 }
 
 Editor::~Editor() = default;
@@ -1244,6 +1275,7 @@ QString Editor::text() const
 void Editor::setText(const QString& text)
 {
     setPlainText(normalizeExpressionTypedInEditor(text));
+    updateHeightAndEnsureCursorVisible();
 }
 
 void Editor::insert(const QString& text)
@@ -1293,6 +1325,7 @@ void Editor::insert(const QString& text)
     }
 
     insertPlainText(normalized);
+    updateHeightAndEnsureCursorVisible();
 }
 
 void Editor::doBackspace()
@@ -1353,7 +1386,7 @@ QSize Editor::sizeHint() const
     ensurePolished();
     const QFontMetrics metrics = fontMetrics();
     const int width = metrics.horizontalAdvance('x') * 10;
-    const int height = metrics.lineSpacing() + 6;
+    const int height = metrics.lineSpacing() + editorVerticalDecorationHeight();
     return QSize(width, height);
 }
 
@@ -2224,14 +2257,14 @@ void Editor::triggerEnter()
 void Editor::changeEvent(QEvent* event)
 {
     if (event->type() == QEvent::FontChange)
-        updateHeightForWrappedText();
+        updateHeightAndEnsureCursorVisible();
     QPlainTextEdit::changeEvent(event);
 }
 
 void Editor::resizeEvent(QResizeEvent* event)
 {
     QPlainTextEdit::resizeEvent(event);
-    updateHeightForWrappedText();
+    updateHeightAndEnsureCursorVisible();
 }
 
 void Editor::focusOutEvent(QFocusEvent* event)
@@ -3551,16 +3584,16 @@ void Editor::keyPressEvent(QKeyEvent* event)
 
 void Editor::scrollContentsBy(int dx, int dy)
 {
-    if (dy)
+    if (dy && !m_canScrollWrappedText) {
+        verticalScrollBar()->setValue(verticalScrollBar()->minimum());
         return;
+    }
     QPlainTextEdit::scrollContentsBy(dx, dy);
-    verticalScrollBar()->setMaximum(0);
-    verticalScrollBar()->setMinimum(0);
 }
 
 void Editor::updateHeightForWrappedText()
 {
-    const int baseHeight = sizeHint().height();
+    const int lineHeight = fontMetrics().lineSpacing();
     int visualLineCount = 0;
 
     for (QTextBlock block = document()->begin(); block.isValid(); block = block.next()) {
@@ -3577,7 +3610,17 @@ void Editor::updateHeightForWrappedText()
         visualLineCount = 1;
 
     const int clampedLines = std::max(1, std::min(5, visualLineCount));
-    setFixedHeight(baseHeight * clampedLines);
+    m_canScrollWrappedText = visualLineCount > clampedLines;
+    setFixedHeight(lineHeight * clampedLines + editorVerticalDecorationHeight());
+    if (!m_canScrollWrappedText)
+        verticalScrollBar()->setValue(verticalScrollBar()->minimum());
+}
+
+void Editor::updateHeightAndEnsureCursorVisible()
+{
+    updateHeightForWrappedText();
+    if (m_canScrollWrappedText)
+        ensureCursorVisible();
 }
 
 void Editor::wheelEvent(QWheelEvent* event)
@@ -3598,8 +3641,29 @@ void Editor::rehighlight()
     pal.setColor(QPalette::Active, QPalette::Base, color);
     pal.setColor(QPalette::Inactive, QPalette::Base, color);
     setPalette(pal);
-    setStyleSheet(QString("QPlainTextEdit { background-color: %1; }").arg(colorName));
-    viewport()->setStyleSheet(QString("background-color: %1;").arg(colorName));
+    setStyleSheet(QStringLiteral(R"(
+        QPlainTextEdit {
+            background-color: %1;
+            border: 1px solid %2;
+            border-radius: %3px;
+            margin: %4px %5px %6px %7px;
+            padding: %8px %9px;
+        }
+    )").arg(colorName,
+            editorBorderColor(color).name())
+       .arg(kEditorRadius)
+       .arg(kEditorOuterTop)
+       .arg(kEditorOuterRight)
+       .arg(kEditorOuterBottom)
+       .arg(kEditorOuterLeft)
+       .arg(kEditorVerticalPadding)
+       .arg(kEditorHorizontalPadding));
+    viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
+    if (auto* shadow = qobject_cast<QGraphicsDropShadowEffect*>(graphicsEffect())) {
+        QColor shadowColor(Qt::black);
+        shadowColor.setAlpha(color.lightnessF() >= 0.5 ? 55 : 120);
+        shadow->setColor(shadowColor);
+    }
     m_highlighter->rehighlight();
 }
 
