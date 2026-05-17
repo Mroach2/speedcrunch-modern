@@ -32,6 +32,16 @@ QWidget* inactiveOverlayForDisplay(ResultDisplay* display)
     return pane ? pane->findChild<QWidget*>(QStringLiteral("InactivePaneOverlay"), Qt::FindDirectChildrenOnly) : nullptr;
 }
 
+QRect tabBarRectInPane(ResultDisplay* display)
+{
+    QWidget* pane = paneWidgetForDisplay(display);
+    QTabBar* tabBar = pane ? pane->findChild<QTabBar*>() : nullptr;
+    if (pane == nullptr || tabBar == nullptr)
+        return QRect();
+
+    return QRect(tabBar->mapTo(pane, QPoint(0, 0)), tabBar->size());
+}
+
 void appendPaneScrollValues(const QJsonObject& node, QList<int>* values)
 {
     const QString type = node.value(QStringLiteral("type")).toString();
@@ -237,6 +247,7 @@ void TestDisplayUi::focusing_loaded_pane_preserves_its_current_scroll_position()
     QVERIFY(secondOverlay != nullptr);
     QVERIFY(firstOverlay->isVisible());
     QVERIFY(!secondOverlay->isVisible());
+    QVERIFY(!firstOverlay->geometry().intersects(tabBarRectInPane(firstDisplay)));
     QTRY_VERIFY(secondEditor->hasFocus());
 
     // Make the already-loaded first pane diverge from the scroll snapshot that
@@ -250,6 +261,7 @@ void TestDisplayUi::focusing_loaded_pane_preserves_its_current_scroll_position()
     QTRY_VERIFY(firstEditor->hasFocus());
     QVERIFY(!firstOverlay->isVisible());
     QVERIFY(secondOverlay->isVisible());
+    QVERIFY(!secondOverlay->geometry().intersects(tabBarRectInPane(secondDisplay)));
 
     QTabBar* secondTabBar = paneWidgetForDisplay(secondDisplay)->findChild<QTabBar*>();
     QVERIFY(secondTabBar != nullptr);
@@ -260,6 +272,7 @@ void TestDisplayUi::focusing_loaded_pane_preserves_its_current_scroll_position()
     QTRY_VERIFY(secondEditor->hasFocus());
     QVERIFY(firstOverlay->isVisible());
     QVERIFY(!secondOverlay->isVisible());
+    QVERIFY(!firstOverlay->geometry().intersects(tabBarRectInPane(firstDisplay)));
 
     QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
     QCoreApplication::processEvents();

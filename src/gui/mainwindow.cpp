@@ -1263,7 +1263,7 @@ public:
             return;
         }
 
-        m_inactiveOverlay->setGeometry(rect());
+        m_inactiveOverlay->setGeometry(overlayBounds());
         m_inactiveOverlay->raise();
         if (m_overlay != nullptr && m_overlay->isVisible())
             m_overlay->raise();
@@ -1310,7 +1310,7 @@ protected:
     {
         QWidget::resizeEvent(event);
         if (m_inactiveOverlay != nullptr && m_inactiveOverlay->isVisible())
-            m_inactiveOverlay->setGeometry(rect());
+            m_inactiveOverlay->setGeometry(overlayBounds());
     }
 
     bool eventFilter(QObject* watched, QEvent* event) override
