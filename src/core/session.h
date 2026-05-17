@@ -24,7 +24,7 @@ private:
     std::unique_ptr<Evaluator> m_evaluator;
     QString m_name;
     QString m_editorText;
-    int m_historyLimit = 100; // 0: unlimited.
+    int m_historyLimit = 1000; // 0: unlimited.
     int physicalHistoryIndex(int logicalIndex) const;
     void normalizeHistoryOrder();
     void bindEvaluator();

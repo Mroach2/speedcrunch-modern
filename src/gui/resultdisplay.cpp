@@ -903,17 +903,14 @@ void ResultDisplay::mousePressEvent(QMouseEvent* event)
     QPlainTextEdit::mousePressEvent(event);
 }
 
-void ResultDisplay::contextMenuEvent(QContextMenuEvent* event)
+QMenu* ResultDisplay::createContextMenu(const QPoint& pos)
 {
     QMenu* menu = createStandardContextMenu();
-    const int historyIndex = historyIndexAtPosition(event->pos());
+    const int historyIndex = historyIndexAtPosition(pos);
     if (historyIndex >= 0) {
         const Session* session = displaySession(this);
-        if (session == nullptr) {
-            menu->exec(event->globalPos());
-            delete menu;
-            return;
-        }
+        if (session == nullptr)
+            return menu;
         menu->addSeparator();
         QAction* copyExpressionAction = menu->addAction(tr("Copy Expression"));
         connect(copyExpressionAction, &QAction::triggered, this, [session, historyIndex]() {
@@ -1017,7 +1014,7 @@ void ResultDisplay::contextMenuEvent(QContextMenuEvent* event)
     });
 
     QMainWindow* mainWindow = qobject_cast<QMainWindow*>(window());
-    if (mainWindow != 0 && mainWindow->menuBar() != 0) {
+    if (mainWindow != 0 && mainWindow->menuBar() != 0 && !mainWindow->menuBar()->isVisible()) {
         menu->addSeparator();
         QMenu* mainMenu = menu->addMenu(tr("Main Menu"));
         const QList<QAction*> topLevelActions = mainWindow->menuBar()->actions();
@@ -1036,6 +1033,12 @@ void ResultDisplay::contextMenuEvent(QContextMenuEvent* event)
         }
     }
 
+    return menu;
+}
+
+void ResultDisplay::contextMenuEvent(QContextMenuEvent* event)
+{
+    QMenu* menu = createContextMenu(event->pos());
     menu->exec(event->globalPos());
     delete menu;
 }

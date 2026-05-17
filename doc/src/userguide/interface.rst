@@ -98,9 +98,9 @@ Most of them are dockable panels that can be moved around the main window and en
     Toggle the main menu bar visibility via :menuselection:`View --> Main Menu`.
     This option is available on Windows and Linux.
     On macOS, this option is not available because the application menu is managed by the system menu bar (outside the window), so SpeedCrunch cannot hide it like on Windows and Linux.
-    On Windows and Linux, a navigable Main Menu (mirroring the top menu structure) is also available
-    from the right-click context menu on the result-display. This is useful when you prefer to keep
-    the top main menu hidden but still want quick access to menu actions.
+    On Windows and Linux, when the top main menu is hidden, a navigable Main Menu
+    (mirroring the top menu structure) is available from the right-click context
+    menu on the result-display.
 
     .. versionadded:: 1.0
 
@@ -214,8 +214,8 @@ The result display supports mouse-driven interactions for navigation and editing
 * Calculation settings from highlighted blocks
     The calculation settings action opens a tabular layout with one mandatory
     ``Main Line`` row and four optional extra result-line rows. The table
-    shows line enablement, notation, decimal places, and angle mode together
-    so the stored calculation context can be adjusted before SpeedCrunch
+    shows line enablement, notation, and decimal places together so the stored
+    calculation context can be adjusted before SpeedCrunch
     recalculates the affected history.
 
 .. _result_format:
@@ -365,7 +365,7 @@ Calculation history is saved automatically when a session changes and restored
 on the next launch.
 
 The history size limit sets the maximum number of stored history entries for
-that session. By default, SpeedCrunch keeps up to 100 entries per session and
+that session. By default, SpeedCrunch keeps up to 1000 entries per session and
 automatically removes the oldest ones when this limit is exceeded. When a
 calculation fills the last available history slot, SpeedCrunch warns that future
 calculations will remove the oldest calculation from that session. Set the value

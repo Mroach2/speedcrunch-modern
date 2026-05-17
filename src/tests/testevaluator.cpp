@@ -6683,6 +6683,14 @@ void test_expression_operator_normalization()
 
 void test_session_history_limit()
 {
+    Session defaultSession;
+    ++eval_total_tests;
+    if (defaultSession.historyLimit() != 1000) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tdefault history limit\t[NEW]" << endl;
+    }
+
     Session session;
     session.setHistoryLimit(3);
     ++eval_total_tests;

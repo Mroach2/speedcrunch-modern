@@ -231,7 +231,7 @@ int SessionSerialization::deserialize(Session& session, const QJsonObject& json,
         session.setName(json[QLatin1String(SessionJsonKeys::Session)].toString());
 
     if (json.contains(QLatin1String(SessionJsonKeys::Limit)))
-        session.setHistoryLimit(json[QLatin1String(SessionJsonKeys::Limit)].toInt(100));
+        session.setHistoryLimit(json[QLatin1String(SessionJsonKeys::Limit)].toInt(1000));
 
     session.evaluator()->initializeBuiltInVariables();
 

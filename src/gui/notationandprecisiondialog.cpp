@@ -56,8 +56,26 @@ ResultSlotsDialog::ResultSlotsDialog(QWidget* parent)
     : QDialog(parent)
     , m_table(new QWidget(this))
 {
-    setWindowTitle(tr("Notation & Precision"));
+    buildDialog(tr("Notation & Precision"));
+    loadFromSettings();
+    loadRowsToUi();
+    finalizeSize();
+}
 
+ResultSlotsDialog::ResultSlotsDialog(const QString& title, const EvaluationContext& context, QWidget* parent)
+    : QDialog(parent)
+    , m_table(new QWidget(this))
+    , m_applyToSettings(false)
+{
+    buildDialog(title);
+    loadFromEvaluationContext(context);
+    loadRowsToUi();
+    finalizeSize();
+}
+
+void ResultSlotsDialog::buildDialog(const QString& title)
+{
+    setWindowTitle(title);
     QVBoxLayout* root = new QVBoxLayout(this);
     createTable();
     root->addWidget(m_table);
@@ -67,14 +85,17 @@ ResultSlotsDialog::ResultSlotsDialog(QWidget* parent)
     root->addWidget(buttons);
     connect(buttons, &QDialogButtonBox::accepted, this, [this]() {
         saveRowsToSlots();
-        applyToSettings();
-        emit settingsApplied();
+        if (m_applyToSettings) {
+            applyToSettings();
+            emit settingsApplied();
+        }
         accept();
     });
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
+}
 
-    loadFromSettings();
-    loadRowsToUi();
+void ResultSlotsDialog::finalizeSize()
+{
     m_table->setFixedSize(m_table->sizeHint());
     setFixedSize(sizeHint());
 }
@@ -141,23 +162,47 @@ void ResultSlotsDialog::loadFromSettings()
     Settings* settings = Settings::instance();
     m_slots[0].notation = settings->resultFormat;
     m_slots[0].precision = settings->resultPrecision;
+    m_slots[0].complexForm = settings->resultComplexForm;
     m_slots[0].enabled = true;
 
     m_slots[1].notation = settings->alternativeResultFormat;
     m_slots[1].precision = settings->secondaryResultPrecision;
+    m_slots[1].complexForm = settings->secondaryResultComplexForm;
     m_slots[1].enabled = settings->secondaryResultEnabled;
 
     m_slots[2].notation = settings->tertiaryResultFormat;
     m_slots[2].precision = settings->tertiaryResultPrecision;
+    m_slots[2].complexForm = settings->tertiaryResultComplexForm;
     m_slots[2].enabled = settings->tertiaryResultEnabled;
 
     m_slots[3].notation = settings->quaternaryResultFormat;
     m_slots[3].precision = settings->quaternaryResultPrecision;
+    m_slots[3].complexForm = settings->quaternaryResultComplexForm;
     m_slots[3].enabled = settings->quaternaryResultEnabled;
 
     m_slots[4].notation = settings->quinaryResultFormat;
     m_slots[4].precision = settings->quinaryResultPrecision;
+    m_slots[4].complexForm = settings->quinaryResultComplexForm;
     m_slots[4].enabled = settings->quinaryResultEnabled;
+}
+
+void ResultSlotsDialog::loadFromEvaluationContext(const EvaluationContext& context)
+{
+    m_slots[0].notation = context.main.fmt;
+    m_slots[0].precision = context.main.prec;
+    m_slots[0].complexForm = context.main.cplx;
+    m_slots[0].enabled = true;
+
+    for (int i = 1; i < 5; ++i) {
+        m_slots[i] = SlotSettings();
+        m_slots[i].enabled = (i - 1) < context.extras.size();
+        if (m_slots[i].enabled) {
+            const ResultLineContext& line = context.extras.at(i - 1);
+            m_slots[i].notation = line.fmt;
+            m_slots[i].precision = line.prec;
+            m_slots[i].complexForm = line.cplx;
+        }
+    }
 }
 
 void ResultSlotsDialog::loadRowsToUi()
@@ -198,26 +243,53 @@ void ResultSlotsDialog::applyToSettings()
     settings->complexNumbers = true;
     settings->resultFormat = m_slots[0].notation;
     settings->resultPrecision = m_slots[0].precision;
+    settings->resultComplexForm = m_slots[0].complexForm;
 
     settings->alternativeResultFormat = m_slots[1].notation;
     settings->secondaryResultEnabled = m_slots[1].enabled;
     settings->secondaryResultPrecision = m_slots[1].precision;
     settings->secondaryComplexNumbers = true;
+    settings->secondaryResultComplexForm = m_slots[1].complexForm;
 
     settings->tertiaryResultFormat = m_slots[2].notation;
     settings->tertiaryResultEnabled = m_slots[2].enabled;
     settings->tertiaryResultPrecision = m_slots[2].precision;
     settings->tertiaryComplexNumbers = true;
+    settings->tertiaryResultComplexForm = m_slots[2].complexForm;
 
     settings->quaternaryResultFormat = m_slots[3].notation;
     settings->quaternaryResultEnabled = m_slots[3].enabled;
     settings->quaternaryResultPrecision = m_slots[3].precision;
     settings->quaternaryComplexNumbers = true;
+    settings->quaternaryResultComplexForm = m_slots[3].complexForm;
 
     settings->quinaryResultFormat = m_slots[4].notation;
     settings->quinaryResultEnabled = m_slots[4].enabled;
     settings->quinaryResultPrecision = m_slots[4].precision;
     settings->quinaryComplexNumbers = true;
+    settings->quinaryResultComplexForm = m_slots[4].complexForm;
+}
+
+EvaluationContext ResultSlotsDialog::evaluationContext(const EvaluationContext& baseContext) const
+{
+    EvaluationContext context = baseContext;
+    context.main.fmt = m_slots[0].notation;
+    context.main.prec = m_slots[0].precision;
+    context.main.cplx = m_slots[0].complexForm;
+    context.complexOn = true;
+    context.extras.clear();
+
+    for (int i = 1; i < 5; ++i) {
+        if (!m_slots[i].enabled)
+            continue;
+        ResultLineContext line;
+        line.fmt = m_slots[i].notation;
+        line.prec = m_slots[i].precision;
+        line.cplx = m_slots[i].complexForm;
+        context.extras.append(line);
+    }
+
+    return context;
 }
 
 void ResultSlotsDialog::setRowControlsEnabled(int row, bool enabled)

@@ -5,13 +5,18 @@
 #include "core/settings.h"
 #include "gui/editor.h"
 #include "gui/mainwindow.h"
+#include "gui/notationandprecisiondialog.h"
 #include "gui/resultdisplay.h"
 #include "math/quantity.h"
 
 #include <QCoreApplication>
+#include <QLabel>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
 #include <QScrollBar>
 #include <QSplitter>
 #include <QTabBar>
@@ -91,6 +96,35 @@ void appendPaneEditorTexts(const QJsonObject& node, QStringList* texts)
             appendPaneEditorTexts(childValue.toObject(), texts);
     }
 }
+
+bool menuContainsActionText(const QMenu* menu, const QString& text)
+{
+    for (QAction* action : menu->actions()) {
+        if (action->text() == text)
+            return true;
+        if (action->menu() != nullptr && menuContainsActionText(action->menu(), text))
+            return true;
+    }
+    return false;
+}
+
+class MenuTestResultDisplay : public ResultDisplay {
+public:
+    explicit MenuTestResultDisplay(QWidget* parent = nullptr)
+        : ResultDisplay(parent)
+    {
+    }
+
+    using ResultDisplay::createContextMenu;
+};
+
+bool contextMenuContainsMainMenu(MenuTestResultDisplay* display)
+{
+    QMenu* menu = display->createContextMenu(display->rect().center());
+    const bool mainMenuSeen = menuContainsActionText(menu, QStringLiteral("Main Menu"));
+    delete menu;
+    return mainMenuSeen;
+}
 }
 
 class TestDisplayUi : public QObject {
@@ -99,6 +133,8 @@ class TestDisplayUi : public QObject {
 private slots:
     void result_display_insets_viewport_horizontally();
     void result_display_scrollbar_hover_keeps_viewport_width_stable();
+    void result_display_context_menu_hides_main_menu_when_menu_bar_visible();
+    void calculation_settings_dialog_matches_notation_precision_layout();
     void focusing_loaded_pane_preserves_its_current_scroll_position();
     void persisting_layout_captures_visible_scroll_positions_for_all_panes();
 };
@@ -137,6 +173,48 @@ void TestDisplayUi::result_display_scrollbar_hover_keeps_viewport_width_stable()
     QEvent leaveEvent(QEvent::Leave);
     QCoreApplication::sendEvent(scrollBar, &leaveEvent);
     QCOMPARE(display.viewport()->geometry(), initialViewportGeometry);
+}
+
+void TestDisplayUi::result_display_context_menu_hides_main_menu_when_menu_bar_visible()
+{
+    QMainWindow window;
+    window.menuBar()->addMenu(QStringLiteral("File"))->addAction(QStringLiteral("Dummy"));
+    MenuTestResultDisplay* display = new MenuTestResultDisplay(&window);
+    window.setCentralWidget(display);
+    window.resize(360, 180);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QVERIFY(window.menuBar()->isVisible());
+    QVERIFY(!contextMenuContainsMainMenu(display));
+
+    window.menuBar()->hide();
+    QVERIFY(!window.menuBar()->isVisible());
+    QVERIFY(contextMenuContainsMainMenu(display));
+}
+
+void TestDisplayUi::calculation_settings_dialog_matches_notation_precision_layout()
+{
+    EvaluationContext context;
+    context.main.fmt = 'f';
+    context.main.prec = 3;
+    context.angle = 'd';
+    context.extras.append(ResultLineContext{'e', 5, ComplexForm::Default});
+
+    ResultSlotsDialog dialog(QStringLiteral("Calculation Settings"), context);
+    QCOMPARE(dialog.windowTitle(), QStringLiteral("Calculation Settings"));
+
+    const QList<QLabel*> labels = dialog.findChildren<QLabel*>();
+    for (QLabel* label : labels)
+        QVERIFY(label->text() != QStringLiteral("Angle Mode"));
+
+    const EvaluationContext updated = dialog.evaluationContext(context);
+    QCOMPARE(updated.angle, 'd');
+    QCOMPARE(updated.main.fmt, 'f');
+    QCOMPARE(updated.main.prec, 3);
+    QCOMPARE(updated.extras.size(), 1);
+    QCOMPARE(updated.extras.at(0).fmt, 'e');
+    QCOMPARE(updated.extras.at(0).prec, 5);
 }
 
 void TestDisplayUi::focusing_loaded_pane_preserves_its_current_scroll_position()

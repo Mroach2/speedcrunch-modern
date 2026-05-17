@@ -5,6 +5,8 @@
 #ifndef GUI_RESULTSLOTSDIALOG_H
 #define GUI_RESULTSLOTSDIALOG_H
 
+#include "core/sessionhistory.h"
+
 #include <QDialog>
 #include <array>
 
@@ -18,6 +20,8 @@ class ResultSlotsDialog : public QDialog {
 
 public:
     explicit ResultSlotsDialog(QWidget* parent = nullptr);
+    ResultSlotsDialog(const QString& title, const EvaluationContext& context, QWidget* parent = nullptr);
+    EvaluationContext evaluationContext(const EvaluationContext& baseContext) const;
 
 signals:
     void settingsApplied();
@@ -26,6 +30,7 @@ private:
     struct SlotSettings {
         char notation = '\0';
         int precision = -1;
+        char complexForm = ComplexForm::Default;
         bool enabled = true;
     };
 
@@ -36,14 +41,18 @@ private:
         QSpinBox* precision = nullptr;
     };
 
+    void buildDialog(const QString& title);
+    void finalizeSize();
     void createTable();
     void loadFromSettings();
+    void loadFromEvaluationContext(const EvaluationContext& context);
     void loadRowsToUi();
     void saveRowsToSlots();
     void applyToSettings();
     void setRowControlsEnabled(int row, bool enabled);
 
     QWidget* m_table;
+    bool m_applyToSettings = true;
     std::array<SlotSettings, 5> m_slots;
     std::array<RowWidgets, 5> m_rows;
 };
