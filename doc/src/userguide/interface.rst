@@ -107,6 +107,17 @@ Most of them are dockable panels that can be moved around the main window and en
 .. _tracker: https://bitbucket.org/heldercorreia/speedcrunch/issues
 
 
+Session Tabs and Panes
+----------------------
+
+When a pane contains more than one session, SpeedCrunch shows a tab bar above
+the result display. Click a tab to switch sessions, drag tabs horizontally to
+reorder them within the pane, or drag a tab away from the tab bar to move it to
+another pane. Dropping a dragged tab outside the current window creates a new
+window for that session; dropping it on a pane in another SpeedCrunch window
+moves it there.
+
+
 Expression Editor Features
 --------------------------
 

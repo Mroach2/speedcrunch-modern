@@ -916,23 +916,65 @@ public:
         applyStyle(QColor());
     }
 
+    static QColor tabStripColor(const QPalette& palette)
+    {
+        const QColor window = palette.color(QPalette::Window);
+        QColor secondary = palette.color(QPalette::AlternateBase);
+        if (!secondary.isValid() || secondary == window)
+            secondary = window.lightnessF() < 0.5 ? window.lighter(118) : window.darker(108);
+        return secondary;
+    }
+
+    static QColor hoveredTabColor(const QPalette& palette)
+    {
+        const QColor strip = tabStripColor(palette);
+        const QColor selected = palette.color(QPalette::Window);
+        QColor hover((strip.red() * 2 + selected.red()) / 3,
+                     (strip.green() * 2 + selected.green()) / 3,
+                     (strip.blue() * 2 + selected.blue()) / 3);
+        if (hover == strip)
+            hover = strip.lightnessF() < 0.5 ? strip.lighter(128) : strip.darker(108);
+        return hover;
+    }
+
     void applyStyle(const QColor& selectedText)
     {
         const QColor fg = selectedText.isValid()
             ? selectedText
             : palette().color(QPalette::WindowText);
+        const QPalette pal = palette();
+        const QColor tabStrip = tabStripColor(pal);
+        const QColor hover = hoveredTabColor(pal);
+        const QColor selected = pal.color(QPalette::Window);
+        const QColor text = pal.color(QPalette::WindowText);
 
-            setStyleSheet(QStringLiteral(R"(
+        setStyleSheet(QStringLiteral(R"(
+                QTabBar {
+                    background: %1;
+                }
+
                 QTabBar::tab {
-                    border: 1px solid palette(mid);
-                    border-radius: 0px;
-                    padding: 5px 12px 5px 12px;
-                    margin: 0px;
+                    background: %1;
+                    border: 1px solid transparent;
+                    border-bottom: none;
+                    border-top-left-radius: 7px;
+                    border-top-right-radius: 7px;
+                    color: %4;
+                    min-height: 24px;
+                    padding: 5px 12px 4px 12px;
+                    margin: 2px 1px 0px 1px;
+                }
+
+                QTabBar::tab:hover:!selected {
+                    background: %2;
                 }
 
                 QTabBar::tab:selected {
-                    border-radius: 0px;
-                    color: %2;
+                    background: %3;
+                    border-color: transparent;
+                    border-bottom-color: %3;
+                    color: %5;
+                    margin-bottom: 0px;
                 }
 
                 QToolButton {
@@ -947,7 +989,11 @@ public:
                     background: transparent;
                     border: none;
                 }
-            )").arg(fg.name()));
+            )").arg(tabStrip.name(),
+                    hover.name(),
+                    selected.name(),
+                    text.name(),
+                    fg.name()));
     }
 
     std::function<void(const QString&, const QPoint&)> tabContextMenuRequested;
@@ -1055,22 +1101,17 @@ protected:
         }
         setCursor(hoveredTabIndex >= 0 ? Qt::PointingHandCursor : Qt::ArrowCursor);
 
-        const bool isDraggingTab = (event->buttons() & Qt::LeftButton)
-            && m_dragTabIndex >= 0
-            && (event->pos() - m_dragStartPos).manhattanLength() >= QApplication::startDragDistance();
-        if (!isDraggingTab) {
+        const bool hasPressedTab = (event->buttons() & Qt::LeftButton)
+            && m_dragTabIndex >= 0;
+        if (!hasPressedTab) {
             QTabBar::mouseMoveEvent(event);
             refreshCloseButtons();
             return;
         }
-        if (!shouldStartCrossBarDrag(event->pos())) {
-            QMouseEvent clampedEvent(event->type(),
-                                     clampTabDragPos(event->pos()),
-                                     event->globalPosition(),
-                                     event->button(),
-                                     event->buttons(),
-                                     event->modifiers());
-            QTabBar::mouseMoveEvent(&clampedEvent);
+
+        if (!shouldStartCrossBarDrag(event->pos(), event->globalPosition().toPoint())) {
+            reorderDraggedTab(event->pos());
+            event->accept();
             refreshCloseButtons();
             return;
         }
@@ -1102,6 +1143,16 @@ protected:
         m_dragSessionName.clear();
         m_dropIndicatorIndex = -1;
         update();
+    }
+
+    void mouseReleaseEvent(QMouseEvent* event) override
+    {
+        QTabBar::mouseReleaseEvent(event);
+        if (event->button() == Qt::LeftButton) {
+            m_dragTabIndex = -1;
+            m_dragSessionName.clear();
+            refreshCloseButtons();
+        }
     }
 
     void dragEnterEvent(QDragEnterEvent* event) override
@@ -1199,15 +1250,17 @@ private:
         }
     }
 
-    bool shouldStartCrossBarDrag(const QPoint& pos) const
+    bool shouldStartCrossBarDrag(const QPoint& pos, const QPoint& globalPos) const
     {
         if (count() == 0)
             return true;
 
-        return pos.y() < 0
-            || pos.y() >= height()
-            || pos.x() < tabRect(0).left() - QApplication::startDragDistance()
-            || pos.x() > tabRect(count() - 1).right() + QApplication::startDragDistance();
+        const int detachDistance = QApplication::startDragDistance();
+        if (pos.y() < -detachDistance || pos.y() >= height() + detachDistance)
+            return true;
+
+        QWidget* topLevel = window();
+        return topLevel != nullptr && !topLevel->frameGeometry().contains(globalPos);
     }
 
     QPoint clampTabDragPos(const QPoint& pos) const
@@ -1226,6 +1279,26 @@ private:
 
         return QPoint(qBound(tabRect(0).left(), pos.x(), tabRect(count() - 1).right()),
                       qBound(0, pos.y(), height() - 1));
+    }
+
+    void reorderDraggedTab(const QPoint& pos)
+    {
+        int index = indexOfDragSession();
+        if (index < 0 || index >= count())
+            return;
+
+        int targetIndex = index;
+        while (targetIndex > 0 && pos.x() < tabRect(targetIndex - 1).center().x())
+            --targetIndex;
+        while (targetIndex + 1 < count() && pos.x() > tabRect(targetIndex + 1).center().x())
+            ++targetIndex;
+
+        if (targetIndex == index)
+            return;
+
+        moveTab(index, targetIndex);
+        m_dragTabIndex = targetIndex;
+        setCurrentIndex(targetIndex);
     }
 
     QPoint m_dragStartPos;
