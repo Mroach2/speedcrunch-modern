@@ -599,18 +599,33 @@ void TestDisplayUi::session_tabs_reorder_with_horizontal_drag()
     QVERIFY(tabBar->isVisible());
     QCOMPARE(tabBar->count(), 3);
 
+    const auto dragTab = [tabBar](int from, int to) {
+        const QPoint start = tabBar->tabRect(from).center();
+        const QPoint end = to == 0
+            ? QPoint(tabBar->tabRect(0).left() + 1, tabBar->tabRect(0).center().y())
+            : QPoint(tabBar->tabRect(to).right() - 2, tabBar->tabRect(to).center().y());
+
+        sendTabDragMouseEvent(tabBar, QEvent::MouseButtonPress, start, Qt::LeftButton, Qt::LeftButton);
+        const int step = qMax(1, qAbs(end.x() - start.x()) / 6);
+        if (end.x() >= start.x()) {
+            for (int x = start.x(); x <= end.x(); x += step)
+                sendTabDragMouseEvent(tabBar, QEvent::MouseMove, QPoint(x, start.y()), Qt::NoButton, Qt::LeftButton);
+        } else {
+            for (int x = start.x(); x >= end.x(); x -= step)
+                sendTabDragMouseEvent(tabBar, QEvent::MouseMove, QPoint(x, start.y()), Qt::NoButton, Qt::LeftButton);
+        }
+        sendTabDragMouseEvent(tabBar, QEvent::MouseMove, end, Qt::NoButton, Qt::LeftButton);
+        sendTabDragMouseEvent(tabBar, QEvent::MouseButtonRelease, end, Qt::LeftButton, Qt::NoButton);
+    };
+
     const QString firstTab = tabBar->tabText(0);
-    const QPoint start = tabBar->tabRect(0).center();
-    const QPoint end(tabBar->tabRect(2).right() - 2, tabBar->tabRect(2).center().y());
-
-    sendTabDragMouseEvent(tabBar, QEvent::MouseButtonPress, start, Qt::LeftButton, Qt::LeftButton);
-    for (int x = start.x(); x <= end.x(); x += qMax(1, (end.x() - start.x()) / 6))
-        sendTabDragMouseEvent(tabBar, QEvent::MouseMove, QPoint(x, start.y()), Qt::NoButton, Qt::LeftButton);
-    sendTabDragMouseEvent(tabBar, QEvent::MouseMove, end, Qt::NoButton, Qt::LeftButton);
-    sendTabDragMouseEvent(tabBar, QEvent::MouseButtonRelease, end, Qt::LeftButton, Qt::NoButton);
+    dragTab(0, 2);
     QCoreApplication::processEvents();
-
     QCOMPARE(tabBar->tabText(tabBar->count() - 1), firstTab);
+
+    dragTab(tabBar->count() - 1, 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(tabBar->tabText(0), firstTab);
 }
 
 int main(int argc, char** argv)

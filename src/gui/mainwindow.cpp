@@ -937,46 +937,38 @@ public:
         return hover;
     }
 
-    void applyStyle(const QColor& selectedText)
+    static QColor secondarySurfaceColor(const QColor& surface)
+    {
+        return surface.lightnessF() < 0.5 ? surface.lighter(118) : surface.darker(108);
+    }
+
+    static QColor hoverSurfaceColor(const QColor& secondary, const QColor& selected)
+    {
+        QColor hover((secondary.red() * 2 + selected.red()) / 3,
+                     (secondary.green() * 2 + selected.green()) / 3,
+                     (secondary.blue() * 2 + selected.blue()) / 3);
+        if (hover == secondary)
+            hover = secondary.lightnessF() < 0.5 ? secondary.lighter(128) : secondary.darker(108);
+        return hover;
+    }
+
+    void applyStyle(const QColor& selectedText, const QColor& selectedSurface = QColor())
     {
         const QColor fg = selectedText.isValid()
             ? selectedText
-            : palette().color(QPalette::WindowText);
-        const QPalette pal = palette();
-        const QColor tabStrip = tabStripColor(pal);
-        const QColor hover = hoveredTabColor(pal);
-        const QColor selected = pal.color(QPalette::Window);
+            : QApplication::palette().color(QPalette::WindowText);
+        const QPalette pal = QApplication::palette();
+        const QColor selected = selectedSurface.isValid() ? selectedSurface : pal.color(QPalette::Window);
+        const QColor tabStrip = secondarySurfaceColor(selected);
+        const QColor hover = hoverSurfaceColor(tabStrip, selected);
         const QColor text = pal.color(QPalette::WindowText);
+        m_tabStripColor = tabStrip;
+        m_hoveredTabColor = hover;
+        m_selectedTabColor = selected;
+        m_tabTextColor = text;
+        m_selectedTextColor = fg;
 
         setStyleSheet(QStringLiteral(R"(
-                QTabBar {
-                    background: %1;
-                }
-
-                QTabBar::tab {
-                    background: %1;
-                    border: 1px solid transparent;
-                    border-bottom: none;
-                    border-top-left-radius: 7px;
-                    border-top-right-radius: 7px;
-                    color: %4;
-                    min-height: 24px;
-                    padding: 5px 12px 4px 12px;
-                    margin: 2px 1px 0px 1px;
-                }
-
-                QTabBar::tab:hover:!selected {
-                    background: %2;
-                }
-
-                QTabBar::tab:selected {
-                    background: %3;
-                    border-color: transparent;
-                    border-bottom-color: %3;
-                    color: %5;
-                    margin-bottom: 0px;
-                }
-
                 QToolButton {
                     background: transparent;
                     border: none;
@@ -989,11 +981,16 @@ public:
                     background: transparent;
                     border: none;
                 }
-            )").arg(tabStrip.name(),
-                    hover.name(),
-                    selected.name(),
-                    text.name(),
-                    fg.name()));
+            )"));
+        if (QWidget* row = parentWidget()) {
+            QPalette rowPalette = row->palette();
+            rowPalette.setColor(QPalette::Active, QPalette::Window, m_selectedTabColor);
+            rowPalette.setColor(QPalette::Inactive, QPalette::Window, m_selectedTabColor);
+            row->setPalette(rowPalette);
+            row->setAutoFillBackground(true);
+        }
+        updateGeometry();
+        update();
     }
 
     std::function<void(const QString&, const QPoint&)> tabContextMenuRequested;
@@ -1005,8 +1002,10 @@ public:
 
     void refreshCloseButtons()
     {
+        bool visibilityChanged = false;
         for (int i = 0; i < count(); ++i) {
-            const bool showButton = i == currentIndex() || i == m_hoveredTabIndex;
+            const bool showButton = !m_visualDragActive
+                && (i == currentIndex() || i == m_hoveredTabIndex);
             QWidget* existingButton = tabButton(i, QTabBar::RightSide);
             QToolButton* closeButton = qobject_cast<QToolButton*>(existingButton);
             if (closeButton == nullptr) {
@@ -1031,7 +1030,7 @@ public:
                     }
 
                     QToolButton:hover {
-                        background: rgba(127, 127, 127, 96);
+                        background: rgba(127, 127, 127, 80);
                     }
 
                     QToolButton:pressed {
@@ -1058,8 +1057,11 @@ public:
                         tabCloseRequested(tabText(tabIndex));
                 });
             }
+            visibilityChanged = visibilityChanged || closeButton->isVisible() != showButton;
             closeButton->setVisible(showButton);
         }
+        if (visibilityChanged)
+            update();
     }
 
 protected:
@@ -1080,9 +1082,11 @@ protected:
     void mousePressEvent(QMouseEvent* event) override
     {
         if (event->button() == Qt::LeftButton) {
-            m_dragStartPos = event->pos();
             m_dragTabIndex = tabAt(event->pos());
             m_dragSessionName = m_dragTabIndex >= 0 ? tabText(m_dragTabIndex) : QString();
+            m_dragTabPressOffsetX = m_dragTabIndex >= 0
+                ? event->pos().x() - tabRect(m_dragTabIndex).left()
+                : 0;
         }
         const QString pressedSession = m_dragSessionName;
 
@@ -1094,12 +1098,7 @@ protected:
 
     void mouseMoveEvent(QMouseEvent* event) override
     {
-        const int hoveredTabIndex = tabAt(event->pos());
-        if (m_hoveredTabIndex != hoveredTabIndex) {
-            m_hoveredTabIndex = hoveredTabIndex;
-            refreshCloseButtons();
-        }
-        setCursor(hoveredTabIndex >= 0 ? Qt::PointingHandCursor : Qt::ArrowCursor);
+        updateHoveredTab(event->pos());
 
         const bool hasPressedTab = (event->buttons() & Qt::LeftButton)
             && m_dragTabIndex >= 0;
@@ -1110,11 +1109,16 @@ protected:
         }
 
         if (!shouldStartCrossBarDrag(event->pos(), event->globalPosition().toPoint())) {
-            reorderDraggedTab(event->pos());
+            updateDraggedTabVisual(event->pos());
             event->accept();
             refreshCloseButtons();
             return;
         }
+
+        m_visualDragActive = false;
+        m_visualTargetIndex = -1;
+        refreshCloseButtons();
+        repaint();
 
         QMimeData* mime = new QMimeData();
         QJsonObject payload;
@@ -1147,11 +1151,26 @@ protected:
 
     void mouseReleaseEvent(QMouseEvent* event) override
     {
+        if (event->button() == Qt::LeftButton && m_visualDragActive) {
+            commitVisualTabDrag();
+            m_dragTabIndex = -1;
+            m_dragSessionName.clear();
+            m_visualDragActive = false;
+            m_visualTargetIndex = -1;
+            refreshCloseButtons();
+            update();
+            event->accept();
+            return;
+        }
+
         QTabBar::mouseReleaseEvent(event);
         if (event->button() == Qt::LeftButton) {
             m_dragTabIndex = -1;
             m_dragSessionName.clear();
+            m_visualDragActive = false;
+            m_visualTargetIndex = -1;
             refreshCloseButtons();
+            update();
         }
     }
 
@@ -1208,12 +1227,66 @@ protected:
         m_hoveredTabIndex = -1;
         setCursor(Qt::ArrowCursor);
         refreshCloseButtons();
+        update();
         QTabBar::leaveEvent(event);
+    }
+
+    bool event(QEvent* event) override
+    {
+        if (event->type() == QEvent::HoverMove) {
+            QHoverEvent* hoverEvent = static_cast<QHoverEvent*>(event);
+            updateHoveredTab(hoverEvent->position().toPoint());
+        }
+        return QTabBar::event(event);
     }
 
     void paintEvent(QPaintEvent* event) override
     {
-        QTabBar::paintEvent(event);
+        QPainter tabPainter(this);
+        tabPainter.setRenderHint(QPainter::Antialiasing, true);
+        tabPainter.fillRect(event->rect(), m_selectedTabColor);
+
+        const int visualDragIndex = m_visualDragActive ? indexOfDragSession() : -1;
+        const int draggedWidth = visualDragIndex >= 0 ? tabRect(visualDragIndex).width() : 0;
+        QVector<QRect> paintedRects(count());
+        for (int i = 0; i < count(); ++i) {
+            if (i == visualDragIndex)
+                continue;
+
+            QRect rect = tabRect(i);
+            if (m_visualDragActive && m_visualTargetIndex >= 0) {
+                if (m_visualTargetIndex > visualDragIndex && i > visualDragIndex && i <= m_visualTargetIndex)
+                    rect.translate(-draggedWidth, 0);
+                else if (m_visualTargetIndex < visualDragIndex && i >= m_visualTargetIndex && i < visualDragIndex)
+                    rect.translate(draggedWidth, 0);
+            }
+            paintedRects[i] = rect;
+            paintTab(&tabPainter, i, rect, false);
+        }
+
+        for (int i = 0; i + 1 < count(); ++i) {
+            if (i == visualDragIndex || i + 1 == visualDragIndex)
+                continue;
+            if (i == currentIndex() || i + 1 == currentIndex())
+                continue;
+            if (i == m_hoveredTabIndex || i + 1 == m_hoveredTabIndex)
+                continue;
+            if (paintedRects[i].isEmpty() || paintedRects[i + 1].isEmpty())
+                continue;
+
+            const int x = (paintedRects[i].right() + paintedRects[i + 1].left()) / 2;
+            const int top = pillRect(paintedRects[i]).top() + 5;
+            const int bottom = pillRect(paintedRects[i]).bottom() - 5;
+            tabPainter.setPen(QPen(m_hoveredTabColor, 1));
+            tabPainter.drawLine(QPoint(x, top), QPoint(x, bottom));
+        }
+
+        if (visualDragIndex >= 0) {
+            QRect draggedRect = tabRect(visualDragIndex);
+            draggedRect.moveLeft(qRound(m_visualDragLeft));
+            paintTab(&tabPainter, visualDragIndex, draggedRect, true);
+        }
+
         if (m_dropIndicatorIndex < 0)
             return;
 
@@ -1229,7 +1302,62 @@ protected:
         painter.drawLine(QPoint(x, 4), QPoint(x, height() - 4));
     }
 
+    QSize tabSizeHint(int index) const override
+    {
+        const int closeExtent = qMax(16, fontMetrics().height() + 1);
+        const int closeWidth = closeExtent + 8;
+        const int width = fontMetrics().horizontalAdvance(tabText(index)) + 30 + closeWidth;
+        const int height = qMax(30, fontMetrics().height() + 12);
+        return QSize(width, height);
+    }
+
 private:
+    void updateHoveredTab(const QPoint& pos)
+    {
+        const int hoveredTabIndex = tabAt(pos);
+        if (m_hoveredTabIndex != hoveredTabIndex) {
+            m_hoveredTabIndex = hoveredTabIndex;
+            refreshCloseButtons();
+            update();
+        }
+        setCursor(hoveredTabIndex >= 0 ? Qt::PointingHandCursor : Qt::ArrowCursor);
+    }
+
+    QRect pillRect(const QRect& tabRect) const
+    {
+        return tabRect.adjusted(2, 3, -2, -3);
+    }
+
+    void paintTab(QPainter* painter, int index, const QRect& rect, bool dragged) const
+    {
+        if (index < 0 || index >= count() || rect.isEmpty())
+            return;
+
+        const bool selected = index == currentIndex();
+        const bool hovered = index == m_hoveredTabIndex && !m_visualDragActive;
+        const QRect pill = pillRect(rect);
+        if (selected || hovered || dragged) {
+            const QColor fill = selected ? m_selectedTabColor : m_hoveredTabColor;
+            if (selected)
+                painter->setPen(QPen(m_tabStripColor, 1));
+            else
+                painter->setPen(Qt::NoPen);
+            painter->setBrush(fill);
+            painter->drawRoundedRect(pill, pill.height() / 2.0, pill.height() / 2.0);
+        }
+
+        const int rightButtonWidth = tabButton(index, QTabBar::RightSide) != nullptr
+            && tabButton(index, QTabBar::RightSide)->isVisible()
+            ? tabButton(index, QTabBar::RightSide)->width() + 6
+            : 0;
+        const QRect textRect = pill.adjusted(12, 0, -12 - rightButtonWidth, 0);
+        painter->setPen(selected ? m_selectedTextColor : m_tabTextColor);
+        painter->setFont(font());
+        painter->drawText(textRect,
+                          Qt::AlignVCenter | Qt::AlignLeft,
+                          fontMetrics().elidedText(tabText(index), elideMode(), textRect.width()));
+    }
+
     void updateDropIndicator(const QPoint& pos)
     {
         int index = tabAt(clampDropPos(pos));
@@ -1281,30 +1409,64 @@ private:
                       qBound(0, pos.y(), height() - 1));
     }
 
-    void reorderDraggedTab(const QPoint& pos)
+    int visualTargetIndexForDrag(qreal visualLeft, int draggedWidth) const
+    {
+        const int sourceIndex = indexOfDragSession();
+        if (sourceIndex < 0 || sourceIndex >= count())
+            return -1;
+
+        int targetIndex = sourceIndex;
+        if (visualLeft < tabRect(sourceIndex).left()) {
+            while (targetIndex > 0 && visualLeft < tabRect(targetIndex - 1).center().x())
+                --targetIndex;
+        } else {
+            const qreal visualRight = visualLeft + draggedWidth;
+            while (targetIndex + 1 < count() && visualRight > tabRect(targetIndex + 1).center().x())
+                ++targetIndex;
+        }
+        return qBound(0, targetIndex, count() - 1);
+    }
+
+    void updateDraggedTabVisual(const QPoint& pos)
+    {
+        const int index = indexOfDragSession();
+        if (index < 0 || index >= count())
+            return;
+
+        const int leftLimit = count() > 0 ? tabRect(0).left() : 0;
+        const int rightLimit = count() > 0 ? tabRect(count() - 1).right() - tabRect(index).width() + 1 : width();
+        const int clampedRightLimit = qMax(leftLimit, rightLimit);
+        m_visualDragActive = true;
+        m_visualDragLeft = qBound(leftLimit, pos.x() - m_dragTabPressOffsetX, clampedRightLimit);
+        m_visualTargetIndex = visualTargetIndexForDrag(m_visualDragLeft, tabRect(index).width());
+        update();
+    }
+
+    void commitVisualTabDrag()
     {
         int index = indexOfDragSession();
         if (index < 0 || index >= count())
             return;
-
-        int targetIndex = index;
-        while (targetIndex > 0 && pos.x() < tabRect(targetIndex - 1).center().x())
-            --targetIndex;
-        while (targetIndex + 1 < count() && pos.x() > tabRect(targetIndex + 1).center().x())
-            ++targetIndex;
-
-        if (targetIndex == index)
+        if (m_visualTargetIndex < 0 || m_visualTargetIndex == index)
             return;
 
-        moveTab(index, targetIndex);
-        m_dragTabIndex = targetIndex;
-        setCurrentIndex(targetIndex);
+        moveTab(index, m_visualTargetIndex);
+        m_dragTabIndex = m_visualTargetIndex;
+        setCurrentIndex(m_visualTargetIndex);
     }
 
-    QPoint m_dragStartPos;
+    int m_dragTabPressOffsetX = 0;
     int m_dragTabIndex = -1;
     int m_hoveredTabIndex = -1;
     int m_dropIndicatorIndex = -1;
+    bool m_visualDragActive = false;
+    qreal m_visualDragLeft = 0.0;
+    int m_visualTargetIndex = -1;
+    QColor m_tabStripColor;
+    QColor m_hoveredTabColor;
+    QColor m_selectedTabColor;
+    QColor m_tabTextColor;
+    QColor m_selectedTextColor;
     QString m_dragSessionName;
 
     int indexOfDragSession() const
@@ -3314,12 +3476,16 @@ void MainWindow::addSessionToActivePane(const QString& name)
         return;
 
     QStringList names = paneSessionNames(m_widgets.display);
-    if (!names.contains(name, Qt::CaseInsensitive))
+    const bool tabAdded = !names.contains(name, Qt::CaseInsensitive);
+    const bool activeChanged = m_paneSessionNames.value(m_widgets.display).compare(name, Qt::CaseInsensitive) != 0;
+    if (tabAdded)
         names.append(name);
+    if (!tabAdded && !activeChanged)
+        return;
+
     m_paneSessionTabs.insert(m_widgets.display, names);
     m_paneSessionNames.insert(m_widgets.display, name);
     updatePaneLoadedSessionCounts();
-    updatePaneTabBars();
 }
 
 ResultDisplay* MainWindow::tabBarDisplay(QTabBar* tabBar) const
@@ -3350,9 +3516,14 @@ void MainWindow::switchPaneToSession(ResultDisplay* display, const QString& name
     if (editor == nullptr)
         return;
 
+    const bool paneAlreadyShowsSession =
+        display->session() == session
+        && m_paneSessionNames.value(display).compare(name, Qt::CaseInsensitive) == 0;
+
     setActiveEditorDisplayPane(display, editor);
     activateSession(session);
-    updatePaneTabBars();
+    if (!paneAlreadyShowsSession)
+        updatePaneTabBars();
 }
 
 bool MainWindow::focusOpenSession(const QString& name)
@@ -3860,18 +4031,24 @@ void MainWindow::updatePaneTabBars()
     const QColor activeTabText = scheme.isValid()
         ? scheme.colorForRole(ColorScheme::Number)
         : palette().color(QPalette::WindowText);
+    const QColor activeTabSurface = themeBackgroundColorForScheme(m_settings ? m_settings->colorScheme : QString());
     for (ResultDisplay* display : displays) {
         QTabBar* tabBar = displayTabBar(display);
         if (tabBar == nullptr)
             continue;
-        static_cast<SessionTabBar*>(tabBar)->applyStyle(activeTabText);
+        static_cast<SessionTabBar*>(tabBar)->applyStyle(activeTabText, activeTabSurface);
 
         const QSignalBlocker blocker(tabBar);
-        while (tabBar->count() > 0)
-            tabBar->removeTab(0);
         const QStringList names = paneSessionNames(display);
-        for (const QString& name : names)
-            tabBar->addTab(name);
+        bool tabsAlreadyMatch = tabBar->count() == names.size();
+        for (int i = 0; tabsAlreadyMatch && i < names.size(); ++i)
+            tabsAlreadyMatch = tabBar->tabText(i) == names.at(i);
+        if (!tabsAlreadyMatch) {
+            while (tabBar->count() > 0)
+                tabBar->removeTab(0);
+            for (const QString& name : names)
+                tabBar->addTab(name);
+        }
 
         const int activeIndex = names.indexOf(m_paneSessionNames.value(display));
         tabBar->setCurrentIndex(activeIndex >= 0 ? activeIndex : 0);
@@ -5061,8 +5238,6 @@ void MainWindow::activateSession(Session* session)
         m_docks.userFunctions->widget()->setEvaluator(m_evaluator);
     if (m_docks.userUnits)
         m_docks.userUnits->widget()->setEvaluator(m_evaluator);
-    if (m_widgets.display != nullptr)
-        m_paneSessionNames.insert(m_widgets.display, m_session->name());
     if (m_widgets.display != nullptr)
         addSessionToActivePane(m_session->name());
     m_pendingHistoryEditIndex = -1;
