@@ -290,6 +290,7 @@ struct SessionLoadSpec {
 
 bool g_restoringExtraWindows = false;
 bool g_multiWindowSpawnDone = false;
+constexpr int DockLayoutStateVersion = 1;
 
 bool asyncSessionSaveIsCurrent(const QString& filePath, quint64 generation)
 {
@@ -4154,6 +4155,13 @@ void MainWindow::restoreVisibleSessionViewports()
 }
 
 void MainWindow::createBitField() {
+    if (m_docks.bitField) {
+        m_docks.bitField->show();
+        m_docks.bitField->raise();
+        m_settings->bitfieldVisible = true;
+        return;
+    }
+
     m_docks.bitField = new GenericDock<BitFieldWidget>("MainWindow", QT_TR_NOOP("Bitfield"), this);
     m_docks.bitField->setObjectName("BitfieldDock");
     m_docks.bitField->installEventFilter(this);
@@ -4217,6 +4225,13 @@ void MainWindow::createKeypad()
 
 void MainWindow::createBookDock(bool)
 {
+    if (m_docks.book) {
+        m_docks.book->show();
+        m_docks.book->raise();
+        m_settings->formulaBookDockVisible = true;
+        return;
+    }
+
     m_docks.book = new BookDock(this);
     m_docks.book->setObjectName("BookDock");
     m_docks.book->installEventFilter(this);
@@ -4235,6 +4250,15 @@ void MainWindow::createBookDock(bool)
 
 void MainWindow::createConstantsDock(bool takeFocus)
 {
+    if (m_docks.constants) {
+        m_docks.constants->show();
+        m_docks.constants->raise();
+        if (takeFocus)
+            m_docks.constants->setFocus();
+        m_settings->constantsDockVisible = true;
+        return;
+    }
+
     m_docks.constants = new GenericDock<ConstantsWidget>("MainWindow", QT_TR_NOOP("Constants"), this);
     m_docks.constants->setObjectName("ConstantsDock");
     m_docks.constants->installEventFilter(this);
@@ -4255,6 +4279,15 @@ void MainWindow::createConstantsDock(bool takeFocus)
 
 void MainWindow::createFunctionsDock(bool takeFocus)
 {
+    if (m_docks.functions) {
+        m_docks.functions->show();
+        m_docks.functions->raise();
+        if (takeFocus)
+            m_docks.functions->setFocus();
+        m_settings->functionsDockVisible = true;
+        return;
+    }
+
     m_docks.functions = new GenericDock<FunctionsWidget>("MainWindow", QT_TR_NOOP("Functions"), this);
     m_docks.functions->setObjectName("FunctionsDock");
     m_docks.functions->installEventFilter(this);
@@ -4271,6 +4304,13 @@ void MainWindow::createFunctionsDock(bool takeFocus)
 
 void MainWindow::createHistoryDock(bool)
 {
+    if (m_docks.history) {
+        m_docks.history->show();
+        m_docks.history->raise();
+        m_settings->historyDockVisible = true;
+        return;
+    }
+
     m_docks.history = new GenericDock<HistoryWidget>("MainWindow", QT_TR_NOOP("History"), this);
     m_docks.history->setObjectName("HistoryDock");
     m_docks.history->installEventFilter(this);
@@ -4295,6 +4335,15 @@ void MainWindow::createHistoryDock(bool)
 
 void MainWindow::createVariablesDock(bool takeFocus)
 {
+    if (m_docks.variables) {
+        m_docks.variables->show();
+        m_docks.variables->raise();
+        if (takeFocus)
+            m_docks.variables->setFocus();
+        m_settings->variablesDockVisible = true;
+        return;
+    }
+
     m_docks.variables = new GenericDock<VariableListWidget>("MainWindow", QT_TR_NOOP("User Variables"), this);
     m_docks.variables->setObjectName("VariablesDock");
     m_docks.variables->installEventFilter(this);
@@ -4323,6 +4372,15 @@ void MainWindow::createVariablesDock(bool takeFocus)
 
 void MainWindow::createUserFunctionsDock(bool takeFocus)
 {
+    if (m_docks.userFunctions) {
+        m_docks.userFunctions->show();
+        m_docks.userFunctions->raise();
+        if (takeFocus)
+            m_docks.userFunctions->setFocus();
+        m_settings->userFunctionsDockVisible = true;
+        return;
+    }
+
     m_docks.userFunctions = new GenericDock<UserFunctionListWidget>("MainWindow", QT_TR_NOOP("User Functions"), this);
     m_docks.userFunctions->setObjectName("UserFunctionsDock");
     m_docks.userFunctions->installEventFilter(this);
@@ -4351,6 +4409,15 @@ void MainWindow::createUserFunctionsDock(bool takeFocus)
 
 void MainWindow::createUserUnitsDock(bool takeFocus)
 {
+    if (m_docks.userUnits) {
+        m_docks.userUnits->show();
+        m_docks.userUnits->raise();
+        if (takeFocus)
+            m_docks.userUnits->setFocus();
+        m_settings->userUnitsDockVisible = true;
+        return;
+    }
+
     m_docks.userUnits = new GenericDock<UserUnitListWidget>("MainWindow", QT_TR_NOOP("User Units"), this);
     m_docks.userUnits->setObjectName("UserUnitsDock");
     m_docks.userUnits->installEventFilter(this);
@@ -4396,10 +4463,10 @@ void MainWindow::addTabifiedDock(QDockWidget* newDock, bool takeFocus, Qt::DockW
 
 void MainWindow::deleteDock(QDockWidget* dock)
 {
-    removeDockWidget(dock);
-    m_allDocks.removeAll(dock);
-    disconnect(dock);
-    dock->deleteLater();
+    // QMainWindow retains internal layout items for dock restoration and tab
+    // groups. Keep an attached dock alive and hidden instead of destroying it
+    // from its Close event while Qt may still be traversing that layout.
+    dock->hide();
 }
 
 void MainWindow::createFixedConnections()
@@ -4630,28 +4697,49 @@ void MainWindow::applySettings()
 {
     emit languageChanged();
 
-    setFormulaBookDockVisible(m_settings->formulaBookDockVisible, false);
-    m_actions.viewFormulaBook->setChecked(m_settings->formulaBookDockVisible);
+    // QMainWindow state restoration expects every named dock in a saved layout
+    // to exist before restoreState() runs. Instantiate docks up front and keep
+    // closed panels hidden instead of inserting them after layout restoration.
+    const bool formulaBookDockVisible = m_settings->formulaBookDockVisible;
+    const bool constantsDockVisible = m_settings->constantsDockVisible;
+    const bool functionsDockVisible = m_settings->functionsDockVisible;
+    const bool historyDockVisible = m_settings->historyDockVisible;
+    const bool variablesDockVisible = m_settings->variablesDockVisible;
+    const bool userFunctionsDockVisible = m_settings->userFunctionsDockVisible;
+    const bool userUnitsDockVisible = m_settings->userUnitsDockVisible;
+    const bool bitfieldVisible = m_settings->bitfieldVisible;
 
-    setConstantsDockVisible(m_settings->constantsDockVisible, false);
-    m_actions.viewConstants->setChecked(m_settings->constantsDockVisible);
+    createBookDock(false);
+    setFormulaBookDockVisible(formulaBookDockVisible, false);
+    m_actions.viewFormulaBook->setChecked(formulaBookDockVisible);
 
-    setFunctionsDockVisible(m_settings->functionsDockVisible, false);
-    m_actions.viewFunctions->setChecked(m_settings->functionsDockVisible);
+    createConstantsDock(false);
+    setConstantsDockVisible(constantsDockVisible, false);
+    m_actions.viewConstants->setChecked(constantsDockVisible);
 
-    setHistoryDockVisible(m_settings->historyDockVisible, false);
-    m_actions.viewHistory->setChecked(m_settings->historyDockVisible);
+    createFunctionsDock(false);
+    setFunctionsDockVisible(functionsDockVisible, false);
+    m_actions.viewFunctions->setChecked(functionsDockVisible);
 
-    setVariablesDockVisible(m_settings->variablesDockVisible, false);
-    m_actions.viewVariables->setChecked(m_settings->variablesDockVisible);
+    createHistoryDock(false);
+    setHistoryDockVisible(historyDockVisible, false);
+    m_actions.viewHistory->setChecked(historyDockVisible);
 
-    setUserFunctionsDockVisible(m_settings->userFunctionsDockVisible, false);
-    m_actions.viewUserFunctions->setChecked(m_settings->userFunctionsDockVisible);
+    createVariablesDock(false);
+    setVariablesDockVisible(variablesDockVisible, false);
+    m_actions.viewVariables->setChecked(variablesDockVisible);
 
-    setUserUnitsDockVisible(m_settings->userUnitsDockVisible, false);
-    m_actions.viewUserUnits->setChecked(m_settings->userUnitsDockVisible);
+    createUserFunctionsDock(false);
+    setUserFunctionsDockVisible(userFunctionsDockVisible, false);
+    m_actions.viewUserFunctions->setChecked(userFunctionsDockVisible);
 
-    m_actions.viewBitfield->setChecked(m_settings->bitfieldVisible);
+    createUserUnitsDock(false);
+    setUserUnitsDockVisible(userUnitsDockVisible, false);
+    m_actions.viewUserUnits->setChecked(userUnitsDockVisible);
+
+    createBitField();
+    setBitfieldVisible(bitfieldVisible);
+    m_actions.viewBitfield->setChecked(bitfieldVisible);
     switch (m_settings->keypadMode) {
     case Settings::KeypadModeBasicWide:
         m_actions.viewKeypadBasicWide->setChecked(true);
@@ -4699,7 +4787,7 @@ void MainWindow::applySettings()
         QRect screenGeometry = QGuiApplication::primaryScreen()->availableGeometry();
         move(screenGeometry.center() - rect().center());
     }
-    restoreState(m_settings->windowState);
+    restoreState(m_settings->windowState, DockLayoutStateVersion);
 
     m_actions.viewFullScreenMode->setChecked(m_settings->windowOnfullScreen);
     if (!isWaylandPlatform())
@@ -4960,7 +5048,7 @@ void MainWindow::saveSettings()
     m_settings->windowGeometry = m_settings->windowPositionSave ? saveGeometry() : QByteArray();
     if (m_widgets.manual)
         m_settings->manualWindowGeometry = m_settings->windowPositionSave ? m_widgets.manual->saveGeometry() : QByteArray();
-    m_settings->windowState = saveState();
+    m_settings->windowState = saveState(DockLayoutStateVersion);
     if (m_widgets.display != nullptr)
         m_settings->displayFont = m_widgets.display->font().toString();
 
@@ -5181,9 +5269,11 @@ void MainWindow::saveSessionLayout(bool captureCurrentViewport)
         window.insert(QStringLiteral("root"), windowRoot);
         window.insert(QStringLiteral("statusBarVisible"),
                       windowObject->statusBar() != nullptr && windowObject->statusBar()->isVisible());
-        window.insert(QStringLiteral("bitfieldVisible"), windowObject->m_widgets.bitField != nullptr);
+        window.insert(QStringLiteral("bitfieldVisible"),
+                      windowObject->m_docks.bitField != nullptr && windowObject->m_docks.bitField->isVisible());
         window.insert(QStringLiteral("keypadVisible"), windowObject->m_widgets.keypad != nullptr);
-        window.insert(QStringLiteral("windowState"), QString::fromLatin1(windowObject->saveState().toBase64()));
+        window.insert(QStringLiteral("windowState"),
+                      QString::fromLatin1(windowObject->saveState(DockLayoutStateVersion).toBase64()));
         if (windowObject->m_settings->windowPositionSave)
             window.insert(QStringLiteral("geometry"), QString::fromLatin1(windowObject->saveGeometry().toBase64()));
         windows.append(window);
@@ -7863,10 +7953,7 @@ void MainWindow::deleteBitField()
     if (!m_docks.bitField)
         return;
 
-    disconnect(m_widgets.bitField);
     deleteDock(m_docks.bitField);
-    m_docks.bitField = nullptr;
-    m_widgets.bitField = 0;
     m_actions.viewBitfield->setChecked(false);
     m_settings->bitfieldVisible = false;
 }
@@ -7877,7 +7964,6 @@ void MainWindow::deleteBookDock()
         return;
 
     deleteDock(m_docks.book);
-    m_docks.book = nullptr;
     m_actions.viewFormulaBook->setChecked(false);
     m_settings->formulaBookDockVisible = false;
 }
@@ -7888,7 +7974,6 @@ void MainWindow::deleteConstantsDock()
         return;
 
     deleteDock(m_docks.constants);
-    m_docks.constants = nullptr;
     m_actions.viewConstants->setChecked(false);
     m_settings->constantsDockVisible = false;
 }
@@ -7899,7 +7984,6 @@ void MainWindow::deleteFunctionsDock()
         return;
 
     deleteDock(m_docks.functions);
-    m_docks.functions = nullptr;
     m_actions.viewFunctions->setChecked(false);
     m_settings->functionsDockVisible = false;
 }
@@ -7910,7 +7994,6 @@ void MainWindow::deleteHistoryDock()
         return;
 
     deleteDock(m_docks.history);
-    m_docks.history = nullptr;
     m_actions.viewHistory->setChecked(false);
     m_settings->historyDockVisible = false;
 }
@@ -7921,7 +8004,6 @@ void MainWindow::deleteVariablesDock()
         return;
 
     deleteDock(m_docks.variables);
-    m_docks.variables = nullptr;
     m_actions.viewVariables->setChecked(false);
     m_settings->variablesDockVisible = false;
 }
@@ -7932,7 +8014,6 @@ void MainWindow::deleteUserFunctionsDock()
         return;
 
     deleteDock(m_docks.userFunctions);
-    m_docks.userFunctions = nullptr;
     m_actions.viewUserFunctions->setChecked(false);
     m_settings->userFunctionsDockVisible = false;
 }
@@ -7943,7 +8024,6 @@ void MainWindow::deleteUserUnitsDock()
         return;
 
     deleteDock(m_docks.userUnits);
-    m_docks.userUnits = nullptr;
     m_actions.viewUserUnits->setChecked(false);
     m_settings->userUnitsDockVisible = false;
 }
@@ -8939,9 +9019,9 @@ void MainWindow::finishRestoreSessionLayout(const QJsonObject& layout,
     updatePaneEditorCursorVisibility();
     const QString windowStateBase64 = window.value(QStringLiteral("windowState")).toString();
     if (!windowStateBase64.isEmpty())
-        restoreState(QByteArray::fromBase64(windowStateBase64.toLatin1()));
+        restoreState(QByteArray::fromBase64(windowStateBase64.toLatin1()), DockLayoutStateVersion);
     else
-        restoreState(m_settings->windowState);
+        restoreState(m_settings->windowState, DockLayoutStateVersion);
     if (window.contains(QStringLiteral("statusBarVisible")))
         setStatusBarVisible(window.value(QStringLiteral("statusBarVisible")).toBool(true));
     if (window.contains(QStringLiteral("bitfieldVisible")))

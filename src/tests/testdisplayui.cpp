@@ -10,6 +10,7 @@
 #include "math/quantity.h"
 
 #include <QCoreApplication>
+#include <QDockWidget>
 #include <QLabel>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -18,6 +19,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMouseEvent>
+#include <QPointer>
 #include <QScrollBar>
 #include <QSplitter>
 #include <QTabBar>
@@ -151,6 +153,7 @@ private slots:
     void focusing_loaded_pane_preserves_its_current_scroll_position();
     void persisting_layout_captures_visible_scroll_positions_for_all_panes();
     void session_tabs_reorder_with_horizontal_drag();
+    void closing_and_reopening_docks_keeps_attached_widgets();
 };
 
 void TestDisplayUi::result_display_insets_viewport_horizontally()
@@ -594,7 +597,10 @@ void TestDisplayUi::session_tabs_reorder_with_horizontal_drag()
     QVERIFY(QMetaObject::invokeMethod(&window, "showNewSessionDialog", Qt::DirectConnection));
     QCoreApplication::processEvents();
 
-    QTabBar* tabBar = window.findChild<QTabBar*>();
+    ResultDisplay* display = window.findChild<ResultDisplay*>();
+    QVERIFY(display != nullptr);
+    QWidget* pane = paneWidgetForDisplay(display);
+    QTabBar* tabBar = pane ? pane->findChild<QTabBar*>() : nullptr;
     QVERIFY(tabBar != nullptr);
     QVERIFY(tabBar->isVisible());
     QCOMPARE(tabBar->count(), 3);
@@ -626,6 +632,188 @@ void TestDisplayUi::session_tabs_reorder_with_horizontal_drag()
     dragTab(tabBar->count() - 1, 0);
     QCoreApplication::processEvents();
     QCOMPARE(tabBar->tabText(0), firstTab);
+}
+
+void TestDisplayUi::closing_and_reopening_docks_keeps_attached_widgets()
+{
+    constexpr int dockLayoutStateVersion = 1;
+    Settings* appSettings = Settings::instance();
+    struct SettingsGuard {
+        Settings* settings;
+        QByteArray oldSkipUpdateCheck;
+        bool hadSkipUpdateCheck;
+        QString oldSessionLayoutJson;
+        QByteArray oldWindowState;
+        bool oldConstantsDockVisible;
+        bool oldFunctionsDockVisible;
+        bool oldHistoryDockVisible;
+        bool oldKeypadVisible;
+        bool oldFormulaBookDockVisible;
+        bool oldVariablesDockVisible;
+        bool oldUserFunctionsDockVisible;
+        bool oldUserUnitsDockVisible;
+        bool oldBitfieldVisible;
+        bool oldHasNumberFormatStyleSetting;
+
+        ~SettingsGuard()
+        {
+            settings->sessionLayoutJson = oldSessionLayoutJson;
+            settings->windowState = oldWindowState;
+            settings->constantsDockVisible = oldConstantsDockVisible;
+            settings->functionsDockVisible = oldFunctionsDockVisible;
+            settings->historyDockVisible = oldHistoryDockVisible;
+            settings->keypadVisible = oldKeypadVisible;
+            settings->formulaBookDockVisible = oldFormulaBookDockVisible;
+            settings->variablesDockVisible = oldVariablesDockVisible;
+            settings->userFunctionsDockVisible = oldUserFunctionsDockVisible;
+            settings->userUnitsDockVisible = oldUserUnitsDockVisible;
+            settings->bitfieldVisible = oldBitfieldVisible;
+            settings->hasNumberFormatStyleSetting = oldHasNumberFormatStyleSetting;
+            if (hadSkipUpdateCheck)
+                qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", oldSkipUpdateCheck);
+            else
+                qunsetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
+        }
+    } guard {
+        appSettings,
+        qgetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK"),
+        qEnvironmentVariableIsSet("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK"),
+        appSettings->sessionLayoutJson,
+        appSettings->windowState,
+        appSettings->constantsDockVisible,
+        appSettings->functionsDockVisible,
+        appSettings->historyDockVisible,
+        appSettings->keypadVisible,
+        appSettings->formulaBookDockVisible,
+        appSettings->variablesDockVisible,
+        appSettings->userFunctionsDockVisible,
+        appSettings->userUnitsDockVisible,
+        appSettings->bitfieldVisible,
+        appSettings->hasNumberFormatStyleSetting
+    };
+
+    qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
+    appSettings->sessionLayoutJson.clear();
+    appSettings->windowState.clear();
+    appSettings->constantsDockVisible = false;
+    appSettings->functionsDockVisible = false;
+    appSettings->historyDockVisible = false;
+    appSettings->keypadVisible = false;
+    appSettings->formulaBookDockVisible = false;
+    appSettings->variablesDockVisible = false;
+    appSettings->userFunctionsDockVisible = false;
+    appSettings->userUnitsDockVisible = false;
+    appSettings->bitfieldVisible = false;
+    appSettings->hasNumberFormatStyleSetting = true;
+
+    QByteArray legacyDockState;
+    QByteArray populatedDockState;
+    {
+        MainWindow window;
+        window.show();
+        QCoreApplication::processEvents();
+
+        struct DockSpec {
+            const char* setter;
+            const char* objectName;
+            bool hasFocusArgument;
+        };
+        const DockSpec dockSpecs[] = {
+            { "setBitfieldVisible", "BitfieldDock", false },
+            { "setFormulaBookDockVisible", "BookDock", true },
+            { "setConstantsDockVisible", "ConstantsDock", true },
+            { "setFunctionsDockVisible", "FunctionsDock", true },
+            { "setHistoryDockVisible", "HistoryDock", true },
+            { "setVariablesDockVisible", "VariablesDock", true },
+            { "setUserFunctionsDockVisible", "UserFunctionsDock", true },
+            { "setUserUnitsDockVisible", "UserUnitsDock", true }
+        };
+
+        const auto invokeVisible = [&window](const DockSpec& spec, bool visible) {
+            if (!spec.hasFocusArgument) {
+                return QMetaObject::invokeMethod(&window, spec.setter, Qt::DirectConnection,
+                                                 Q_ARG(bool, visible));
+            }
+            return QMetaObject::invokeMethod(&window, spec.setter, Qt::DirectConnection,
+                                             Q_ARG(bool, visible), Q_ARG(bool, false));
+        };
+
+        const auto dockCount = [&window](const QString& objectName) {
+            int count = 0;
+            for (QDockWidget* dock : window.findChildren<QDockWidget*>()) {
+                if (dock->objectName() == objectName)
+                    ++count;
+            }
+            return count;
+        };
+
+        for (const DockSpec& spec : dockSpecs) {
+            const QString objectName = QString::fromLatin1(spec.objectName);
+            QPointer<QDockWidget> originalDock = window.findChild<QDockWidget*>(objectName);
+            QVERIFY(originalDock != nullptr);
+            QVERIFY(!originalDock->isVisible());
+            QCOMPARE(dockCount(objectName), 1);
+
+            QVERIFY(invokeVisible(spec, true));
+            QCoreApplication::processEvents();
+
+            originalDock->close();
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+            QCoreApplication::processEvents();
+
+            QVERIFY(originalDock != nullptr);
+            QVERIFY(!originalDock->isVisible());
+            QVERIFY(window.dockWidgetArea(originalDock) != Qt::NoDockWidgetArea);
+            QCOMPARE(dockCount(objectName), 1);
+
+            const QByteArray hiddenState = window.saveState(dockLayoutStateVersion);
+            QVERIFY(window.restoreState(hiddenState, dockLayoutStateVersion));
+            QVERIFY(invokeVisible(spec, true));
+            QCoreApplication::processEvents();
+            QCOMPARE(window.findChild<QDockWidget*>(objectName), originalDock.data());
+            QCOMPARE(dockCount(objectName), 1);
+        }
+
+        legacyDockState = window.saveState();
+        populatedDockState = window.saveState(dockLayoutStateVersion);
+    }
+
+    appSettings->constantsDockVisible = false;
+    appSettings->functionsDockVisible = false;
+    appSettings->historyDockVisible = false;
+    appSettings->formulaBookDockVisible = false;
+    appSettings->variablesDockVisible = false;
+    appSettings->userFunctionsDockVisible = false;
+    appSettings->userUnitsDockVisible = false;
+    appSettings->bitfieldVisible = false;
+
+    {
+        appSettings->windowState = legacyDockState;
+        MainWindow legacyStateWindow;
+        legacyStateWindow.show();
+        QCoreApplication::processEvents();
+
+        QDockWidget* bitfield = legacyStateWindow.findChild<QDockWidget*>(QStringLiteral("BitfieldDock"));
+        QVERIFY(bitfield != nullptr);
+        QVERIFY(!bitfield->isVisible());
+    }
+
+    {
+        appSettings->windowState = populatedDockState;
+        MainWindow restoredWindow;
+        restoredWindow.show();
+        QCoreApplication::processEvents();
+
+        const char* dockNames[] = {
+            "BitfieldDock", "BookDock", "ConstantsDock", "FunctionsDock",
+            "HistoryDock", "VariablesDock", "UserFunctionsDock", "UserUnitsDock"
+        };
+        for (const char* dockName : dockNames)
+            QCOMPARE(restoredWindow.findChildren<QDockWidget*>(QString::fromLatin1(dockName)).size(), 1);
+        QDockWidget* bitfield = restoredWindow.findChild<QDockWidget*>(QStringLiteral("BitfieldDock"));
+        QVERIFY(bitfield != nullptr);
+        QVERIFY(bitfield->isVisible());
+    }
 }
 
 int main(int argc, char** argv)
