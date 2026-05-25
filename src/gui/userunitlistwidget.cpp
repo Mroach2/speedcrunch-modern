@@ -8,6 +8,7 @@
 #include "core/mathdsl.h"
 #include "core/numberformatter.h"
 #include "gui/dockliststyle.h"
+#include "gui/themedlineedit.h"
 
 #include <QEvent>
 #include <QHBoxLayout>
@@ -26,11 +27,14 @@ UserUnitListWidget::UserUnitListWidget(QWidget* parent)
     , m_filterTimer(new QTimer(this))
     , m_userUnits(new QTreeWidget(this))
     , m_noMatchLabel(new QLabel(m_userUnits))
-    , m_searchFilter(new QLineEdit(this))
+    , m_searchFilter(new ThemedLineEdit(this))
     , m_searchLabel(new QLabel(this))
     , m_evaluator(Evaluator::instance())
     , m_pendingRefresh(false)
 {
+    constexpr int kSearchRowHorizontalPadding = 8;
+    constexpr int kSearchRowVerticalPadding = 6;
+
     m_filterTimer->setInterval(500);
     m_filterTimer->setSingleShot(true);
 
@@ -53,11 +57,15 @@ UserUnitListWidget::UserUnitListWidget(QWidget* parent)
     QHBoxLayout* searchLayout = new QHBoxLayout;
     searchLayout->addWidget(m_searchLabel);
     searchLayout->addWidget(m_searchFilter);
-    searchLayout->setContentsMargins(0, 0, 0, 0);
+    searchLayout->setContentsMargins(kSearchRowHorizontalPadding,
+                                     kSearchRowVerticalPadding,
+                                     kSearchRowHorizontalPadding,
+                                     kSearchRowVerticalPadding);
     searchBox->setLayout(searchLayout);
 
     QVBoxLayout* layout = new QVBoxLayout;
-    layout->setContentsMargins(3, 3, 3, 3);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     layout->addWidget(searchBox);
     layout->addWidget(m_userUnits);
     setLayout(layout);

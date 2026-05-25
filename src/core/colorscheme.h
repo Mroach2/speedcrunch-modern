@@ -27,10 +27,8 @@ public:
         Function,
         Operator,
         Variable,
-        ScrollBar,
         Separator,
-        Background,
-        EditorBackground
+        Background
     };
 
     static const int SchemeVersion = 1;

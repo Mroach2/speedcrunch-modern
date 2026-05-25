@@ -11,8 +11,6 @@
     "function": "#BBDAFF",
     "operator": "#99FFFF",
     "variable": "#FF9DA4",
-    "scrollbar": "#4D719E",
     "separator": "#3372C1",
-    "background": "#002451",
-    "editorbackground": "#00346E"
+    "background": "#002451"
 }

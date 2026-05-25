@@ -14,9 +14,11 @@ SOURCES += ../core/userdefinitions.cpp \
            ../gui/mainwindow.cpp \
            ../gui/numberformatdialog.cpp \
            ../gui/notationandprecisiondialog.cpp \
+           ../gui/oklchutils.cpp \
            ../gui/resultdisplay.cpp \
            ../gui/splittertreeutils.cpp \
            ../gui/syntaxhighlighter.cpp \
+           ../gui/themedlineedit.cpp \
            ../gui/userfunctionlistwidget.cpp \
            ../gui/userunitlistwidget.cpp \
            ../gui/versioncheck.cpp \
@@ -36,9 +38,11 @@ HEADERS += ../core/userdefinitions.h \
            ../gui/mainwindow.h \
            ../gui/numberformatdialog.h \
            ../gui/notationandprecisiondialog.h \
+           ../gui/oklchutils.h \
            ../gui/resultdisplay.h \
            ../gui/splittertreeutils.h \
            ../gui/syntaxhighlighter.h \
+           ../gui/themedlineedit.h \
            ../gui/userfunctionlistwidget.h \
            ../gui/userunitlistwidget.h \
            ../gui/versioncheck.h

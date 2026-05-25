@@ -7,6 +7,7 @@
 
 #include "core/book.h"
 
+#include <QColor>
 #include <QDockWidget>
 #include <QTextBrowser>
 
@@ -29,6 +30,7 @@ class BookDock : public QDockWidget {
 
 public:
     BookDock(QWidget* parent = 0);
+    void setContentSurfaceColors(const QColor& background, const QColor& foreground);
 
 signals:
     void expressionSelected(const QString&);
@@ -53,6 +55,8 @@ private:
     Book* m_book;
     TextBrowser* m_browser;
     QString m_currentPage;
+    QColor m_contentBackground;
+    QColor m_contentForeground;
     bool m_refreshingPaletteStyle = false;
 };
 

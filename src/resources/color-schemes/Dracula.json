@@ -1,18 +1,16 @@
 {
     "scheme": 1,
-    "list": "#ff5555",
-    "unit": "#ffffff",
+    "list": "#8be9fd",
+    "unit": "#bd93f9",
     "cursor": "#f8f8f2",
-    "number": "#f8f8f2",
+    "number": "#ffb86c",
     "parens": "#f8f8f2",
-    "result": "#ff79c6",
+    "result": "#50fa7b",
     "comment": "#6272a4",
     "matched": "#bd93f9",
     "function": "#50fa7b",
     "operator": "#8be9fd",
-    "variable": "#ffb86c",
-    "scrollbar": "#6272a4",
-    "separator": "#ffb86c",
-    "background": "#282a36",
-    "editorbackground": "#44475a"
+    "variable": "#f8f8f2",
+    "separator": "#ff79c6",
+    "background": "#282a36"
 }

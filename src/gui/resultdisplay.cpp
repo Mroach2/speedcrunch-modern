@@ -6,6 +6,7 @@
 
 #include "gui/displayformatutils.h"
 #include "gui/resultlineformatutils.h"
+#include "gui/oklchutils.h"
 #include "core/functions.h"
 #include "core/numberformatter.h"
 #include "core/regexpatterns.h"
@@ -15,6 +16,7 @@
 #include "core/mathdsl.h"
 #include "gui/simplifiedexpressionutils.h"
 #include "gui/syntaxhighlighter.h"
+#include "gui/uiconfig.h"
 #include "math/cmath.h"
 #include "math/floatnum/floatconfig.h"
 #include "core/evaluator.h"
@@ -25,14 +27,16 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QContextMenuEvent>
+#include <QIcon>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPixmap>
+#include <QPolygonF>
 #include <QLinearGradient>
 #include <QScrollBar>
-#include <QStyle>
 #include <QToolButton>
 #include <QToolTip>
 
@@ -41,6 +45,23 @@
 namespace {
 constexpr int kResultDisplayHorizontalPadding = 14;
 constexpr int kResultDisplayFadeHeight = 28;
+
+struct ResultDisplayScrollBarColors
+{
+    QColor track;
+    QColor thumb;
+    QColor hoverThumb;
+    QColor pressedThumb;
+};
+
+struct ScrollToBottomButtonColors
+{
+    QColor background;
+    QColor foreground;
+    QColor hoverBackground;
+    QColor hoverForeground;
+    QColor outline;
+};
 
 QPointF badgeCenter(const QRect& rect)
 {
@@ -60,6 +81,124 @@ QColor hoverColorForBackground(const QColor& background)
     return QColor(mixChannel(background.red(), target.red()),
                   mixChannel(background.green(), target.green()),
                   mixChannel(background.blue(), target.blue()));
+}
+
+QVector<QColor> resultDisplayShadesFromBackground(const QColor& background)
+{
+    const QColor base = background.isValid()
+        ? background
+        : QApplication::palette().color(QPalette::Base);
+    return generateOklchShades(base, UiConfig::Shade500 + 1, themePolarityForBackground(base));
+}
+
+QColor shadeOrFallback(const QVector<QColor>& shades, int index, const QColor& fallback)
+{
+    return shades.value(index, fallback);
+}
+
+ResultDisplayScrollBarColors scrollBarColorsForResultBackground(const QColor& background)
+{
+    const QVector<QColor> shades = resultDisplayShadesFromBackground(background);
+    // Result-display scrollbar colors are generated from the result background
+    // itself: the track stays on the result surface, while the thumb advances
+    // through the same OKLCH shade steps used elsewhere for normal, hovered,
+    // and pressed scrollbar states. This keeps scrollbars independent from any
+    // obsolete color-scheme role while preserving the existing shade semantics.
+    const QColor track = shadeOrFallback(shades, UiConfig::ResultDisplayShade, background);
+    const QColor thumb = shadeOrFallback(shades, UiConfig::ResultDisplayScrollbarShade, track);
+    const QColor hoverThumb = shadeOrFallback(shades, UiConfig::ResultDisplayScrollbarHoverShade, thumb);
+    const QColor pressedThumb = shadeOrFallback(shades, UiConfig::ResultDisplayScrollbarPressedShade, hoverThumb);
+    return { track, thumb, hoverThumb, pressedThumb };
+}
+
+ScrollToBottomButtonColors scrollToBottomButtonColorsForResultBackground(const QColor& background)
+{
+    const QVector<QColor> shades = resultDisplayShadesFromBackground(background);
+    const QColor normalBackground =
+        shadeOrFallback(shades, UiConfig::ScrollToBottomButtonBackgroundShade, background);
+    const QColor hoverBackground =
+        shadeOrFallback(shades, UiConfig::ScrollToBottomButtonHoverBackgroundShade, normalBackground);
+    const QColor outline =
+        shadeOrFallback(shades, UiConfig::ScrollToBottomButtonOutlineShade, hoverBackground);
+    return {
+        normalBackground,
+        aaForegroundForBackground(normalBackground),
+        hoverBackground,
+        aaForegroundForBackground(hoverBackground),
+        outline
+    };
+}
+
+QIcon downArrowIcon(const QColor& color)
+{
+    QPixmap pixmap(16, 16);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(color);
+    painter.drawPolygon(QPolygonF{
+        QPointF(3.5, 5.5),
+        QPointF(12.5, 5.5),
+        QPointF(8.0, 11.0)
+    });
+    return QIcon(pixmap);
+}
+
+void applyContextMenuTheme(QMenu* menu,
+                           const QColor& background,
+                           const QColor& foreground,
+                           const QColor& hoverBackground,
+                           const QColor& hoverForeground)
+{
+    if (menu == nullptr || !background.isValid() || !foreground.isValid())
+        return;
+
+    const QColor effectiveHoverBackground = hoverBackground.isValid()
+        ? hoverBackground
+        : background;
+    const QColor effectiveHoverForeground = hoverForeground.isValid()
+        ? hoverForeground
+        : foreground;
+    QPalette palette = menu->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        palette.setColor(group, QPalette::Window, background);
+        palette.setColor(group, QPalette::Base, background);
+        palette.setColor(group, QPalette::Text, foreground);
+        palette.setColor(group, QPalette::WindowText, foreground);
+        palette.setColor(group, QPalette::ButtonText, foreground);
+        palette.setColor(group, QPalette::Highlight, effectiveHoverBackground);
+        palette.setColor(group, QPalette::HighlightedText, effectiveHoverForeground);
+    }
+    menu->setPalette(palette);
+    menu->setStyleSheet(QStringLiteral(
+        "QMenu {"
+        " background-color: %1;"
+        " color: %2;"
+        " border: 1px solid %3;"
+        " border-radius: 8px;"
+        "}"
+        "QMenu::item:selected {"
+        " background-color: %4;"
+        " color: %5;"
+        "}")
+                            .arg(background.name(),
+                                 foreground.name(),
+                                 effectiveHoverBackground.name(),
+                                 effectiveHoverBackground.name(),
+                                 effectiveHoverForeground.name()));
+
+    for (QAction* action : menu->actions()) {
+        if (QMenu* submenu = action->menu())
+            applyContextMenuTheme(submenu,
+                                  background,
+                                  foreground,
+                                  effectiveHoverBackground,
+                                  effectiveHoverForeground);
+    }
 }
 
 int maxRenderedHistoryEntries(const Session* session)
@@ -295,6 +434,7 @@ ResultDisplay::ResultDisplay(QWidget* parent)
     , m_loadedSessionCount(1)
     , m_closeSessionEnabled(false)
     , m_session(nullptr)
+    , m_scrollToBottomButtonHovered(false)
     , m_scrollToBottomButton(new QToolButton(this))
 {
     setViewportMargins(kResultDisplayHorizontalPadding, 0, kResultDisplayHorizontalPadding, 0);
@@ -321,21 +461,14 @@ ResultDisplay::ResultDisplay(QWidget* parent)
     });
 
     m_scrollToBottomButton->setFocusPolicy(Qt::NoFocus);
+    m_scrollToBottomButton->setObjectName(QStringLiteral("ScrollToBottomButton"));
     m_scrollToBottomButton->setCursor(Qt::PointingHandCursor);
     m_scrollToBottomButton->setToolTip(tr("Scroll to bottom"));
-    m_scrollToBottomButton->setIcon(style()->standardIcon(QStyle::SP_ArrowDown));
     m_scrollToBottomButton->setIconSize(QSize(16, 16));
     m_scrollToBottomButton->setFixedSize(30, 30);
-    m_scrollToBottomButton->setStyleSheet(
-        "QToolButton {"
-        "  border: 1px solid palette(mid);"
-        "  border-radius: 15px;"
-        "  background: palette(base);"
-        "  color: palette(text);"
-        "}"
-        "QToolButton:hover {"
-        "  background: palette(alternate-base);"
-        "}");
+    m_scrollToBottomButton->setAttribute(Qt::WA_Hover, true);
+    m_scrollToBottomButton->installEventFilter(this);
+    updateScrollToBottomButtonStyle();
     connect(m_scrollToBottomButton, &QToolButton::clicked, this, &ResultDisplay::scrollToBottom);
     m_scrollToBottomButton->hide();
     repositionScrollToBottomButton();
@@ -353,6 +486,18 @@ bool ResultDisplay::eventFilter(QObject* watched, QEvent* event)
             if (m_scrollBarHovered) {
                 m_scrollBarHovered = false;
                 updateScrollBarStyleSheet();
+            }
+        }
+    } else if (watched == m_scrollToBottomButton) {
+        if (event->type() == QEvent::Enter || event->type() == QEvent::HoverEnter) {
+            if (!m_scrollToBottomButtonHovered) {
+                m_scrollToBottomButtonHovered = true;
+                updateScrollToBottomButtonStyle();
+            }
+        } else if (event->type() == QEvent::Leave || event->type() == QEvent::HoverLeave) {
+            if (m_scrollToBottomButtonHovered) {
+                m_scrollToBottomButtonHovered = false;
+                updateScrollToBottomButtonStyle();
             }
         }
     }
@@ -511,12 +656,55 @@ QString ResultDisplay::exportHtml() const
 void ResultDisplay::rehighlight()
 {
     m_highlighter->update();
-    const QString background = m_highlighter->colorForRole(ColorScheme::Background).name();
+    const QColor backgroundColor = themeSurfaceBackground();
+    QPalette palette = this->palette();
+    palette.setColor(QPalette::Active, QPalette::Base, backgroundColor);
+    palette.setColor(QPalette::Inactive, QPalette::Base, backgroundColor);
+    palette.setColor(QPalette::Disabled, QPalette::Base, backgroundColor);
+    palette.setColor(QPalette::Active, QPalette::Window, backgroundColor);
+    palette.setColor(QPalette::Inactive, QPalette::Window, backgroundColor);
+    palette.setColor(QPalette::Disabled, QPalette::Window, backgroundColor);
+    setPalette(palette);
+    setAutoFillBackground(true);
+    setAttribute(Qt::WA_StyledBackground, true);
+
+    QPalette viewportPalette = viewport()->palette();
+    viewportPalette.setColor(QPalette::Active, QPalette::Base, backgroundColor);
+    viewportPalette.setColor(QPalette::Inactive, QPalette::Base, backgroundColor);
+    viewportPalette.setColor(QPalette::Disabled, QPalette::Base, backgroundColor);
+    viewportPalette.setColor(QPalette::Active, QPalette::Window, backgroundColor);
+    viewportPalette.setColor(QPalette::Inactive, QPalette::Window, backgroundColor);
+    viewportPalette.setColor(QPalette::Disabled, QPalette::Window, backgroundColor);
+    viewport()->setPalette(viewportPalette);
+    viewport()->setAutoFillBackground(true);
+    viewport()->setAttribute(Qt::WA_StyledBackground, true);
+
+    const QString background = backgroundColor.name();
     setStyleSheet(QStringLiteral("QPlainTextEdit { background-color: %1; }").arg(background));
     viewport()->setStyleSheet(QStringLiteral("background-color: %1;").arg(background));
     updateScrollBarStyleSheet();
 }
 
+void ResultDisplay::setThemeSurfaceColor(const QColor& color)
+{
+    m_themeSurfaceColor = color;
+    updateScrollToBottomButtonStyle();
+    updateScrollBarStyleSheet();
+}
+
+void ResultDisplay::setThemeInteractionColors(const QColor& hoverBackground,
+                                              const QColor& menuBackground,
+                                              const QColor& menuForeground,
+                                              const QColor& menuHoverBackground,
+                                              const QColor& menuHoverForeground)
+{
+    m_hoverHighlightColor = hoverBackground;
+    m_contextMenuBackgroundColor = menuBackground;
+    m_contextMenuForegroundColor = menuForeground;
+    m_contextMenuHoverBackgroundColor = menuHoverBackground;
+    m_contextMenuHoverForegroundColor = menuHoverForeground;
+    updateHoverHighlightSelection();
+}
 
 void ResultDisplay::clear()
 {
@@ -1033,6 +1221,11 @@ QMenu* ResultDisplay::createContextMenu(const QPoint& pos)
         }
     }
 
+    applyContextMenuTheme(menu,
+                          m_contextMenuBackgroundColor,
+                          m_contextMenuForegroundColor,
+                          m_contextMenuHoverBackgroundColor,
+                          m_contextMenuHoverForegroundColor);
     return menu;
 }
 
@@ -1344,7 +1537,7 @@ void ResultDisplay::drawScrollEdgeGradients(QPainter* painter)
     if (fadeHeight <= 0)
         return;
 
-    QColor solid = m_highlighter->colorForRole(ColorScheme::Background);
+    QColor solid = themeSurfaceBackground();
     QColor transparent = solid;
     solid.setAlpha(255);
     transparent.setAlpha(0);
@@ -1398,6 +1591,33 @@ void ResultDisplay::updateScrollToBottomButtonVisibility()
     m_scrollToBottomButton->setVisible(hasScrollableContent && !nearBottom);
 }
 
+void ResultDisplay::updateScrollToBottomButtonStyle()
+{
+    if (!m_scrollToBottomButton)
+        return;
+
+    const ScrollToBottomButtonColors colors =
+        scrollToBottomButtonColorsForResultBackground(themeSurfaceBackground());
+    const QColor foreground = m_scrollToBottomButtonHovered
+        ? colors.hoverForeground
+        : colors.foreground;
+
+    m_scrollToBottomButton->setIcon(downArrowIcon(foreground));
+    m_scrollToBottomButton->setStyleSheet(QStringLiteral(
+        "QToolButton {"
+        "  border: %4px solid %3;"
+        "  border-radius: 15px;"
+        "  background: %1;"
+        "}"
+        "QToolButton:hover {"
+        "  background: %2;"
+        "}")
+        .arg(colors.background.name(),
+             colors.hoverBackground.name(),
+             colors.outline.name())
+        .arg(UiConfig::OutlineStrokeWidth));
+}
+
 void ResultDisplay::updateScrollBarStyleSheet()
 {
     static const int kBaseScrollBarWidthAt96Dpi = 5;
@@ -1407,6 +1627,8 @@ void ResultDisplay::updateScrollBarStyleSheet()
         qRound(kBaseScrollBarWidthAt96Dpi * (logicalDpiX() / kReferenceDpi)));
     const int scrollBarWidth = baseScrollBarWidth * 2;
     const int handleHorizontalMargin = m_scrollBarHovered ? 0 : baseScrollBarWidth / 2;
+    const ResultDisplayScrollBarColors colors =
+        scrollBarColorsForResultBackground(themeSurfaceBackground());
 
     verticalScrollBar()->setStyleSheet(QString(
         "QScrollBar:vertical {"
@@ -1419,6 +1641,12 @@ void ResultDisplay::updateScrollBarStyleSheet()
         "   background: %2;"
         "   margin: 0 %4px 0 %4px;"
         "}"
+        "QScrollBar::handle:vertical:hover {"
+        "   background: %5;"
+        "}"
+        "QScrollBar::handle:vertical:pressed {"
+        "   background: %6;"
+        "}"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
         "   border: 0;"
         "   width: 0;"
@@ -1428,10 +1656,12 @@ void ResultDisplay::updateScrollBarStyleSheet()
         "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
         "   background: %1;"
         "}"
-    ).arg(m_highlighter->colorForRole(ColorScheme::Background).name(),
-          m_highlighter->colorForRole(ColorScheme::ScrollBar).name())
+    ).arg(colors.track.name(),
+          colors.thumb.name())
       .arg(scrollBarWidth)
-      .arg(handleHorizontalMargin));
+      .arg(handleHorizontalMargin)
+      .arg(colors.hoverThumb.name(),
+           colors.pressedThumb.name()));
 }
 
 int ResultDisplay::historyIndexAtPosition(const QPoint& pos) const
@@ -1655,8 +1885,9 @@ void ResultDisplay::updateHoverHighlightSelection()
         return;
     }
 
-    const QColor hoverColor = hoverColorForBackground(
-        m_highlighter->colorForRole(ColorScheme::Background));
+    const QColor hoverColor = m_hoverHighlightColor.isValid()
+        ? m_hoverHighlightColor
+        : hoverColorForBackground(themeSurfaceBackground());
 
     auto appendSelectionForHistoryIndex = [this, &selections, &hoverColor](int historyIndex) {
         int startBlock = -1;
@@ -1696,6 +1927,13 @@ void ResultDisplay::updateHoverHighlightSelection()
         appendSelectionForHistoryIndex(m_editingHistoryIndex);
 
     setExtraSelections(selections);
+}
+
+QColor ResultDisplay::themeSurfaceBackground() const
+{
+    return m_themeSurfaceColor.isValid()
+        ? m_themeSurfaceColor
+        : m_highlighter->colorForRole(ColorScheme::Background);
 }
 
 void ResultDisplay::markHistoryBlockIndexCacheDirty()

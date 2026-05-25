@@ -39,7 +39,9 @@ class Variable;
 class VariableListWidget;
 class VersionCheck;
 
+class QAbstractItemView;
 class QActionGroup;
+class QDockWidget;
 class QHBoxLayout;
 class QLabel;
 class QPlainTextEdit;
@@ -90,6 +92,7 @@ private slots:
     void evaluateEditorExpression();
     void handleBulkEvaluationStarted();
     void handleBulkEvaluationFinished();
+    void handleApplicationFocusChanged(QWidget* previous, QWidget* focused);
     void cancelHistoryEntryEdit();
     void exportHtml();
     void exportPlainText();
@@ -299,7 +302,12 @@ private:
     void restoreEditorTextFromCurrentSession();
     QWidget* createEditorDisplayPane(ResultDisplay* display, Editor* editor);
     void configureEditorDisplayPane(ResultDisplay* display, Editor* editor);
-    void setActiveEditorDisplayPane(ResultDisplay* display, Editor* editor);
+    void setActiveEditorDisplayPane(ResultDisplay* display, Editor* editor, bool forceEditorFocus = false);
+    QAbstractItemView* dockItemViewFocusTarget(QWidget* widget) const;
+    QDockWidget* dockWidgetForDescendant(QWidget* widget) const;
+    bool isDockWidgetDescendant(QWidget* widget) const;
+    bool isDockTextInput(QWidget* widget) const;
+    void deactivateActiveEditorForTextInputFocus();
     void splitActivePane(Qt::Orientation orientation, bool insertAfter);
     Session* createUntitledSession(bool activateCreatedSession = true);
     QList<ResultDisplay*> splitPaneDisplays() const;
@@ -320,6 +328,9 @@ private:
     void removeSessionTabFromPane(ResultDisplay* display, const QString& name, bool closePaneIfEmpty);
     void removePaneForDisplay(ResultDisplay* display);
     void normalizeSplitContainerTree();
+    void applyThemeSurfacePalette();
+    void scheduleThemeRuntimeDiagnosticsReport();
+    void writeThemeRuntimeDiagnosticsReport();
     void updateSplitterStyleSheet();
     void refreshPaneThemes();
     void captureVisibleSessionViewports();

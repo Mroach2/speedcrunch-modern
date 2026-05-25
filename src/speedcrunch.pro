@@ -104,6 +104,8 @@ HEADERS += core/book.h \
            gui/numberformatdialog.h \
            gui/mainwindow.h \
            gui/syntaxhighlighter.h \
+           gui/themedlineedit.h \
+           gui/uiconfig.h \
            math/cmath.h \
            math/floatnum/floatcommon.h \
            math/floatnum/floatconfig.h \
@@ -164,6 +166,7 @@ SOURCES += main.cpp \
            gui/genericdock.h \
            gui/keypad.cpp \
            gui/syntaxhighlighter.cpp \
+           gui/themedlineedit.cpp \
            gui/variablelistwidget.cpp \
            gui/userfunctionlistwidget.cpp \
            gui/userunitlistwidget.cpp \

@@ -7,6 +7,7 @@
 #include "core/functions.h"
 #include "core/settings.h"
 #include "gui/dockliststyle.h"
+#include "gui/themedlineedit.h"
 
 #include <QEvent>
 #include <QString>
@@ -25,9 +26,11 @@ FunctionsWidget::FunctionsWidget(QWidget* parent)
     , m_domain(new QComboBox(this))
     , m_functions(new QTreeWidget(this))
     , m_noMatchLabel(new QLabel(m_functions))
-    , m_searchFilter(new QLineEdit(this))
+    , m_searchFilter(new ThemedLineEdit(this))
     , m_searchLabel(new QLabel(this))
 {
+    constexpr int kControlRowHorizontalPadding = 8;
+    constexpr int kControlRowVerticalPadding = 6;
 
     m_filterTimer->setInterval(500);
     m_filterTimer->setSingleShot(true);
@@ -54,18 +57,25 @@ FunctionsWidget::FunctionsWidget(QWidget* parent)
     QHBoxLayout* domainLayout = new QHBoxLayout;
     domainLayout->addWidget(new QLabel(tr("Domain"), this));
     domainLayout->addWidget(m_domain);
-    domainLayout->setContentsMargins(0, 0, 0, 0);
+    domainLayout->setContentsMargins(kControlRowHorizontalPadding,
+                                     kControlRowVerticalPadding,
+                                     kControlRowHorizontalPadding,
+                                     kControlRowVerticalPadding);
     domainBox->setLayout(domainLayout);
 
     QWidget* searchBox = new QWidget(this);
     QHBoxLayout* searchLayout = new QHBoxLayout;
     searchLayout->addWidget(m_searchLabel);
     searchLayout->addWidget(m_searchFilter);
-    searchLayout->setContentsMargins(0, 0, 0, 0);
+    searchLayout->setContentsMargins(kControlRowHorizontalPadding,
+                                     kControlRowVerticalPadding,
+                                     kControlRowHorizontalPadding,
+                                     kControlRowVerticalPadding);
     searchBox->setLayout(searchLayout);
 
     QVBoxLayout* layout = new QVBoxLayout;
-    layout->setContentsMargins(3, 3, 3, 3);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     layout->addWidget(domainBox);
     layout->addWidget(searchBox);
     layout->addWidget(m_functions);

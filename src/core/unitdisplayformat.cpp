@@ -36,10 +36,10 @@ const QHash<QString, QString>& shortNamesByIdentifier()
         QHash<QString, QString> map;
         const auto& values = Units::builtInUnitValues();
         for (auto it = values.constBegin(); it != values.constEnd(); ++it) {
-        const QString& identifier = it.key();
-        UnitId id = unitId(normalizeUnitName(identifier));
-        if (id == UnitId::Unknown)
-            continue;
+            const QString& identifier = it.key();
+            UnitId id = unitId(normalizeUnitName(identifier));
+            if (id == UnitId::Unknown)
+                continue;
             const QString symbol = unitSymbol(id);
             if (!symbol.isEmpty())
                 map.insert(identifier, symbol);

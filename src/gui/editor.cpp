@@ -6,8 +6,10 @@
 #include "gui/displayformatutils.h"
 #include "gui/editorutils.h"
 #include "gui/functiontooltiputils.h"
+#include "gui/oklchutils.h"
 #include "gui/resultlineformatutils.h"
 #include "gui/syntaxhighlighter.h"
+#include "gui/uiconfig.h"
 #include "core/constants.h"
 #include "core/evaluator.h"
 #include "core/functions.h"
@@ -22,10 +24,10 @@
 
 #include <QApplication>
 #include <QAbstractTextDocumentLayout>
+#include <QBitmap>
 #include <QEvent>
 #include <QFont>
 #include <QFrame>
-#include <QGraphicsDropShadowEffect>
 #include <QHeaderView>
 #include <QInputMethodEvent>
 #include <QKeyEvent>
@@ -33,6 +35,7 @@
 #include <QMimeData>
 #include <QPainter>
 #include <QPlainTextEdit>
+#include <QPointer>
 #include <QScreen>
 #include <QScrollBar>
 #include <QRegularExpression>
@@ -55,18 +58,13 @@ constexpr int kEditorOuterBottom = 14;
 constexpr int kEditorHorizontalPadding = 18;
 constexpr int kEditorVerticalPadding = 10;
 constexpr int kEditorRadius = 13;
+constexpr int kEditorCursorWidth = 2;
+
+static QPointer<Editor> s_completionMouseSelectionOwner;
 
 static int editorVerticalDecorationHeight()
 {
     return kEditorOuterTop + kEditorOuterBottom + 2 * kEditorVerticalPadding + 2;
-}
-
-static QColor editorBorderColor(const QColor& background)
-{
-    const int factor = 125;
-    return background.lightnessF() >= 0.5
-        ? background.darker(factor)
-        : background.lighter(factor);
 }
 
 static QColor editorFillColorForThemeBackground(const QColor& background)
@@ -104,6 +102,65 @@ static bool isOperatorOnlyIncompleteInput(const QString& expression)
 
     return sawOperator;
 }
+
+class EditorCompletionPopup : public QTreeWidget
+{
+public:
+    explicit EditorCompletionPopup(QWidget* parent = nullptr)
+        : QTreeWidget(parent)
+    {
+        viewport()->installEventFilter(this);
+    }
+
+protected:
+    bool event(QEvent* event) override
+    {
+        if (event->type() == QEvent::Wheel) {
+            scrollByWheelEvent(static_cast<QWheelEvent*>(event));
+            return true;
+        }
+        return QTreeWidget::event(event);
+    }
+
+    bool eventFilter(QObject* object, QEvent* event) override
+    {
+        if (object == viewport() && event->type() == QEvent::Wheel) {
+            scrollByWheelEvent(static_cast<QWheelEvent*>(event));
+            return true;
+        }
+        return QTreeWidget::eventFilter(object, event);
+    }
+
+    void wheelEvent(QWheelEvent* event) override
+    {
+        scrollByWheelEvent(event);
+    }
+
+    bool viewportEvent(QEvent* event) override
+    {
+        if (event->type() == QEvent::Wheel) {
+            scrollByWheelEvent(static_cast<QWheelEvent*>(event));
+            return true;
+        }
+        return QTreeWidget::viewportEvent(event);
+    }
+
+private:
+    void scrollByWheelEvent(QWheelEvent* event)
+    {
+        const int delta = event->angleDelta().y() != 0
+            ? event->angleDelta().y()
+            : event->pixelDelta().y();
+        if (delta == 0) {
+            event->ignore();
+            return;
+        }
+
+        QScrollBar* scrollBar = verticalScrollBar();
+        scrollBar->setValue(scrollBar->value() - delta / 8);
+        event->accept();
+    }
+};
 
 static QString normalizeExpressionTypedInEditor(QString text)
 {
@@ -1212,8 +1269,8 @@ Editor::Editor(QWidget* parent)
     m_isAutoCalcEnabled = true;
     m_highlighter = new SyntaxHighlighter(this);
     m_matchingTimer = new QTimer(this);
+    m_cursorBlinkTimer = new QTimer(this);
     m_customCursorVisible = true;
-    m_shouldPaintCustomCursor = true;
     m_historyArrowNavigationEnabled = true;
 
     setViewportMargins(0, 0, 0, 0);
@@ -1223,16 +1280,16 @@ Editor::Editor(QWidget* parent)
     setWordWrapMode(QTextOption::WrapAnywhere);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setCursorWidth(0);
+    setCursorWidth(kEditorCursorWidth);
     setAttribute(Qt::WA_StyledBackground, true);
     viewport()->setAutoFillBackground(false);
     document()->setDocumentMargin(0);
 
-    auto* shadow = new QGraphicsDropShadowEffect(this);
-    shadow->setBlurRadius(20);
-    shadow->setOffset(0, 2);
-    setGraphicsEffect(shadow);
-
+    m_cursorBlinkTimer->setSingleShot(false);
+    connect(m_cursorBlinkTimer, &QTimer::timeout, this, [this]() {
+        m_themedCursorVisible = !m_themedCursorVisible;
+        viewport()->update(themedCursorRect());
+    });
     connect(m_completion, &EditorCompletion::selectedCompletion,
             this, &Editor::autoComplete);
     connect(m_completionTimer, SIGNAL(timeout()), SLOT(triggerAutoComplete()));
@@ -1241,7 +1298,9 @@ Editor::Editor(QWidget* parent)
     connect(this, &Editor::textChanged, this, &Editor::checkAutoCalc);
     connect(this, &Editor::textChanged, this, &Editor::checkAutoComplete);
     connect(this, &Editor::textChanged, this, &Editor::checkMatching);
+    connect(this, &Editor::textChanged, this, &Editor::showThemedCursorAndRestartBlink);
     connect(this, &Editor::cursorPositionChanged, this, &Editor::updateHeightAndEnsureCursorVisible);
+    connect(this, &Editor::cursorPositionChanged, this, &Editor::showThemedCursorAndRestartBlink);
     connect(document()->documentLayout(), &QAbstractTextDocumentLayout::documentSizeChanged,
             this, [this](const QSizeF&) { updateHeightAndEnsureCursorVisible(); });
 
@@ -1426,14 +1485,54 @@ void Editor::setAutoCalcEnabled(bool enable)
 
 void Editor::setCustomCursorVisible(bool visible)
 {
-    setCursorWidth(0);
+    setCursorWidth(visible ? kEditorCursorWidth : 0);
 
     if (m_customCursorVisible == visible)
         return;
 
     m_customCursorVisible = visible;
-    m_shouldPaintCustomCursor = visible;
+    if (visible)
+        showThemedCursorAndRestartBlink();
+    else
+        hideThemedCursorAndStopBlink();
     viewport()->update();
+}
+
+void Editor::showThemedCursorAndRestartBlink()
+{
+    m_themedCursorVisible = true;
+    if (shouldPaintThemedCursor()) {
+        const int cursorFlashTime = QApplication::cursorFlashTime();
+        const int blinkInterval = cursorFlashTime > 0 ? qMax(1, cursorFlashTime / 2) : 500;
+        m_cursorBlinkTimer->start(blinkInterval);
+    } else {
+        m_cursorBlinkTimer->stop();
+    }
+    viewport()->update(themedCursorRect());
+}
+
+void Editor::hideThemedCursorAndStopBlink()
+{
+    m_cursorBlinkTimer->stop();
+    m_themedCursorVisible = false;
+    viewport()->update(themedCursorRect());
+}
+
+bool Editor::shouldPaintThemedCursor() const
+{
+    return m_customCursorVisible && m_themePrimaryColor.isValid();
+}
+
+QRect Editor::themedCursorRect() const
+{
+    const QRect nativeRect = cursorRect();
+    if (!nativeRect.isValid() || nativeRect.height() <= 0)
+        return QRect();
+
+    return QRect(nativeRect.x() + (nativeRect.width() - kEditorCursorWidth) / 2,
+                 nativeRect.y(),
+                 kEditorCursorWidth,
+                 nativeRect.height());
 }
 
 void Editor::setHistoryArrowNavigationEnabled(bool enabled)
@@ -1789,9 +1888,21 @@ void Editor::triggerAutoComplete()
     }
     if (!m_isAutoCompletionEnabled)
         return;
+    QWidget* focusWidget = QApplication::focusWidget();
+    if (!hasFocus()
+        && !m_completion->isVisible()
+        && focusWidget != nullptr
+        && focusWidget != this
+        && focusWidget != viewport())
+        return;
+
+    const int currentPosition = textCursor().position();
+    if (m_suppressedCompletionPosition == currentPosition
+        && m_suppressedCompletionText == text()) {
+        return;
+    }
 
     // Tokenize the expression (this is very fast).
-    const int currentPosition = textCursor().position();
     auto subtext = text().left(currentPosition);
     const bool unitContext = isInsideUnmatchedSquareBracketContext(text(), currentPosition);
     const auto tokens = scanForCompletionContext(m_evaluator, subtext, unitContext);
@@ -2200,25 +2311,23 @@ void Editor::evaluate()
 
 void Editor::paintEvent(QPaintEvent* event)
 {
+    const bool paintThemedCursor = shouldPaintThemedCursor();
+    const QRect themedCursor = paintThemedCursor ? themedCursorRect() : QRect();
+    const int savedCursorWidth = cursorWidth();
+    if (paintThemedCursor)
+        setCursorWidth(0);
+
     QPlainTextEdit::paintEvent(event);
 
-    if (!m_customCursorVisible) {
-        m_shouldPaintCustomCursor = false;
-        return;
-    }
+    if (paintThemedCursor)
+        setCursorWidth(savedCursorWidth);
 
-    if (!m_shouldPaintCustomCursor) {
-        m_shouldPaintCustomCursor = true;
+    if (!paintThemedCursor || !m_themedCursorVisible || !themedCursor.isValid())
         return;
-    }
-    m_shouldPaintCustomCursor = false;
-
-    QRect cursor = cursorRect();
-    cursor.setLeft(cursor.left() - 1);
-    cursor.setRight(cursor.right() + 1);
 
     QPainter painter(viewport());
-    painter.fillRect(cursor, m_highlighter->colorForRole(ColorScheme::Cursor));
+    painter.setPen(Qt::NoPen);
+    painter.fillRect(themedCursor, m_themePrimaryColor);
 }
 
 void Editor::historyBack()
@@ -2235,6 +2344,11 @@ void Editor::historyBack()
     setText(m_history.at(m_currentHistoryIndex).expr());
     moveCursorToEnd(this);
     ensureCursorVisible();
+}
+
+Editor* Editor::completionMouseSelectionOwner()
+{
+    return s_completionMouseSelectionOwner;
 }
 
 void Editor::historyForward()
@@ -2269,16 +2383,36 @@ void Editor::changeEvent(QEvent* event)
     QPlainTextEdit::changeEvent(event);
 }
 
+bool Editor::event(QEvent* event)
+{
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Tab && m_completion->handleEditorKeyPress(keyEvent))
+            return true;
+    }
+
+    return QPlainTextEdit::event(event);
+}
+
 void Editor::resizeEvent(QResizeEvent* event)
 {
     QPlainTextEdit::resizeEvent(event);
     updateHeightAndEnsureCursorVisible();
 }
 
+void Editor::focusInEvent(QFocusEvent* event)
+{
+    QPlainTextEdit::focusInEvent(event);
+    showThemedCursorAndRestartBlink();
+}
+
 void Editor::focusOutEvent(QFocusEvent* event)
 {
-    m_shouldPaintCustomCursor = false;
     QPlainTextEdit::focusOutEvent(event);
+    if (m_completion->isVisible())
+        showThemedCursorAndRestartBlink();
+    else
+        hideThemedCursorAndStopBlink();
 }
 
 void Editor::inputMethodEvent(QInputMethodEvent* event)
@@ -2529,6 +2663,11 @@ void Editor::inputMethodEvent(QInputMethodEvent* event)
 
 void Editor::keyPressEvent(QKeyEvent* event)
 {
+    if (m_completion->isVisible())
+        m_completionTimer->stop();
+    if (m_completion->handleEditorKeyPress(event))
+        return;
+
     int key = event->key();
     const int cursorPosition = textCursor().position();
     const bool squareBracketContext = isInsideUnmatchedSquareBracketContext(
@@ -3633,6 +3772,9 @@ void Editor::updateHeightAndEnsureCursorVisible()
 
 void Editor::wheelEvent(QWheelEvent* event)
 {
+    if (m_completion->handleEditorWheelEvent(event))
+        return;
+
     if (event->angleDelta().y() > 0)
         historyBack();
     else if (event->angleDelta().y() < 0)
@@ -3642,38 +3784,131 @@ void Editor::wheelEvent(QWheelEvent* event)
 
 void Editor::rehighlight()
 {
-    m_highlighter->update();
+    if (m_themePreviewColorScheme.has_value())
+        m_highlighter->setColorScheme(
+            ColorScheme::fromJsonObject(m_themePreviewColorScheme->toJsonObject()));
+    else
+        m_highlighter->update();
     const QColor themeBackground = m_highlighter->colorForRole(ColorScheme::Background);
-    const QColor color = editorFillColorForThemeBackground(themeBackground);
+    const QColor generatedPrimary = generatePrimaryFromBackground(themeBackground);
+    // Editors can rehighlight before MainWindow injects the resolved theme
+    // primary. Use the same generated primary fallback here so the editor's
+    // default text styling never depends on a color-scheme accent role.
+    const QColor primaryColor = m_themePrimaryColor.isValid()
+        ? m_themePrimaryColor
+        : (generatedPrimary.isValid()
+              ? generatedPrimary
+              : QApplication::palette().color(QPalette::Text));
+    const QColor color = m_themeSurfaceColor.isValid()
+        ? m_themeSurfaceColor
+        : editorFillColorForThemeBackground(themeBackground);
+    const QColor outerColor = m_themeOuterSurfaceColor.isValid()
+        ? m_themeOuterSurfaceColor
+        : color;
     const QString colorName = color.name();
+    const QString primaryColorName = primaryColor.name();
+    const QString borderColorName = m_usePrimaryOutline
+        ? primaryColorName
+        : QStringLiteral("transparent");
     QPalette pal = palette();
-    pal.setColor(QPalette::Active, QPalette::Base, color);
-    pal.setColor(QPalette::Inactive, QPalette::Base, color);
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        pal.setColor(group, QPalette::Base, color);
+        pal.setColor(group, QPalette::Window, outerColor);
+        pal.setColor(group, QPalette::Text, primaryColor);
+    }
     setPalette(pal);
+    setAutoFillBackground(false);
+    setAttribute(Qt::WA_StyledBackground, true);
+
+    QPalette viewportPalette = viewport()->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        viewportPalette.setColor(group, QPalette::Base, color);
+        viewportPalette.setColor(group, QPalette::Window, color);
+        viewportPalette.setColor(group, QPalette::Text, primaryColor);
+    }
+    viewport()->setPalette(viewportPalette);
+    viewport()->setAutoFillBackground(false);
+    viewport()->setAttribute(Qt::WA_StyledBackground, true);
     setStyleSheet(QStringLiteral(R"(
         QPlainTextEdit {
             background-color: %1;
-            border: 1px solid %2;
-            border-radius: %3px;
-            margin: %4px %5px %6px %7px;
-            padding: %8px %9px;
+            color: %2;
+            border: %11px solid %3;
+            border-radius: %4px;
+            margin: %5px %6px %7px %8px;
+            padding: %9px %10px;
         }
     )").arg(colorName,
-            editorBorderColor(color).name())
+            primaryColorName,
+            borderColorName)
        .arg(kEditorRadius)
        .arg(kEditorOuterTop)
        .arg(kEditorOuterRight)
        .arg(kEditorOuterBottom)
        .arg(kEditorOuterLeft)
        .arg(kEditorVerticalPadding)
-       .arg(kEditorHorizontalPadding));
+       .arg(kEditorHorizontalPadding)
+       .arg(UiConfig::OutlineStrokeWidth));
+    setPalette(pal);
+    document()->setDocumentMargin(0);
     viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
-    if (auto* shadow = qobject_cast<QGraphicsDropShadowEffect*>(graphicsEffect())) {
-        QColor shadowColor(Qt::black);
-        shadowColor.setAlpha(color.lightnessF() >= 0.5 ? 55 : 120);
-        shadow->setColor(shadowColor);
-    }
+    viewport()->setPalette(viewportPalette);
+    clearMask();
     m_highlighter->rehighlight();
+}
+
+void Editor::setThemeSurfaceColor(const QColor& color, const QColor& outerColor)
+{
+    m_themeSurfaceColor = color;
+    m_themeOuterSurfaceColor = outerColor;
+}
+
+void Editor::setThemePrimaryColor(const QColor& color, bool usePrimaryOutline)
+{
+    m_themePrimaryColor = color;
+    m_usePrimaryOutline = usePrimaryOutline;
+    rehighlight();
+    if (shouldPaintThemedCursor())
+        showThemedCursorAndRestartBlink();
+    else
+        hideThemedCursorAndStopBlink();
+}
+
+void Editor::setThemeCompletionColors(const QColor& background,
+                                      const QColor& foreground,
+                                      const QColor& scrollbarThumb,
+                                      const QColor& scrollbarThumbForeground,
+                                      const QColor& selectedRow,
+                                      const QColor& selectedRowForeground,
+                                      const QColor& outline,
+                                      int cornerRadius)
+{
+    m_completionBackgroundColor = background;
+    m_completionForegroundColor = foreground;
+    m_completionScrollbarThumbColor = scrollbarThumb;
+    m_completionScrollbarThumbForegroundColor = scrollbarThumbForeground;
+    m_completionSelectedRowColor = selectedRow;
+    m_completionSelectedRowForegroundColor = selectedRowForeground;
+    m_completionOutlineColor = outline;
+    m_completionCornerRadius = cornerRadius;
+    m_completion->setThemeColors(background,
+                                 foreground,
+                                 scrollbarThumb,
+                                 scrollbarThumbForeground,
+                                 selectedRow,
+                                 selectedRowForeground,
+                                 outline,
+                                 cornerRadius);
+}
+
+void Editor::setThemePreviewColorScheme(const ColorScheme& scheme)
+{
+    m_themePreviewColorScheme = ColorScheme::fromJsonObject(scheme.toJsonObject());
+    rehighlight();
 }
 
 void Editor::updateHistory()
@@ -3752,7 +3987,8 @@ EditorCompletion::EditorCompletion(Editor* editor)
 {
     m_editor = editor;
 
-    m_popup = new QTreeWidget();
+    m_popup = new EditorCompletionPopup();
+    m_popup->setObjectName(QStringLiteral("editorCompletionPopup"));
     m_popup->setFrameShape(QFrame::NoFrame);
     m_popup->setColumnCount(3);
     m_popup->setRootIsDecorated(false);
@@ -3763,81 +3999,318 @@ EditorCompletion::EditorCompletion(Editor* editor)
     m_popup->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_popup->setMouseTracking(true);
     m_popup->installEventFilter(this);
-
-    connect(m_popup, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
-            SLOT(doneCompletion()));
+    m_popup->viewport()->installEventFilter(this);
+    qApp->installEventFilter(this);
 
     m_popup->hide();
-    m_popup->setParent(editor->window(), Qt::Popup);
+    m_popup->setParent(editor->window(), Qt::Tool | Qt::FramelessWindowHint);
+    m_popup->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+    m_popup->setAutoFillBackground(true);
+    m_popup->setAttribute(Qt::WA_TranslucentBackground, false);
+    m_popup->setAttribute(Qt::WA_ShowWithoutActivating, true);
+    m_popup->setAttribute(Qt::WA_NoMouseReplay, true);
     m_popup->setFocusPolicy(Qt::NoFocus);
-    m_popup->setFocusProxy(editor);
-    m_popup->setFrameStyle(QFrame::Box | QFrame::Plain);
+    m_popup->setFrameStyle(QFrame::NoFrame);
 }
 
 EditorCompletion::~EditorCompletion()
 {
+    qApp->removeEventFilter(this);
     // Popup ownership is handled by Qt parent-child deletion (its parent is
     // the window). Deleting it manually here can double-delete during shutdown.
 }
 
+void EditorCompletion::setThemeColors(const QColor& background,
+                                      const QColor& foreground,
+                                      const QColor& scrollbarThumb,
+                                      const QColor& scrollbarThumbForeground,
+                                      const QColor& selectedRow,
+                                      const QColor& selectedRowForeground,
+                                      const QColor& outline,
+                                      int cornerRadius)
+{
+    m_backgroundColor = background;
+    m_foregroundColor = foreground;
+    m_scrollbarThumbColor = scrollbarThumb;
+    m_scrollbarThumbForegroundColor = scrollbarThumbForeground;
+    m_selectedRowColor = selectedRow;
+    m_selectedRowForegroundColor = selectedRowForeground;
+    m_outlineColor = outline;
+    m_cornerRadius = cornerRadius;
+    applyThemeColors();
+}
+
+void EditorCompletion::applyThemeColors()
+{
+    if (!m_backgroundColor.isValid() || !m_foregroundColor.isValid())
+        return;
+
+    const QColor scrollbarThumb = m_scrollbarThumbColor.isValid()
+        ? m_scrollbarThumbColor
+        : m_backgroundColor;
+    const QColor scrollbarThumbForeground = m_scrollbarThumbForegroundColor.isValid()
+        ? m_scrollbarThumbForegroundColor
+        : m_foregroundColor;
+    const QColor selectedRow = m_selectedRowColor.isValid()
+        ? m_selectedRowColor
+        : scrollbarThumb;
+    const QColor selectedRowForeground = m_selectedRowForegroundColor.isValid()
+        ? m_selectedRowForegroundColor
+        : scrollbarThumbForeground;
+    const QColor outline = m_outlineColor.isValid()
+        ? m_outlineColor
+        : m_backgroundColor;
+    const int cornerRadius = qMax(0, m_cornerRadius);
+
+    QPalette palette = m_popup->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        palette.setColor(group, QPalette::Base, m_backgroundColor);
+        palette.setColor(group, QPalette::Window, m_backgroundColor);
+        palette.setColor(group, QPalette::Text, m_foregroundColor);
+        palette.setColor(group, QPalette::WindowText, m_foregroundColor);
+        palette.setColor(group, QPalette::Highlight, selectedRow);
+        palette.setColor(group, QPalette::HighlightedText, selectedRowForeground);
+    }
+    m_popup->setPalette(palette);
+    m_popup->viewport()->setPalette(palette);
+    m_popup->viewport()->setAutoFillBackground(true);
+    m_popup->setCursor(Qt::PointingHandCursor);
+    m_popup->viewport()->setCursor(Qt::PointingHandCursor);
+
+    m_popup->setStyleSheet(QStringLiteral(
+        "QTreeWidget {"
+        " background: %1; color: %2;"
+        " selection-background-color: %3; selection-color: %4;"
+        " border: %8px solid %6;"
+        " border-radius: %7px;"
+        "}"
+        "QTreeWidget::item:selected {"
+        " background: %3; color: %4;"
+        "}"
+        "QScrollBar:vertical {"
+        " background: %1; border: 0; margin: 0; width: 10px;"
+        "}"
+        "QScrollBar::handle:vertical {"
+        " background: %5; border: 0; border-radius: 4px; min-height: 20px;"
+        "}"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
+        " background: %1; border: 0; width: 0; height: 0;"
+        "}"
+        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {"
+        " background: %1;"
+        "}")
+        .arg(m_backgroundColor.name(),
+             m_foregroundColor.name(),
+             selectedRow.name(),
+             selectedRowForeground.name(),
+             scrollbarThumb.name(),
+             outline.name())
+        .arg(cornerRadius)
+        .arg(UiConfig::OutlineStrokeWidth));
+}
+
+void EditorCompletion::restoreEditorFocus()
+{
+    m_editor->window()->activateWindow();
+    m_editor->setFocus(Qt::OtherFocusReason);
+    QTimer::singleShot(0, m_editor, [editor = m_editor]() {
+        editor->window()->activateWindow();
+        editor->setFocus(Qt::OtherFocusReason);
+        editor->viewport()->setFocus(Qt::OtherFocusReason);
+    });
+}
+
 bool EditorCompletion::eventFilter(QObject* object, QEvent* event)
 {
-    if (object != m_popup)
-        return false;
-
-    if (event->type() == QEvent::KeyPress) {
-        int key = static_cast<QKeyEvent*>(event)->key();
-
-        switch (key) {
-        case Qt::Key_Enter:
-        case Qt::Key_Return:
-            if (m_popupInteracted) {
-                doneCompletion();
+    if (m_popup->isVisible() && event->type() == QEvent::Wheel) {
+        QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
+        const bool wheelInsidePopup = object == m_popup
+            || object == m_popup->viewport()
+            || (object != nullptr && m_popup->isAncestorOf(qobject_cast<QWidget*>(object)))
+            || m_popup->rect().contains(m_popup->mapFromGlobal(wheelEvent->globalPosition().toPoint()));
+        if (wheelInsidePopup) {
+            const int delta = wheelEvent->angleDelta().y() != 0
+                ? wheelEvent->angleDelta().y()
+                : wheelEvent->pixelDelta().y();
+            if (delta != 0) {
+                QScrollBar* scrollBar = m_popup->verticalScrollBar();
+                scrollBar->setValue(scrollBar->value() - delta / 8);
                 return true;
             }
-
-            m_popup->hide();
-            m_editor->setFocus();
-            QMetaObject::invokeMethod(m_editor, "triggerEnter", Qt::DirectConnection);
-            return true;
-
-        case Qt::Key_Tab:
-            doneCompletion();
-            return true;
-
-        case Qt::Key_Up:
-        case Qt::Key_Down:
-        case Qt::Key_Home:
-        case Qt::Key_End:
-        case Qt::Key_PageUp:
-        case Qt::Key_PageDown:
-            m_popupInteracted = true;
-            return false;
-
-        default:
-            m_popup->hide();
-            m_editor->setFocus();
-            if (key != Qt::Key_Escape)
-                QApplication::sendEvent(m_editor, event);
-            return true;
         }
     }
 
-    if (event->type() == QEvent::MouseButtonPress) {
-        m_popup->hide();
-        m_editor->setFocus();
+    if (m_popup->isVisible() && event->type() == QEvent::MouseButtonPress) {
+        const QPoint globalPosition =
+            static_cast<QMouseEvent*>(event)->globalPosition().toPoint();
+        if (!m_popup->rect().contains(m_popup->mapFromGlobal(globalPosition))) {
+            m_editor->m_completionTimer->stop();
+            m_editor->m_suppressedCompletionText = m_editor->text();
+            m_editor->m_suppressedCompletionPosition = m_editor->textCursor().position();
+            m_popup->hide();
+            if (!m_editor->hasFocus())
+                m_editor->hideThemedCursorAndStopBlink();
+            return false;
+        }
+    }
+
+    if (object != m_popup && object != m_popup->viewport())
+        return false;
+
+    if (object == m_popup && event->type() == QEvent::Hide) {
+        m_editor->m_completionTimer->stop();
+        m_editor->m_suppressedCompletionText = m_editor->text();
+        m_editor->m_suppressedCompletionPosition = m_editor->textCursor().position();
+        if (!m_editor->hasFocus())
+            m_editor->hideThemedCursorAndStopBlink();
+        return false;
+    }
+
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        if (handleCompletionKey(keyEvent))
+            return true;
+        QApplication::sendEvent(m_editor, keyEvent);
         return true;
+    }
+
+    if (event->type() == QEvent::MouseButtonRelease && object == m_popup->viewport()) {
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+        if (QTreeWidgetItem* item = m_popup->itemAt(mouseEvent->position().toPoint())) {
+            s_completionMouseSelectionOwner = m_editor;
+            QTimer::singleShot(250, m_editor, [editor = m_editor]() {
+                if (s_completionMouseSelectionOwner == editor)
+                    s_completionMouseSelectionOwner = nullptr;
+            });
+            m_popup->setCurrentItem(item);
+            doneCompletion();
+            return true;
+        }
     }
 
     return false;
 }
 
+bool EditorCompletion::isVisible() const
+{
+    return m_popup->isVisible();
+}
+
+bool EditorCompletion::handleEditorKeyPress(QKeyEvent* event)
+{
+    if (!isVisible())
+        return false;
+
+    const int key = event->key();
+    if (key == Qt::Key_Escape
+        || key == Qt::Key_Enter
+        || key == Qt::Key_Return
+        || key == Qt::Key_Tab
+        || key == Qt::Key_Up
+        || key == Qt::Key_Down
+        || key == Qt::Key_Home
+        || key == Qt::Key_End
+        || key == Qt::Key_PageUp
+        || key == Qt::Key_PageDown) {
+        return handleCompletionKey(event);
+    }
+
+    m_popup->hide();
+    return false;
+}
+
+bool EditorCompletion::handleEditorWheelEvent(QWheelEvent* event)
+{
+    if (!m_popup->isVisible())
+        return false;
+
+    const int delta = event->angleDelta().y() != 0
+        ? event->angleDelta().y()
+        : event->pixelDelta().y();
+    if (delta == 0)
+        return false;
+
+    QScrollBar* scrollBar = m_popup->verticalScrollBar();
+    scrollBar->setValue(scrollBar->value() - delta / 8);
+    event->accept();
+    return true;
+}
+
+bool EditorCompletion::handleCompletionKey(QKeyEvent* event)
+{
+    m_editor->m_completionTimer->stop();
+    const int key = event->key();
+
+    switch (key) {
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+        if (m_popupInteracted) {
+            doneCompletion();
+            return true;
+        }
+
+        m_popup->hide();
+        m_editor->setFocus();
+        QMetaObject::invokeMethod(m_editor, "triggerEnter", Qt::DirectConnection);
+        return true;
+
+    case Qt::Key_Tab:
+        doneCompletion();
+        return true;
+
+    case Qt::Key_Escape:
+        m_editor->m_suppressedCompletionText = m_editor->text();
+        m_editor->m_suppressedCompletionPosition = m_editor->textCursor().position();
+        m_popup->hide();
+        restoreEditorFocus();
+        return true;
+
+    case Qt::Key_Up:
+    case Qt::Key_Down:
+    case Qt::Key_Home:
+    case Qt::Key_End:
+    case Qt::Key_PageUp:
+    case Qt::Key_PageDown:
+        m_popupInteracted = true;
+        if (m_popup->topLevelItemCount() > 0) {
+            const int currentRow = qMax(0, m_popup->indexOfTopLevelItem(m_popup->currentItem()));
+            const int pageStep = qMax(1, m_popup->height() / qMax(1, m_popup->sizeHintForRow(0)));
+            int targetRow = currentRow;
+            if (key == Qt::Key_Up)
+                targetRow = currentRow - 1;
+            else if (key == Qt::Key_Down)
+                targetRow = currentRow + 1;
+            else if (key == Qt::Key_Home)
+                targetRow = 0;
+            else if (key == Qt::Key_End)
+                targetRow = m_popup->topLevelItemCount() - 1;
+            else if (key == Qt::Key_PageUp)
+                targetRow = currentRow - pageStep;
+            else if (key == Qt::Key_PageDown)
+                targetRow = currentRow + pageStep;
+            targetRow = qBound(0, targetRow, m_popup->topLevelItemCount() - 1);
+            m_popup->setCurrentItem(m_popup->topLevelItem(targetRow));
+            m_popup->scrollToItem(m_popup->currentItem());
+        }
+        return true;
+
+    default:
+        m_editor->m_suppressedCompletionText = m_editor->text();
+        m_editor->m_suppressedCompletionPosition = m_editor->textCursor().position();
+        m_popup->hide();
+        m_editor->setFocus();
+        return false;
+    }
+}
+
 void EditorCompletion::doneCompletion()
 {
     m_popup->hide();
-    m_editor->setFocus();
     QTreeWidgetItem* item = m_popup->currentItem();
     emit selectedCompletion(item ? item->text(1) : QString());
+    restoreEditorFocus();
 }
 
 void EditorCompletion::showCompletion(const QStringList& choices)
@@ -3845,6 +4318,7 @@ void EditorCompletion::showCompletion(const QStringList& choices)
     if (!choices.count())
         return;
     m_popupInteracted = false;
+    applyThemeColors();
 
     QFontMetrics metrics(m_editor->font());
 
@@ -3933,8 +4407,23 @@ void EditorCompletion::showCompletion(const QStringList& choices)
 
     m_popup->setUpdatesEnabled(true);
     m_popup->setGeometry(QRect(position, QSize(width, height)));
+    if (m_cornerRadius > 0) {
+        QBitmap mask(m_popup->size());
+        mask.fill(Qt::color0);
+        QPainter painter(&mask);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(Qt::color1);
+        painter.drawRoundedRect(QRectF(mask.rect()).adjusted(0, 0, -1, -1),
+                                m_cornerRadius,
+                                m_cornerRadius);
+        m_popup->setMask(mask);
+    } else {
+        m_popup->clearMask();
+    }
+    m_popup->verticalScrollBar()->setValue(m_popup->verticalScrollBar()->minimum());
     m_popup->show();
-    m_popup->setFocus();
+    m_editor->setFocus();
 }
 
 void EditorCompletion::selectItem(const QString& item)

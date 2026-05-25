@@ -36,11 +36,14 @@
 #include "gui/manualwindow.h"
 #include "gui/numberformatdialog.h"
 #include "gui/notationandprecisiondialog.h"
+#include "gui/oklchutils.h"
 #include "gui/splittertreeutils.h"
 #include "core/manualserver.h"
 #include "gui/resultdisplay.h"
 #include "gui/resultlineformatutils.h"
 #include "gui/syntaxhighlighter.h"
+#include "gui/themedlineedit.h"
+#include "gui/uiconfig.h"
 #include "math/cmath.h"
 #include "math/floatnum/floatconfig.h"
 #include "core/mathdsl.h"
@@ -54,11 +57,16 @@
 #include <QUrl>
 #include <QAction>
 #include <QActionGroup>
+#include <QAbstractButton>
+#include <QAbstractItemView>
+#include <QAbstractScrollArea>
 #include <QApplication>
 #include <QClipboard>
 #include <QCloseEvent>
 #include <QCheckBox>
 #include <QContextMenuEvent>
+#include <QCoreApplication>
+#include <QCursor>
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QDialog>
@@ -77,6 +85,8 @@
 #include <QFontDialog>
 #include <QGridLayout>
 #include <QGroupBox>
+#include <QHeaderView>
+#include <QImage>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
@@ -91,6 +101,7 @@
 #include <QMutexLocker>
 #include <QPainter>
 #include <QPlainTextEdit>
+#include <QPixmap>
 #include <QPointer>
 #include <QDropEvent>
 #include <QPushButton>
@@ -109,6 +120,7 @@
 #include <QTabBar>
 #include <QToolButton>
 #include <QToolTip>
+#include <QTreeWidget>
 #include <QThread>
 #include <QVBoxLayout>
 #include <QWidgetAction>
@@ -676,10 +688,8 @@ QString colorSchemeRoleLabel(ColorScheme::Role role)
     case ColorScheme::Function: return QStringLiteral("function");
     case ColorScheme::Operator: return QStringLiteral("operator");
     case ColorScheme::Variable: return QStringLiteral("variable");
-    case ColorScheme::ScrollBar: return QStringLiteral("scrollbar");
     case ColorScheme::Separator: return QStringLiteral("separator");
     case ColorScheme::Background: return QStringLiteral("background");
-    case ColorScheme::EditorBackground: return QStringLiteral("editorbackground");
     }
     return QString();
 }
@@ -709,52 +719,660 @@ enum class ColorSchemeFilter {
 bool colorSchemeMatchesFilter(const ColorScheme& scheme, ColorSchemeFilter filter)
 {
     const QColor background = scheme.colorForRole(ColorScheme::Background);
-    const int brightness = qRound(0.299 * background.red()
-        + 0.587 * background.green()
-        + 0.114 * background.blue());
+    const ThemePolarity polarity = themePolarityForBackground(background);
 
-    return filter == ColorSchemeFilter::Dark ? brightness < 128 : brightness >= 128;
+    return filter == ColorSchemeFilter::Dark
+        ? polarity == ThemePolarity::Dark
+        : polarity == ThemePolarity::Light;
 }
 
-QColor splitterHandleColorForScheme(const QString& colorSchemeName)
+ColorScheme activeColorScheme(const Settings* settings)
 {
-    const ColorScheme scheme = ColorScheme::loadByName(colorSchemeName);
-    const QColor background = scheme.isValid()
+    if (settings && settings->colorScheme == QLatin1String("Custom")) {
+        const QJsonDocument doc = QJsonDocument::fromJson(settings->customColorSchemeJson.toUtf8());
+        const ColorScheme custom(doc);
+        if (custom.isValid())
+            return custom;
+    }
+
+    const ColorScheme named = ColorScheme::loadByName(settings ? settings->colorScheme : QString());
+    if (named.isValid())
+        return named;
+    return ColorScheme::loadByName(QStringLiteral("Terminal"));
+}
+
+struct ThemeSurfaceColors
+{
+    QColor background;
+    QColor foreground;
+};
+
+struct ThemeScrollBarColors
+{
+    QColor track;
+    QColor thumb;
+    QColor hoverThumb;
+    QColor pressedThumb;
+};
+
+constexpr int kThemeGeneratedShadeCount = UiConfig::Shade600 + 1;
+constexpr int kDockListHorizontalPadding = 8;
+constexpr int kDockListVerticalPadding = 6;
+
+struct GeneratedThemeSurfaces
+{
+    QColor base;
+    ThemeSurfaceColors primary;
+    ThemePolarity polarity;
+    QVector<QColor> backgrounds;
+    QVector<QColor> foregrounds;
+    // 100: outer window chrome, including tab-row empty space, dock padding,
+    // status bar, and the keypad container.
+    ThemeSurfaceColors window;
+    // 200: result display and active session surface. This is the background
+    // role from the selected SpeedCrunch theme.
+    ThemeSurfaceColors result;
+    // 300: expression editor, dock list/table content, combo popup fill,
+    // bitfield, and normal keypad buttons. The editor no longer has an
+    // independent theme role; it is derived from the result-display background
+    // by moving one OKLCH shade step away from the base surface.
+    ThemeSurfaceColors editorAndLists;
+    // 400: dock title bars, dock/list/table headers, list/table hovered
+    // items, active dock tabs, popup/input borders, and hovered keypad or
+    // bitfield buttons.
+    ThemeSurfaceColors headersAndBorders;
+    // 500: input controls, search boxes, combo boxes, and pressed keypad or
+    // bitfield buttons.
+    ThemeSurfaceColors inputs;
+    // 600: inactive tabs.
+    ThemeSurfaceColors hoverAndInactiveTabs;
+};
+
+GeneratedThemeSurfaces generatedSurfaceColorsForScheme(const ColorScheme& scheme)
+{
+    const QColor base = scheme.isValid()
         ? scheme.colorForRole(ColorScheme::Background)
         : QApplication::palette().color(QPalette::Base);
-    const int factor = 200;
-    return background.lightnessF() >= 0.5
-        ? background.darker(factor)
-        : background.lighter(factor);
+    // The generated primary enters the app theme pipeline here, where
+    // configured theme colors are resolved into concrete UI roles. It
+    // intentionally has no color-scheme role: every theme gets a readable
+    // accent that is perceptually derived from its background while unrelated
+    // roles continue to come from the scheme or surface generator.
+    const QColor generatedPrimary = generatePrimaryFromBackground(base);
+    const QColor primary = generatedPrimary.isValid()
+        ? generatedPrimary
+        : QApplication::palette().color(QPalette::Text);
+    const ThemePolarity polarity = themePolarityForBackground(base);
+    const QVector<QColor> shades = generateOklchShades(base,
+                                                       kThemeGeneratedShadeCount,
+                                                       polarity);
+    const QVector<QColor> foregrounds = aaForegroundsForBackgrounds(shades);
+    const QColor fallbackForeground = aaForegroundForBackground(base);
+    const auto surface = [&](int index) {
+        return ThemeSurfaceColors {
+            shades.value(index, base),
+            foregrounds.value(index, fallbackForeground)
+        };
+    };
+    return {
+        base,
+        ThemeSurfaceColors { primary, aaForegroundForBackground(primary) },
+        polarity,
+        shades,
+        foregrounds,
+        surface(UiConfig::KeypadBackgroundShade),
+        surface(UiConfig::ResultDisplayShade),
+        surface(UiConfig::DockBackgroundShade),
+        surface(UiConfig::DockHeaderShade),
+        surface(UiConfig::DockUnfocusedSelectedItemShade),
+        surface(UiConfig::Shade600)
+    };
 }
 
-QColor themeBackgroundColorForScheme(const QString& colorSchemeName)
+GeneratedThemeSurfaces generatedSurfaceColors(const Settings* settings)
 {
-    const ColorScheme scheme = ColorScheme::loadByName(colorSchemeName);
-    return scheme.isValid()
-        ? scheme.colorForRole(ColorScheme::Background)
+    return generatedSurfaceColorsForScheme(activeColorScheme(settings));
+}
+
+QPalette paletteForThemeSurface(const QPalette& inherited, const ThemeSurfaceColors& surface)
+{
+    QPalette palette = inherited;
+    palette.setColor(QPalette::Window, surface.background);
+    palette.setColor(QPalette::WindowText, surface.foreground);
+    palette.setColor(QPalette::Base, surface.background);
+    palette.setColor(QPalette::Text, surface.foreground);
+    palette.setColor(QPalette::Button, surface.background);
+    palette.setColor(QPalette::ButtonText, surface.foreground);
+    return palette;
+}
+
+ThemeSurfaceColors themeSurfaceForShadeIndex(const GeneratedThemeSurfaces& surfaces, int shadeIndex)
+{
+    const QColor fallbackBackground = surfaces.base.isValid()
+        ? surfaces.base
         : QApplication::palette().color(QPalette::Base);
+    const QColor fallbackForeground = aaForegroundForBackground(fallbackBackground);
+    return {
+        surfaces.backgrounds.value(shadeIndex, fallbackBackground),
+        surfaces.foregrounds.value(shadeIndex, fallbackForeground)
+    };
 }
 
-QColor editorFillColorForThemeBackground(const QColor& background)
+ThemeScrollBarColors scrollBarColorsForSurfaceIndex(const GeneratedThemeSurfaces& surfaces, int surfaceIndex)
 {
-    const int factor = 115;
-    return background.lightnessF() < 0.5
-        ? background.lighter(factor)
-        : background.darker(factor);
+    const auto colorAt = [&surfaces](int index) {
+        return surfaces.backgrounds.value(qBound(0, index, surfaces.backgrounds.size() - 1));
+    };
+    return {
+        colorAt(surfaceIndex),
+        colorAt(surfaceIndex + 1),
+        colorAt(surfaceIndex + 2),
+        colorAt(surfaceIndex + 3)
+    };
 }
 
-void applyThemeBackgroundRoleToWidget(QWidget* widget, const QString& colorSchemeName)
+QString scrollBarStyleSheet(const ThemeScrollBarColors& colors)
+{
+    return QStringLiteral(
+        "QScrollBar:vertical {"
+        " background: %1; border: 0; margin: 0; width: 10px;"
+        "}"
+        "QScrollBar:horizontal {"
+        " background: %1; border: 0; margin: 0; height: 10px;"
+        "}"
+        "QScrollBar::handle:vertical, QScrollBar::handle:horizontal {"
+        " background: %2; border: 0; border-radius: 4px; min-height: 20px; min-width: 20px;"
+        "}"
+        "QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover {"
+        " background: %3;"
+        "}"
+        "QScrollBar::handle:vertical:pressed, QScrollBar::handle:horizontal:pressed {"
+        " background: %4;"
+        "}"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,"
+        "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {"
+        " background: %1; border: 0; width: 0; height: 0;"
+        "}"
+        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical,"
+        "QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {"
+        " background: %1;"
+        "}")
+        .arg(colors.track.name(),
+             colors.thumb.name(),
+             colors.hoverThumb.name(),
+             colors.pressedThumb.name());
+}
+
+void applyMenuSurface(QMenu* menu,
+                      const ThemeSurfaceColors& surface,
+                      const ThemeSurfaceColors& selectedSurface,
+                      QSet<QMenu*>* visitedMenus)
+{
+    if (menu == nullptr)
+        return;
+    if (visitedMenus != nullptr) {
+        if (visitedMenus->contains(menu))
+            return;
+        visitedMenus->insert(menu);
+    }
+
+    QPalette palette = menu->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        palette.setColor(group, QPalette::Window, surface.background);
+        palette.setColor(group, QPalette::Base, surface.background);
+        palette.setColor(group, QPalette::Text, surface.foreground);
+        palette.setColor(group, QPalette::WindowText, surface.foreground);
+        palette.setColor(group, QPalette::ButtonText, surface.foreground);
+        palette.setColor(group, QPalette::Highlight, selectedSurface.background);
+        palette.setColor(group, QPalette::HighlightedText, selectedSurface.foreground);
+    }
+    menu->setPalette(palette);
+    menu->setStyleSheet(QStringLiteral(
+        "QMenu {"
+        " background-color: %1; color: %2;"
+        " border: 1px solid %3; border-radius: 8px;"
+        "}"
+        "QMenu::item:selected {"
+        " background-color: %4; color: %5;"
+        "}")
+                            .arg(surface.background.name(),
+                                 surface.foreground.name(),
+                                 selectedSurface.background.name(),
+                                 selectedSurface.background.name(),
+                                 selectedSurface.foreground.name()));
+
+    for (QAction* action : menu->actions()) {
+        if (QMenu* submenu = action->menu())
+            applyMenuSurface(submenu, surface, selectedSurface, visitedMenus);
+    }
+}
+
+void applyMenuSurface(QMenu* menu,
+                      const ThemeSurfaceColors& surface,
+                      const ThemeSurfaceColors& selectedSurface)
+{
+    QSet<QMenu*> visitedMenus;
+    applyMenuSurface(menu, surface, selectedSurface, &visitedMenus);
+}
+
+void applyScrollBarColorsToScrollArea(QAbstractScrollArea* area, const ThemeScrollBarColors& colors)
+{
+    if (area == nullptr)
+        return;
+
+    const QString styleSheet = scrollBarStyleSheet(colors);
+    if (QScrollBar* bar = area->verticalScrollBar())
+        bar->setStyleSheet(styleSheet);
+    if (QScrollBar* bar = area->horizontalScrollBar())
+        bar->setStyleSheet(styleSheet);
+}
+
+QIcon dockTitleButtonIcon(bool isCloseButton, const QColor& foreground)
+{
+    QPixmap pixmap(12, 12);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(QPen(foreground, 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    if (isCloseButton) {
+        painter.drawLine(QPointF(3, 3), QPointF(9, 9));
+        painter.drawLine(QPointF(9, 3), QPointF(3, 9));
+    } else {
+        painter.drawRect(QRectF(3, 3, 6, 6));
+    }
+    return QIcon(pixmap);
+}
+
+void applySurfaceToLabel(QLabel* label, const ThemeSurfaceColors& surface)
+{
+    if (label == nullptr)
+        return;
+
+    label->setPalette(paletteForThemeSurface(label->palette(), surface));
+    label->setStyleSheet(QStringLiteral(
+        "QLabel { background-color: %1; color: %2; }")
+                             .arg(surface.background.name(),
+                                  surface.foreground.name()));
+}
+
+void applyNoMatchLabelSurface(QAbstractItemView* view, const ThemeSurfaceColors& surface)
+{
+    if (view == nullptr || view->viewport() == nullptr)
+        return;
+
+    for (QLabel* label : view->viewport()->findChildren<QLabel*>(QString(), Qt::FindDirectChildrenOnly)) {
+        if (!label->property("dockListNoMatchLabel").toBool())
+            continue;
+        applySurfaceToLabel(label, surface);
+        label->setStyleSheet(QStringLiteral("QLabel { background: transparent; color: %1; }")
+                                 .arg(surface.foreground.name()));
+    }
+}
+
+bool isStructuralDockBackgroundWidget(QWidget* widget)
+{
+    if (widget == nullptr)
+        return false;
+    if (qobject_cast<QAbstractButton*>(widget)
+        || qobject_cast<QAbstractScrollArea*>(widget)
+        || qobject_cast<QComboBox*>(widget)
+        || qobject_cast<QHeaderView*>(widget)
+        || qobject_cast<QLabel*>(widget)
+        || qobject_cast<QLineEdit*>(widget)
+        || qobject_cast<QMenu*>(widget)) {
+        return false;
+    }
+    if (qobject_cast<QAbstractScrollArea*>(widget->parentWidget()))
+        return false;
+    return true;
+}
+
+void applySurfaceToStructuralDockWidget(QWidget* widget, const ThemeSurfaceColors& surface)
+{
+    if (!isStructuralDockBackgroundWidget(widget))
+        return;
+
+    widget->setPalette(paletteForThemeSurface(widget->palette(), surface));
+    widget->setAutoFillBackground(true);
+    widget->setAttribute(Qt::WA_StyledBackground, true);
+    widget->setStyleSheet(QStringLiteral("background-color: %1; color: %2;")
+                              .arg(surface.background.name(),
+                                   surface.foreground.name()));
+}
+
+void applySurfaceToContainingRow(QWidget* root, QWidget* item, const ThemeSurfaceColors& surface)
+{
+    if (root == nullptr || item == nullptr)
+        return;
+
+    QList<QWidget*> candidates = root->findChildren<QWidget*>();
+    candidates.prepend(root);
+    for (QWidget* candidate : candidates) {
+        QLayout* layout = candidate->layout();
+        if (layout == nullptr || layout->indexOf(item) < 0)
+            continue;
+
+        applySurfaceToStructuralDockWidget(candidate, surface);
+        for (int index = 0; index < layout->count(); ++index) {
+            applySurfaceToLabel(qobject_cast<QLabel*>(layout->itemAt(index)->widget()), surface);
+        }
+        return;
+    }
+}
+
+bool isComboBoxPopupView(const QAbstractItemView* view, const QList<QComboBox*>& comboBoxes)
+{
+    for (const QComboBox* comboBox : comboBoxes) {
+        if (comboBox->view() == view || comboBox->isAncestorOf(view))
+            return true;
+    }
+    return false;
+}
+
+void applyGeneratedDockChromeSurfaces(QDockWidget* dock, const GeneratedThemeSurfaces& surfaces)
+{
+    if (dock == nullptr)
+        return;
+
+    dock->setPalette(paletteForThemeSurface(dock->palette(), surfaces.headersAndBorders));
+    dock->setStyleSheet(QStringLiteral(
+        "QDockWidget {"
+        " color: %2;"
+        "}"
+        "QDockWidget::title {"
+        " background-color: %1; color: %2; padding: 5px 4px;"
+        "}"
+        "QDockWidget::close-button, QDockWidget::float-button {"
+        " background-color: %3; color: %4;"
+        " border: 1px solid %1; border-radius: 8px; padding: 2px;"
+        "}")
+                            .arg(surfaces.headersAndBorders.background.name(),
+                                 surfaces.headersAndBorders.foreground.name(),
+                                 surfaces.inputs.background.name(),
+                                 surfaces.inputs.foreground.name()));
+    dock->style()->unpolish(dock);
+    dock->style()->polish(dock);
+    dock->setWindowTitle(dock->windowTitle());
+    dock->update();
+    for (QAbstractButton* button : dock->findChildren<QAbstractButton*>()) {
+        const bool closeButton = button->objectName() == QLatin1String("qt_dockwidget_closebutton");
+        const bool floatButton = button->objectName() == QLatin1String("qt_dockwidget_floatbutton");
+        if (!closeButton && !floatButton)
+            continue;
+        button->setPalette(paletteForThemeSurface(button->palette(), surfaces.inputs));
+        button->setIcon(dockTitleButtonIcon(closeButton, surfaces.inputs.foreground));
+    }
+}
+
+void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, const GeneratedThemeSurfaces& surfaces)
+{
+    QWidget* dockContent = dock->widget();
+    if (dockContent == nullptr)
+        return;
+
+    const ThemeSurfaceColors dockBackground =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::DockBackgroundShade);
+    const ThemeSurfaceColors dockHeader =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::DockHeaderShade);
+    const ThemeSurfaceColors dockHoveredItem =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::DockHoveredItemShade);
+    const ThemeSurfaceColors dockTextInput =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::DockTextInputShade);
+    const ThemeSurfaceColors dockTextInputOutline =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::DockTextInputOutlineShade);
+    const ThemeSurfaceColors dockUnfocusedSelection =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::DockUnfocusedSelectedItemShade);
+    BitFieldWidget* bitField = qobject_cast<BitFieldWidget*>(dockContent);
+    const QList<QComboBox*> comboBoxes = dockContent->findChildren<QComboBox*>();
+    bool hasListOrTable = false;
+    for (QAbstractItemView* view : dockContent->findChildren<QAbstractItemView*>()) {
+        if (!isComboBoxPopupView(view, comboBoxes)) {
+            hasListOrTable = true;
+            break;
+        }
+    }
+    Q_UNUSED(hasListOrTable);
+    const ThemeSurfaceColors& dockSurface = dockBackground;
+
+    dockContent->setPalette(paletteForThemeSurface(dockContent->palette(), dockSurface));
+    dockContent->setAutoFillBackground(true);
+    applySurfaceToStructuralDockWidget(dockContent, dockSurface);
+    for (QWidget* child : dockContent->findChildren<QWidget*>())
+        applySurfaceToStructuralDockWidget(child, dockSurface);
+    if (bitField != nullptr)
+        bitField->setThemeColors(dockBackground.background,
+                                 dockBackground.foreground,
+                                 dockHeader.background,
+                                 dockHeader.foreground,
+                                 dockUnfocusedSelection.background,
+                                 dockUnfocusedSelection.foreground,
+                                 surfaces.primary.background,
+                                 surfaces.primary.foreground);
+    const ThemeScrollBarColors listScrollBars =
+        scrollBarColorsForSurfaceIndex(surfaces, UiConfig::DockBackgroundShade);
+
+    if (BookDock* bookDock = qobject_cast<BookDock*>(dock)) {
+        bookDock->setContentSurfaceColors(dockBackground.background,
+                                          dockBackground.foreground);
+    }
+
+    for (QAbstractScrollArea* scrollArea : dockContent->findChildren<QAbstractScrollArea*>()) {
+        if (qobject_cast<QAbstractItemView*>(scrollArea))
+            continue;
+        applyScrollBarColorsToScrollArea(scrollArea, listScrollBars);
+    }
+
+    for (QComboBox* comboBox : comboBoxes) {
+        applySurfaceToContainingRow(dockContent, comboBox, dockSurface);
+        comboBox->setPalette(paletteForThemeSurface(comboBox->palette(), dockTextInput));
+        comboBox->setStyleSheet(QStringLiteral(
+            "QComboBox {"
+            " background-color: %1; color: %2;"
+            " border: 1px solid %3; border-radius: 8px; padding: 4px 8px;"
+            "}"
+            "QComboBox QAbstractItemView {"
+            " background-color: %4; color: %5;"
+            " border: 1px solid %3;"
+            "}")
+                                    .arg(dockTextInput.background.name(),
+                                         dockTextInput.foreground.name(),
+                                         dockHeader.background.name(),
+                                         dockBackground.background.name(),
+                                         dockBackground.foreground.name()));
+        if (QAbstractItemView* popupView = comboBox->view()) {
+            QPalette popupPalette = paletteForThemeSurface(popupView->palette(), dockBackground);
+            popupPalette.setColor(QPalette::Highlight, dockHoveredItem.background);
+            popupPalette.setColor(QPalette::HighlightedText, dockHoveredItem.foreground);
+            popupView->setStyleSheet(QStringLiteral(
+                "QAbstractItemView {"
+                " background-color: %1; color: %2;"
+                " padding: %3px %4px;"
+                "}"
+                "QAbstractItemView::item:hover {"
+                " background-color: %5; color: %6;"
+                "}")
+                                         .arg(dockBackground.background.name(),
+                                              dockBackground.foreground.name())
+                                         .arg(kDockListVerticalPadding)
+                                         .arg(kDockListHorizontalPadding)
+                                         .arg(dockHoveredItem.background.name(),
+                                              dockHoveredItem.foreground.name())
+                                     + scrollBarStyleSheet(listScrollBars));
+            popupView->setPalette(popupPalette);
+            popupView->viewport()->setPalette(popupPalette);
+            applyScrollBarColorsToScrollArea(popupView, listScrollBars);
+        }
+    }
+
+    for (QLineEdit* searchBox : dockContent->findChildren<QLineEdit*>()) {
+        applySurfaceToContainingRow(dockContent, searchBox, dockSurface);
+        searchBox->setProperty("speedcrunchDockTextInput", true);
+        if (owner != nullptr)
+            searchBox->installEventFilter(owner);
+        searchBox->setPalette(paletteForThemeSurface(searchBox->palette(), dockTextInput));
+        if (ThemedLineEdit* themedSearchBox = dynamic_cast<ThemedLineEdit*>(searchBox))
+            themedSearchBox->setCursorColor(surfaces.primary.background);
+        searchBox->setStyleSheet(QStringLiteral(
+            "QLineEdit {"
+            " background-color: %1; color: %2;"
+            " border: %5px solid %3; border-radius: 8px; padding: 4px 8px;"
+            "}"
+            "QLineEdit:focus {"
+            " border: %5px solid %4;"
+            "}")
+                                     .arg(dockTextInput.background.name(),
+                                          dockTextInput.foreground.name(),
+                                          dockTextInputOutline.background.name(),
+                                          surfaces.primary.background.name())
+                                     .arg(UiConfig::OutlineStrokeWidth));
+    }
+
+    for (QAbstractItemView* view : dockContent->findChildren<QAbstractItemView*>()) {
+        if (isComboBoxPopupView(view, comboBoxes))
+            continue;
+        QPalette palette = paletteForThemeSurface(view->palette(), dockBackground);
+        palette.setColor(QPalette::Active, QPalette::Highlight, surfaces.primary.background);
+        palette.setColor(QPalette::Active, QPalette::HighlightedText, surfaces.primary.foreground);
+        palette.setColor(QPalette::Inactive, QPalette::Highlight, dockUnfocusedSelection.background);
+        palette.setColor(QPalette::Inactive, QPalette::HighlightedText, dockUnfocusedSelection.foreground);
+        palette.setColor(QPalette::Disabled, QPalette::Highlight, dockUnfocusedSelection.background);
+        palette.setColor(QPalette::Disabled, QPalette::HighlightedText, dockUnfocusedSelection.foreground);
+        view->setProperty("dockListHoverBackground", dockHoveredItem.background);
+        view->setProperty("dockListHoverForeground", dockHoveredItem.foreground);
+        view->setProperty("dockListActiveSelectionBackground", surfaces.primary.background);
+        view->setProperty("dockListActiveSelectionForeground", surfaces.primary.foreground);
+        view->setProperty("dockListInactiveSelectionBackground", dockUnfocusedSelection.background);
+        view->setProperty("dockListInactiveSelectionForeground", dockUnfocusedSelection.foreground);
+        view->setStyleSheet(QStringLiteral(
+            "QAbstractItemView {"
+            " background-color: %1; color: %2;"
+            " border: 0;"
+            " padding: %5px %6px;"
+            "}"
+            "QAbstractItemView::item:hover { background-color: %3; color: %4; }")
+                                .arg(dockBackground.background.name(),
+                                     dockBackground.foreground.name(),
+                                     dockHoveredItem.background.name(),
+                                     dockHoveredItem.foreground.name())
+                                .arg(kDockListVerticalPadding)
+                                .arg(kDockListHorizontalPadding)
+                            + scrollBarStyleSheet(listScrollBars));
+        view->setPalette(palette);
+        view->viewport()->setPalette(palette);
+        applyScrollBarColorsToScrollArea(view, listScrollBars);
+        applyNoMatchLabelSurface(view, dockBackground);
+    }
+
+    for (QHeaderView* header : dockContent->findChildren<QHeaderView*>()) {
+        header->setPalette(paletteForThemeSurface(header->palette(), dockBackground));
+        header->setStyleSheet(QStringLiteral(
+            "QHeaderView { background-color: %1; color: %2; border: 0; }"
+            "QHeaderView::section {"
+            " background-color: %1; color: %2;"
+            " border: 0;"
+            " border-top: 1px solid %3;"
+            " border-right: 1px solid %3;"
+            " border-bottom: 1px solid %3;"
+            " padding: 4px 8px;"
+            "}"
+            "QHeaderView::section:first {"
+            " border-left: 0;"
+            "}"
+            "QHeaderView::section:last {"
+            " border-right: 0;"
+            "}")
+                                  .arg(dockBackground.background.name(),
+                                       dockBackground.foreground.name(),
+                                       dockHeader.background.name()));
+    }
+}
+
+void applyThemeBackgroundRoleToWidget(QWidget* widget, const QColor& background)
 {
     if (widget == nullptr)
         return;
 
-    const QColor background = themeBackgroundColorForScheme(colorSchemeName);
     QPalette pal = widget->palette();
-    pal.setColor(QPalette::Active, QPalette::Window, background);
-    pal.setColor(QPalette::Inactive, QPalette::Window, background);
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        pal.setColor(group, QPalette::Window, background);
+        pal.setColor(group, QPalette::Base, background);
+        pal.setColor(group, QPalette::Button, background);
+    }
     widget->setPalette(pal);
     widget->setAutoFillBackground(true);
+    widget->setAttribute(Qt::WA_StyledBackground, true);
+    if (!qobject_cast<QSplitter*>(widget))
+        widget->setStyleSheet(QStringLiteral("background-color: %1;").arg(background.name()));
+}
+
+QString oklchThemeReportPath()
+{
+    return QDir(QDir::tempPath()).absoluteFilePath(
+        QStringLiteral("speedcrunch-oklch-theme-report.html"));
+}
+
+QString debugColorName(const QColor& color)
+{
+    return color.isValid()
+        ? color.name(QColor::HexRgb).toUpper()
+        : QStringLiteral("(invalid)");
+}
+
+QString paletteColorName(const QWidget* widget, QPalette::ColorRole role)
+{
+    return widget ? debugColorName(widget->palette().color(role)) : QStringLiteral("(missing)");
+}
+
+QString grabbedCenterColorName(QWidget* widget)
+{
+    if (widget == nullptr || widget->size().isEmpty() || !widget->isVisible())
+        return QStringLiteral("(unavailable)");
+
+    const QPixmap pixmap = widget->grab();
+    const QImage image = pixmap.toImage();
+    if (image.isNull() || image.width() <= 0 || image.height() <= 0)
+        return QStringLiteral("(unavailable)");
+
+    return debugColorName(image.pixelColor(image.width() / 2, image.height() / 2));
+}
+
+QString htmlTableCell(const QString& value)
+{
+    return QStringLiteral("<td><code>%1</code></td>").arg(value.toHtmlEscaped());
+}
+
+void appendDiagnosticRow(QTextStream& out,
+                         const QString& widget,
+                         const QString& expected,
+                         const QString& palette,
+                         const QString& viewportPalette,
+                         const QString& grab,
+                         const QString& styleSheet)
+{
+    out << "<tr><th scope=\"row\">" << widget.toHtmlEscaped() << "</th>"
+        << htmlTableCell(expected)
+        << htmlTableCell(palette)
+        << htmlTableCell(viewportPalette)
+        << htmlTableCell(grab)
+        << htmlTableCell(styleSheet)
+        << "</tr>\n";
+}
+
+QString shortStyleSheet(const QWidget* widget)
+{
+    if (widget == nullptr)
+        return QStringLiteral("(missing)");
+
+    QString styleSheet = widget->styleSheet().simplified();
+    constexpr int kMaximumStyleSheetLength = 120;
+    if (styleSheet.size() > kMaximumStyleSheetLength)
+        styleSheet = styleSheet.left(kMaximumStyleSheetLength) + QStringLiteral("...");
+    return styleSheet.isEmpty() ? QStringLiteral("(empty)") : styleSheet;
 }
 
 static void typeTextThroughEditorInputRules(Editor* editor, const QString& text)
@@ -833,6 +1451,48 @@ QPointer<Editor>& globallyActiveEditor()
     static QPointer<Editor> editor;
     return editor;
 }
+
+bool& activeEditorDisplayPaneActivationInProgress()
+{
+    static bool inProgress = false;
+    return inProgress;
+}
+
+int& dockTextInputFocusTransferDepth()
+{
+    static int depth = 0;
+    return depth;
+}
+
+bool dockTextInputFocusTransferInProgress()
+{
+    return dockTextInputFocusTransferDepth() > 0;
+}
+
+QPointer<QWidget>& pendingDockTextInputFocusTarget()
+{
+    static QPointer<QWidget> target;
+    return target;
+}
+
+QPointer<QWidget>& pendingDockFocusTarget()
+{
+    static QPointer<QWidget> target;
+    return target;
+}
+
+class DockTextInputFocusTransferGuard {
+public:
+    DockTextInputFocusTransferGuard()
+    {
+        ++dockTextInputFocusTransferDepth();
+    }
+
+    ~DockTextInputFocusTransferGuard()
+    {
+        --dockTextInputFocusTransferDepth();
+    }
+};
 
 bool& appShutdownInProgress()
 {
@@ -917,56 +1577,39 @@ public:
         applyStyle(QColor());
     }
 
-    static QColor tabStripColor(const QPalette& palette)
-    {
-        const QColor window = palette.color(QPalette::Window);
-        QColor secondary = palette.color(QPalette::AlternateBase);
-        if (!secondary.isValid() || secondary == window)
-            secondary = window.lightnessF() < 0.5 ? window.lighter(118) : window.darker(108);
-        return secondary;
-    }
-
-    static QColor hoveredTabColor(const QPalette& palette)
-    {
-        const QColor strip = tabStripColor(palette);
-        const QColor selected = palette.color(QPalette::Window);
-        QColor hover((strip.red() * 2 + selected.red()) / 3,
-                     (strip.green() * 2 + selected.green()) / 3,
-                     (strip.blue() * 2 + selected.blue()) / 3);
-        if (hover == strip)
-            hover = strip.lightnessF() < 0.5 ? strip.lighter(128) : strip.darker(108);
-        return hover;
-    }
-
     static QColor secondarySurfaceColor(const QColor& surface)
     {
         return surface.lightnessF() < 0.5 ? surface.lighter(118) : surface.darker(108);
     }
 
-    static QColor hoverSurfaceColor(const QColor& secondary, const QColor& selected)
-    {
-        QColor hover((secondary.red() * 2 + selected.red()) / 3,
-                     (secondary.green() * 2 + selected.green()) / 3,
-                     (secondary.blue() * 2 + selected.blue()) / 3);
-        if (hover == secondary)
-            hover = secondary.lightnessF() < 0.5 ? secondary.lighter(128) : secondary.darker(108);
-        return hover;
-    }
-
-    void applyStyle(const QColor& selectedText, const QColor& selectedSurface = QColor())
+    void applyStyle(const QColor& selectedText,
+                    const QColor& selectedSurface = QColor(),
+                    const QColor& hoverText = QColor(),
+                    const QColor& hoverSurface = QColor(),
+                    const QColor& stripSurface = QColor(),
+                    const QColor& inactiveText = QColor())
     {
         const QColor fg = selectedText.isValid()
             ? selectedText
-            : QApplication::palette().color(QPalette::WindowText);
-        const QPalette pal = QApplication::palette();
+            : palette().color(QPalette::WindowText);
+        const QPalette pal = palette();
         const QColor selected = selectedSurface.isValid() ? selectedSurface : pal.color(QPalette::Window);
-        const QColor tabStrip = secondarySurfaceColor(selected);
-        const QColor hover = hoverSurfaceColor(tabStrip, selected);
-        const QColor text = pal.color(QPalette::WindowText);
-        m_tabStripColor = tabStrip;
-        m_hoveredTabColor = hover;
+        const QColor hovered = hoverSurface.isValid()
+            ? hoverSurface
+            : secondarySurfaceColor(selected);
+        const QColor strip = stripSurface.isValid() ? stripSurface : selected;
+        const QColor text = inactiveText.isValid()
+            ? inactiveText
+            : pal.color(QPalette::WindowText);
+        const QColor hoveredText = hoverText.isValid()
+            ? hoverText
+            : text;
+        m_tabStripColor = strip;
+        m_inactiveTabColor = strip;
+        m_hoveredTabColor = hovered;
         m_selectedTabColor = selected;
         m_tabTextColor = text;
+        m_hoveredTextColor = hoveredText;
         m_selectedTextColor = fg;
 
         setStyleSheet(QStringLiteral(R"(
@@ -985,11 +1628,27 @@ public:
             )"));
         if (QWidget* row = parentWidget()) {
             QPalette rowPalette = row->palette();
-            rowPalette.setColor(QPalette::Active, QPalette::Window, m_selectedTabColor);
-            rowPalette.setColor(QPalette::Inactive, QPalette::Window, m_selectedTabColor);
+            for (const QPalette::ColorGroup group : {QPalette::Active,
+                                                     QPalette::Inactive,
+                                                     QPalette::Disabled}) {
+                rowPalette.setColor(group, QPalette::Window, m_tabStripColor);
+                rowPalette.setColor(group, QPalette::Base, m_tabStripColor);
+            }
             row->setPalette(rowPalette);
             row->setAutoFillBackground(true);
+            row->setAttribute(Qt::WA_StyledBackground, true);
+            row->setStyleSheet(QStringLiteral("background-color: %1;")
+                                   .arg(m_tabStripColor.name()));
         }
+        QPalette tabPalette = palette();
+        for (const QPalette::ColorGroup group : {QPalette::Active,
+                                                 QPalette::Inactive,
+                                                 QPalette::Disabled}) {
+            tabPalette.setColor(group, QPalette::Window, m_tabStripColor);
+            tabPalette.setColor(group, QPalette::Base, m_tabStripColor);
+        }
+        setPalette(tabPalette);
+        setAutoFillBackground(true);
         updateGeometry();
         update();
     }
@@ -1058,6 +1717,39 @@ public:
                         tabCloseRequested(tabText(tabIndex));
                 });
             }
+            const bool selected = i == currentIndex();
+            const bool hovered = i == m_hoveredTabIndex;
+            const QColor normalText = selected ? m_selectedTextColor : (hovered ? m_hoveredTextColor : m_tabTextColor);
+            const QColor hoveredText = m_hoveredTextColor.isValid() ? m_hoveredTextColor : normalText;
+            closeButton->setStyleSheet(QStringLiteral(R"(
+                    QToolButton {
+                        background: transparent;
+                        color: %1;
+                        border: none;
+                        margin: 3px 3px 3px 0px;
+                        padding: 0px;
+                        min-width: 18px;
+                        max-width: 18px;
+                        min-height: 18px;
+                        max-height: 18px;
+                        border-radius: 9px;
+                        font-weight: 400;
+                        text-align: center;
+                    }
+
+                    QToolButton:hover {
+                        background: %2;
+                        color: %3;
+                    }
+
+                    QToolButton:pressed {
+                        background: %2;
+                        color: %3;
+                    }
+                )")
+                                           .arg(normalText.name(),
+                                                m_hoveredTabColor.name(),
+                                                hoveredText.name()));
             visibilityChanged = visibilityChanged || closeButton->isVisible() != showButton;
             closeButton->setVisible(showButton);
         }
@@ -1245,7 +1937,7 @@ protected:
     {
         QPainter tabPainter(this);
         tabPainter.setRenderHint(QPainter::Antialiasing, true);
-        tabPainter.fillRect(event->rect(), m_selectedTabColor);
+        tabPainter.fillRect(event->rect(), m_tabStripColor);
 
         const int visualDragIndex = m_visualDragActive ? indexOfDragSession() : -1;
         const int draggedWidth = visualDragIndex >= 0 ? tabRect(visualDragIndex).width() : 0;
@@ -1338,7 +2030,9 @@ private:
         const bool hovered = index == m_hoveredTabIndex && !m_visualDragActive;
         const QRect pill = pillRect(rect);
         if (selected || hovered || dragged) {
-            const QColor fill = selected ? m_selectedTabColor : m_hoveredTabColor;
+            const QColor fill = selected
+                ? m_selectedTabColor
+                : (hovered || dragged ? m_hoveredTabColor : m_inactiveTabColor);
             if (selected)
                 painter->setPen(QPen(m_tabStripColor, 1));
             else
@@ -1352,7 +2046,7 @@ private:
             ? tabButton(index, QTabBar::RightSide)->width() + 6
             : 0;
         const QRect textRect = pill.adjusted(12, 0, -12 - rightButtonWidth, 0);
-        painter->setPen(selected ? m_selectedTextColor : m_tabTextColor);
+        painter->setPen(selected ? m_selectedTextColor : (hovered ? m_hoveredTextColor : m_tabTextColor));
         painter->setFont(font());
         painter->drawText(textRect,
                           Qt::AlignVCenter | Qt::AlignLeft,
@@ -1464,9 +2158,11 @@ private:
     qreal m_visualDragLeft = 0.0;
     int m_visualTargetIndex = -1;
     QColor m_tabStripColor;
+    QColor m_inactiveTabColor;
     QColor m_hoveredTabColor;
     QColor m_selectedTabColor;
     QColor m_tabTextColor;
+    QColor m_hoveredTextColor;
     QColor m_selectedTextColor;
     QString m_dragSessionName;
 
@@ -1494,12 +2190,6 @@ public:
         : QWidget(parent)
     {
         setAcceptDrops(true);
-        m_inactiveOverlay = new QWidget(this);
-        m_inactiveOverlay->setObjectName(QStringLiteral("InactivePaneOverlay"));
-        m_inactiveOverlay->setAttribute(Qt::WA_TransparentForMouseEvents);
-        m_inactiveOverlay->setStyleSheet(QStringLiteral("background: rgba(0, 0, 0, 64);"));
-        m_inactiveOverlay->hide();
-
         m_overlay = new QWidget(this);
         m_overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
         m_overlay->setStyleSheet(QStringLiteral("background: rgba(0, 0, 0, 80);"));
@@ -1516,23 +2206,6 @@ public:
     PaneDropZone dropZoneForPanePosition(const QPoint& panePos) const
     {
         return dropZoneForPosition(panePos);
-    }
-
-    void setInactive(bool inactive)
-    {
-        if (m_inactiveOverlay == nullptr)
-            return;
-
-        if (!inactive) {
-            m_inactiveOverlay->hide();
-            return;
-        }
-
-        m_inactiveOverlay->setGeometry(overlayBounds());
-        m_inactiveOverlay->raise();
-        if (m_overlay != nullptr && m_overlay->isVisible())
-            m_overlay->raise();
-        m_inactiveOverlay->show();
     }
 
     void watchDropTarget(QWidget* widget)
@@ -1574,8 +2247,6 @@ protected:
     void resizeEvent(QResizeEvent* event) override
     {
         QWidget::resizeEvent(event);
-        if (m_inactiveOverlay != nullptr && m_inactiveOverlay->isVisible())
-            m_inactiveOverlay->setGeometry(overlayBounds());
     }
 
     bool eventFilter(QObject* watched, QEvent* event) override
@@ -1719,7 +2390,6 @@ private:
     }
 
     QWidget* m_overlay = nullptr;
-    QWidget* m_inactiveOverlay = nullptr;
     QWidget* m_overlayAreaWidget = nullptr;
 };
 
@@ -2726,6 +3396,12 @@ void MainWindow::updateKeypadDisabledActionText()
 void MainWindow::createStatusBar()
 {
     QStatusBar* bar = statusBar();
+    if (m_status.angleUnitSection != nullptr) {
+        bar->show();
+        setStatusBarText();
+        updateStatusBarSectionVisibility();
+        return;
+    }
 
     m_status.angleUnitSection = new QWidget(bar);
     m_status.resultFormatSection = new QWidget(bar);
@@ -2828,7 +3504,9 @@ void MainWindow::createFixedWidgets()
     m_widgets.splitContainer = new QSplitter(Qt::Horizontal, m_widgets.root);
     m_widgets.splitContainer->setObjectName(QStringLiteral("MainSplitContainer"));
     m_widgets.splitContainer->setChildrenCollapsible(false);
-    m_widgets.splitContainer->setHandleWidth(1);
+    m_widgets.splitContainer->setHandleWidth(UiConfig::SessionPaneSplitterWidth);
+    applyThemeBackgroundRoleToWidget(m_widgets.splitContainer,
+                                     generatedSurfaceColors(m_settings).window.background);
     updateSplitterStyleSheet();
     m_layouts.root->addWidget(m_widgets.splitContainer, 1);
 
@@ -2838,6 +3516,7 @@ void MainWindow::createFixedWidgets()
     m_widgets.editor->setFrameStyle(QFrame::NoFrame);
     m_widgets.editor->setFocus();
     m_widgets.editor->installEventFilter(this);
+    m_widgets.editor->viewport()->installEventFilter(this);
     m_widgets.splitContainer->addWidget(createEditorDisplayPane(m_widgets.display, m_widgets.editor));
     m_paneSessionNames.insert(m_widgets.display, m_session ? m_session->name() : QString());
     m_paneSessionTabs.insert(m_widgets.display, QStringList(m_session ? m_session->name() : QString()));
@@ -2876,7 +3555,9 @@ void MainWindow::createFixedWidgets()
 
 QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* editor)
 {
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
     SessionPane* pane = new SessionPane(m_widgets.splitContainer);
+    applyThemeBackgroundRoleToWidget(pane, surfaces.result.background);
     QVBoxLayout* layout = new QVBoxLayout(pane);
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -2892,8 +3573,35 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
     tabBarRowLayout->addStretch(1);
 
     QStackedWidget* stack = new QStackedWidget(pane);
+    applyThemeBackgroundRoleToWidget(stack, surfaces.result.background);
     QWidget* page = new QWidget(stack);
-    applyThemeBackgroundRoleToWidget(page, m_settings ? m_settings->colorScheme : QString());
+    applyThemeBackgroundRoleToWidget(page, surfaces.result.background);
+    display->setThemeSurfaceColor(surfaces.result.background);
+    display->setThemeInteractionColors(surfaces.editorAndLists.background,
+                                       surfaces.headersAndBorders.background,
+                                       surfaces.headersAndBorders.foreground,
+                                       surfaces.inputs.background,
+                                       surfaces.inputs.foreground);
+    display->rehighlight();
+    editor->setThemeSurfaceColor(surfaces.editorAndLists.background,
+                                 surfaces.result.background);
+    const ThemeSurfaceColors completionPopup =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupBackgroundShade);
+    const ThemeSurfaceColors completionScrollbarThumb =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupScrollbarThumbShade);
+    const ThemeSurfaceColors completionSelectedRow =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupSelectedRowShade);
+    const ThemeSurfaceColors completionOutline =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupOutlineShade);
+    editor->setThemeCompletionColors(completionPopup.background,
+                                     completionPopup.foreground,
+                                     completionScrollbarThumb.background,
+                                     completionScrollbarThumb.foreground,
+                                     completionSelectedRow.background,
+                                     completionSelectedRow.foreground,
+                                     completionOutline.background,
+                                     UiConfig::CompletionPopupCornerRadius);
+    editor->rehighlight();
     QVBoxLayout* pageLayout = new QVBoxLayout(page);
     pageLayout->setSpacing(0);
     pageLayout->setContentsMargins(0, 0, 0, 0);
@@ -2952,6 +3660,8 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
         QAction* closeSessionAction = menu.addAction(tr("Close Session"));
         QAction* closePaneAction = menu.addAction(tr("Close Pane"));
 
+        const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+        applyMenuSurface(&menu, surfaces.headersAndBorders, surfaces.inputs);
         QAction* selectedAction = menu.exec(globalPos);
         if (selectedAction == nullptr)
             return;
@@ -3075,35 +3785,203 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
     return pane;
 }
 
-void MainWindow::setActiveEditorDisplayPane(ResultDisplay* display, Editor* editor)
+void MainWindow::setActiveEditorDisplayPane(ResultDisplay* display, Editor* editor, bool forceEditorFocus)
 {
     if (display == nullptr || editor == nullptr)
         return;
 
-    globallyActiveDisplay() = display;
-    globallyActiveEditor() = editor;
-    editor->setFocus(Qt::OtherFocusReason);
-    QPointer<Editor> editorGuard(editor);
-    QTimer::singleShot(0, editor, [editorGuard]() {
-        if (editorGuard != nullptr)
-            editorGuard->setFocus(Qt::OtherFocusReason);
-    });
+    if (forceEditorFocus)
+        pendingDockTextInputFocusTarget() = nullptr;
 
-    if (m_widgets.display == display && m_widgets.editor == editor) {
-        updatePaneEditorCursorVisibility();
+    const bool dockWidgetHasFocus = !forceEditorFocus
+        && pendingDockFocusTarget() != nullptr;
+    const bool dockTextInputHasFocus = !forceEditorFocus
+        && (isDockTextInput(QApplication::focusWidget())
+            || pendingDockTextInputFocusTarget() != nullptr);
+    if (dockWidgetHasFocus || dockTextInputHasFocus) {
+        globallyActiveDisplay() = nullptr;
+        globallyActiveEditor() = nullptr;
+    } else {
+        globallyActiveDisplay() = display;
+        globallyActiveEditor() = editor;
+    }
+    if (activeEditorDisplayPaneActivationInProgress())
         return;
+
+    activeEditorDisplayPaneActivationInProgress() = true;
+    struct ActivationGuard {
+        ~ActivationGuard()
+        {
+            activeEditorDisplayPaneActivationInProgress() = false;
+        }
+    } activationGuard;
+
+    if (m_widgets.display != display || m_widgets.editor != editor) {
+        const QString sessionName = m_paneSessionNames.value(display);
+        Session* paneSession = m_loadedSessions.value(sessionName, nullptr);
+        const bool switchingSession = paneSession != nullptr && paneSession != m_session;
+        const bool previousSessionIsLoaded =
+            m_session != nullptr && m_loadedSessions.values().contains(m_session);
+        if (previousSessionIsLoaded) {
+            captureEditorTextInCurrentSession();
+            if (m_widgets.display != nullptr
+                    && m_paneSessionNames.value(m_widgets.display) == m_session->name()) {
+                m_sessionViewportAnchors.insert(m_session->name(), m_widgets.display->viewportTopAnchor());
+                QScrollBar* bar = m_widgets.display->verticalScrollBar();
+                const int scrollValue = bar->value() == bar->maximum()
+                    ? (std::numeric_limits<int>::max)()
+                    : bar->value();
+                m_sessionScrollValues.insert(m_session->name(), scrollValue);
+            }
+        } else {
+            captureEditorTextInCurrentSession();
+        }
+        if (switchingSession)
+            m_session = nullptr;
+
+        m_widgets.display = display;
+        m_widgets.editor = editor;
+        m_copyWidget = editor;
+
+        if (paneSession != nullptr && paneSession != m_session)
+            activateSession(paneSession);
+    }
+    if (!dockWidgetHasFocus && !dockTextInputHasFocus) {
+        editor->setFocus(Qt::OtherFocusReason);
+        QPointer<Editor> editorGuard(editor);
+        QTimer::singleShot(0, editor, [editorGuard]() {
+            if (editorGuard != nullptr
+                && globallyActiveEditor() == editorGuard
+                && pendingDockFocusTarget() == nullptr
+                && pendingDockTextInputFocusTarget() == nullptr) {
+                editorGuard->setFocus(Qt::OtherFocusReason);
+            }
+        });
+    }
+    updatePaneEditorCursorVisibility();
+    if (!dockWidgetHasFocus && !dockTextInputHasFocus && m_widgets.state != nullptr && m_widgets.state->isVisible())
+        showStateLabel(m_widgets.state->text());
+}
+
+bool MainWindow::isDockTextInput(QWidget* widget) const
+{
+    QLineEdit* lineEdit = qobject_cast<QLineEdit*>(widget);
+    if (lineEdit == nullptr)
+        return false;
+    if (lineEdit->property("speedcrunchDockTextInput").toBool())
+        return true;
+
+    for (QObject* ancestor = widget; ancestor != nullptr; ancestor = ancestor->parent()) {
+        QDockWidget* dock = qobject_cast<QDockWidget*>(ancestor);
+        if (dock != nullptr && m_allDocks.contains(dock))
+            return true;
     }
 
-    captureEditorTextInCurrentSession();
-    m_widgets.display = display;
-    m_widgets.editor = editor;
-    m_copyWidget = editor;
+    for (QDockWidget* dock : m_allDocks) {
+        if (dock != nullptr && dock->findChildren<QLineEdit*>().contains(lineEdit))
+            return true;
+    }
 
-    const QString sessionName = m_paneSessionNames.value(display);
-    Session* paneSession = m_loadedSessions.value(sessionName, nullptr);
-    if (paneSession != nullptr && paneSession != m_session)
-        activateSession(paneSession);
-    updatePaneEditorCursorVisibility();
+    return false;
+}
+
+bool MainWindow::isDockWidgetDescendant(QWidget* widget) const
+{
+    return dockWidgetForDescendant(widget) != nullptr;
+}
+
+QDockWidget* MainWindow::dockWidgetForDescendant(QWidget* widget) const
+{
+    if (widget == nullptr)
+        return nullptr;
+    for (QObject* ancestor = widget; ancestor != nullptr; ancestor = ancestor->parent()) {
+        QDockWidget* dock = qobject_cast<QDockWidget*>(ancestor);
+        if (dock != nullptr && m_allDocks.contains(dock))
+            return dock;
+    }
+
+    return nullptr;
+}
+
+QAbstractItemView* MainWindow::dockItemViewFocusTarget(QWidget* widget) const
+{
+    if (widget == nullptr)
+        return nullptr;
+
+    const auto usableDockView = [this](QAbstractItemView* view) -> QAbstractItemView* {
+        if (view == nullptr)
+            return nullptr;
+        if (!isDockWidgetDescendant(view))
+            return nullptr;
+        if (view->model() == nullptr || view->model()->rowCount() <= 0)
+            return nullptr;
+        return view;
+    };
+
+    for (QWidget* candidate = widget; candidate != nullptr; candidate = candidate->parentWidget()) {
+        if (QAbstractItemView* view = usableDockView(qobject_cast<QAbstractItemView*>(candidate)))
+            return view;
+    }
+
+    const QPoint globalPos = QCursor::pos();
+    for (QDockWidget* dock : m_allDocks) {
+        if (dock == nullptr || !dock->isVisible())
+            continue;
+        if (!dock->rect().contains(dock->mapFromGlobal(globalPos)))
+            continue;
+        for (QAbstractItemView* view : dock->findChildren<QAbstractItemView*>()) {
+            if (!view->isVisible())
+                continue;
+            if (!view->rect().contains(view->mapFromGlobal(globalPos)))
+                continue;
+            if (QAbstractItemView* usableView = usableDockView(view))
+                return usableView;
+        }
+    }
+
+    return nullptr;
+}
+
+void MainWindow::deactivateActiveEditorForTextInputFocus()
+{
+    // Dock search fields and other dock text inputs are peers of the expression
+    // editor. The focus event is already moving to the dock input here, so this
+    // clears only the app-level active-editor state and repaint flags. Calling
+    // clearFocus() on the previous editor during the transfer can make Qt fall
+    // back to that editor, which would leave two text inputs competing for the
+    // primary outline.
+    QPointer<Editor> previousActiveEditor = globallyActiveEditor();
+    if (previousActiveEditor == nullptr)
+        previousActiveEditor = m_widgets.editor;
+    if (previousActiveEditor == nullptr && globallyActiveDisplay() == nullptr)
+        return;
+
+    DockTextInputFocusTransferGuard focusTransferGuard;
+
+    globallyActiveEditor() = nullptr;
+    globallyActiveDisplay() = nullptr;
+
+    if (previousActiveEditor != nullptr) {
+        previousActiveEditor->setCustomCursorVisible(false);
+        previousActiveEditor->setThemePrimaryColor(
+            generatedSurfaceColors(m_settings).primary.background,
+            false);
+    }
+}
+
+void MainWindow::handleApplicationFocusChanged(QWidget* previous, QWidget* focused)
+{
+    Q_UNUSED(previous);
+    if (!isDockTextInput(focused))
+        return;
+
+    pendingDockTextInputFocusTarget() = focused;
+    QPointer<QWidget> textInput(focused);
+    QTimer::singleShot(100, focused, [textInput]() {
+        if (pendingDockTextInputFocusTarget() == textInput)
+            pendingDockTextInputFocusTarget() = nullptr;
+    });
+    deactivateActiveEditorForTextInputFocus();
 }
 
 void MainWindow::configureEditorDisplayPane(ResultDisplay* display, Editor* editor)
@@ -3112,6 +3990,7 @@ void MainWindow::configureEditorDisplayPane(ResultDisplay* display, Editor* edit
         return;
 
     editor->installEventFilter(this);
+    editor->viewport()->installEventFilter(this);
 
     connect(editor, &Editor::textChanged, this, [this, display, editor]() {
         setActiveEditorDisplayPane(display, editor);
@@ -3130,7 +4009,10 @@ void MainWindow::configureEditorDisplayPane(ResultDisplay* display, Editor* edit
         setActiveEditorDisplayPane(display, editor);
         handleEditorSelectionChange();
     });
-    connect(editor, &Editor::autoCalcDisabled, this, &MainWindow::hideStateLabel);
+    connect(editor, &Editor::autoCalcDisabled, this, [this, editor]() {
+        if (editor == m_widgets.editor)
+            hideStateLabel();
+    });
     connect(editor, &Editor::autoCalcMessageAvailable, this, &MainWindow::handleAutoCalcMessageAvailable);
     connect(editor, &Editor::autoCalcQuantityAvailable, this, &MainWindow::handleAutoCalcQuantityAvailable);
     connect(editor, &Editor::shiftDownPressed, this, &MainWindow::decreaseDisplayFontPointSize);
@@ -3147,12 +4029,12 @@ void MainWindow::configureEditorDisplayPane(ResultDisplay* display, Editor* edit
     connect(this, &MainWindow::historyChanged, editor, &Editor::updateHistory);
 
     connect(display, &ResultDisplay::clicked, this, [this, display, editor]() {
-        setActiveEditorDisplayPane(display, editor);
+        setActiveEditorDisplayPane(display, editor, true);
         hideStateLabel();
     });
     connect(display, &ResultDisplay::copyAvailable, this, &MainWindow::handleCopyAvailable);
     connect(display, &ResultDisplay::expressionSelected, this, [this, display, editor](const QString& text) {
-        setActiveEditorDisplayPane(display, editor);
+        setActiveEditorDisplayPane(display, editor, true);
         insertTextIntoEditor(text);
     });
     connect(display, &ResultDisplay::editHistoryEntryRequested, this, &MainWindow::startHistoryEntryEdit);
@@ -3175,7 +4057,7 @@ void MainWindow::configureEditorDisplayPane(ResultDisplay* display, Editor* edit
     connect(display, &ResultDisplay::deleteSessionRequested, this, &MainWindow::deleteCurrentSession);
     connect(display, &ResultDisplay::loadedSessionsMenuRequested, this, &MainWindow::showLoadedSessionsMenu);
     connect(display, &ResultDisplay::selectionChanged, this, [this, display, editor]() {
-        setActiveEditorDisplayPane(display, editor);
+        setActiveEditorDisplayPane(display, editor, true);
         handleDisplaySelectionChange();
     });
     connect(display, &ResultDisplay::shiftWheelUp, this, &MainWindow::increaseDisplayFontPointSize);
@@ -3245,7 +4127,7 @@ void MainWindow::splitActivePane(Qt::Orientation orientation, bool insertAfter)
     if (parentSplitter->orientation() != orientation) {
         QSplitter* nestedSplitter = new QSplitter(orientation);
         nestedSplitter->setChildrenCollapsible(false);
-        nestedSplitter->setHandleWidth(1);
+        nestedSplitter->setHandleWidth(UiConfig::SessionPaneSplitterWidth);
         nestedSplitter->setStyleSheet(m_widgets.splitContainer->styleSheet());
         activePane->setParent(nullptr);
         parentSplitter->insertWidget(activeIndex, nestedSplitter);
@@ -3935,7 +4817,7 @@ void MainWindow::splitPaneWithSession(QTabBar* sourceTabBar, ResultDisplay* targ
     if (parentSplitter->orientation() != orientation) {
         QSplitter* nestedSplitter = new QSplitter(orientation);
         nestedSplitter->setChildrenCollapsible(false);
-        nestedSplitter->setHandleWidth(1);
+        nestedSplitter->setHandleWidth(UiConfig::SessionPaneSplitterWidth);
         nestedSplitter->setStyleSheet(m_widgets.splitContainer->styleSheet());
         activePane->setParent(nullptr);
         parentSplitter->insertWidget(activeIndex, nestedSplitter);
@@ -3998,16 +4880,16 @@ void MainWindow::updatePaneEditorCursorVisibility()
 {
     const QPointer<ResultDisplay> activeDisplay = globallyActiveDisplay();
     const QPointer<Editor> activeEditor = globallyActiveEditor();
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
     QSet<MainWindow*> updatedWindows;
-
     for (const QPointer<MainWindow>& ptr : allMainWindows()) {
         MainWindow* window = ptr.data();
         if (window == nullptr || updatedWindows.contains(window))
             continue;
 
         updatedWindows.insert(window);
+        QSet<Editor*> updatedEditors;
         for (ResultDisplay* display : window->splitPaneDisplays()) {
-            QWidget* pane = paneWidgetForDisplay(display);
             QWidget* page = display->parentWidget();
             Editor* editor = page
                 ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly)
@@ -4016,10 +4898,18 @@ void MainWindow::updatePaneEditorCursorVisibility()
                 && activeEditor != nullptr
                 && display == activeDisplay
                 && editor == activeEditor;
-            if (editor != nullptr)
+            if (editor != nullptr) {
+                updatedEditors.insert(editor);
                 editor->setCustomCursorVisible(active);
-            if (SessionPane* sessionPane = dynamic_cast<SessionPane*>(pane))
-                sessionPane->setInactive(activeDisplay != nullptr && !active);
+                editor->setThemePrimaryColor(surfaces.primary.background, active);
+            }
+        }
+        for (Editor* editor : window->splitPaneEditors()) {
+            if (editor == nullptr || updatedEditors.contains(editor))
+                continue;
+            editor->setCustomCursorVisible(false);
+            editor->setThemePrimaryColor(surfaces.primary.background, false);
+            editor->rehighlight();
         }
     }
 }
@@ -4028,16 +4918,18 @@ void MainWindow::updatePaneTabBars()
 {
     const QList<ResultDisplay*> displays = splitPaneDisplays();
     const bool singlePaneSingleTab = displays.size() == 1 && paneSessionNames(displays.first()).size() == 1;
-    const ColorScheme scheme = ColorScheme::loadByName(m_settings ? m_settings->colorScheme : QString());
-    const QColor activeTabText = scheme.isValid()
-        ? scheme.colorForRole(ColorScheme::Number)
-        : palette().color(QPalette::WindowText);
-    const QColor activeTabSurface = themeBackgroundColorForScheme(m_settings ? m_settings->colorScheme : QString());
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
     for (ResultDisplay* display : displays) {
         QTabBar* tabBar = displayTabBar(display);
         if (tabBar == nullptr)
             continue;
-        static_cast<SessionTabBar*>(tabBar)->applyStyle(activeTabText, activeTabSurface);
+        static_cast<SessionTabBar*>(tabBar)->applyStyle(
+            surfaces.headersAndBorders.foreground,
+            surfaces.headersAndBorders.background,
+            surfaces.result.foreground,
+            surfaces.result.background,
+            surfaces.window.background,
+            surfaces.window.foreground);
 
         const QSignalBlocker blocker(tabBar);
         const QStringList names = paneSessionNames(display);
@@ -4084,7 +4976,8 @@ void MainWindow::updateSplitterStyleSheet()
     if (m_widgets.splitContainer == nullptr)
         return;
 
-    const QColor handle = splitterHandleColorForScheme(m_settings ? m_settings->colorScheme : QString());
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+    const QColor handle = themeSurfaceForShadeIndex(surfaces, UiConfig::SplitterShade).background;
     const QString styleSheet = QStringLiteral("QSplitter::handle { background: %1; }").arg(handle.name());
     const auto applyStyle = [&styleSheet](QSplitter* splitter, const auto& applyStyleRef) -> void {
         if (splitter == nullptr)
@@ -4100,16 +4993,344 @@ void MainWindow::updateSplitterStyleSheet()
 
 void MainWindow::refreshPaneThemes()
 {
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+    applyThemeBackgroundRoleToWidget(m_widgets.splitContainer, surfaces.window.background);
     for (ResultDisplay* display : splitPaneDisplays()) {
+        display->setThemeSurfaceColor(surfaces.result.background);
+        display->setThemeInteractionColors(surfaces.editorAndLists.background,
+                                           surfaces.headersAndBorders.background,
+                                           surfaces.headersAndBorders.foreground,
+                                           surfaces.inputs.background,
+                                           surfaces.inputs.foreground);
         display->rehighlight();
-        applyThemeBackgroundRoleToWidget(
-            display->parentWidget(),
-            m_settings ? m_settings->colorScheme : QString());
+        QWidget* page = display->parentWidget();
+        applyThemeBackgroundRoleToWidget(page, surfaces.result.background);
+        applyThemeBackgroundRoleToWidget(page ? page->parentWidget() : nullptr,
+                                         surfaces.result.background);
+        applyThemeBackgroundRoleToWidget(paneWidgetForDisplay(display),
+                                         surfaces.result.background);
     }
-    for (Editor* editor : splitPaneEditors())
+    for (Editor* editor : splitPaneEditors()) {
+        editor->setThemeSurfaceColor(surfaces.editorAndLists.background,
+                                     surfaces.result.background);
+        const ThemeSurfaceColors completionPopup =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupBackgroundShade);
+        const ThemeSurfaceColors completionScrollbarThumb =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupScrollbarThumbShade);
+        const ThemeSurfaceColors completionSelectedRow =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupSelectedRowShade);
+        const ThemeSurfaceColors completionOutline =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupOutlineShade);
+        editor->setThemeCompletionColors(completionPopup.background,
+                                         completionPopup.foreground,
+                                         completionScrollbarThumb.background,
+                                         completionScrollbarThumb.foreground,
+                                         completionSelectedRow.background,
+                                         completionSelectedRow.foreground,
+                                         completionOutline.background,
+                                         UiConfig::CompletionPopupCornerRadius);
         editor->rehighlight();
+    }
+    updatePaneEditorCursorVisibility();
     updatePaneTabBars();
     updateSplitterStyleSheet();
+}
+
+void MainWindow::applyThemeSurfacePalette()
+{
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+    const auto applyDockTabBarSurfaces = [this](const GeneratedThemeSurfaces& tabSurfaces) {
+        for (QTabBar* tabBar : findChildren<QTabBar*>()) {
+            if (m_tabBarDisplays.contains(tabBar))
+                continue;
+            tabBar->setPalette(paletteForThemeSurface(tabBar->palette(), tabSurfaces.headersAndBorders));
+            tabBar->setStyleSheet(QStringLiteral(
+                "QTabBar { background-color: %1; }"
+                "QTabBar::tab {"
+                " background-color: transparent; color: %2;"
+                " padding: 5px 14px; margin: 2px 1px;"
+                "}"
+                "QTabBar::tab:!selected:hover {"
+                " background-color: %3; color: %4;"
+                " border-radius: 10px;"
+                "}"
+                "QTabBar::tab:selected {"
+                " background-color: %5; color: %6;"
+                " border-radius: 10px;"
+                "}")
+                                      .arg(tabSurfaces.window.background.name(),
+                                           tabSurfaces.window.foreground.name(),
+                                           tabSurfaces.result.background.name(),
+                                           tabSurfaces.result.foreground.name(),
+                                           tabSurfaces.headersAndBorders.background.name(),
+                                           tabSurfaces.headersAndBorders.foreground.name()));
+        }
+    };
+    const QString reportPath = writeOklchGenerationHtmlReport(surfaces.base,
+                                                               1,
+                                                               surfaces.backgrounds.size() - 2,
+                                                               surfaces.polarity,
+                                                               defaultOklchShadeDistanceFactor(),
+                                                               false,
+                                                               surfaces.backgrounds,
+                                                               surfaces.foregrounds);
+    if (!reportPath.isEmpty()) {
+        QTextStream stream(stderr);
+        stream << "OKLCH HTML report: " << reportPath << Qt::endl;
+        scheduleThemeRuntimeDiagnosticsReport();
+    }
+    const ThemeSurfaceColors& surface = surfaces.window;
+    QPalette pal = palette();
+    pal.setColor(QPalette::Window, surface.background);
+    pal.setColor(QPalette::WindowText, surface.foreground);
+    pal.setColor(QPalette::Button, surface.background);
+    pal.setColor(QPalette::ButtonText, surface.foreground);
+    setPalette(pal);
+
+    if (m_widgets.root)
+        m_widgets.root->setPalette(pal);
+    if (m_widgets.keypad) {
+        const ThemeSurfaceColors keypadButton =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonShade);
+        const ThemeSurfaceColors keypadButtonHover =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonHoverShade);
+        const ThemeSurfaceColors keypadButtonPressed =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonPressedShade);
+        m_widgets.keypad->setPalette(pal);
+        m_widgets.keypad->setThemeButtonColors(keypadButton.background,
+                                               keypadButton.foreground,
+                                               keypadButtonHover.background,
+                                               keypadButtonHover.foreground,
+                                               keypadButtonPressed.background,
+                                               keypadButtonPressed.foreground);
+        QEvent paletteChange(QEvent::PaletteChange);
+        QApplication::sendEvent(m_widgets.keypad, &paletteChange);
+    }
+    if (QStatusBar* bar = findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly)) {
+        const ThemeSurfaceColors statusBarSurface =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::StatusBarBackgroundShade);
+        bar->setPalette(paletteForThemeSurface(bar->palette(), statusBarSurface));
+    }
+    for (QDockWidget* dock : m_allDocks) {
+        if (dock == nullptr)
+            continue;
+        applyGeneratedDockContentSurfaces(this, dock, surfaces);
+        applyGeneratedDockChromeSurfaces(dock, surfaces);
+    }
+    for (QMenu* menu : findChildren<QMenu*>())
+        applyMenuSurface(menu, surfaces.headersAndBorders, surfaces.inputs);
+    applyDockTabBarSurfaces(surfaces);
+    if (m_widgets.bitField) {
+        const ThemeSurfaceColors bitfieldBackground =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::DockBackgroundShade);
+        const ThemeSurfaceColors bitfieldHover =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldBitHoverShade);
+        const ThemeSurfaceColors bitfieldPressed =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::DockUnfocusedSelectedItemShade);
+        const QPalette bitFieldPalette =
+            paletteForThemeSurface(m_widgets.bitField->palette(), bitfieldBackground);
+        m_widgets.bitField->setPalette(bitFieldPalette);
+        m_widgets.bitField->setAutoFillBackground(true);
+        m_widgets.bitField->setThemeColors(bitfieldBackground.background,
+                                           bitfieldBackground.foreground,
+                                           bitfieldHover.background,
+                                           bitfieldHover.foreground,
+                                           bitfieldPressed.background,
+                                           bitfieldPressed.foreground,
+                                           surfaces.primary.background,
+                                           surfaces.primary.foreground);
+    }
+    QTimer::singleShot(0, this, [this, applyDockTabBarSurfaces]() {
+        const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+        const QList<QDockWidget*> docks = m_allDocks;
+        for (QDockWidget* dock : docks) {
+            applyGeneratedDockContentSurfaces(this, dock, surfaces);
+            applyGeneratedDockChromeSurfaces(dock, surfaces);
+        }
+        for (QMenu* menu : findChildren<QMenu*>())
+            applyMenuSurface(menu, surfaces.headersAndBorders, surfaces.inputs);
+        applyDockTabBarSurfaces(surfaces);
+    });
+}
+
+void MainWindow::scheduleThemeRuntimeDiagnosticsReport()
+{
+    writeThemeRuntimeDiagnosticsReport();
+
+    QPointer<MainWindow> guard(this);
+    QTimer::singleShot(150, this, [guard]() {
+        if (guard)
+            guard->writeThemeRuntimeDiagnosticsReport();
+    });
+}
+
+void MainWindow::writeThemeRuntimeDiagnosticsReport()
+{
+    const QString path = oklchThemeReportPath();
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+    QString html = QString::fromUtf8(file.readAll());
+    file.close();
+    if (html.isEmpty())
+        return;
+
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+    QString section;
+    QTextStream out(&section);
+    out << "\n<!-- speedcrunch-oklch-runtime-start -->\n"
+        << "<section class=\"runtime-diagnostics\" "
+        << "style=\"margin-top:2rem;padding:1rem;border:1px solid #c6d0c4;"
+        << "border-radius:14px;background:#fcfdfb;\">\n"
+        << "<h2 style=\"margin:0 0 0.75rem;\">Runtime widget samples</h2>\n"
+        << "<p style=\"margin:0 0 1rem;color:#586659;\">Generated after the "
+        << "live window has restored its saved layout and the Qt event loop has "
+        << "repainted. These values are read from widget palettes, style sheets, "
+        << "and widget grabs inside the running application.</p>\n"
+        << "<p><strong>Executable:</strong> <code>"
+        << QCoreApplication::applicationFilePath().toHtmlEscaped()
+        << "</code></p>\n"
+        << "<p><strong>Expected shades:</strong> ";
+    for (int i = 0; i < surfaces.backgrounds.size(); ++i) {
+        if (i > 0)
+            out << " ";
+        out << "<code>" << i << "=" << debugColorName(surfaces.backgrounds.at(i)) << "</code>";
+    }
+    out << "</p>\n"
+        << "<div style=\"overflow-x:auto;\">"
+        << "<table style=\"width:100%;border-collapse:collapse;font-size:0.92rem;\">"
+        << "<thead><tr>"
+        << "<th style=\"text-align:left;border-bottom:1px solid #c6d0c4;padding:0.4rem;\">Widget</th>"
+        << "<th style=\"text-align:left;border-bottom:1px solid #c6d0c4;padding:0.4rem;\">Expected</th>"
+        << "<th style=\"text-align:left;border-bottom:1px solid #c6d0c4;padding:0.4rem;\">Palette</th>"
+        << "<th style=\"text-align:left;border-bottom:1px solid #c6d0c4;padding:0.4rem;\">Viewport palette</th>"
+        << "<th style=\"text-align:left;border-bottom:1px solid #c6d0c4;padding:0.4rem;\">Grab center</th>"
+        << "<th style=\"text-align:left;border-bottom:1px solid #c6d0c4;padding:0.4rem;\">Style sheet</th>"
+        << "</tr></thead><tbody>\n";
+
+    appendDiagnosticRow(out,
+                        QStringLiteral("MainWindow"),
+                        debugColorName(surfaces.window.background),
+                        paletteColorName(this, QPalette::Window),
+                        QStringLiteral("(n/a)"),
+                        grabbedCenterColorName(this),
+                        shortStyleSheet(this));
+
+    appendDiagnosticRow(out,
+                        QStringLiteral("MainSplitContainer"),
+                        debugColorName(surfaces.window.background),
+                        paletteColorName(m_widgets.splitContainer, QPalette::Window),
+                        QStringLiteral("(n/a)"),
+                        grabbedCenterColorName(m_widgets.splitContainer),
+                        shortStyleSheet(m_widgets.splitContainer));
+
+    int displayIndex = 0;
+    for (ResultDisplay* display : splitPaneDisplays()) {
+        ++displayIndex;
+        QWidget* page = display ? display->parentWidget() : nullptr;
+        QWidget* stack = page ? page->parentWidget() : nullptr;
+        QWidget* pane = display ? paneWidgetForDisplay(display) : nullptr;
+        appendDiagnosticRow(out,
+                            QStringLiteral("ResultDisplay %1").arg(displayIndex),
+                            debugColorName(surfaces.result.background),
+                            paletteColorName(display, QPalette::Base),
+                            paletteColorName(display ? display->viewport() : nullptr,
+                                             QPalette::Base),
+                            grabbedCenterColorName(display ? display->viewport() : nullptr),
+                            shortStyleSheet(display));
+        appendDiagnosticRow(out,
+                            QStringLiteral("ResultDisplay %1 viewport").arg(displayIndex),
+                            debugColorName(surfaces.result.background),
+                            paletteColorName(display ? display->viewport() : nullptr,
+                                             QPalette::Window),
+                            QStringLiteral("(n/a)"),
+                            grabbedCenterColorName(display ? display->viewport() : nullptr),
+                            shortStyleSheet(display ? display->viewport() : nullptr));
+        appendDiagnosticRow(out,
+                            QStringLiteral("ResultDisplay %1 page").arg(displayIndex),
+                            debugColorName(surfaces.result.background),
+                            paletteColorName(page, QPalette::Window),
+                            QStringLiteral("(n/a)"),
+                            grabbedCenterColorName(page),
+                            shortStyleSheet(page));
+        appendDiagnosticRow(out,
+                            QStringLiteral("ResultDisplay %1 stack").arg(displayIndex),
+                            debugColorName(surfaces.result.background),
+                            paletteColorName(stack, QPalette::Window),
+                            QStringLiteral("(n/a)"),
+                            grabbedCenterColorName(stack),
+                            shortStyleSheet(stack));
+        appendDiagnosticRow(out,
+                            QStringLiteral("ResultDisplay %1 pane").arg(displayIndex),
+                            debugColorName(surfaces.result.background),
+                            paletteColorName(pane, QPalette::Window),
+                            QStringLiteral("(n/a)"),
+                            grabbedCenterColorName(pane),
+                            shortStyleSheet(pane));
+    }
+
+    int editorIndex = 0;
+    for (Editor* editor : splitPaneEditors()) {
+        ++editorIndex;
+        appendDiagnosticRow(out,
+                            QStringLiteral("Editor %1").arg(editorIndex),
+                            debugColorName(surfaces.editorAndLists.background),
+                            paletteColorName(editor, QPalette::Base),
+                            paletteColorName(editor ? editor->viewport() : nullptr,
+                                             QPalette::Base),
+                            grabbedCenterColorName(editor),
+                            shortStyleSheet(editor));
+    }
+
+    appendDiagnosticRow(out,
+                        QStringLiteral("Keypad"),
+                        debugColorName(surfaces.window.background),
+                        paletteColorName(m_widgets.keypad, QPalette::Window),
+                        QStringLiteral("(n/a)"),
+                        grabbedCenterColorName(m_widgets.keypad),
+                        shortStyleSheet(m_widgets.keypad));
+
+    appendDiagnosticRow(out,
+                        QStringLiteral("Bitfield"),
+                        debugColorName(surfaces.editorAndLists.background),
+                        paletteColorName(m_widgets.bitField, QPalette::Window),
+                        QStringLiteral("(n/a)"),
+                        grabbedCenterColorName(m_widgets.bitField),
+                        shortStyleSheet(m_widgets.bitField));
+
+    if (QStatusBar* bar = findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly)) {
+        const ThemeSurfaceColors statusBarSurface =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::StatusBarBackgroundShade);
+        appendDiagnosticRow(out,
+                            QStringLiteral("StatusBar"),
+                            debugColorName(statusBarSurface.background),
+                            paletteColorName(bar, QPalette::Window),
+                            QStringLiteral("(n/a)"),
+                            grabbedCenterColorName(bar),
+                            shortStyleSheet(bar));
+    }
+
+    out << "</tbody></table></div>\n"
+        << "</section>\n"
+        << "<!-- speedcrunch-oklch-runtime-end -->\n";
+
+    const QString startMarker = QStringLiteral("<!-- speedcrunch-oklch-runtime-start -->");
+    const QString endMarker = QStringLiteral("<!-- speedcrunch-oklch-runtime-end -->");
+    const int start = html.indexOf(startMarker);
+    const int end = start >= 0 ? html.indexOf(endMarker, start) : -1;
+    if (start >= 0 && end >= 0)
+        html.remove(start, end + endMarker.size() - start);
+
+    const int insertAt = html.lastIndexOf(QStringLiteral("</main>"));
+    if (insertAt >= 0)
+        html.insert(insertAt, section);
+    else
+        html.append(section);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
+        return;
+    file.write(html.toUtf8());
+    file.close();
 }
 
 void MainWindow::captureVisibleSessionViewports()
@@ -4457,6 +5678,17 @@ void MainWindow::addTabifiedDock(QDockWidget* newDock, bool takeFocus, Qt::DockW
     m_allDocks.append(newDock);
     newDock->show();
     newDock->raise();
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+    applyGeneratedDockContentSurfaces(this, newDock, surfaces);
+    applyGeneratedDockChromeSurfaces(newDock, surfaces);
+    QPointer<QDockWidget> guardedDock(newDock);
+    QTimer::singleShot(0, newDock, [this, guardedDock]() {
+        if (guardedDock == nullptr)
+            return;
+        const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+        applyGeneratedDockContentSurfaces(this, guardedDock, surfaces);
+        applyGeneratedDockChromeSurfaces(guardedDock, surfaces);
+    });
     if (takeFocus)
         newDock->setFocus();
 }
@@ -4480,12 +5712,13 @@ void MainWindow::createFixedConnections()
         setActiveEditorDisplayPane(initialDisplay, initialEditor);
     });
     connect(initialDisplay, &ResultDisplay::clicked, this, [this, initialDisplay, initialEditor]() {
-        setActiveEditorDisplayPane(initialDisplay, initialEditor);
+        setActiveEditorDisplayPane(initialDisplay, initialEditor, true);
     });
     connect(initialDisplay, &ResultDisplay::selectionChanged, this, [this, initialDisplay, initialEditor]() {
-        setActiveEditorDisplayPane(initialDisplay, initialEditor);
+        setActiveEditorDisplayPane(initialDisplay, initialEditor, true);
     });
     connect(this, &MainWindow::colorSchemeChanged, this, &MainWindow::updateSplitterStyleSheet);
+    connect(this, &MainWindow::colorSchemeChanged, this, &MainWindow::applyThemeSurfacePalette);
     connect(this, &MainWindow::colorSchemeChanged, this, &MainWindow::refreshPaneThemes);
     connect(this, &MainWindow::syntaxHighlightingChanged, this, &MainWindow::refreshPaneThemes);
 
@@ -4602,7 +5835,10 @@ void MainWindow::createFixedConnections()
     connect(m_actions.helpDonate, SIGNAL(triggered()), SLOT(openDonateURL()));
     connect(m_actions.helpAbout, SIGNAL(triggered()), SLOT(showAboutDialog()));
 
-    connect(m_widgets.editor, SIGNAL(autoCalcDisabled()), SLOT(hideStateLabel()));
+    connect(m_widgets.editor, &Editor::autoCalcDisabled, this, [this]() {
+        if (sender() == m_widgets.editor)
+            hideStateLabel();
+    });
     connect(m_widgets.editor, SIGNAL(autoCalcMessageAvailable(const QString&)), SLOT(handleAutoCalcMessageAvailable(const QString&)));
     connect(m_widgets.editor, SIGNAL(autoCalcQuantityAvailable(const Quantity&)), SLOT(handleAutoCalcQuantityAvailable(const Quantity&)));
     connect(m_widgets.editor, SIGNAL(returnPressed()), SLOT(evaluateEditorExpression()));
@@ -5466,9 +6702,14 @@ MainWindow::MainWindow()
     m_bulkFunctionsChanged = false;
     m_bulkUnitsChanged = false;
     connect(m_deferredSessionSaveTimer, &QTimer::timeout, this, &MainWindow::flushPendingSessionSave);
+    connect(qApp, &QApplication::focusChanged, this, &MainWindow::handleApplicationFocusChanged);
+    qApp->installEventFilter(this);
 
     createUi();
+    applyThemeSurfacePalette();
     applySettings();
+    applyThemeSurfacePalette();
+    refreshPaneThemes();
     updatePaneLoadedSessionCounts();
 
     if (!m_settings->hasNumberFormatStyleSetting)
@@ -5486,6 +6727,7 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+    qApp->removeEventFilter(this);
     windowIds().remove(objectName());
     allMainWindows().removeAll(QPointer<MainWindow>(this));
     if (m_docks.book)
@@ -6128,6 +7370,8 @@ void MainWindow::showLoadedSessionsMenu(const QPoint& globalPos)
         action->setData(name);
     }
 
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+    applyMenuSurface(&menu, surfaces.headersAndBorders, surfaces.inputs);
     QAction* selectedAction = menu.exec(globalPos);
     if (selectedAction == nullptr)
         return;
@@ -6271,6 +7515,7 @@ void MainWindow::showCustomThemeDialog()
     QVBoxLayout* previewGroupLayout = new QVBoxLayout(previewGroup);
 
     QWidget* previewWidget = new QWidget(previewGroup);
+    previewWidget->setObjectName(QStringLiteral("ThemePreview"));
     QVBoxLayout* previewLayout = new QVBoxLayout(previewWidget);
     previewLayout->setContentsMargins(0, 0, 0, 0);
     previewLayout->setSpacing(0);
@@ -6310,16 +7555,20 @@ void MainWindow::showCustomThemeDialog()
     previewScrollbarLayout->addStretch();
     mainPreviewLayout->addWidget(preview);
     mainPreviewLayout->addWidget(previewScrollbarTrack);
+
     previewLayout->addWidget(mainPreviewWidget);
 
-    QPlainTextEdit* editorPreview = new QPlainTextEdit(previewWidget);
+    Editor* editorPreview = new Editor(previewWidget);
     editorPreview->setReadOnly(true);
     editorPreview->setFrameShape(QFrame::NoFrame);
     editorPreview->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     editorPreview->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    editorPreview->setPlainText(QStringLiteral("sqrt(144) + sin(π / 2)"));
-    editorPreview->setFixedHeight(m_widgets.editor ? m_widgets.editor->height() : editorPreview->sizeHint().height());
-    auto editorPreviewHighlighter = new SyntaxHighlighter(editorPreview);
+    editorPreview->setText(QStringLiteral("sqrt(144) + sin(π / 2)"));
+    editorPreview->setCustomCursorVisible(true);
+    const int editorPreviewHeight = m_widgets.editor
+        ? m_widgets.editor->height()
+        : editorPreview->fontMetrics().lineSpacing() + 46;
+    editorPreview->setFixedHeight(editorPreviewHeight);
     previewLayout->addWidget(editorPreview);
     previewGroupLayout->addWidget(previewWidget);
     layout->addWidget(previewGroup);
@@ -6352,6 +7601,7 @@ void MainWindow::showCustomThemeDialog()
         colorsByRole.insert(roleEntry.second, currentScheme.colorForRole(roleEntry.second));
 
     QMap<ColorScheme::Role, QPushButton*> roleButtons;
+    QPushButton* okButton = nullptr;
     const auto applyColorsToControls = [&colorsByRole, &roleButtons, roleEntries]() {
         for (const auto& roleEntry : roleEntries)
             updateColorButtonStyle(roleButtons.value(roleEntry.second), colorsByRole.value(roleEntry.second));
@@ -6360,28 +7610,43 @@ void MainWindow::showCustomThemeDialog()
         for (const auto& roleEntry : roleEntries)
             colorsByRole[roleEntry.second] = scheme.colorForRole(roleEntry.second);
     };
-    const auto applyPreview = [&colorsByRole, preview, previewHighlighter, previewScrollbarTrack, previewScrollbar, editorPreview, editorPreviewHighlighter]() {
+    const auto applyPreview = [&colorsByRole,
+                               preview,
+                               previewHighlighter,
+                               previewWidget,
+                               previewScrollbarTrack,
+                               previewScrollbar,
+                               editorPreview]() {
         QJsonObject object;
         const auto roles = ColorScheme::roleNames();
         for (const auto& roleEntry : roles)
             object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
         const ColorScheme scheme = ColorScheme::fromJsonObject(object);
+        const GeneratedThemeSurfaces surfaces = generatedSurfaceColorsForScheme(scheme);
+        previewWidget->setAutoFillBackground(true);
+        previewWidget->setAttribute(Qt::WA_StyledBackground, true);
+        previewWidget->setStyleSheet(QStringLiteral("QWidget#ThemePreview { background-color: %1; }")
+                                         .arg(surfaces.result.background.name()));
         previewHighlighter->setColorScheme(ColorScheme::fromJsonObject(scheme.toJsonObject()));
-        editorPreviewHighlighter->setColorScheme(ColorScheme::fromJsonObject(scheme.toJsonObject()));
-        QPalette palette = preview->palette();
-        palette.setColor(QPalette::Base, scheme.colorForRole(ColorScheme::Background));
-        preview->setPalette(palette);
+        const QPalette resultPalette = paletteForThemeSurface(preview->palette(), surfaces.result);
+        preview->setPalette(resultPalette);
+        preview->viewport()->setPalette(resultPalette);
+        preview->setStyleSheet(QStringLiteral("QPlainTextEdit { background-color: %1; color: %2; }")
+                                   .arg(surfaces.result.background.name(),
+                                        surfaces.result.foreground.name()));
         previewHighlighter->rehighlight();
-        previewScrollbarTrack->setStyleSheet(QStringLiteral("background-color: %1;").arg(scheme.colorForRole(ColorScheme::Background).name()));
+        const ThemeScrollBarColors resultScrollBars = scrollBarColorsForSurfaceIndex(surfaces, 1);
+        previewScrollbarTrack->setStyleSheet(QStringLiteral("background-color: %1;")
+                                                 .arg(resultScrollBars.track.name()));
+        previewScrollbar->setStyleSheet(QStringLiteral("background-color: %1; border-radius: 4px;")
+                                            .arg(resultScrollBars.thumb.name()));
 
-        QPalette editorPalette = editorPreview->palette();
-        editorPalette.setColor(QPalette::Base,
-                               editorFillColorForThemeBackground(
-                                   scheme.colorForRole(ColorScheme::Background)));
-        editorPalette.setColor(QPalette::Text, scheme.colorForRole(ColorScheme::Number));
-        editorPreview->setPalette(editorPalette);
-        editorPreviewHighlighter->rehighlight();
-        previewScrollbar->setStyleSheet(QStringLiteral("background-color: %1;").arg(scheme.colorForRole(ColorScheme::ScrollBar).name()));
+        editorPreview->setThemeSurfaceColor(surfaces.editorAndLists.background,
+                                            surfaces.result.background);
+        editorPreview->setThemePreviewColorScheme(scheme);
+        editorPreview->setThemePrimaryColor(surfaces.primary.background, true);
+        editorPreview->setCustomCursorVisible(true);
+        editorPreview->rehighlight();
     };
     const auto updateThemeListHeight = [](QListWidget* list) {
         const int visibleRows = qMin(list->count(), 7);
@@ -6411,7 +7676,6 @@ void MainWindow::showCustomThemeDialog()
                 continue;
             list->setCurrentItem(item);
             item->setSelected(true);
-            list->scrollToItem(item, QAbstractItemView::PositionAtTop);
             list->setFocus(Qt::OtherFocusReason);
             return true;
         }
@@ -6450,6 +7714,8 @@ void MainWindow::showCustomThemeDialog()
             lightThemeList->clearSelection();
             darkThemeList->clearSelection();
             updateColorButtonStyle(roleButtons.value(role), chosen);
+            if (okButton != nullptr)
+                okButton->setEnabled(false);
             applyPreview();
         });
         ++roleIndex;
@@ -6473,6 +7739,8 @@ void MainWindow::showCustomThemeDialog()
         isCustomScheme = false;
         setColorsFromScheme(scheme);
         applyColorsToControls();
+        if (okButton != nullptr)
+            okButton->setEnabled(true);
         applyPreview();
     };
     connect(lightThemeList, &QListWidget::currentItemChanged, &dialog, [&](QListWidgetItem* current) {
@@ -6483,7 +7751,7 @@ void MainWindow::showCustomThemeDialog()
     });
 
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
-    QPushButton* applyButton = buttons->addButton(QDialogButtonBox::Apply);
+    okButton = buttons->button(QDialogButtonBox::Ok);
     QPushButton* importButton = buttons->addButton(tr("Import..."), QDialogButtonBox::ActionRole);
     QPushButton* exportButton = buttons->addButton(tr("Export..."), QDialogButtonBox::ActionRole);
     layout->addWidget(buttons);
@@ -6507,8 +7775,6 @@ void MainWindow::showCustomThemeDialog()
             }
         }
     };
-    connect(applyButton, &QPushButton::clicked, this, applyCurrentTheme);
-
     const auto writableColorSchemesPath = [&]() {
         const auto colorSchemePaths = ColorScheme::fileSystemSearchPaths();
         const QString path = colorSchemePaths.isEmpty() ? QString() : colorSchemePaths.constFirst();
@@ -6577,6 +7843,8 @@ void MainWindow::showCustomThemeDialog()
         }
         selectedSchemeName = themeName;
         isCustomScheme = false;
+        if (okButton != nullptr)
+            okButton->setEnabled(true);
         populateThemeLists();
         applyPreview();
     });
@@ -7698,12 +8966,55 @@ void MainWindow::setMenuBarVisible(bool b)
 
 void MainWindow::showStateLabel(const QString& msg)
 {
-    const int closeButtonSize = qMax(14, m_widgets.editor->fontMetrics().height() - 2);
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+    const ThemeSurfaceColors tooltipSurface =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::ResultTooltipBackgroundShade);
+    const ThemeSurfaceColors tooltipOutline =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::ResultTooltipOutlineShade);
+    const QString tooltipStyle = QStringLiteral(R"(
+        QLabel {
+            background-color: %1;
+            color: %2;
+            border: %5px solid %3;
+            border-radius: %4px;
+        }
+    )").arg(tooltipSurface.background.name(),
+            tooltipSurface.foreground.name(),
+            tooltipOutline.background.name())
+       .arg(UiConfig::ResultTooltipCornerRadius)
+       .arg(UiConfig::OutlineStrokeWidth);
+    m_widgets.state->setStyleSheet(tooltipStyle);
+    m_widgets.stateCloseButton->setStyleSheet(QStringLiteral(R"(
+        QPushButton {
+            border: none;
+            background: transparent;
+            color: %1;
+            padding: 0;
+            margin: 0;
+            outline: none;
+        }
+
+        QPushButton:hover {
+            background: transparent;
+            color: %1;
+        }
+
+        QPushButton:pressed {
+            background: transparent;
+            color: %1;
+        }
+    )").arg(tooltipSurface.foreground.name()));
+
+    Editor* positionEditor = m_widgets.editor;
+    if (positionEditor == nullptr || positionEditor->window() != this)
+        positionEditor = globallyActiveEditor();
+
+    const int closeButtonSize = qMax(14, positionEditor->fontMetrics().height() - 2);
     const int closeButtonRightPadding = 2;
     const int closeButtonTopPadding = 1;
     const int closeButtonReservedWidth = closeButtonSize + closeButtonRightPadding + 2;
     m_widgets.state->setContentsMargins(6, 3, closeButtonReservedWidth, 3);
-    m_widgets.state->setFont(m_widgets.editor->font());
+    m_widgets.state->setFont(positionEditor->font());
     m_widgets.state->setText(msg);
     m_widgets.stateCloseButton->setFixedSize(closeButtonSize, closeButtonSize);
     m_widgets.state->adjustSize();
@@ -7715,17 +9026,24 @@ void MainWindow::showStateLabel(const QString& msg)
     m_widgets.state->show();
     m_widgets.state->raise();
     const int height = m_widgets.state->height();
-    QPoint pos = mapFromGlobal(m_widgets.editor->mapToGlobal(QPoint(0, -height)));
+    QPoint pos = mapFromGlobal(
+        positionEditor->mapToGlobal(QPoint(UiConfig::ResultTooltipStartMargin, -height)));
     m_widgets.state->move(pos);
 }
 
 void MainWindow::handleAutoCalcMessageAvailable(const QString& message)
 {
+    if (pendingDockFocusTarget() != nullptr)
+        return;
+    if (Editor* editor = qobject_cast<Editor*>(sender()); editor != nullptr && editor != m_widgets.editor)
+        return;
     showStateLabel(message);
 }
 
 void MainWindow::handleAutoCalcQuantityAvailable(const Quantity& quantity)
 {
+    if (Editor* editor = qobject_cast<Editor*>(sender()); editor != nullptr && editor != m_widgets.editor)
+        return;
     if (m_settings->bitfieldVisible)
         m_widgets.bitField->updateBits(quantity);
 }
@@ -7782,8 +9100,108 @@ bool MainWindow::event(QEvent* e)
 
 bool MainWindow::eventFilter(QObject* o, QEvent* e)
 {
-    if (Editor* editor = qobject_cast<Editor*>(o)) {
-        if (e->type() == QEvent::FocusIn || e->type() == QEvent::MouseButtonPress) {
+    if (QWidget* widget = qobject_cast<QWidget*>(o); isDockTextInput(widget)) {
+        if (e->type() == QEvent::MouseButtonPress) {
+            pendingDockTextInputFocusTarget() = widget;
+            widget->setFocus(Qt::MouseFocusReason);
+            deactivateActiveEditorForTextInputFocus();
+            QPointer<QWidget> textInput(widget);
+            QTimer::singleShot(0, widget, [textInput]() {
+                if (textInput != nullptr)
+                    textInput->setFocus(Qt::MouseFocusReason);
+            });
+            QTimer::singleShot(100, widget, [textInput]() {
+                if (pendingDockTextInputFocusTarget() == textInput)
+                    pendingDockTextInputFocusTarget() = nullptr;
+            });
+        } else if (e->type() == QEvent::FocusIn) {
+            deactivateActiveEditorForTextInputFocus();
+        }
+        return QMainWindow::eventFilter(o, e);
+    }
+
+    if (e->type() == QEvent::MouseButtonPress) {
+        if (QWidget* widget = qobject_cast<QWidget*>(o)) {
+            QDockWidget* dock = dockWidgetForDescendant(widget);
+            if (dock != nullptr) {
+                deactivateActiveEditorForTextInputFocus();
+                hideStateLabel();
+                pendingDockTextInputFocusTarget() = nullptr;
+                QWidget* focusTarget = dock;
+                if (QAbstractItemView* view = dockItemViewFocusTarget(widget)) {
+                    view->setFocusPolicy(Qt::StrongFocus);
+                    focusTarget = view;
+                } else {
+                    dock->setFocusPolicy(Qt::StrongFocus);
+                }
+                pendingDockFocusTarget() = focusTarget;
+                const QColor inactivePrimary = generatedSurfaceColors(m_settings).primary.background;
+                for (Editor* paneEditor : splitPaneEditors()) {
+                    if (paneEditor == nullptr)
+                        continue;
+                    paneEditor->clearFocus();
+                    paneEditor->setCustomCursorVisible(false);
+                    paneEditor->setThemePrimaryColor(inactivePrimary, false);
+                }
+                focusTarget->setFocus(Qt::MouseFocusReason);
+                QPointer<QWidget> focusTargetGuard(focusTarget);
+                const auto restoreDockFocus = [focusTargetGuard]() {
+                    if (focusTargetGuard != nullptr)
+                        focusTargetGuard->setFocus(Qt::MouseFocusReason);
+                };
+                QTimer::singleShot(0, focusTarget, restoreDockFocus);
+                QTimer::singleShot(50, focusTarget, restoreDockFocus);
+                QTimer::singleShot(250, focusTarget, [focusTargetGuard]() {
+                    if (pendingDockFocusTarget() == focusTargetGuard)
+                        pendingDockFocusTarget() = nullptr;
+                });
+            }
+        }
+    }
+
+    Editor* filteredEditor = qobject_cast<Editor*>(o);
+    if (filteredEditor == nullptr) {
+        if (QWidget* widget = qobject_cast<QWidget*>(o))
+            filteredEditor = qobject_cast<Editor*>(widget->parentWidget());
+    }
+    if (Editor* editor = filteredEditor) {
+        if (Editor* completionOwner = Editor::completionMouseSelectionOwner()) {
+            if (editor != completionOwner
+                && (e->type() == QEvent::FocusIn || e->type() == QEvent::MouseButtonPress)) {
+                QPointer<Editor> owner(completionOwner);
+                QTimer::singleShot(0, completionOwner, [owner]() {
+                    if (owner != nullptr) {
+                        owner->window()->activateWindow();
+                        owner->setFocus(Qt::OtherFocusReason);
+                        owner->viewport()->setFocus(Qt::OtherFocusReason);
+                    }
+                });
+                return true;
+            }
+        }
+        if (e->type() == QEvent::FocusIn && pendingDockFocusTarget() != nullptr) {
+            QPointer<QWidget> focusTarget(pendingDockFocusTarget());
+            editor->clearFocus();
+            QTimer::singleShot(0, focusTarget, [focusTarget]() {
+                if (focusTarget != nullptr)
+                    focusTarget->setFocus(Qt::MouseFocusReason);
+            });
+            return true;
+        }
+        if (e->type() == QEvent::FocusIn && pendingDockTextInputFocusTarget() != nullptr) {
+            QPointer<QWidget> textInput(pendingDockTextInputFocusTarget());
+            QTimer::singleShot(0, textInput, [textInput]() {
+                if (textInput != nullptr)
+                    textInput->setFocus(Qt::MouseFocusReason);
+            });
+            return true;
+        }
+        if (dockTextInputFocusTransferInProgress() && e->type() == QEvent::FocusIn)
+            return QMainWindow::eventFilter(o, e);
+        if (e->type() == QEvent::FocusIn
+            || e->type() == QEvent::MouseButtonPress
+            || e->type() == QEvent::KeyPress
+            || e->type() == QEvent::InputMethod) {
             QWidget* pane = editor->parentWidget();
             ResultDisplay* display = pane ? pane->findChild<ResultDisplay*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
             if (display != nullptr)
@@ -8956,7 +10374,7 @@ void MainWindow::finishRestoreSessionLayout(const QJsonObject& layout,
                 ? Qt::Vertical
                 : Qt::Horizontal);
         splitter->setChildrenCollapsible(false);
-        splitter->setHandleWidth(1);
+        splitter->setHandleWidth(UiConfig::SessionPaneSplitterWidth);
         splitter->setStyleSheet(m_widgets.splitContainer->styleSheet());
 
         const QJsonArray children = node.value(QStringLiteral("children")).toArray();
@@ -9017,17 +10435,21 @@ void MainWindow::finishRestoreSessionLayout(const QJsonObject& layout,
     activateSession(activeSession);
     m_conditions.autoAns = restoreHistory && !m_session->historyIsEmpty();
     updatePaneEditorCursorVisibility();
-    const QString windowStateBase64 = window.value(QStringLiteral("windowState")).toString();
-    if (!windowStateBase64.isEmpty())
-        restoreState(QByteArray::fromBase64(windowStateBase64.toLatin1()), DockLayoutStateVersion);
-    else
-        restoreState(m_settings->windowState, DockLayoutStateVersion);
     if (window.contains(QStringLiteral("statusBarVisible")))
         setStatusBarVisible(window.value(QStringLiteral("statusBarVisible")).toBool(true));
+    if (!isVisible()) {
+        const QString windowStateBase64 = window.value(QStringLiteral("windowState")).toString();
+        if (!windowStateBase64.isEmpty())
+            restoreState(QByteArray::fromBase64(windowStateBase64.toLatin1()), DockLayoutStateVersion);
+        else
+            restoreState(m_settings->windowState, DockLayoutStateVersion);
+    }
     if (window.contains(QStringLiteral("bitfieldVisible")))
         setBitfieldVisible(window.value(QStringLiteral("bitfieldVisible")).toBool(false));
     if (window.contains(QStringLiteral("keypadVisible")))
         setKeypadVisible(window.value(QStringLiteral("keypadVisible")).toBool(false));
+    applyThemeSurfacePalette();
+    refreshPaneThemes();
     emit historyChanged();
     emit variablesChanged();
     emit functionsChanged();
@@ -9955,6 +11377,8 @@ void MainWindow::showPrecisionContextMenu(const QPoint& point)
     editorAction->setDefaultWidget(precisionEditor);
     menu.addAction(editorAction);
 
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+    applyMenuSurface(&menu, surfaces.headersAndBorders, surfaces.inputs);
     menu.exec(m_status.resultPrecision->mapToGlobal(point));
 }
 

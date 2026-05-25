@@ -146,6 +146,10 @@ add_executable(testeditorui ${testeditorui_SOURCES})
 target_link_libraries(testeditorui ${QT_LIBRARIES} Qt6::Test)
 add_test(NAME testeditorui COMMAND testeditorui)
 
+add_executable(testoklch ${testoklch_SOURCES})
+target_link_libraries(testoklch ${QT_LIBRARIES} Qt6::Test)
+add_test(NAME testoklch COMMAND testoklch)
+
 add_executable(testdocksui ${testdocksui_SOURCES})
 target_link_libraries(testdocksui ${QT_LIBRARIES} Qt6::Test)
 add_test(NAME testdocksui COMMAND testdocksui)

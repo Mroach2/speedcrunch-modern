@@ -9,6 +9,7 @@
 #include "core/unicodechars.h"
 #include "core/mathdsl.h"
 #include "gui/dockliststyle.h"
+#include "gui/themedlineedit.h"
 
 #include <QEvent>
 #include <QResizeEvent>
@@ -54,6 +55,9 @@ static QString displayValue(const Constant& constant)
 ConstantsWidget::ConstantsWidget(QWidget* parent)
     : QWidget(parent)
 {
+    constexpr int kControlRowHorizontalPadding = 8;
+    constexpr int kControlRowVerticalPadding = 6;
+
     m_domainLabel = new QLabel(this);
     m_domain = new QComboBox(this);
     m_domain->setEditable(false);
@@ -69,7 +73,10 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
     m_domainBox = new QWidget(this);
     m_domainLayout = new QHBoxLayout;
     m_domainBox->setLayout(m_domainLayout);
-    m_domainLayout->setContentsMargins(0, 0, 0, 0);
+    m_domainLayout->setContentsMargins(kControlRowHorizontalPadding,
+                                       kControlRowVerticalPadding,
+                                       kControlRowHorizontalPadding,
+                                       kControlRowVerticalPadding);
     m_domainLayout->setSpacing(6);
 
     m_domainRow1 = new QWidget(this);
@@ -90,7 +97,7 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
 
     m_label = new QLabel(this);
 
-    m_filter = new QLineEdit(this);
+    m_filter = new ThemedLineEdit(this);
     m_filter->setMinimumWidth(fontMetrics().horizontalAdvance('X') * 10);
     m_filter->setClearButtonEnabled(true);
 
@@ -101,7 +108,10 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
     searchBox->setLayout(searchLayout);
     searchLayout->addWidget(m_label);
     searchLayout->addWidget(m_filter);
-    searchLayout->setContentsMargins(0, 0, 0, 0);
+    searchLayout->setContentsMargins(kControlRowHorizontalPadding,
+                                     kControlRowVerticalPadding,
+                                     kControlRowHorizontalPadding,
+                                     kControlRowVerticalPadding);
 
     m_list = new QTreeWidget(this);
     m_list->setAutoScroll(true);
@@ -131,7 +141,8 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
 
     QVBoxLayout* layout = new QVBoxLayout;
     setLayout(layout);
-    layout->setContentsMargins(3, 3, 3, 3);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     layout->addWidget(m_domainBox);
     layout->addWidget(searchBox);
     layout->addWidget(m_list);

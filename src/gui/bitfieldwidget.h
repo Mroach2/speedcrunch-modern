@@ -5,6 +5,7 @@
 #ifndef BITFIELDWIDGET_H
 #define BITFIELDWIDGET_H
 
+#include <QColor>
 #include <QLabel>
 #include <QWidget>
 
@@ -21,12 +22,19 @@ public:
 
     bool state() const { return m_state; }
     void setState(bool state);
+    void setThemeColors(const QColor& background,
+                        const QColor& foreground,
+                        const QColor& hoverBackground,
+                        const QColor& hoverForeground,
+                        const QColor& selectedBackground,
+                        const QColor& selectedForeground);
 
 signals:
     void stateChanged(bool);
 
 protected:
-    void mouseReleaseEvent(QMouseEvent*);
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
 
 private:
     void updateStyle();
@@ -39,6 +47,13 @@ private:
     Q_DISABLE_COPY(BitWidget)
 
     bool m_state;
+    bool m_pressed = false;
+    QColor m_themeBackground;
+    QColor m_themeForeground;
+    QColor m_themeHoverBackground;
+    QColor m_themeHoverForeground;
+    QColor m_themeSelectedBackground;
+    QColor m_themeSelectedForeground;
 };
 
 class BitFieldWidget : public QWidget {
@@ -60,6 +75,15 @@ public slots:
     void updateBits(const Quantity&);
     void updateSize();
     void updateFieldLayout();
+    void setThemeColors(const QColor& background,
+                        const QColor& foreground,
+                        const QColor& hoverBackground = QColor(),
+                        const QColor& hoverForeground = QColor(),
+                        const QColor& pressedBackground = QColor(),
+                        const QColor& pressedForeground = QColor(),
+                        const QColor& selectedBackground = QColor(),
+                        const QColor& selectedForeground = QColor());
+    void refreshTheme();
 
 private slots:
     void onBitChanged();
@@ -86,6 +110,14 @@ private:
     QPushButton* m_invertButton;
     QPushButton* m_shiftLeftButton;
     QPushButton* m_shiftRightButton;
+    QColor m_themeBackground;
+    QColor m_themeForeground;
+    QColor m_themeHoverBackground;
+    QColor m_themeHoverForeground;
+    QColor m_themePressedBackground;
+    QColor m_themePressedForeground;
+    QColor m_themeSelectedBackground;
+    QColor m_themeSelectedForeground;
 };
 
 #endif // BITFIELDWIDGET_H

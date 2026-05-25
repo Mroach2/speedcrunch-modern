@@ -14,9 +14,45 @@
 #include <QLabel>
 #include <QListIterator>
 #include <QPaintEvent>
-#include <QApplication>
 #include <QPushButton>
 #include <QRegularExpression>
+
+namespace {
+
+QString bitFieldButtonStyleSheet(const QColor& background,
+                                 const QColor& foreground,
+                                 const QColor& hoverBackground,
+                                 const QColor& hoverForeground,
+                                 const QColor& pressedBackground,
+                                 const QColor& pressedForeground)
+{
+    return QStringLiteral(
+        "QPushButton {"
+        " border: none;"
+        " border-radius: 5px;"
+        " padding: 2px;"
+        " background-color: %1;"
+        " color: %2;"
+        "}"
+        "QPushButton:hover {"
+        " border: none;"
+        " background-color: %3;"
+        " color: %4;"
+        "}"
+        "QPushButton:pressed {"
+        " border: none;"
+        " background-color: %5;"
+        " color: %6;"
+        "}")
+        .arg(background.name(),
+             foreground.name(),
+             hoverBackground.name(),
+             hoverForeground.name(),
+             pressedBackground.name(),
+             pressedForeground.name());
+}
+
+} // namespace
 
 BitWidget::BitWidget(int bitPosition, QWidget* parent)
     : QLabel(parent),
@@ -38,6 +74,7 @@ void BitWidget::setState(bool state)
 {
     if (state != m_state) {
         m_state = state;
+        setProperty("bitState", m_state);
         updateStyle();
         update();
     }
@@ -45,19 +82,67 @@ void BitWidget::setState(bool state)
 
 void BitWidget::updateStyle()
 {
-    QPalette palette = QApplication::palette();
+    const QPalette palette = this->palette();
+    const QColor background = m_themeBackground.isValid()
+        ? m_themeBackground
+        : palette.color(QPalette::Window);
+    const QColor foreground = m_themeForeground.isValid()
+        ? m_themeForeground
+        : palette.color(QPalette::WindowText);
+    const QColor hoverBackground = m_themeHoverBackground.isValid()
+        ? m_themeHoverBackground
+        : palette.color(QPalette::Highlight);
+    const QColor hoverForeground = m_themeHoverForeground.isValid()
+        ? m_themeHoverForeground
+        : palette.color(QPalette::HighlightedText);
+    const QColor selectedBackground = m_themeSelectedBackground.isValid()
+        ? m_themeSelectedBackground
+        : palette.color(QPalette::Mid);
+    const QColor selectedForeground = m_themeSelectedForeground.isValid()
+        ? m_themeSelectedForeground
+        : palette.color(QPalette::ButtonText);
+    setProperty("bitState", m_state);
+    setProperty("bitPressed", m_pressed);
     setStyleSheet(
         QString("QLabel { background-color: %1; color: %2; }"
+                "QLabel[bitState=\"true\"], QLabel[bitPressed=\"true\"] {"
+                " background-color: %5; color: %6;"
+                "}"
                 "QLabel:hover { background-color: %3; color: %4; }")
-            .arg(palette.color(m_state ? QPalette::WindowText : QPalette::Window).name(),
-                 palette.color(m_state ? QPalette::Window : QPalette::WindowText).name(),
-                 palette.color(QPalette::Highlight).name(),
-                 palette.color(QPalette::HighlightedText).name())
+            .arg(background.name(),
+                 foreground.name(),
+                 hoverBackground.name(),
+                 hoverForeground.name(),
+                 selectedBackground.name(),
+                 selectedForeground.name())
     );
+}
+
+void BitWidget::setThemeColors(const QColor& background,
+                               const QColor& foreground,
+                               const QColor& hoverBackground,
+                               const QColor& hoverForeground,
+                               const QColor& selectedBackground,
+                               const QColor& selectedForeground)
+{
+    m_themeBackground = background;
+    m_themeForeground = foreground;
+    m_themeHoverBackground = hoverBackground;
+    m_themeHoverForeground = hoverForeground;
+    m_themeSelectedBackground = selectedBackground;
+    m_themeSelectedForeground = selectedForeground;
+    updateStyle();
+}
+
+void BitWidget::mousePressEvent(QMouseEvent*)
+{
+    m_pressed = true;
+    updateStyle();
 }
 
 void BitWidget::mouseReleaseEvent(QMouseEvent*)
 {
+    m_pressed = false;
     setState(!m_state);
     emit stateChanged(m_state);
 }
@@ -65,38 +150,15 @@ void BitWidget::mouseReleaseEvent(QMouseEvent*)
 BitFieldWidget::BitFieldWidget(QWidget* parent) :
     QWidget(parent)
 {
+    setObjectName(QStringLiteral("BitFieldWidget"));
+    setAutoFillBackground(true);
     setLayoutDirection(Qt::LeftToRight);
 
-    // Build the CSS border color using 50% opacity (same result as previous method with painting)
-    QPalette palette = QApplication::palette();
-    auto borderColor = palette.color(QPalette::WindowText);
-    QString cssBorderColor = QString("rgba(%1, %2, %3, %4)")
-                                .arg(borderColor.red())
-                                .arg(borderColor.green())
-                                .arg(borderColor.blue())
-                                .arg(0.5);
-
-    setStyleSheet(QString("QLabel#BitWidget, QLabel#FirstBitWidget {"
-                          " qproperty-alignment: 'AlignHCenter | AlignVCenter';"
-                          " border-top: 1px solid %3;"
-                          " border-bottom: 1px solid %3;"
-                          " border-right: 1px solid %3;"
-                          " padding: 1px;"
-                          " background-color : %1; color : %2;"
-                          "}"
-                          /* Extra style for first bit of each group */
-                          "QLabel#FirstBitWidget {"
-                          " border-left: 1px solid %3;"
-                          "}"
-                          )
-                      .arg(palette.color(QPalette::Window).name(),
-                           palette.color(QPalette::WindowText).name(),
-                           cssBorderColor)
-                 );
+    refreshTheme();
 
     m_bitWidgets.reserve(NumberOfBits);
     for (int i = 0; i < NumberOfBits; ++i) {
-        BitWidget* bitWidget = new BitWidget(i);
+        BitWidget* bitWidget = new BitWidget(i, this);
         connect(bitWidget, SIGNAL(stateChanged(bool)), this, SLOT(onBitChanged()));
         m_bitWidgets.append(bitWidget);
     }
@@ -174,6 +236,107 @@ BitFieldWidget::BitFieldWidget(QWidget* parent) :
 
     // Update the field layout again, because the widgets size has changed now
     this->updateFieldLayout();
+}
+
+void BitFieldWidget::refreshTheme()
+{
+    // Build the CSS border color using 50% opacity (same result as previous method with painting).
+    const QPalette palette = this->palette();
+    const QColor background = m_themeBackground.isValid()
+        ? m_themeBackground
+        : palette.color(QPalette::Window);
+    const QColor foreground = m_themeForeground.isValid()
+        ? m_themeForeground
+        : palette.color(QPalette::WindowText);
+    const QColor hoverBackground = m_themeHoverBackground.isValid()
+        ? m_themeHoverBackground
+        : palette.color(QPalette::Highlight);
+    const QColor hoverForeground = m_themeHoverForeground.isValid()
+        ? m_themeHoverForeground
+        : palette.color(QPalette::HighlightedText);
+    const QColor pressedBackground = m_themePressedBackground.isValid()
+        ? m_themePressedBackground
+        : palette.color(QPalette::Mid);
+    const QColor pressedForeground = m_themePressedForeground.isValid()
+        ? m_themePressedForeground
+        : palette.color(QPalette::ButtonText);
+    const QColor borderColor = foreground;
+    const QString cssBorderColor = QString("rgba(%1, %2, %3, %4)")
+        .arg(borderColor.red())
+        .arg(borderColor.green())
+        .arg(borderColor.blue())
+        .arg(0.5);
+
+    setStyleSheet(QString("QWidget#BitFieldWidget {"
+                          " background-color: %1; color: %2;"
+                          "}"
+                          "QLabel#BitWidget, QLabel#FirstBitWidget {"
+                          " qproperty-alignment: 'AlignHCenter | AlignVCenter';"
+                          " border-top: 1px solid %3;"
+                          " border-bottom: 1px solid %3;"
+                          " border-right: 1px solid %3;"
+                          " padding: 1px;"
+                          " background-color : %1; color : %2;"
+                          "}"
+                          "QLabel#FirstBitWidget {"
+                          " border-left: 1px solid %3;"
+                          "}")
+                      .arg(background.name(),
+                           foreground.name(),
+                           cssBorderColor));
+    const QString buttonStyle = bitFieldButtonStyleSheet(background,
+                                                        foreground,
+                                                        hoverBackground,
+                                                        hoverForeground,
+                                                        pressedBackground,
+                                                        pressedForeground);
+    for (QPushButton* button : {m_resetButton,
+                                m_invertButton,
+                                m_shiftLeftButton,
+                                m_shiftRightButton}) {
+        if (button == nullptr)
+            continue;
+        QPalette buttonPalette = button->palette();
+        buttonPalette.setColor(QPalette::Button, background);
+        buttonPalette.setColor(QPalette::ButtonText, foreground);
+        buttonPalette.setColor(QPalette::Highlight, hoverBackground);
+        buttonPalette.setColor(QPalette::HighlightedText, hoverForeground);
+        button->setPalette(buttonPalette);
+        button->setStyleSheet(buttonStyle);
+    }
+    const QColor selectedBackground = m_themeSelectedBackground.isValid()
+        ? m_themeSelectedBackground
+        : pressedBackground;
+    const QColor selectedForeground = m_themeSelectedForeground.isValid()
+        ? m_themeSelectedForeground
+        : pressedForeground;
+    for (BitWidget* bitWidget : m_bitWidgets)
+        bitWidget->setThemeColors(background,
+                                  foreground,
+                                  hoverBackground,
+                                  hoverForeground,
+                                  selectedBackground,
+                                  selectedForeground);
+}
+
+void BitFieldWidget::setThemeColors(const QColor& background,
+                                    const QColor& foreground,
+                                    const QColor& hoverBackground,
+                                    const QColor& hoverForeground,
+                                    const QColor& pressedBackground,
+                                    const QColor& pressedForeground,
+                                    const QColor& selectedBackground,
+                                    const QColor& selectedForeground)
+{
+    m_themeBackground = background;
+    m_themeForeground = foreground;
+    m_themeHoverBackground = hoverBackground;
+    m_themeHoverForeground = hoverForeground;
+    m_themePressedBackground = pressedBackground;
+    m_themePressedForeground = pressedForeground;
+    m_themeSelectedBackground = selectedBackground;
+    m_themeSelectedForeground = selectedForeground;
+    refreshTheme();
 }
 
 QSize BitFieldWidget::minimumSizeHint() const

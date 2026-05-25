@@ -532,12 +532,16 @@ User Interface Settings
 * :menuselection:`Settings --> Appearance --> Theme...`
     Open the theme dialog. Themes are listed in :guilabel:`Light Themes` and
     :guilabel:`Dark Themes` groups. Selecting a theme updates the preview
-    immediately; :guilabel:`Apply` applies the selected or customized theme
-    without closing the dialog.
+    immediately.
 
     The :guilabel:`Preview` area shows representative result-display and
-    editor content so that the syntax-highlighting, result, background,
-    editor-background, and scrollbar roles are visible while editing.
+    editor content so that syntax-highlighting, result, and background colors
+    are visible while editing. The selected ``background``
+    color also generates the primary/accent color and nearby OKLCH surface
+    colors for the expression editor and surrounding application chrome,
+    followed by progressively offset surface colors for dock titles, dock
+    controls and table headers, dock search and content areas, pane splitters,
+    and scrollbars.
 
     The :guilabel:`Colors` area provides per-role color selection buttons showing
     both the ``#RRGGBB`` value and the actual color. Changing any color creates a
@@ -564,9 +568,10 @@ User Interface Settings
       application directory.
 
     Theme files use JSON and map role names to color values. Supported role names are:
-    ``cursor``, ``number``, ``parens``, ``list``, ``unit``, ``result``, ``comment``, ``matched``,
-    ``function``, ``operator``, ``variable``, ``scrollbar``, ``separator``,
-    ``background``, ``editorbackground``.
+    ``cursor``, ``number``, ``parens``, ``list``, ``unit``, ``result``,
+    ``comment``, ``matched``, ``function``, ``operator``, ``variable``,
+    ``separator``, ``background``.
+    The editor surface and scrollbar colors are generated from ``background``.
     For the full schema, see :doc:`theme_json_schema`.
 
     .. versionadded:: 1.0

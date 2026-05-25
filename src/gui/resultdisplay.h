@@ -6,6 +6,7 @@
 #define GUI_RESULTDISPLAY_H
 
 #include <QBasicTimer>
+#include <QColor>
 #include <QPlainTextEdit>
 #include <QPair>
 #include <QVector>
@@ -43,6 +44,12 @@ public:
     void setLoadedSessionCount(int count);
     void setCloseSessionEnabled(bool enabled);
     void setSession(const Session* session);
+    void setThemeSurfaceColor(const QColor& color);
+    void setThemeInteractionColors(const QColor& hoverBackground,
+                                   const QColor& menuBackground,
+                                   const QColor& menuForeground,
+                                   const QColor& menuHoverBackground,
+                                   const QColor& menuHoverForeground);
     const Session* session() const { return m_session; }
     bool closeSessionEnabled() const { return m_closeSessionEnabled; }
     int loadedSessionCount() const { return m_loadedSessionCount; }
@@ -117,6 +124,7 @@ protected:
     void drawScrollEdgeGradients(QPainter* painter);
     void repositionScrollToBottomButton();
     void updateScrollToBottomButtonVisibility();
+    void updateScrollToBottomButtonStyle();
     void updateScrollBarStyleSheet();
     int historyIndexAtPosition(const QPoint& pos) const;
     bool blockRangeForHistoryIndex(int historyIndex, int& startBlock, int& endBlock) const;
@@ -133,6 +141,7 @@ protected:
     bool historyBlockOverlapsSessionBadge(int historyIndex) const;
     bool historyBlockOverlapsScrollToBottomButton(int historyIndex) const;
     void updateHoverHighlightSelection();
+    QColor themeSurfaceBackground() const;
     void markHistoryBlockIndexCacheDirty();
     void markSimplifiedExpressionBlock(int blockNumber);
     void markSimplifiedExpressionBlocks();
@@ -158,6 +167,13 @@ private:
     int m_loadedSessionCount;
     bool m_closeSessionEnabled;
     const Session* m_session;
+    QColor m_themeSurfaceColor;
+    QColor m_hoverHighlightColor;
+    QColor m_contextMenuBackgroundColor;
+    QColor m_contextMenuForegroundColor;
+    QColor m_contextMenuHoverBackgroundColor;
+    QColor m_contextMenuHoverForegroundColor;
+    bool m_scrollToBottomButtonHovered;
     QToolButton* m_scrollToBottomButton;
 };
 

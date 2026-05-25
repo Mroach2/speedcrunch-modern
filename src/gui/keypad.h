@@ -5,6 +5,7 @@
 #ifndef GUI_KEYPAD_H
 #define GUI_KEYPAD_H
 
+#include <QColor>
 #include <QHash>
 #include <QList>
 #include <QWidget>
@@ -45,6 +46,12 @@ public:
 
     explicit Keypad(LayoutMode layoutMode = LayoutModeScientificWide, QWidget* parent = 0, int scalePercent = 100);
     explicit Keypad(const QList<CustomButtonDescription>& customButtons, QWidget* parent = 0, int scalePercent = 100);
+    void setThemeButtonColors(const QColor& background,
+                              const QColor& foreground,
+                              const QColor& hoverBackground,
+                              const QColor& hoverForeground,
+                              const QColor& pressedBackground,
+                              const QColor& pressedForeground);
 
 signals:
     void buttonPressed(Keypad::Button) const;
@@ -66,6 +73,7 @@ private:
     void layoutButtons();
     void createCustomButtons();
     void layoutCustomButtons();
+    void updateButtonStyleSheets();
     void setButtonTooltips();
     void sizeButtons();
     void sizeCustomButtons();
@@ -81,6 +89,12 @@ private:
     LayoutMode m_layoutMode;
     bool m_isCustom;
     int m_scalePercent;
+    QColor m_buttonBackground;
+    QColor m_buttonForeground;
+    QColor m_buttonHoverBackground;
+    QColor m_buttonHoverForeground;
+    QColor m_buttonPressedBackground;
+    QColor m_buttonPressedForeground;
     QHash<Button, QPair<QPushButton*, const KeyDescription*> > keys;
     QList<CustomButtonDescription> m_customButtons;
     QList<QPushButton*> m_customWidgets;

@@ -5,6 +5,7 @@
 #include "gui/editor.h"
 #include "gui/editorutils.h"
 #include "gui/syntaxhighlighter.h"
+#include "gui/uiconfig.h"
 #include "core/evaluator.h"
 #include "core/session.h"
 #include "core/settings.h"
@@ -20,11 +21,13 @@
 #include <QJsonObject>
 #include <QKeyEvent>
 #include <QPalette>
+#include <QPushButton>
 #include <QScrollBar>
 #include <QSignalSpy>
 #include <QTest>
 #include <QTextLayout>
 #include <QTreeWidget>
+#include <QVBoxLayout>
 
 class TestEditorUi : public QObject {
     Q_OBJECT
@@ -114,6 +117,19 @@ private slots:
     void tooltip_handles_affine_temperature_units_without_arrow_and_with_conversion();
     void tooltip_shows_selection_result_when_selecting_with_shift_arrows();
     void enter_evaluates_when_completion_popup_has_no_explicit_interaction();
+    void completion_popup_arrow_keys_change_selection();
+    void completion_popup_tab_accepts_selected_item();
+    void completion_popup_closes_when_clicking_elsewhere();
+    void completion_popup_clicking_row_accepts_item();
+    void completion_popup_mouse_selection_keeps_focus_on_owning_editor();
+    void completion_popup_scrollbar_click_keeps_popup_open();
+    void completion_popup_mouse_wheel_scrolls_popup();
+    void completion_popup_escape_closes_and_stays_closed();
+    void completion_popup_escape_keeps_focus_on_owning_editor();
+    void completion_popup_reopens_after_typing_following_escape();
+    void completion_popup_shows_for_two_character_prefixes();
+    void completion_popup_uses_configured_surface_colors();
+    void inactive_editor_does_not_show_completion_popup();
     void enter_evaluates_when_cursor_is_immediately_after_operator();
     void completion_popup_uses_expected_icons_for_all_symbol_types();
     void wrap_selection_method_wraps_selected_text();
@@ -127,16 +143,26 @@ private slots:
 
 static QTreeWidget* s_completionPopupTree()
 {
+    const auto topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget* widget : topLevelWidgets) {
+        if (!widget || !widget->isVisible())
+            continue;
+        if (widget->objectName() != QStringLiteral("editorCompletionPopup"))
+            continue;
+        if (QTreeWidget* tree = qobject_cast<QTreeWidget*>(widget))
+            return tree;
+    }
+
     QWidget* popup = QApplication::activePopupWidget();
     if (popup) {
         if (QTreeWidget* tree = qobject_cast<QTreeWidget*>(popup))
             return tree;
     }
-    const auto topLevelWidgets = QApplication::topLevelWidgets();
     for (QWidget* widget : topLevelWidgets) {
         if (!widget || !widget->isVisible())
             continue;
-        if (!(widget->windowFlags() & Qt::Popup))
+        if (!(widget->windowFlags() & (Qt::Popup | Qt::Tool))
+            && widget->objectName() != QStringLiteral("editorCompletionPopup"))
             continue;
         if (QTreeWidget* tree = qobject_cast<QTreeWidget*>(widget))
             return tree;
@@ -155,6 +181,36 @@ static QString s_popupSymbolForIdentifier(QTreeWidget* popup, const QString& ide
     }
     return QString();
 }
+
+static QTreeWidget* s_completionPopupTreeContaining(const QString& identifierPrefix)
+{
+    const auto topLevelWidgets = QApplication::topLevelWidgets();
+    for (QWidget* widget : topLevelWidgets) {
+        if (!widget || !widget->isVisible())
+            continue;
+        if (widget->objectName() != QStringLiteral("editorCompletionPopup"))
+            continue;
+        QTreeWidget* tree = qobject_cast<QTreeWidget*>(widget);
+        if (!tree)
+            continue;
+        for (int i = 0; i < tree->topLevelItemCount(); ++i) {
+            QTreeWidgetItem* item = tree->topLevelItem(i);
+            if (item && item->text(1).startsWith(identifierPrefix))
+                return tree;
+        }
+    }
+    return nullptr;
+}
+
+static bool s_editorOrViewportHasFocus(Editor* editor)
+{
+    QWidget* focusWidget = QApplication::focusWidget();
+    return editor->hasFocus()
+        || editor->viewport()->hasFocus()
+        || focusWidget == editor
+        || focusWidget == editor->viewport();
+}
+
 
 void TestEditorUi::blocks_consecutive_plus()
 {
@@ -3207,7 +3263,7 @@ void TestEditorUi::enter_evaluates_when_completion_popup_has_no_explicit_interac
     QVERIFY(QTest::qWaitForWindowExposed(&editor));
     editor.setFocus();
 
-    const QString input = QString::fromUtf8("∑(1;10;n");
+    const QString input = QStringLiteral("co");
     editor.setText(input);
     editor.setCursorPosition(input.size());
 
@@ -3218,14 +3274,476 @@ void TestEditorUi::enter_evaluates_when_completion_popup_has_no_explicit_interac
         "triggerAutoComplete",
         Qt::DirectConnection));
 
-    QWidget* popup = QApplication::activePopupWidget();
-    QVERIFY(popup);
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
 
     QTest::keyClick(popup, Qt::Key_Return, Qt::NoModifier);
     QCoreApplication::processEvents();
 
     QCOMPARE(returnPressedSpy.count(), 1);
     QCOMPARE(editor.text(), input);
+}
+
+void TestEditorUi::completion_popup_arrow_keys_change_selection()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral("co"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QVERIFY(popup->topLevelItemCount() > 1);
+
+    QTreeWidgetItem* initialItem = popup->currentItem();
+    QVERIFY(initialItem);
+
+    QTest::keyClick(popup, Qt::Key_Down, Qt::NoModifier);
+    QCoreApplication::processEvents();
+
+    QVERIFY(popup->currentItem());
+    QVERIFY(popup->currentItem() != initialItem);
+    popup->hide();
+}
+
+void TestEditorUi::completion_popup_tab_accepts_selected_item()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral("co"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QTreeWidgetItem* cosItem = nullptr;
+    for (int i = 0; i < popup->topLevelItemCount(); ++i) {
+        QTreeWidgetItem* item = popup->topLevelItem(i);
+        if (item != nullptr && item->text(1) == QStringLiteral("cos")) {
+            cosItem = item;
+            break;
+        }
+    }
+    QVERIFY(cosItem);
+    popup->setCurrentItem(cosItem);
+
+    QTest::keyClick(&editor, Qt::Key_Tab);
+    QCoreApplication::processEvents();
+
+    QCOMPARE(editor.text(), QStringLiteral("cos()"));
+    QTRY_VERIFY_WITH_TIMEOUT(s_editorOrViewportHasFocus(&editor), 1000);
+}
+
+void TestEditorUi::completion_popup_closes_when_clicking_elsewhere()
+{
+    QWidget container;
+    QVBoxLayout layout(&container);
+    Editor editor;
+    QPushButton button(QStringLiteral("Other"));
+    layout.addWidget(&editor);
+    layout.addWidget(&button);
+    container.resize(800, 400);
+    container.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&container));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral("co"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+
+    QTest::mouseClick(&container,
+                      Qt::LeftButton,
+                      Qt::NoModifier,
+                      QPoint(container.width() - 2, container.height() - 2));
+    QCoreApplication::processEvents();
+
+    QVERIFY(!popup->isVisible());
+    QTest::qWait(250);
+    QVERIFY(!popup->isVisible());
+    popup->hide();
+}
+
+void TestEditorUi::completion_popup_clicking_row_accepts_item()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral("co"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QTreeWidgetItem* cosItem = nullptr;
+    for (int i = 0; i < popup->topLevelItemCount(); ++i) {
+        QTreeWidgetItem* item = popup->topLevelItem(i);
+        if (item != nullptr && item->text(1) == QStringLiteral("cos")) {
+            cosItem = item;
+            break;
+        }
+    }
+    QVERIFY(cosItem);
+
+    popup->scrollToItem(cosItem);
+    const QRect itemRect = popup->visualItemRect(cosItem);
+    QVERIFY(!itemRect.isEmpty());
+    QTest::mouseClick(popup->viewport(), Qt::LeftButton, Qt::NoModifier, itemRect.center());
+    QCoreApplication::processEvents();
+
+    QCOMPARE(editor.text(), QStringLiteral("cos()"));
+}
+
+void TestEditorUi::completion_popup_mouse_selection_keeps_focus_on_owning_editor()
+{
+    QWidget container;
+    QVBoxLayout layout(&container);
+    Editor firstEditor;
+    Editor secondEditor;
+    layout.addWidget(&firstEditor);
+    layout.addWidget(&secondEditor);
+    container.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&container));
+
+    container.activateWindow();
+    secondEditor.setFocus();
+    QCoreApplication::processEvents();
+    QTRY_VERIFY_WITH_TIMEOUT(s_editorOrViewportHasFocus(&secondEditor), 1000);
+
+    firstEditor.setFocus();
+    QTRY_VERIFY_WITH_TIMEOUT(s_editorOrViewportHasFocus(&firstEditor), 1000);
+    firstEditor.setText(QStringLiteral("co"));
+    firstEditor.setCursorPosition(firstEditor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &firstEditor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QTreeWidgetItem* cosItem = nullptr;
+    for (int i = 0; i < popup->topLevelItemCount(); ++i) {
+        QTreeWidgetItem* item = popup->topLevelItem(i);
+        if (item != nullptr && item->text(1) == QStringLiteral("cos")) {
+            cosItem = item;
+            break;
+        }
+    }
+    QVERIFY(cosItem);
+
+    popup->scrollToItem(cosItem);
+    const QRect itemRect = popup->visualItemRect(cosItem);
+    QVERIFY(!itemRect.isEmpty());
+    QTest::mouseClick(popup->viewport(), Qt::LeftButton, Qt::NoModifier, itemRect.center());
+    QCoreApplication::processEvents();
+
+    QCOMPARE(firstEditor.text(), QStringLiteral("cos()"));
+    QTRY_VERIFY_WITH_TIMEOUT(s_editorOrViewportHasFocus(&firstEditor), 1000);
+    QVERIFY(!s_editorOrViewportHasFocus(&secondEditor));
+}
+
+void TestEditorUi::completion_popup_scrollbar_click_keeps_popup_open()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral("[m"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QVERIFY(popup->verticalScrollBar()->isVisible());
+
+    QTest::mouseClick(popup->verticalScrollBar(), Qt::LeftButton);
+    QCoreApplication::processEvents();
+
+    QVERIFY(popup->isVisible());
+    popup->hide();
+}
+
+void TestEditorUi::completion_popup_mouse_wheel_scrolls_popup()
+{
+    Settings* settings = Settings::instance();
+    const bool userVariablesBackup = settings->autoCompletionUserVariables;
+    settings->autoCompletionUserVariables = true;
+    struct UserVariablesCompletionRestore {
+        Settings* settings;
+        bool value;
+        ~UserVariablesCompletionRestore() { settings->autoCompletionUserVariables = value; }
+    } restore { settings, userVariablesBackup };
+
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    for (int i = 0; i < 30; ++i)
+        editor.evaluator()->setVariable(QStringLiteral("wheel_var_%1").arg(i), Quantity(i));
+
+    editor.setText(QStringLiteral("wheel_var_"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT(
+        (popup = s_completionPopupTreeContaining(QStringLiteral("wheel_var_"))) != nullptr,
+        1000);
+    QVERIFY2(popup->verticalScrollBar()->maximum() > popup->verticalScrollBar()->minimum(),
+             qPrintable(QStringLiteral("min=%1 max=%2 rows=%3")
+                            .arg(popup->verticalScrollBar()->minimum())
+                            .arg(popup->verticalScrollBar()->maximum())
+                            .arg(popup->topLevelItemCount())));
+    popup->verticalScrollBar()->setValue(popup->verticalScrollBar()->minimum());
+    QVERIFY(popup->topLevelItemCount() > 8);
+    const int initialValue = popup->verticalScrollBar()->value();
+
+    const QPoint globalWheelPosition =
+        popup->viewport()->mapToGlobal(popup->viewport()->rect().center());
+    QWheelEvent wheelEvent(
+        editor.mapFromGlobal(globalWheelPosition),
+        globalWheelPosition,
+        QPoint(),
+        QPoint(0, -120),
+        Qt::NoButton,
+        Qt::NoModifier,
+        Qt::NoScrollPhase,
+        false);
+    QCoreApplication::sendEvent(&editor, &wheelEvent);
+
+    QVERIFY2(popup->verticalScrollBar()->value() > initialValue,
+             qPrintable(QStringLiteral("initial=%1 current=%2 max=%3")
+                            .arg(initialValue)
+                            .arg(popup->verticalScrollBar()->value())
+                            .arg(popup->verticalScrollBar()->maximum())));
+    popup->hide();
+}
+
+void TestEditorUi::completion_popup_escape_closes_and_stays_closed()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral("co"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+
+    QTest::keyClick(popup, Qt::Key_Escape);
+    QCoreApplication::processEvents();
+
+    QVERIFY(!popup->isVisible());
+    QTest::qWait(250);
+    QVERIFY(!popup->isVisible());
+}
+
+void TestEditorUi::completion_popup_escape_keeps_focus_on_owning_editor()
+{
+    QWidget container;
+    QVBoxLayout layout(&container);
+    Editor firstEditor;
+    Editor secondEditor;
+    layout.addWidget(&firstEditor);
+    layout.addWidget(&secondEditor);
+    container.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&container));
+
+    container.activateWindow();
+    firstEditor.setFocus();
+    QTRY_VERIFY_WITH_TIMEOUT(s_editorOrViewportHasFocus(&firstEditor), 1000);
+    firstEditor.setText(QStringLiteral("co"));
+    firstEditor.setCursorPosition(firstEditor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &firstEditor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QTRY_VERIFY_WITH_TIMEOUT(s_editorOrViewportHasFocus(&firstEditor), 1000);
+    QVERIFY(!s_editorOrViewportHasFocus(&secondEditor));
+
+    QTest::keyClick(&firstEditor, Qt::Key_Escape);
+    QCoreApplication::processEvents();
+
+    QVERIFY(!popup->isVisible());
+    QTRY_VERIFY_WITH_TIMEOUT(s_editorOrViewportHasFocus(&firstEditor), 1000);
+    QVERIFY(!s_editorOrViewportHasFocus(&secondEditor));
+}
+
+void TestEditorUi::completion_popup_reopens_after_typing_following_escape()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral("co"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QTest::keyClick(popup, Qt::Key_Escape);
+    QCoreApplication::processEvents();
+    QVERIFY(!popup->isVisible());
+
+    editor.insert(QStringLiteral("s"));
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QVERIFY(popup->isVisible());
+    popup->hide();
+}
+
+void TestEditorUi::completion_popup_shows_for_two_character_prefixes()
+{
+    for (const QString& prefix : {QStringLiteral("co"), QStringLiteral("si")}) {
+        Editor editor;
+        editor.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&editor));
+        editor.setFocus();
+        editor.setText(prefix);
+        editor.setCursorPosition(editor.text().size());
+
+        QVERIFY(QMetaObject::invokeMethod(
+            &editor,
+            "triggerAutoComplete",
+            Qt::DirectConnection));
+
+        QTreeWidget* popup = nullptr;
+        QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+        QVERIFY(popup->isVisible());
+        popup->hide();
+    }
+}
+
+void TestEditorUi::completion_popup_uses_configured_surface_colors()
+{
+    const QColor background(QStringLiteral("#334455"));
+    const QColor foreground(QStringLiteral("#f4f7fb"));
+    const QColor scrollbarThumb(QStringLiteral("#556677"));
+    const QColor scrollbarThumbForeground(QStringLiteral("#ffffff"));
+    const QColor selectedRow(QStringLiteral("#667788"));
+    const QColor selectedRowForeground(QStringLiteral("#101418"));
+    const QColor outline(QStringLiteral("#778899"));
+    const int cornerRadius = 11;
+
+    Editor editor;
+    editor.setThemeCompletionColors(background,
+                                    foreground,
+                                    scrollbarThumb,
+                                    scrollbarThumbForeground,
+                                    selectedRow,
+                                    selectedRowForeground,
+                                    outline,
+                                    cornerRadius);
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+    editor.setText(QStringLiteral("co"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+
+    QTreeWidget* popup = nullptr;
+    QTRY_VERIFY_WITH_TIMEOUT((popup = s_completionPopupTree()) != nullptr, 1000);
+    QCOMPARE(popup->palette().color(QPalette::Base), background);
+    QCOMPARE(popup->palette().color(QPalette::Text), foreground);
+    QCOMPARE(popup->palette().color(QPalette::Highlight), selectedRow);
+    QCOMPARE(popup->palette().color(QPalette::HighlightedText), selectedRowForeground);
+    QCOMPARE(popup->cursor().shape(), Qt::PointingHandCursor);
+    QCOMPARE(popup->viewport()->cursor().shape(), Qt::PointingHandCursor);
+    QVERIFY(popup->styleSheet().contains(QStringLiteral("background: #556677")));
+    QVERIFY(popup->styleSheet().contains(QStringLiteral("border: %1px solid #778899")
+                                             .arg(UiConfig::OutlineStrokeWidth)));
+    QVERIFY(popup->styleSheet().contains(QStringLiteral("border-radius: 11px")));
+    popup->hide();
+}
+
+void TestEditorUi::inactive_editor_does_not_show_completion_popup()
+{
+    QWidget container;
+    QVBoxLayout layout(&container);
+    Editor firstEditor;
+    Editor secondEditor;
+    layout.addWidget(&firstEditor);
+    layout.addWidget(&secondEditor);
+    container.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&container));
+
+    firstEditor.setFocus();
+    firstEditor.setText(QStringLiteral("co"));
+    firstEditor.setCursorPosition(firstEditor.text().size());
+    secondEditor.setFocus();
+    QCoreApplication::processEvents();
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &firstEditor,
+        "triggerAutoComplete",
+        Qt::DirectConnection));
+    QCoreApplication::processEvents();
+
+    QVERIFY(s_completionPopupTree() == nullptr);
+    QTest::qWait(250);
+    QVERIFY(s_completionPopupTree() == nullptr);
 }
 
 void TestEditorUi::enter_evaluates_when_cursor_is_immediately_after_operator()
@@ -3475,7 +3993,6 @@ void TestEditorUi::editor_fill_color_is_15_percent_lighter_for_dark_background_r
 
     QJsonObject colors;
     colors.insert(QStringLiteral("background"), QStringLiteral("#202020"));
-    colors.insert(QStringLiteral("editorbackground"), QStringLiteral("#00ff00"));
     settings->colorScheme = QStringLiteral("Custom");
     settings->customColorSchemeJson =
         QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
@@ -3501,7 +4018,6 @@ void TestEditorUi::editor_fill_color_is_15_percent_darker_for_light_background_r
 
     QJsonObject colors;
     colors.insert(QStringLiteral("background"), QStringLiteral("#d0d0d0"));
-    colors.insert(QStringLiteral("editorbackground"), QStringLiteral("#ff00ff"));
     settings->colorScheme = QStringLiteral("Custom");
     settings->customColorSchemeJson =
         QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));

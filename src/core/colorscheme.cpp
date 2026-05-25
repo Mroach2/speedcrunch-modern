@@ -57,7 +57,6 @@ static QColor getFallbackColor(ColorScheme::Role role)
 {
     switch (role) {
     case ColorScheme::Background:
-    case ColorScheme::EditorBackground:
         return QApplication::palette().color(QPalette::Base);
     default:
         return QApplication::palette().color(QPalette::Text);
@@ -162,9 +161,7 @@ QVector<QPair<QString, ColorScheme::Role>> ColorScheme::roleNames()
         { QStringLiteral("function"), ColorScheme::Function },
         { QStringLiteral("operator"), ColorScheme::Operator },
         { QStringLiteral("variable"), ColorScheme::Variable },
-        { QStringLiteral("scrollbar"), ColorScheme::ScrollBar },
         { QStringLiteral("separator"), ColorScheme::Separator },
         { QStringLiteral("background"), ColorScheme::Background },
-        { QStringLiteral("editorbackground"), ColorScheme::EditorBackground },
     };
 }

@@ -35,7 +35,8 @@ HistoryWidget::HistoryWidget(QWidget *parent)
     m_list->setContextMenuPolicy(Qt::CustomContextMenu);
 
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->setContentsMargins(3, 3, 3, 3);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
     layout->addWidget(m_list);
     setLayout(layout);
 

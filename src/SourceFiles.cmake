@@ -41,11 +41,14 @@ gui/mainwindow.h
 gui/manualwindow.h
 gui/numberformatdialog.h
     gui/notationandprecisiondialog.h
+gui/oklchutils.h
 gui/resultdisplay.h
 gui/variablelistwidget.h
 gui/userfunctionlistwidget.h
 gui/userunitlistwidget.h
 gui/syntaxhighlighter.h
+gui/themedlineedit.h
+gui/uiconfig.h
 gui/versioncheck.h
 math/floatnum/floatcommon.h
 math/floatnum/floatconfig.h
@@ -110,9 +113,11 @@ gui/mainwindow.cpp
 gui/manualwindow.cpp
 gui/numberformatdialog.cpp
 gui/notationandprecisiondialog.cpp
+gui/oklchutils.cpp
 gui/resultdisplay.cpp
 gui/splittertreeutils.cpp
 gui/syntaxhighlighter.cpp
+gui/themedlineedit.cpp
 gui/variablelistwidget.cpp
 gui/userfunctionlistwidget.cpp
 gui/userunitlistwidget.cpp
@@ -177,6 +182,7 @@ core/evaluator.h
 core/functions.h
 gui/resultdisplay.h
 gui/syntaxhighlighter.h
+gui/uiconfig.h
 )
 
 set(testevaluator_SOURCES
@@ -195,6 +201,7 @@ core/numberformatter.cpp
 gui/displayformatutils.cpp
 gui/dockliststyle.cpp
 gui/functiontooltiputils.cpp
+gui/oklchutils.cpp
 gui/resultdisplay.cpp
 gui/splittertreeutils.cpp
 gui/syntaxhighlighter.cpp
@@ -317,6 +324,7 @@ core/variable.cpp
 core/numberformatter.cpp
 gui/displayformatutils.cpp
 gui/functiontooltiputils.cpp
+gui/oklchutils.cpp
 gui/resultdisplay.cpp
 gui/syntaxhighlighter.cpp
 gui/editor.cpp
@@ -347,6 +355,11 @@ core/unitdisplayformat.cpp
 tests/testeditorui.cpp
 )
 
+set(testoklch_SOURCES
+gui/oklchutils.cpp
+tests/testoklch.cpp
+)
+
 set(testdocksui_SOURCES
 core/constants.cpp
 core/colorscheme.cpp
@@ -363,10 +376,12 @@ core/numberformatter.cpp
 gui/displayformatutils.cpp
 gui/dockliststyle.cpp
 gui/functiontooltiputils.cpp
+gui/oklchutils.cpp
 gui/resultdisplay.cpp
 gui/splittertreeutils.cpp
 gui/syntaxhighlighter.cpp
 gui/editor.cpp
+gui/themedlineedit.cpp
 gui/variablelistwidget.cpp
 gui/userunitlistwidget.cpp
 math/floatnum/floatcommon.c
@@ -428,10 +443,12 @@ gui/mainwindow.cpp
 gui/manualwindow.cpp
 gui/numberformatdialog.cpp
 gui/notationandprecisiondialog.cpp
+gui/oklchutils.cpp
 gui/resultdisplay.cpp
 gui/splittertreeutils.cpp
 gui/syntaxhighlighter.cpp
 gui/editor.cpp
+gui/themedlineedit.cpp
 gui/userfunctionlistwidget.cpp
 gui/variablelistwidget.cpp
 gui/userunitlistwidget.cpp

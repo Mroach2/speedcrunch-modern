@@ -7,6 +7,7 @@
 
 #include <QCoreApplication>
 #include <QApplication>
+#include <QColorSpace>
 #include <QGuiApplication>
 #include <QCryptographicHash>
 #include <QAbstractSocket>
@@ -14,6 +15,7 @@
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QMetaObject>
+#include <QSurfaceFormat>
 #include <QEvent>
 #include <QThread>
 #include <QVariant>
@@ -226,6 +228,10 @@ BOOL WINAPI handleWindowsConsoleControl(DWORD controlType)
 
 int main(int argc, char* argv[])
 {
+    QSurfaceFormat surfaceFormat = QSurfaceFormat::defaultFormat();
+    surfaceFormat.setColorSpace(QColorSpace::SRgb);
+    QSurfaceFormat::setDefaultFormat(surfaceFormat);
+
     QApplication application(argc, argv);
     ShutdownEventFilter shutdownEventFilter(&application);
     application.installEventFilter(&shutdownEventFilter);

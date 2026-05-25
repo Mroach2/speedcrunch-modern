@@ -79,6 +79,8 @@ BookDock::BookDock(QWidget* parent)
 {
     QWidget* widget = new QWidget(this);
     QVBoxLayout* bookLayout = new QVBoxLayout;
+    bookLayout->setContentsMargins(0, 0, 0, 0);
+    bookLayout->setSpacing(0);
 
     m_browser = new TextBrowser(this);
     m_browser->setLineWrapMode(QTextEdit::NoWrap);
@@ -96,6 +98,16 @@ BookDock::BookDock(QWidget* parent)
 
     retranslateText();
     openPage(QUrl("index"));
+}
+
+void BookDock::setContentSurfaceColors(const QColor& background, const QColor& foreground)
+{
+    if (m_contentBackground == background && m_contentForeground == foreground)
+        return;
+
+    m_contentBackground = background;
+    m_contentForeground = foreground;
+    refreshCurrentPage();
 }
 
 void BookDock::handleAnchorClick(const QUrl& url)
@@ -195,8 +207,14 @@ QString BookDock::applyPaletteStyle(const QString& content) const
 void BookDock::updatePaletteStyle()
 {
     QPalette palette = this->palette();
-    palette.setColor(QPalette::Base, palette.color(QPalette::Window));
-    palette.setColor(QPalette::Text, palette.color(QPalette::WindowText));
+    palette.setColor(QPalette::Base,
+                     m_contentBackground.isValid()
+                         ? m_contentBackground
+                         : palette.color(QPalette::Window));
+    palette.setColor(QPalette::Text,
+                     m_contentForeground.isValid()
+                         ? m_contentForeground
+                         : palette.color(QPalette::WindowText));
     m_browser->setPalette(palette);
     m_browser->viewport()->setPalette(palette);
 }

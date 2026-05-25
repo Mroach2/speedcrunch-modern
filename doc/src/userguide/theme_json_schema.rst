@@ -28,10 +28,8 @@ Schema
        "function",
        "operator",
        "variable",
-       "scrollbar",
        "separator",
-       "background",
-       "editorbackground"
+       "background"
      ],
      "properties": {
        "scheme": { "const": 1, "description": "Theme schema version" },
@@ -46,10 +44,8 @@ Schema
        "function": { "$ref": "#/$defs/color" },
        "operator": { "$ref": "#/$defs/color" },
        "variable": { "$ref": "#/$defs/color" },
-       "scrollbar": { "$ref": "#/$defs/color" },
        "separator": { "$ref": "#/$defs/color" },
-       "background": { "$ref": "#/$defs/color" },
-       "editorbackground": { "$ref": "#/$defs/color" }
+       "background": { "$ref": "#/$defs/color" }
      },
      "$defs": {
        "color": {
@@ -67,6 +63,12 @@ Notes
 * ``list`` controls highlighting for list/matrix curly braces ``{}`` only.
 * ``unit`` controls highlighting for square-bracketed unit blocks, including
   both ``[]`` and everything inside them.
+* ``background`` also supplies the base color for the generated application
+  chrome, expression-editor surface colors, primary/accent color, and
+  successive generated surfaces used by dock titles, controls and headers, and
+  content areas. Scrollbar colors are generated from the background of the
+  surface that owns each scrollbar, so theme files do not include a separate
+  key for them.
 
 Fictitious Example
 ------------------
@@ -88,8 +90,6 @@ The following example is fictitious and provided only as a usage example:
      "function": "#FFB347",
      "operator": "#F5F5F5",
      "variable": "#FF8DA1",
-     "scrollbar": "#4B5563",
      "separator": "#2F3640",
-     "background": "#111827",
-     "editorbackground": "#0B1220"
+     "background": "#111827"
    }

@@ -5,11 +5,13 @@
 
 #include <QAbstractItemView>
 #include <QEvent>
+#include <QFrame>
 #include <QHoverEvent>
 #include <QLabel>
 #include <QModelIndex>
 #include <QMouseEvent>
 #include <QObject>
+#include <QPalette>
 #include <QPainter>
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
@@ -19,12 +21,49 @@ namespace {
 
 QColor hoverColorForView(const QAbstractItemView* view)
 {
+    const QColor themedHover = view->property("dockListHoverBackground").value<QColor>();
+    if (themedHover.isValid())
+        return themedHover;
+
     const QPalette palette = view->palette();
     const QColor base = palette.color(QPalette::Base);
-    QColor hover = palette.color(QPalette::AlternateBase);
+    QColor hover = palette.color(QPalette::Highlight);
     if (hover == base)
         hover = base.lightness() < 128 ? base.lighter(135) : base.darker(108);
     return hover;
+}
+
+QColor hoverTextColorForView(const QAbstractItemView* view)
+{
+    const QColor themedText = view->property("dockListHoverForeground").value<QColor>();
+    if (themedText.isValid())
+        return themedText;
+
+    const QPalette palette = view->palette();
+    const QColor text = palette.color(QPalette::HighlightedText);
+    return text.isValid() ? text : palette.color(QPalette::Text);
+}
+
+QColor selectedColorForView(const QAbstractItemView* view)
+{
+    const QColor themedSelection = view->property(
+        view->hasFocus() ? "dockListActiveSelectionBackground"
+                         : "dockListInactiveSelectionBackground").value<QColor>();
+    if (themedSelection.isValid())
+        return themedSelection;
+
+    return view->palette().color(QPalette::Highlight);
+}
+
+QColor selectedTextColorForView(const QAbstractItemView* view)
+{
+    const QColor themedText = view->property(
+        view->hasFocus() ? "dockListActiveSelectionForeground"
+                         : "dockListInactiveSelectionForeground").value<QColor>();
+    if (themedText.isValid())
+        return themedText;
+
+    return view->palette().color(QPalette::HighlightedText);
 }
 
 class DockListItemDelegate : public QStyledItemDelegate {
@@ -40,10 +79,22 @@ public:
     {
         QStyleOptionViewItem opt(option);
         initStyleOption(&opt, index);
-        if (index.row() == m_view->property("dockListHoveredRow").toInt()) {
+        const bool selected = opt.state & QStyle::State_Selected;
+        if (selected) {
+            painter->save();
+            painter->fillRect(opt.rect, selectedColorForView(m_view));
+            painter->restore();
+            opt.palette.setColor(QPalette::Text, selectedTextColorForView(m_view));
+            opt.palette.setColor(QPalette::WindowText, selectedTextColorForView(m_view));
+            opt.palette.setColor(QPalette::HighlightedText, selectedTextColorForView(m_view));
+            opt.backgroundBrush = Qt::NoBrush;
+            opt.state &= ~QStyle::State_Selected;
+        } else if (index.row() == m_view->property("dockListHoveredRow").toInt()) {
             painter->save();
             painter->fillRect(opt.rect, hoverColorForView(m_view));
             painter->restore();
+            opt.palette.setColor(QPalette::Text, hoverTextColorForView(m_view));
+            opt.palette.setColor(QPalette::WindowText, hoverTextColorForView(m_view));
             opt.backgroundBrush = Qt::NoBrush;
             opt.state &= ~QStyle::State_MouseOver;
         }
@@ -65,6 +116,12 @@ public:
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override
     {
+        if (watched == m_view) {
+            if (event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut)
+                m_view->viewport()->update();
+            return QObject::eventFilter(watched, event);
+        }
+
         if (watched != m_view->viewport())
             return QObject::eventFilter(watched, event);
 
@@ -128,15 +185,25 @@ void apply(QAbstractItemView* view)
     view->viewport()->setMouseTracking(true);
     view->viewport()->setAttribute(Qt::WA_Hover, true);
     view->viewport()->setCursor(Qt::ArrowCursor);
+    view->setFrameShape(QFrame::NoFrame);
     view->setProperty("dockListHoveredRow", -1);
     view->setItemDelegate(new DockListItemDelegate(view));
-    view->viewport()->installEventFilter(new DockListCursorFilter(view));
+    DockListCursorFilter* cursorFilter = new DockListCursorFilter(view);
+    view->installEventFilter(cursorFilter);
+    view->viewport()->installEventFilter(cursorFilter);
 }
 
 void showCenteredNoMatchLabel(QAbstractItemView* view, QLabel* label)
 {
     if (label->parentWidget() != view->viewport())
         label->setParent(view->viewport());
+    const QColor foreground = view->palette().color(QPalette::Text);
+    QPalette palette = label->palette();
+    palette.setColor(QPalette::WindowText, foreground);
+    palette.setColor(QPalette::Text, foreground);
+    label->setPalette(palette);
+    label->setStyleSheet(QStringLiteral("QLabel { background: transparent; color: %1; }")
+                             .arg(foreground.name()));
     label->setProperty("dockListNoMatchLabel", true);
     label->setAttribute(Qt::WA_TransparentForMouseEvents);
     label->setGeometry(view->viewport()->rect());
