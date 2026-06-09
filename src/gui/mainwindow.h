@@ -316,6 +316,7 @@ private:
     void addSessionToActivePane(const QString& name);
     void updatePaneLoadedSessionCounts();
     void updatePaneEditorCursorVisibility();
+    void updateActiveSessionPaneTabColor();
     void updatePaneTabBars();
     void updateSessionWindowTitle();
     ResultDisplay* tabBarDisplay(QTabBar* tabBar) const;

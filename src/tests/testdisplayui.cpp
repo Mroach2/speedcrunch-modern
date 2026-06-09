@@ -154,6 +154,51 @@ bool anyEditorHasPrimaryOutline(const QList<Editor*>& editors, const QColor& pri
     return false;
 }
 
+bool colorsAreClose(const QColor& actual, const QColor& expected, int tolerance = 2)
+{
+    return qAbs(actual.red() - expected.red()) <= tolerance
+        && qAbs(actual.green() - expected.green()) <= tolerance
+        && qAbs(actual.blue() - expected.blue()) <= tolerance;
+}
+
+QRect sessionTabPillRect(const QTabBar* tabBar)
+{
+    return tabBar->tabRect(tabBar->currentIndex()).adjusted(2, 3, -2, 0);
+}
+
+QColor selectedSessionTabFillColor(QTabBar* tabBar)
+{
+    const QRect pill = sessionTabPillRect(tabBar);
+    const QImage image = tabBar->grab().toImage();
+    return image.pixelColor(pill.left() + 6, pill.center().y());
+}
+
+bool selectedSessionTabHasBottomIndicator(QTabBar* tabBar, const QColor& color)
+{
+    const QRect pill = sessionTabPillRect(tabBar);
+    const QImage image = tabBar->grab().toImage();
+    const int firstY = qMax(pill.top(), pill.bottom() - UiConfig::ActiveSessionTabIndicatorStrokeWidth);
+    for (int y = firstY; y <= pill.bottom(); ++y) {
+        for (int x = pill.left() + 4; x <= pill.right() - 4; ++x) {
+            if (image.rect().contains(x, y) && colorsAreClose(image.pixelColor(x, y), color))
+                return true;
+        }
+    }
+    return false;
+}
+
+Editor* editorForDisplay(ResultDisplay* display)
+{
+    QWidget* page = display != nullptr ? display->parentWidget() : nullptr;
+    return page ? page->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+}
+
+QTabBar* tabBarForDisplay(ResultDisplay* display)
+{
+    QWidget* pane = paneWidgetForDisplay(display);
+    return pane ? pane->findChild<QTabBar*>() : nullptr;
+}
+
 void sendTabDragMouseEvent(QTabBar* tabBar, QEvent::Type type, const QPoint& pos,
                            Qt::MouseButton button, Qt::MouseButtons buttons)
 {
@@ -181,6 +226,8 @@ private slots:
     void restored_session_layout_reapplies_generated_theme_surfaces();
     void dock_surfaces_use_successive_generated_shades();
     void dock_search_focus_suppresses_editor_primary_outline_across_panes();
+    void dock_selection_inserts_into_active_session_pane_after_focus_transfer();
+    void clicking_tab_activates_own_pane_in_nested_split_layout();
     void focusing_loaded_pane_preserves_its_current_scroll_position();
     void persisting_layout_captures_visible_scroll_positions_for_all_panes();
     void session_tabs_reorder_with_horizontal_drag();
@@ -324,7 +371,6 @@ void TestDisplayUi::main_window_applies_primary_role_to_active_editor_and_dock_s
     QVERIFY(editor->palette().color(QPalette::Base).name() != generatedPrimary.name());
     QTRY_VERIFY(editor->styleSheet().contains(QStringLiteral("color: %1;").arg(generatedPrimary.name())));
     QTRY_VERIFY(editorHasPrimaryOutline(editor, generatedPrimary));
-
     QVERIFY(QMetaObject::invokeMethod(&window, "showNewSessionDialog", Qt::DirectConnection));
     QCoreApplication::processEvents();
     QTRY_VERIFY(editorHasPrimaryOutline(editor, generatedPrimary));
@@ -1310,6 +1356,24 @@ void TestDisplayUi::dock_search_focus_suppresses_editor_primary_outline_across_p
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.findChildren<Editor*>().size(), 2);
 
+    const QVector<QColor> shades =
+        generateOklchShades(QColor(QStringLiteral("#1f3229")), 6, ThemePolarity::Dark);
+    const QColor selectedTabFill = shades.at(UiConfig::ResultDisplayShade);
+    QList<QTabBar*> tabBars = window.findChildren<QTabBar*>();
+    tabBars.erase(std::remove_if(tabBars.begin(), tabBars.end(), [](QTabBar* tabBar) {
+        return tabBar->count() == 0 || !tabBar->isVisible();
+    }), tabBars.end());
+    QCOMPARE(tabBars.size(), 2);
+    for (QTabBar* tabBar : tabBars) {
+        QVERIFY2(colorsAreClose(selectedSessionTabFillColor(tabBar), selectedTabFill),
+                 qPrintable(QStringLiteral("fill=%1 expected=%2")
+                                .arg(selectedSessionTabFillColor(tabBar).name(),
+                                     selectedTabFill.name())));
+    }
+    QCOMPARE(std::count_if(tabBars.cbegin(), tabBars.cend(), [&primary](QTabBar* tabBar) {
+        return selectedSessionTabHasBottomIndicator(tabBar, primary);
+    }), 1);
+
     QDockWidget* constantsDock =
         window.findChild<QDockWidget*>(QStringLiteral("ConstantsDock"));
     QVERIFY(constantsDock != nullptr);
@@ -1333,6 +1397,277 @@ void TestDisplayUi::dock_search_focus_suppresses_editor_primary_outline_across_p
         QVERIFY2(!anyEditorHasPrimaryOutline(window.findChildren<Editor*>(), primary),
                  qPrintable(editors.at(i)->styleSheet()));
     }
+}
+
+void TestDisplayUi::dock_selection_inserts_into_active_session_pane_after_focus_transfer()
+{
+    Settings* settings = Settings::instance();
+    struct SettingsGuard {
+        Settings* settings;
+        QString oldSessionLayoutJson;
+        bool oldConstantsDockVisible;
+        bool oldFunctionsDockVisible;
+        bool oldHistoryDockVisible;
+        bool oldKeypadVisible;
+        bool oldFormulaBookDockVisible;
+        bool oldVariablesDockVisible;
+        bool oldUserFunctionsDockVisible;
+        bool oldUserUnitsDockVisible;
+        bool oldBitfieldVisible;
+        bool oldWindowPositionSave;
+        bool oldHasNumberFormatStyleSetting;
+        QByteArray oldSkipUpdateCheck;
+        bool hadSkipUpdateCheck;
+
+        ~SettingsGuard()
+        {
+            settings->sessionLayoutJson = oldSessionLayoutJson;
+            settings->constantsDockVisible = oldConstantsDockVisible;
+            settings->functionsDockVisible = oldFunctionsDockVisible;
+            settings->historyDockVisible = oldHistoryDockVisible;
+            settings->keypadVisible = oldKeypadVisible;
+            settings->formulaBookDockVisible = oldFormulaBookDockVisible;
+            settings->variablesDockVisible = oldVariablesDockVisible;
+            settings->userFunctionsDockVisible = oldUserFunctionsDockVisible;
+            settings->userUnitsDockVisible = oldUserUnitsDockVisible;
+            settings->bitfieldVisible = oldBitfieldVisible;
+            settings->windowPositionSave = oldWindowPositionSave;
+            settings->hasNumberFormatStyleSetting = oldHasNumberFormatStyleSetting;
+            if (hadSkipUpdateCheck)
+                qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", oldSkipUpdateCheck);
+            else
+                qunsetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
+        }
+    } guard {
+        settings,
+        settings->sessionLayoutJson,
+        settings->constantsDockVisible,
+        settings->functionsDockVisible,
+        settings->historyDockVisible,
+        settings->keypadVisible,
+        settings->formulaBookDockVisible,
+        settings->variablesDockVisible,
+        settings->userFunctionsDockVisible,
+        settings->userUnitsDockVisible,
+        settings->bitfieldVisible,
+        settings->windowPositionSave,
+        settings->hasNumberFormatStyleSetting,
+        qgetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK"),
+        qEnvironmentVariableIsSet("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK")
+    };
+
+    qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
+    settings->sessionLayoutJson.clear();
+    settings->constantsDockVisible = true;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->windowPositionSave = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCoreApplication::processEvents();
+
+    ResultDisplay* firstDisplay = window.findChild<ResultDisplay*>();
+    QVERIFY(firstDisplay != nullptr);
+    QWidget* firstPage = firstDisplay->parentWidget();
+    Editor* firstEditor = firstPage ? firstPage->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+    QVERIFY(firstEditor != nullptr);
+
+    QVERIFY(QMetaObject::invokeMethod(&window, "splitActivePaneRight", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.findChildren<ResultDisplay*>().size(), 2);
+
+    const QList<ResultDisplay*> displays = window.findChildren<ResultDisplay*>();
+    ResultDisplay* secondDisplay = displays.first() == firstDisplay ? displays.last() : displays.first();
+    QWidget* secondPage = secondDisplay->parentWidget();
+    Editor* secondEditor = secondPage ? secondPage->findChild<Editor*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
+    QVERIFY(secondEditor != nullptr);
+
+    secondEditor->setText(QString());
+    firstEditor->setText(QStringLiteral("x"));
+    firstEditor->setCursorPosition(firstEditor->text().size());
+    QWidget* firstPane = paneWidgetForDisplay(firstDisplay);
+    QWidget* secondPane = paneWidgetForDisplay(secondDisplay);
+    QVERIFY(firstPane != nullptr);
+    QVERIFY(secondPane != nullptr);
+    QCOMPARE(firstPane->objectName(), QStringLiteral("SessionPane"));
+    QCOMPARE(secondPane->objectName(), QStringLiteral("SessionPane"));
+    QDockWidget* constantsDock =
+        window.findChild<QDockWidget*>(QStringLiteral("ConstantsDock"));
+    QVERIFY(constantsDock != nullptr);
+    QTreeWidget* constantsList = constantsDock->findChild<QTreeWidget*>();
+    QVERIFY(constantsList != nullptr);
+
+    constantsDock->show();
+    constantsDock->raise();
+    QCoreApplication::processEvents();
+    QTest::mouseClick(constantsList->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      constantsList->viewport()->rect().center());
+    QTRY_VERIFY(constantsList->hasFocus());
+
+    QVERIFY(QMetaObject::invokeMethod(&window,
+                                      "insertConstantIntoEditor",
+                                      Qt::DirectConnection,
+                                      Q_ARG(QString, QStringLiteral("pi"))));
+    QVERIFY2(firstEditor->text() == QStringLiteral("x") && secondEditor->text() == QStringLiteral("pi"),
+             qPrintable(QStringLiteral("first='%1' second='%2'")
+                            .arg(firstEditor->text(), secondEditor->text())));
+}
+
+void TestDisplayUi::clicking_tab_activates_own_pane_in_nested_split_layout()
+{
+    Settings* settings = Settings::instance();
+    struct SettingsGuard {
+        Settings* settings;
+        QString oldColorScheme;
+        QString oldCustomColorSchemeJson;
+        QString oldSessionLayoutJson;
+        bool oldConstantsDockVisible;
+        bool oldFunctionsDockVisible;
+        bool oldHistoryDockVisible;
+        bool oldKeypadVisible;
+        bool oldFormulaBookDockVisible;
+        bool oldVariablesDockVisible;
+        bool oldUserFunctionsDockVisible;
+        bool oldUserUnitsDockVisible;
+        bool oldBitfieldVisible;
+        bool oldWindowPositionSave;
+        bool oldHasNumberFormatStyleSetting;
+        QByteArray oldSkipUpdateCheck;
+        bool hadSkipUpdateCheck;
+
+        ~SettingsGuard()
+        {
+            settings->colorScheme = oldColorScheme;
+            settings->customColorSchemeJson = oldCustomColorSchemeJson;
+            settings->sessionLayoutJson = oldSessionLayoutJson;
+            settings->constantsDockVisible = oldConstantsDockVisible;
+            settings->functionsDockVisible = oldFunctionsDockVisible;
+            settings->historyDockVisible = oldHistoryDockVisible;
+            settings->keypadVisible = oldKeypadVisible;
+            settings->formulaBookDockVisible = oldFormulaBookDockVisible;
+            settings->variablesDockVisible = oldVariablesDockVisible;
+            settings->userFunctionsDockVisible = oldUserFunctionsDockVisible;
+            settings->userUnitsDockVisible = oldUserUnitsDockVisible;
+            settings->bitfieldVisible = oldBitfieldVisible;
+            settings->windowPositionSave = oldWindowPositionSave;
+            settings->hasNumberFormatStyleSetting = oldHasNumberFormatStyleSetting;
+            if (hadSkipUpdateCheck)
+                qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", oldSkipUpdateCheck);
+            else
+                qunsetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
+        }
+    } guard {
+        settings,
+        settings->colorScheme,
+        settings->customColorSchemeJson,
+        settings->sessionLayoutJson,
+        settings->constantsDockVisible,
+        settings->functionsDockVisible,
+        settings->historyDockVisible,
+        settings->keypadVisible,
+        settings->formulaBookDockVisible,
+        settings->variablesDockVisible,
+        settings->userFunctionsDockVisible,
+        settings->userUnitsDockVisible,
+        settings->bitfieldVisible,
+        settings->windowPositionSave,
+        settings->hasNumberFormatStyleSetting,
+        qgetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK"),
+        qEnvironmentVariableIsSet("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK")
+    };
+
+    qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#1f3229\"}");
+    settings->sessionLayoutJson.clear();
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->windowPositionSave = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    const QColor primary = generatePrimaryFromBackground(QColor(QStringLiteral("#1f3229")));
+
+    MainWindow window;
+    window.resize(900, 600);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCoreApplication::processEvents();
+
+    QVERIFY(QMetaObject::invokeMethod(&window, "splitActivePaneRight", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+    QVERIFY(QMetaObject::invokeMethod(&window, "splitActivePaneDown", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.findChildren<ResultDisplay*>().size(), 3);
+
+    QList<ResultDisplay*> displays = window.findChildren<ResultDisplay*>();
+    std::sort(displays.begin(), displays.end(), [](ResultDisplay* lhs, ResultDisplay* rhs) {
+        const QPoint lhsPos = lhs->mapToGlobal(QPoint(0, 0));
+        const QPoint rhsPos = rhs->mapToGlobal(QPoint(0, 0));
+        if (lhsPos.y() != rhsPos.y())
+            return lhsPos.y() < rhsPos.y();
+        return lhsPos.x() < rhsPos.x();
+    });
+    ResultDisplay* paneA = displays.at(0);
+    ResultDisplay* paneB = displays.at(1);
+    ResultDisplay* paneC = displays.at(2);
+    QVERIFY(paneA->mapToGlobal(QPoint(0, 0)).x() < paneB->mapToGlobal(QPoint(0, 0)).x());
+    QVERIFY(paneC->mapToGlobal(QPoint(0, 0)).y() > paneB->mapToGlobal(QPoint(0, 0)).y());
+
+    Editor* editorA = editorForDisplay(paneA);
+    Editor* editorB = editorForDisplay(paneB);
+    Editor* editorC = editorForDisplay(paneC);
+    QTabBar* tabA = tabBarForDisplay(paneA);
+    QTabBar* tabB = tabBarForDisplay(paneB);
+    QTabBar* tabC = tabBarForDisplay(paneC);
+    QVERIFY(editorA != nullptr);
+    QVERIFY(editorB != nullptr);
+    QVERIFY(editorC != nullptr);
+    QVERIFY(tabA != nullptr);
+    QVERIFY(tabB != nullptr);
+    QVERIFY(tabC != nullptr);
+    QVERIFY(qAbs(tabA->mapToGlobal(QPoint(0, 0)).x() - paneA->mapToGlobal(QPoint(0, 0)).x()) < 8);
+    QVERIFY(qAbs(tabB->mapToGlobal(QPoint(0, 0)).x() - paneB->mapToGlobal(QPoint(0, 0)).x()) < 8);
+    QVERIFY(qAbs(tabC->mapToGlobal(QPoint(0, 0)).x() - paneC->mapToGlobal(QPoint(0, 0)).x()) < 8);
+
+    QTest::mouseClick(paneB->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      paneB->viewport()->rect().center());
+    QTRY_VERIFY(editorHasPrimaryOutline(editorB, primary));
+    QVERIFY(selectedSessionTabHasBottomIndicator(tabB, primary));
+
+    QVERIFY(tabA->count() > 0);
+    QTest::mouseClick(tabA, Qt::LeftButton, Qt::NoModifier,
+                      tabA->tabRect(0).center());
+    QTRY_VERIFY2(editorHasPrimaryOutline(editorA, primary),
+                 qPrintable(QStringLiteral("A=%1 B=%2 C=%3 tabA=%4 tabB=%5 tabC=%6 focus=%7")
+                                .arg(editorHasPrimaryOutline(editorA, primary))
+                                .arg(editorHasPrimaryOutline(editorB, primary))
+                                .arg(editorHasPrimaryOutline(editorC, primary))
+                                .arg(selectedSessionTabHasBottomIndicator(tabA, primary))
+                                .arg(selectedSessionTabHasBottomIndicator(tabB, primary))
+                                .arg(selectedSessionTabHasBottomIndicator(tabC, primary))
+                                .arg(QApplication::focusWidget()
+                                         ? QString::fromLatin1(QApplication::focusWidget()->metaObject()->className())
+                                         : QStringLiteral("<none>"))));
+    QVERIFY(selectedSessionTabHasBottomIndicator(tabA, primary));
+    QVERIFY(!editorHasPrimaryOutline(editorC, primary));
+    QVERIFY(!selectedSessionTabHasBottomIndicator(tabC, primary));
 }
 
 void TestDisplayUi::focusing_loaded_pane_preserves_its_current_scroll_position()

@@ -100,6 +100,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPlainTextEdit>
 #include <QPixmap>
 #include <QPointer>
@@ -1481,6 +1482,18 @@ QPointer<QWidget>& pendingDockFocusTarget()
     return target;
 }
 
+QPointer<ResultDisplay>& pendingSessionTabActivationDisplay()
+{
+    static QPointer<ResultDisplay> display;
+    return display;
+}
+
+QPointer<Editor>& pendingSessionTabActivationEditor()
+{
+    static QPointer<Editor> editor;
+    return editor;
+}
+
 class DockTextInputFocusTransferGuard {
 public:
     DockTextInputFocusTransferGuard()
@@ -1660,6 +1673,16 @@ public:
     std::function<void(const QString&)> tabCloseRequested;
     std::function<void(const QString&)> tabActivated;
 
+    void setActivePaneSelectedTabIndicatorColor(const QColor& color)
+    {
+        const QColor activeColor = color.isValid() ? color : QColor();
+        if (m_activePaneSelectedTabIndicatorColor == activeColor)
+            return;
+        m_activePaneSelectedTabIndicatorColor = activeColor;
+        refreshCloseButtons();
+        update();
+    }
+
     void refreshCloseButtons()
     {
         bool visibilityChanged = false;
@@ -1783,9 +1806,16 @@ protected:
         }
         const QString pressedSession = m_dragSessionName;
 
+        if (event->button() == Qt::LeftButton && !pressedSession.isEmpty()) {
+            if (currentIndex() != m_dragTabIndex)
+                setCurrentIndex(m_dragTabIndex);
+            else if (tabActivated)
+                tabActivated(pressedSession);
+            refreshCloseButtons();
+            event->accept();
+            return;
+        }
         QTabBar::mousePressEvent(event);
-        if (event->button() == Qt::LeftButton && !pressedSession.isEmpty() && tabActivated)
-            tabActivated(pressedSession);
         refreshCloseButtons();
     }
 
@@ -2018,7 +2048,22 @@ private:
 
     QRect pillRect(const QRect& tabRect) const
     {
-        return tabRect.adjusted(2, 3, -2, -3);
+        return tabRect.adjusted(2, 3, -2, 0);
+    }
+
+    QPainterPath topRoundedTabPath(const QRect& rect) const
+    {
+        const QRectF tab(rect);
+        const qreal radius = qMin(tab.width() / 2.0, tab.height() / 2.0);
+        QPainterPath path;
+        path.moveTo(tab.left(), tab.bottom());
+        path.lineTo(tab.left(), tab.top() + radius);
+        path.quadTo(tab.left(), tab.top(), tab.left() + radius, tab.top());
+        path.lineTo(tab.right() - radius, tab.top());
+        path.quadTo(tab.right(), tab.top(), tab.right(), tab.top() + radius);
+        path.lineTo(tab.right(), tab.bottom());
+        path.closeSubpath();
+        return path;
     }
 
     void paintTab(QPainter* painter, int index, const QRect& rect, bool dragged) const
@@ -2033,12 +2078,19 @@ private:
             const QColor fill = selected
                 ? m_selectedTabColor
                 : (hovered || dragged ? m_hoveredTabColor : m_inactiveTabColor);
-            if (selected)
-                painter->setPen(QPen(m_tabStripColor, 1));
-            else
-                painter->setPen(Qt::NoPen);
+            painter->setPen(Qt::NoPen);
             painter->setBrush(fill);
-            painter->drawRoundedRect(pill, pill.height() / 2.0, pill.height() / 2.0);
+            painter->drawPath(topRoundedTabPath(pill));
+        }
+        if (selected && m_activePaneSelectedTabIndicatorColor.isValid()) {
+            const int strokeWidth = UiConfig::ActiveSessionTabIndicatorStrokeWidth;
+            const qreal y = pill.bottom() - (strokeWidth - 1) / 2.0;
+            painter->setPen(QPen(m_activePaneSelectedTabIndicatorColor,
+                                 strokeWidth,
+                                 Qt::SolidLine,
+                                 Qt::SquareCap));
+            painter->setBrush(Qt::NoBrush);
+            painter->drawLine(QPointF(pill.left(), y), QPointF(pill.right(), y));
         }
 
         const int rightButtonWidth = tabButton(index, QTabBar::RightSide) != nullptr
@@ -2161,6 +2213,7 @@ private:
     QColor m_inactiveTabColor;
     QColor m_hoveredTabColor;
     QColor m_selectedTabColor;
+    QColor m_activePaneSelectedTabIndicatorColor;
     QColor m_tabTextColor;
     QColor m_hoveredTextColor;
     QColor m_selectedTextColor;
@@ -2189,6 +2242,7 @@ public:
     explicit SessionPane(QWidget* parent = nullptr)
         : QWidget(parent)
     {
+        setObjectName(QStringLiteral("SessionPane"));
         setAcceptDrops(true);
         m_overlay = new QWidget(this);
         m_overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
@@ -2198,6 +2252,7 @@ public:
 
     std::function<void(SessionTabBar*, const QString&, const QPoint&)> sessionTabDroppedOnPane;
     std::function<bool(SessionTabBar*)> shouldShowOverlayForDrag;
+    std::function<void()> paneActivated;
     void setOverlayAreaWidget(QWidget* widget)
     {
         m_overlayAreaWidget = widget;
@@ -2217,6 +2272,13 @@ public:
     }
 
 protected:
+    void mousePressEvent(QMouseEvent* event) override
+    {
+        if (paneActivated)
+            paneActivated();
+        QWidget::mousePressEvent(event);
+    }
+
     void dragEnterEvent(QDragEnterEvent* event) override
     {
         if (acceptSessionTabDrag(event))
@@ -2246,6 +2308,8 @@ protected:
 
     void resizeEvent(QResizeEvent* event) override
     {
+        if (m_overlay != nullptr)
+            m_overlay->setGeometry(overlayRect(PaneDropZone::Center));
         QWidget::resizeEvent(event);
     }
 
@@ -2269,6 +2333,11 @@ protected:
         }
         if (event->type() == QEvent::DragLeave) {
             hideOverlay();
+            return false;
+        }
+        if (event->type() == QEvent::MouseButtonPress) {
+            if (paneActivated)
+                paneActivated();
             return false;
         }
 
@@ -3615,14 +3684,38 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
     m_paneTabBars.insert(display, tabBar);
     m_tabBarDisplays.insert(tabBar, display);
 
-    connect(tabBar, &QTabBar::currentChanged, this, [this, tabBar, display](int index) {
+    connect(tabBar, &QTabBar::currentChanged, this, [this, tabBar, display, editor](int index) {
         if (index < 0)
             return;
+        pendingSessionTabActivationDisplay() = display;
+        pendingSessionTabActivationEditor() = editor;
+        setActiveEditorDisplayPane(display, editor, true);
         switchPaneToSession(display, tabBar->tabText(index));
+        QPointer<ResultDisplay> pendingDisplay(display);
+        QPointer<Editor> pendingEditor(editor);
+        QTimer::singleShot(0, this, [pendingDisplay, pendingEditor]() {
+            if (pendingSessionTabActivationDisplay() == pendingDisplay
+                && pendingSessionTabActivationEditor() == pendingEditor) {
+                pendingSessionTabActivationDisplay() = nullptr;
+                pendingSessionTabActivationEditor() = nullptr;
+            }
+        });
         tabBar->refreshCloseButtons();
     });
-    tabBar->tabActivated = [this, display](const QString& sessionName) {
+    tabBar->tabActivated = [this, display, editor](const QString& sessionName) {
+        pendingSessionTabActivationDisplay() = display;
+        pendingSessionTabActivationEditor() = editor;
+        setActiveEditorDisplayPane(display, editor, true);
         switchPaneToSession(display, sessionName);
+        QPointer<ResultDisplay> pendingDisplay(display);
+        QPointer<Editor> pendingEditor(editor);
+        QTimer::singleShot(0, this, [pendingDisplay, pendingEditor]() {
+            if (pendingSessionTabActivationDisplay() == pendingDisplay
+                && pendingSessionTabActivationEditor() == pendingEditor) {
+                pendingSessionTabActivationDisplay() = nullptr;
+                pendingSessionTabActivationEditor() = nullptr;
+            }
+        });
     };
     connect(tabBar, &QTabBar::tabMoved, this, [this, tabBar, display](int, int) {
         QStringList names;
@@ -3774,6 +3867,9 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
             return true;
         return paneSessionNames(sourceDisplay).size() > 1;
     };
+    pane->paneActivated = [this, display, editor]() {
+        setActiveEditorDisplayPane(display, editor);
+    };
     pane->watchDropTarget(stack);
     pane->setOverlayAreaWidget(stack);
     pane->watchDropTarget(page);
@@ -3801,6 +3897,7 @@ void MainWindow::setActiveEditorDisplayPane(ResultDisplay* display, Editor* edit
     if (dockWidgetHasFocus || dockTextInputHasFocus) {
         globallyActiveDisplay() = nullptr;
         globallyActiveEditor() = nullptr;
+        return;
     } else {
         globallyActiveDisplay() = display;
         globallyActiveEditor() = editor;
@@ -3859,6 +3956,7 @@ void MainWindow::setActiveEditorDisplayPane(ResultDisplay* display, Editor* edit
         });
     }
     updatePaneEditorCursorVisibility();
+    updateActiveSessionPaneTabColor();
     if (!dockWidgetHasFocus && !dockTextInputHasFocus && m_widgets.state != nullptr && m_widgets.state->isVisible())
         showStateLabel(m_widgets.state->text());
 }
@@ -4911,7 +5009,27 @@ void MainWindow::updatePaneEditorCursorVisibility()
             editor->setThemePrimaryColor(surfaces.primary.background, false);
             editor->rehighlight();
         }
+        window->updateActiveSessionPaneTabColor();
     }
+}
+
+void MainWindow::updateActiveSessionPaneTabColor()
+{
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+    const QList<ResultDisplay*> displays = splitPaneDisplays();
+    for (ResultDisplay* display : displays) {
+        QTabBar* tabBar = displayTabBar(display);
+        SessionTabBar* sessionTabBar = dynamic_cast<SessionTabBar*>(tabBar);
+        if (sessionTabBar == nullptr)
+            continue;
+        sessionTabBar->setActivePaneSelectedTabIndicatorColor(QColor());
+    }
+    if (displays.size() <= 1)
+        return;
+    SessionTabBar* activeTabBar =
+        dynamic_cast<SessionTabBar*>(displayTabBar(m_widgets.display));
+    if (activeTabBar != nullptr)
+        activeTabBar->setActivePaneSelectedTabIndicatorColor(surfaces.primary.background);
 }
 
 void MainWindow::updatePaneTabBars()
@@ -4924,8 +5042,8 @@ void MainWindow::updatePaneTabBars()
         if (tabBar == nullptr)
             continue;
         static_cast<SessionTabBar*>(tabBar)->applyStyle(
-            surfaces.headersAndBorders.foreground,
-            surfaces.headersAndBorders.background,
+            surfaces.result.foreground,
+            surfaces.result.background,
             surfaces.result.foreground,
             surfaces.result.background,
             surfaces.window.background,
@@ -4950,6 +5068,7 @@ void MainWindow::updatePaneTabBars()
         static_cast<SessionTabBar*>(tabBar)->refreshCloseButtons();
     }
     updateSessionWindowTitle();
+    updateActiveSessionPaneTabColor();
 }
 
 void MainWindow::updateSessionWindowTitle()
@@ -9124,9 +9243,6 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
         if (QWidget* widget = qobject_cast<QWidget*>(o)) {
             QDockWidget* dock = dockWidgetForDescendant(widget);
             if (dock != nullptr) {
-                deactivateActiveEditorForTextInputFocus();
-                hideStateLabel();
-                pendingDockTextInputFocusTarget() = nullptr;
                 QWidget* focusTarget = dock;
                 if (QAbstractItemView* view = dockItemViewFocusTarget(widget)) {
                     view->setFocusPolicy(Qt::StrongFocus);
@@ -9135,6 +9251,9 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
                     dock->setFocusPolicy(Qt::StrongFocus);
                 }
                 pendingDockFocusTarget() = focusTarget;
+                deactivateActiveEditorForTextInputFocus();
+                hideStateLabel();
+                pendingDockTextInputFocusTarget() = nullptr;
                 const QColor inactivePrimary = generatedSurfaceColors(m_settings).primary.background;
                 for (Editor* paneEditor : splitPaneEditors()) {
                     if (paneEditor == nullptr)
@@ -9202,6 +9321,15 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
             || e->type() == QEvent::MouseButtonPress
             || e->type() == QEvent::KeyPress
             || e->type() == QEvent::InputMethod) {
+            if (pendingSessionTabActivationEditor() != nullptr
+                && editor != pendingSessionTabActivationEditor()) {
+                QPointer<Editor> targetEditor(pendingSessionTabActivationEditor());
+                QTimer::singleShot(0, targetEditor, [targetEditor]() {
+                    if (targetEditor != nullptr)
+                        targetEditor->setFocus(Qt::MouseFocusReason);
+                });
+                return true;
+            }
             QWidget* pane = editor->parentWidget();
             ResultDisplay* display = pane ? pane->findChild<ResultDisplay*>(QString(), Qt::FindDirectChildrenOnly) : nullptr;
             if (display != nullptr)

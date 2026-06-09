@@ -8,7 +8,8 @@
 namespace UiConfig {
 
 constexpr int SessionPaneSplitterWidth = 5;
-constexpr int OutlineStrokeWidth = 2;
+constexpr int OutlineStrokeWidth = 1;
+constexpr int ActiveSessionTabIndicatorStrokeWidth = 2;
 constexpr int KeypadButtonMargin = 3;
 constexpr int KeypadButtonPadding = 3;
 constexpr int KeypadButtonCornerRadius = 12;
