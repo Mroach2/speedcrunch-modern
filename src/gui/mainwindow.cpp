@@ -4497,12 +4497,23 @@ void MainWindow::switchPaneToSession(ResultDisplay* display, const QString& name
     if (editor == nullptr)
         return;
 
+    const QString currentName = m_paneSessionNames.value(display);
+    if (!currentName.isEmpty()
+        && currentName.compare(name, Qt::CaseInsensitive) != 0) {
+        if (Session* currentSession = m_loadedSessions.value(currentName, nullptr))
+            currentSession->setEditorText(editor->text());
+    }
+
     const bool paneAlreadyShowsSession =
         display->session() == session
         && m_paneSessionNames.value(display).compare(name, Qt::CaseInsensitive) == 0;
 
     setActiveEditorDisplayPane(display, editor);
     activateSession(session);
+    if (!paneAlreadyShowsSession) {
+        editor->setText(session->editorText());
+        editor->setCursorPosition(editor->text().size());
+    }
     if (!paneAlreadyShowsSession)
         updatePaneTabBars();
 }
@@ -6735,10 +6746,20 @@ void MainWindow::activateSession(Session* session)
 
 void MainWindow::captureEditorTextInCurrentSession()
 {
-    if (m_session == nullptr || m_widgets.editor == nullptr)
+    if (m_widgets.editor == nullptr)
         return;
 
-    m_session->setEditorText(m_widgets.editor->text());
+    Session* session = nullptr;
+    if (m_widgets.display != nullptr) {
+        const QString paneSessionName = m_paneSessionNames.value(m_widgets.display);
+        session = m_loadedSessions.value(paneSessionName, nullptr);
+    }
+    if (session == nullptr)
+        session = m_session;
+    if (session == nullptr)
+        return;
+
+    session->setEditorText(m_widgets.editor->text());
 }
 
 void MainWindow::restoreEditorTextFromCurrentSession()
