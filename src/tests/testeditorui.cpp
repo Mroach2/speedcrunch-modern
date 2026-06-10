@@ -116,6 +116,8 @@ private slots:
     void tooltip_keeps_quantsp_before_degree_celsius();
     void tooltip_handles_affine_temperature_units_without_arrow_and_with_conversion();
     void tooltip_shows_selection_result_when_selecting_with_shift_arrows();
+    void tooltip_shows_selection_result_when_selecting_all_with_keyboard_shortcut();
+    void tooltip_shows_selection_result_when_selecting_with_mouse();
     void enter_evaluates_when_completion_popup_has_no_explicit_interaction();
     void completion_popup_arrow_keys_change_selection();
     void completion_popup_tab_accepts_selected_item();
@@ -3248,6 +3250,76 @@ void TestEditorUi::tooltip_shows_selection_result_when_selecting_with_shift_arro
     QTest::keyClick(&editor, Qt::Key_Left, Qt::ShiftModifier);
     QCoreApplication::processEvents();
 
+    QVERIFY(!spy.isEmpty());
+    const QString message = spy.takeLast().at(0).toString();
+    QVERIFY2(message.contains(QStringLiteral("Selection result:")),
+             qPrintable(QStringLiteral("Expected selection result message, got: %1").arg(message)));
+    QVERIFY2(message.contains(QStringLiteral("= 4")),
+             qPrintable(QStringLiteral("Expected selected value 4 in message, got: %1").arg(message)));
+}
+
+void TestEditorUi::tooltip_shows_selection_result_when_selecting_all_with_keyboard_shortcut()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    QSignalSpy spy(&editor, SIGNAL(autoCalcMessageAvailable(const QString&)));
+
+    editor.setText(QStringLiteral("1+24"));
+    editor.setCursorPosition(editor.text().size());
+    QCoreApplication::processEvents();
+    spy.clear();
+
+    const QList<QKeySequence> bindings = QKeySequence::keyBindings(QKeySequence::SelectAll);
+    QVERIFY(!bindings.isEmpty());
+    const QKeyCombination selectAll = bindings.first()[0];
+    QTest::keyClick(&editor, selectAll.key(), selectAll.keyboardModifiers());
+    QCoreApplication::processEvents();
+
+    QVERIFY2(editor.textCursor().hasSelection(),
+             qPrintable(QStringLiteral("Expected select-all selection, got cursor position %1")
+                            .arg(editor.textCursor().position())));
+    QVERIFY(!spy.isEmpty());
+    const QString message = spy.takeLast().at(0).toString();
+    QVERIFY2(message.contains(QStringLiteral("Selection result:")),
+             qPrintable(QStringLiteral("Expected selection result message, got: %1").arg(message)));
+    QVERIFY2(message.contains(QStringLiteral("= 25")),
+             qPrintable(QStringLiteral("Expected selected value 25 in message, got: %1").arg(message)));
+}
+
+void TestEditorUi::tooltip_shows_selection_result_when_selecting_with_mouse()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    QSignalSpy spy(&editor, SIGNAL(autoCalcMessageAvailable(const QString&)));
+
+    editor.setText(QStringLiteral("1+24"));
+    editor.setCursorPosition(editor.text().size());
+    QCoreApplication::processEvents();
+    spy.clear();
+
+    QTextCursor cursor = editor.textCursor();
+    cursor.setPosition(3);
+    const QPoint selectionStart = editor.cursorRect(cursor).center();
+    cursor.setPosition(4);
+    const QPoint selectionEnd = editor.cursorRect(cursor).center();
+
+    QTest::mousePress(editor.viewport(), Qt::LeftButton, Qt::NoModifier, selectionStart);
+    QTest::mouseMove(editor.viewport(), selectionEnd);
+    QCoreApplication::processEvents();
+    QVERIFY(spy.isEmpty());
+
+    QTest::mouseRelease(editor.viewport(), Qt::LeftButton, Qt::NoModifier, selectionEnd);
+    QCoreApplication::processEvents();
+
+    QVERIFY2(editor.textCursor().hasSelection(),
+             qPrintable(QStringLiteral("Expected mouse selection, got cursor position %1")
+                            .arg(editor.textCursor().position())));
     QVERIFY(!spy.isEmpty());
     const QString message = spy.takeLast().at(0).toString();
     QVERIFY2(message.contains(QStringLiteral("Selection result:")),

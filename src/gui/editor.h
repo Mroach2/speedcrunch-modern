@@ -26,6 +26,7 @@ class QFocusEvent;
 class QInputMethodEvent;
 class QKeyEvent;
 class QMimeData;
+class QMouseEvent;
 class QTimeLine;
 class QTimer;
 class QTreeWidget;
@@ -128,6 +129,8 @@ protected:
     void focusOutEvent(QFocusEvent*) override;
     void inputMethodEvent(QInputMethodEvent*) override;
     void keyPressEvent(QKeyEvent*) override;
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
     void paintEvent(QPaintEvent*) override;
     void resizeEvent(QResizeEvent*) override;
     void scrollContentsBy(int, int) override;
@@ -157,6 +160,7 @@ private:
     bool m_themedCursorVisible = false;
     bool m_historyArrowNavigationEnabled;
     bool m_canScrollWrappedText = false;
+    bool m_mouseSelectionInProgress = false;
     bool m_pendingDeadCaretPreedit = false;
     QColor m_themeSurfaceColor;
     QColor m_themeOuterSurfaceColor;

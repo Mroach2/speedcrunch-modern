@@ -1563,6 +1563,9 @@ void Editor::checkMatching()
 
 void Editor::checkAutoCalc()
 {
+    if (m_mouseSelectionInProgress)
+        return;
+
     if (m_isAutoCalcEnabled)
         autoCalc();
 }
@@ -1581,6 +1584,9 @@ void Editor::doMatchingPar()
 
 void Editor::checkSelectionAutoCalc()
 {
+    if (m_mouseSelectionInProgress)
+        return;
+
     if (m_isAutoCalcEnabled)
         autoCalcSelection();
 }
@@ -2661,12 +2667,44 @@ void Editor::inputMethodEvent(QInputMethodEvent* event)
     QPlainTextEdit::inputMethodEvent(&normalizedEvent);
 }
 
+void Editor::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton)
+        m_mouseSelectionInProgress = true;
+
+    QPlainTextEdit::mousePressEvent(event);
+}
+
+void Editor::mouseReleaseEvent(QMouseEvent* event)
+{
+    QPlainTextEdit::mouseReleaseEvent(event);
+
+    if (event->button() != Qt::LeftButton)
+        return;
+
+    m_mouseSelectionInProgress = false;
+    if (textCursor().hasSelection())
+        checkSelectionAutoCalc();
+    else
+        checkAutoCalc();
+}
+
 void Editor::keyPressEvent(QKeyEvent* event)
 {
     if (m_completion->isVisible())
         m_completionTimer->stop();
     if (m_completion->handleEditorKeyPress(event))
         return;
+
+    if (event->matches(QKeySequence::SelectAll)) {
+        QPlainTextEdit::keyPressEvent(event);
+        if (textCursor().hasSelection())
+            checkSelectionAutoCalc();
+        else
+            checkAutoCalc();
+        event->accept();
+        return;
+    }
 
     int key = event->key();
     const int cursorPosition = textCursor().position();
