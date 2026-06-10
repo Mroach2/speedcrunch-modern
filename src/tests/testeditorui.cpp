@@ -134,6 +134,7 @@ private slots:
     void completion_popup_reopens_after_typing_following_escape();
     void completion_popup_shows_for_two_character_prefixes();
     void completion_popup_uses_configured_surface_colors();
+    void constant_completion_popup_uses_configured_surface_colors();
     void inactive_editor_does_not_show_completion_popup();
     void enter_evaluates_when_cursor_is_immediately_after_operator();
     void completion_popup_uses_expected_icons_for_all_symbol_types();
@@ -205,6 +206,20 @@ static QTreeWidget* s_completionPopupTreeContaining(const QString& identifierPre
         }
     }
     return nullptr;
+}
+
+static QList<QTreeWidget*> s_constantCompletionPopupTrees()
+{
+    QList<QTreeWidget*> trees;
+    QWidget* popup = QApplication::activePopupWidget();
+    if (!popup || popup->objectName() != QStringLiteral("constantCompletionPopup"))
+        return trees;
+
+    trees = popup->findChildren<QTreeWidget*>();
+    std::sort(trees.begin(), trees.end(), [](QTreeWidget* left, QTreeWidget* right) {
+        return left->objectName() < right->objectName();
+    });
+    return trees;
 }
 
 static bool s_editorOrViewportHasFocus(Editor* editor)
@@ -3859,10 +3874,60 @@ void TestEditorUi::completion_popup_uses_configured_surface_colors()
     QCOMPARE(popup->cursor().shape(), Qt::PointingHandCursor);
     QCOMPARE(popup->viewport()->cursor().shape(), Qt::PointingHandCursor);
     QVERIFY(popup->styleSheet().contains(QStringLiteral("background: #556677")));
+    QVERIFY(popup->styleSheet().contains(QStringLiteral("QScrollBar:horizontal")));
+    QVERIFY(popup->styleSheet().contains(QStringLiteral("QScrollBar::handle:horizontal")));
     QVERIFY(popup->styleSheet().contains(QStringLiteral("border: %1px solid #778899")
                                              .arg(UiConfig::OutlineStrokeWidth)));
     QVERIFY(popup->styleSheet().contains(QStringLiteral("border-radius: 11px")));
     popup->hide();
+}
+
+void TestEditorUi::constant_completion_popup_uses_configured_surface_colors()
+{
+    const QColor background(QStringLiteral("#334455"));
+    const QColor foreground(QStringLiteral("#f4f7fb"));
+    const QColor scrollbarThumb(QStringLiteral("#556677"));
+    const QColor scrollbarThumbForeground(QStringLiteral("#ffffff"));
+    const QColor selectedRow(QStringLiteral("#667788"));
+    const QColor selectedRowForeground(QStringLiteral("#101418"));
+    const QColor outline(QStringLiteral("#778899"));
+    const int cornerRadius = 11;
+
+    Editor editor;
+    editor.setThemeCompletionColors(background,
+                                    foreground,
+                                    scrollbarThumb,
+                                    scrollbarThumbForeground,
+                                    selectedRow,
+                                    selectedRowForeground,
+                                    outline,
+                                    cornerRadius);
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    QTest::keyClick(&editor, Qt::Key_Space, Qt::ControlModifier);
+
+    QList<QTreeWidget*> popupTrees;
+    QTRY_VERIFY_WITH_TIMEOUT(!(popupTrees = s_constantCompletionPopupTrees()).isEmpty(), 1000);
+    QCOMPARE(popupTrees.count(), 2);
+    for (QTreeWidget* popup : popupTrees) {
+        QCOMPARE(popup->palette().color(QPalette::Base), background);
+        QCOMPARE(popup->palette().color(QPalette::Text), foreground);
+        QCOMPARE(popup->palette().color(QPalette::Highlight), selectedRow);
+        QCOMPARE(popup->palette().color(QPalette::HighlightedText), selectedRowForeground);
+        QCOMPARE(popup->cursor().shape(), Qt::PointingHandCursor);
+        QCOMPARE(popup->viewport()->cursor().shape(), Qt::PointingHandCursor);
+        QVERIFY(popup->styleSheet().contains(QStringLiteral("background: #556677")));
+        QVERIFY(popup->styleSheet().contains(QStringLiteral("QScrollBar:horizontal")));
+        QVERIFY(popup->styleSheet().contains(QStringLiteral("QScrollBar::handle:horizontal")));
+        QVERIFY(popup->styleSheet().contains(QStringLiteral("border: %1px solid #778899")
+                                                 .arg(UiConfig::OutlineStrokeWidth)));
+        QVERIFY(popup->styleSheet().contains(QStringLiteral("border-radius: 11px")));
+    }
+
+    if (QWidget* popup = QApplication::activePopupWidget())
+        popup->hide();
 }
 
 void TestEditorUi::inactive_editor_does_not_show_completion_popup()

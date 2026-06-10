@@ -244,6 +244,14 @@ public:
     ~ConstantCompletion();
 
     bool eventFilter(QObject*, QEvent*);
+    void setThemeColors(const QColor& background,
+                        const QColor& foreground,
+                        const QColor& scrollbarThumb,
+                        const QColor& scrollbarThumbForeground,
+                        const QColor& selectedRow,
+                        const QColor& selectedRowForeground,
+                        const QColor& outline,
+                        int cornerRadius);
     void showCompletion();
 
 signals:
@@ -268,6 +276,16 @@ private:
     QTreeWidget* m_constantWidget;
     QFrame* m_popup;
     QTimeLine* m_slider;
+    QColor m_backgroundColor;
+    QColor m_foregroundColor;
+    QColor m_scrollbarThumbColor;
+    QColor m_scrollbarThumbForegroundColor;
+    QColor m_selectedRowColor;
+    QColor m_selectedRowForegroundColor;
+    QColor m_outlineColor;
+    int m_cornerRadius = 0;
+
+    void applyThemeColors();
 };
 
 #endif
