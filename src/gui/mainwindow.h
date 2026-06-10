@@ -609,6 +609,8 @@ private:
     bool m_bulkVariablesChanged;
     bool m_bulkFunctionsChanged;
     bool m_bulkUnitsChanged;
+    bool m_currentResultPreviewDismissed = false;
+    QString m_lastCurrentResultPreviewMessage;
 };
 
 #endif // GUI_MAINWINDOW_H

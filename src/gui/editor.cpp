@@ -1295,6 +1295,7 @@ Editor::Editor(QWidget* parent)
     connect(m_completionTimer, SIGNAL(timeout()), SLOT(triggerAutoComplete()));
     connect(m_matchingTimer, SIGNAL(timeout()), SLOT(doMatchingPar()));
     connect(this, &Editor::selectionChanged, this, &Editor::checkSelectionAutoCalc);
+    connect(this, &Editor::textChanged, this, [this]() { m_currentAutoCalcDismissed = false; });
     connect(this, &Editor::textChanged, this, &Editor::checkAutoCalc);
     connect(this, &Editor::textChanged, this, &Editor::checkAutoComplete);
     connect(this, &Editor::textChanged, this, &Editor::checkMatching);
@@ -1337,6 +1338,11 @@ void Editor::refreshAutoCalc()
 QString Editor::text() const
 {
     return toPlainText();
+}
+
+void Editor::dismissCurrentAutoCalc()
+{
+    m_currentAutoCalcDismissed = true;
 }
 
 void Editor::setText(const QString& text)
@@ -1564,6 +1570,8 @@ void Editor::checkMatching()
 void Editor::checkAutoCalc()
 {
     if (m_mouseSelectionInProgress)
+        return;
+    if (m_currentAutoCalcDismissed)
         return;
 
     if (m_isAutoCalcEnabled)
@@ -2669,8 +2677,10 @@ void Editor::inputMethodEvent(QInputMethodEvent* event)
 
 void Editor::mousePressEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton)
+    if (event->button() == Qt::LeftButton) {
         m_mouseSelectionInProgress = true;
+        m_currentAutoCalcDismissed = true;
+    }
 
     QPlainTextEdit::mousePressEvent(event);
 }
@@ -2685,8 +2695,6 @@ void Editor::mouseReleaseEvent(QMouseEvent* event)
     m_mouseSelectionInProgress = false;
     if (textCursor().hasSelection())
         checkSelectionAutoCalc();
-    else
-        checkAutoCalc();
 }
 
 void Editor::keyPressEvent(QKeyEvent* event)
@@ -2707,6 +2715,18 @@ void Editor::keyPressEvent(QKeyEvent* event)
     }
 
     int key = event->key();
+    switch (key) {
+    case Qt::Key_Left:
+    case Qt::Key_Right:
+    case Qt::Key_Up:
+    case Qt::Key_Down:
+    case Qt::Key_Home:
+    case Qt::Key_End:
+        m_currentAutoCalcDismissed = true;
+        break;
+    default:
+        break;
+    }
     const int cursorPosition = textCursor().position();
     const bool squareBracketContext = isInsideUnmatchedSquareBracketContext(
         text(),
@@ -3294,6 +3314,7 @@ void Editor::keyPressEvent(QKeyEvent* event)
         return;
 
     case Qt::Key_Escape:
+        m_currentAutoCalcDismissed = true;
         emit escapePressed();
         event->accept();
         return;
@@ -3391,8 +3412,6 @@ void Editor::keyPressEvent(QKeyEvent* event)
                     checkMatching();
                     if (textCursor().hasSelection())
                         checkSelectionAutoCalc();
-                    else
-                        checkAutoCalc();
                     event->accept();
                     return;
                 }
@@ -3420,8 +3439,6 @@ void Editor::keyPressEvent(QKeyEvent* event)
                     checkMatching();
                     if (textCursor().hasSelection())
                         checkSelectionAutoCalc();
-                    else
-                        checkAutoCalc();
                     event->accept();
                     return;
                 }
@@ -3457,8 +3474,6 @@ void Editor::keyPressEvent(QKeyEvent* event)
         checkMatching();
         if (textCursor().hasSelection())
             checkSelectionAutoCalc();
-        else
-            checkAutoCalc();
         event->accept();
         return;
 
@@ -3468,8 +3483,6 @@ void Editor::keyPressEvent(QKeyEvent* event)
         checkMatching();
         if (textCursor().hasSelection())
             checkSelectionAutoCalc();
-        else
-            checkAutoCalc();
         event->accept();
         return;
 

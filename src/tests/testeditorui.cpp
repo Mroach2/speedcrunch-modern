@@ -118,6 +118,9 @@ private slots:
     void tooltip_shows_selection_result_when_selecting_with_shift_arrows();
     void tooltip_shows_selection_result_when_selecting_all_with_keyboard_shortcut();
     void tooltip_shows_selection_result_when_selecting_with_mouse();
+    void tooltip_does_not_refresh_current_result_on_caret_arrow_move();
+    void tooltip_does_not_refresh_current_result_on_mouse_caret_reposition();
+    void tooltip_refreshes_current_result_on_char_deletion();
     void enter_evaluates_when_completion_popup_has_no_explicit_interaction();
     void completion_popup_arrow_keys_change_selection();
     void completion_popup_tab_accepts_selected_item();
@@ -3326,6 +3329,78 @@ void TestEditorUi::tooltip_shows_selection_result_when_selecting_with_mouse()
              qPrintable(QStringLiteral("Expected selection result message, got: %1").arg(message)));
     QVERIFY2(message.contains(QStringLiteral("= 4")),
              qPrintable(QStringLiteral("Expected selected value 4 in message, got: %1").arg(message)));
+}
+
+void TestEditorUi::tooltip_does_not_refresh_current_result_on_caret_arrow_move()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    QSignalSpy spy(&editor, SIGNAL(autoCalcMessageAvailable(const QString&)));
+
+    editor.setText(QStringLiteral("1+24"));
+    editor.setCursorPosition(editor.text().size());
+    QCoreApplication::processEvents();
+    spy.clear();
+
+    QTest::keyClick(&editor, Qt::Key_Left);
+    QCoreApplication::processEvents();
+
+    QVERIFY2(spy.isEmpty(),
+             qPrintable(QStringLiteral("Caret movement should not refresh the result tooltip, got: %1")
+                            .arg(spy.isEmpty() ? QString() : spy.takeLast().at(0).toString())));
+}
+
+void TestEditorUi::tooltip_does_not_refresh_current_result_on_mouse_caret_reposition()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    QSignalSpy spy(&editor, SIGNAL(autoCalcMessageAvailable(const QString&)));
+
+    editor.setText(QStringLiteral("1+24"));
+    editor.setCursorPosition(editor.text().size());
+    QCoreApplication::processEvents();
+    spy.clear();
+
+    QTextCursor cursor = editor.textCursor();
+    cursor.setPosition(1);
+    const QPoint clickPosition = editor.cursorRect(cursor).center();
+    QTest::mouseClick(editor.viewport(), Qt::LeftButton, Qt::NoModifier, clickPosition);
+    QCoreApplication::processEvents();
+
+    QVERIFY2(spy.isEmpty(),
+             qPrintable(QStringLiteral("Mouse caret movement should not refresh the result tooltip, got: %1")
+                            .arg(spy.isEmpty() ? QString() : spy.takeLast().at(0).toString())));
+}
+
+void TestEditorUi::tooltip_refreshes_current_result_on_char_deletion()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    QSignalSpy spy(&editor, SIGNAL(autoCalcMessageAvailable(const QString&)));
+
+    editor.setText(QStringLiteral("1+24"));
+    editor.setCursorPosition(editor.text().size());
+    QCoreApplication::processEvents();
+    spy.clear();
+
+    QTest::keyClick(&editor, Qt::Key_Backspace);
+    QCoreApplication::processEvents();
+
+    QVERIFY(!spy.isEmpty());
+    const QString message = spy.takeLast().at(0).toString();
+    QVERIFY2(message.contains(QStringLiteral("Current result:")),
+             qPrintable(QStringLiteral("Expected current result message after deletion, got: %1").arg(message)));
+    QVERIFY2(message.contains(QStringLiteral("= 3")),
+             qPrintable(QStringLiteral("Expected updated value 3 in message, got: %1").arg(message)));
 }
 
 void TestEditorUi::enter_evaluates_when_completion_popup_has_no_explicit_interaction()

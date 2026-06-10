@@ -8042,6 +8042,12 @@ void MainWindow::selectEditorExpression()
 
 void MainWindow::hideStateLabel()
 {
+    if (m_widgets.state->isVisible()
+        && m_widgets.state->text().contains(QStringLiteral("Current result:"))) {
+        m_currentResultPreviewDismissed = true;
+        if (m_widgets.editor != nullptr)
+            m_widgets.editor->dismissCurrentAutoCalc();
+    }
     m_widgets.state->hide();
 }
 
@@ -9085,6 +9091,9 @@ void MainWindow::setMenuBarVisible(bool b)
 
 void MainWindow::showStateLabel(const QString& msg)
 {
+    if (msg.contains(QStringLiteral("Current result:")))
+        m_lastCurrentResultPreviewMessage = msg;
+
     const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
     const ThemeSurfaceColors tooltipSurface =
         themeSurfaceForShadeIndex(surfaces, UiConfig::ResultTooltipBackgroundShade);
@@ -9156,6 +9165,13 @@ void MainWindow::handleAutoCalcMessageAvailable(const QString& message)
         return;
     if (Editor* editor = qobject_cast<Editor*>(sender()); editor != nullptr && editor != m_widgets.editor)
         return;
+    if (message.contains(QStringLiteral("Current result:"))
+        && !m_widgets.state->isVisible()
+        && message == m_lastCurrentResultPreviewMessage) {
+        return;
+    }
+    if (m_currentResultPreviewDismissed && message.contains(QStringLiteral("Current result:")))
+        return;
     showStateLabel(message);
 }
 
@@ -9175,6 +9191,19 @@ void MainWindow::setFullScreenEnabled(bool b)
 
 bool MainWindow::event(QEvent* e)
 {
+    if (e != nullptr
+        && (e->type() == QEvent::KeyPress || e->type() == QEvent::ShortcutOverride)) {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+        if (keyEvent->key() == Qt::Key_Escape
+            && m_widgets.state != nullptr
+            && m_widgets.state->isVisible()
+            && m_widgets.state->text().contains(QStringLiteral("Current result:"))) {
+            m_currentResultPreviewDismissed = true;
+            if (m_widgets.editor != nullptr)
+                m_widgets.editor->dismissCurrentAutoCalc();
+        }
+    }
+
     if (e != nullptr && e->type() == QEvent::WindowActivate) {
         const QString activeName = m_paneSessionNames.value(m_widgets.display);
         if (!activeName.isEmpty()) {
@@ -9317,6 +9346,15 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
         }
         if (dockTextInputFocusTransferInProgress() && e->type() == QEvent::FocusIn)
             return QMainWindow::eventFilter(o, e);
+        if (e->type() == QEvent::KeyPress) {
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+            if (keyEvent->key() == Qt::Key_Escape
+                && m_widgets.state->isVisible()
+                && m_widgets.state->text().contains(QStringLiteral("Current result:"))) {
+                m_currentResultPreviewDismissed = true;
+                editor->dismissCurrentAutoCalc();
+            }
+        }
         if (e->type() == QEvent::FocusIn
             || e->type() == QEvent::MouseButtonPress
             || e->type() == QEvent::KeyPress
@@ -11070,12 +11108,8 @@ void MainWindow::handleEditorSelectionChange()
         return;
     }
 
-    if (m_widgets.editor->text().trimmed().isEmpty()) {
+    if (m_widgets.editor->text().trimmed().isEmpty())
         hideStateLabel();
-        return;
-    }
-
-    m_widgets.editor->refreshAutoCalc();
 }
 
 void MainWindow::handleCopyAvailable(bool copyAvailable)
@@ -11104,6 +11138,7 @@ void MainWindow::handleBitsChanged(const QString& str)
 
 void MainWindow::handleEditorTextChange()
 {
+    m_currentResultPreviewDismissed = false;
     captureEditorTextInCurrentSession();
     m_widgets.display->clearHoverFeedback();
     clearTextEditSelection(m_widgets.display);

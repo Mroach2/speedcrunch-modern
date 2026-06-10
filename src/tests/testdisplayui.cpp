@@ -199,6 +199,48 @@ QTabBar* tabBarForDisplay(ResultDisplay* display)
     return pane ? pane->findChild<QTabBar*>() : nullptr;
 }
 
+QString visibleResultPreviewText(const MainWindow& window)
+{
+    for (QLabel* label : window.findChildren<QLabel*>()) {
+        if (!label->isVisible())
+            continue;
+        const QString text = label->text();
+        if (text.contains(QStringLiteral("Current result:"))
+            || text.contains(QStringLiteral("Selection result:"))) {
+            return text;
+        }
+    }
+    return QString();
+}
+
+struct MainWindowStateGuard {
+    Settings* settings = Settings::instance();
+    QString oldSessionLayoutJson = settings->sessionLayoutJson;
+    QByteArray oldWindowState = settings->windowState;
+    QByteArray oldWindowGeometry = settings->windowGeometry;
+    bool oldWindowPositionSave = settings->windowPositionSave;
+    QByteArray oldSkipUpdateCheck = qgetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
+    bool hadSkipUpdateCheck = qEnvironmentVariableIsSet("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
+
+    MainWindowStateGuard()
+    {
+        settings->windowPositionSave = false;
+        qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
+    }
+
+    ~MainWindowStateGuard()
+    {
+        settings->sessionLayoutJson = oldSessionLayoutJson;
+        settings->windowState = oldWindowState;
+        settings->windowGeometry = oldWindowGeometry;
+        settings->windowPositionSave = oldWindowPositionSave;
+        if (hadSkipUpdateCheck)
+            qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", oldSkipUpdateCheck);
+        else
+            qunsetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
+    }
+};
+
 void sendTabDragMouseEvent(QTabBar* tabBar, QEvent::Type type, const QPoint& pos,
                            Qt::MouseButton button, Qt::MouseButtons buttons)
 {
@@ -221,6 +263,8 @@ private slots:
     void result_display_scrollbar_hover_keeps_viewport_width_stable();
     void result_display_context_menu_hides_main_menu_when_menu_bar_visible();
     void main_window_applies_primary_role_to_active_editor_and_dock_selection();
+    void current_result_tooltip_stays_hidden_after_escape_and_arrow_caret_move();
+    void current_result_tooltip_stays_hidden_after_escape_and_mouse_caret_move();
     void calculation_settings_dialog_matches_notation_precision_layout();
     void main_window_uses_generated_theme_surface_for_chrome_and_editor();
     void restored_session_layout_reapplies_generated_theme_surfaces();
@@ -400,6 +444,59 @@ void TestDisplayUi::main_window_applies_primary_role_to_active_editor_and_dock_s
              generatedPrimary.name());
     QCOMPARE(table->property("dockListInactiveSelectionBackground").value<QColor>().name(),
              shades.at(4).name());
+}
+
+void TestDisplayUi::current_result_tooltip_stays_hidden_after_escape_and_arrow_caret_move()
+{
+    MainWindowStateGuard guard;
+    MainWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    Editor* editor = window.findChild<Editor*>();
+    QVERIFY(editor != nullptr);
+    editor->setFocus();
+    editor->setText(QStringLiteral("1+24"));
+    editor->setCursorPosition(editor->text().size());
+    editor->refreshAutoCalc();
+    QTRY_VERIFY(visibleResultPreviewText(window).contains(QStringLiteral("Current result:")));
+
+    QTest::keyClick(editor, Qt::Key_Escape);
+    QTRY_VERIFY(visibleResultPreviewText(window).isEmpty());
+
+    QTest::keyClick(editor, Qt::Key_Left);
+
+    QTRY_VERIFY2(visibleResultPreviewText(window).isEmpty(),
+                 qPrintable(QStringLiteral("Caret movement should not reopen the result tooltip, got: %1")
+                                .arg(visibleResultPreviewText(window))));
+}
+
+void TestDisplayUi::current_result_tooltip_stays_hidden_after_escape_and_mouse_caret_move()
+{
+    MainWindowStateGuard guard;
+    MainWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    Editor* editor = window.findChild<Editor*>();
+    QVERIFY(editor != nullptr);
+    editor->setFocus();
+    editor->setText(QStringLiteral("1+24"));
+    editor->setCursorPosition(editor->text().size());
+    editor->refreshAutoCalc();
+    QTRY_VERIFY(visibleResultPreviewText(window).contains(QStringLiteral("Current result:")));
+
+    QTest::keyClick(editor, Qt::Key_Escape);
+    QTRY_VERIFY(visibleResultPreviewText(window).isEmpty());
+
+    QTextCursor cursor = editor->textCursor();
+    cursor.setPosition(1);
+    const QPoint clickPosition = editor->cursorRect(cursor).center();
+    QTest::mouseClick(editor->viewport(), Qt::LeftButton, Qt::NoModifier, clickPosition);
+
+    QTRY_VERIFY2(visibleResultPreviewText(window).isEmpty(),
+                 qPrintable(QStringLiteral("Mouse caret movement should not reopen the result tooltip, got: %1")
+                                .arg(visibleResultPreviewText(window))));
 }
 
 void TestDisplayUi::calculation_settings_dialog_matches_notation_precision_layout()

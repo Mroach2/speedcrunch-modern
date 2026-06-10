@@ -48,6 +48,7 @@ public:
     void clearHistory();
     QColor cursorColor() const { return m_themePrimaryColor; }
     int cursorPosition() const;
+    void dismissCurrentAutoCalc();
     void doBackspace();
     void doDelete();
     char radixChar() const;
@@ -161,6 +162,7 @@ private:
     bool m_historyArrowNavigationEnabled;
     bool m_canScrollWrappedText = false;
     bool m_mouseSelectionInProgress = false;
+    bool m_currentAutoCalcDismissed = false;
     bool m_pendingDeadCaretPreedit = false;
     QColor m_themeSurfaceColor;
     QColor m_themeOuterSurfaceColor;
