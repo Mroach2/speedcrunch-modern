@@ -3,6 +3,7 @@
 
 
 #include "gui/oklchutils.h"
+#include "gui/uiconfig.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -31,11 +32,6 @@ constexpr double kAaMinimumContrast = 7.0;
 // It intentionally matches the current AA threshold while the UI uses 7:1 by
 // default everywhere.
 constexpr double kAaaMinimumContrast = 7.0;
-
-// Enables generation of the temporary OKLCH HTML diagnostics report. Keeping
-// this local prevents unrelated UI code from branching on implementation
-// details; report writers return an empty path when it is disabled.
-constexpr bool kOklchHtmlReportEnabled = true;
 
 // Default percentage of the available lightness range used by shade generation.
 // For dark themes, right-side shades move this fraction toward white; for light
@@ -640,7 +636,7 @@ QString writeOklchGenerationHtmlReport(const QColor& base,
                                        const QVector<QColor>& foregrounds,
                                        double minimumContrast)
 {
-    if (!kOklchHtmlReportEnabled)
+    if (!UiConfig::OklchThemeDebugReportEnabled)
         return QString();
 
     const QString reportPath = QDir(QDir::tempPath()).absoluteFilePath(

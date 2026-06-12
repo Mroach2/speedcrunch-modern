@@ -1314,6 +1314,29 @@ QString oklchThemeReportPath()
         QStringLiteral("speedcrunch-oklch-theme-report.html"));
 }
 
+// Theme application can run multiple times while startup restores widgets, but
+// later user theme changes still need a fresh diagnostics report. Keying by the
+// generated colors suppresses duplicate writes without turning the report into a
+// process-wide one-shot.
+QString oklchThemeReportKey(const GeneratedThemeSurfaces& surfaces)
+{
+    QStringList colors;
+    colors.reserve(surfaces.backgrounds.size() + surfaces.foregrounds.size() + 2);
+    colors.append(surfaces.base.name(QColor::HexArgb));
+    colors.append(QString::number(static_cast<int>(surfaces.polarity)));
+    for (const QColor& color : surfaces.backgrounds)
+        colors.append(color.name(QColor::HexArgb));
+    for (const QColor& color : surfaces.foregrounds)
+        colors.append(color.name(QColor::HexArgb));
+    return colors.join(QLatin1Char('|'));
+}
+
+QString& lastOklchThemeReportKey()
+{
+    static QString key;
+    return key;
+}
+
 QString debugColorName(const QColor& color)
 {
     return color.isValid()
@@ -5193,18 +5216,24 @@ void MainWindow::applyThemeSurfacePalette()
                                            tabSurfaces.headersAndBorders.foreground.name()));
         }
     };
-    const QString reportPath = writeOklchGenerationHtmlReport(surfaces.base,
-                                                               1,
-                                                               surfaces.backgrounds.size() - 2,
-                                                               surfaces.polarity,
-                                                               defaultOklchShadeDistanceFactor(),
-                                                               false,
-                                                               surfaces.backgrounds,
-                                                               surfaces.foregrounds);
-    if (!reportPath.isEmpty()) {
-        QTextStream stream(stderr);
-        stream << "OKLCH HTML report: " << reportPath << Qt::endl;
-        scheduleThemeRuntimeDiagnosticsReport();
+    if (UiConfig::OklchThemeDebugReportEnabled) {
+        const QString reportKey = oklchThemeReportKey(surfaces);
+        if (reportKey != lastOklchThemeReportKey()) {
+            const QString reportPath = writeOklchGenerationHtmlReport(surfaces.base,
+                                                                      1,
+                                                                      surfaces.backgrounds.size() - 2,
+                                                                      surfaces.polarity,
+                                                                      defaultOklchShadeDistanceFactor(),
+                                                                      false,
+                                                                      surfaces.backgrounds,
+                                                                      surfaces.foregrounds);
+            if (!reportPath.isEmpty()) {
+                lastOklchThemeReportKey() = reportKey;
+                QTextStream stream(stderr);
+                stream << "OKLCH HTML report: " << reportPath << Qt::endl;
+                scheduleThemeRuntimeDiagnosticsReport();
+            }
+        }
     }
     const ThemeSurfaceColors& surface = surfaces.window;
     QPalette pal = palette();
@@ -6843,7 +6872,6 @@ MainWindow::MainWindow()
     qApp->installEventFilter(this);
 
     createUi();
-    applyThemeSurfacePalette();
     applySettings();
     applyThemeSurfacePalette();
     refreshPaneThemes();

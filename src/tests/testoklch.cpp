@@ -3,6 +3,7 @@
 
 
 #include "gui/oklchutils.h"
+#include "gui/uiconfig.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -431,6 +432,11 @@ void TestOklchUtils::html_report_contains_generation_inputs_and_outputs()
                                                          false,
                                                          backgrounds,
                                                          foregrounds);
+    if (!UiConfig::OklchThemeDebugReportEnabled) {
+        QVERIFY(path.isEmpty());
+        return;
+    }
+
     QVERIFY(!path.isEmpty());
     QVERIFY(path.startsWith(QDir::tempPath()));
     QVERIFY(path.endsWith(QStringLiteral("/speedcrunch-oklch-theme-report.html")));

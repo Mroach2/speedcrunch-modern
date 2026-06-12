@@ -14,6 +14,11 @@ constexpr int KeypadButtonMargin = 3;
 constexpr int KeypadButtonPadding = 3;
 constexpr int KeypadButtonCornerRadius = 12;
 
+// Enables the temporary OKLCH HTML diagnostics report in the system temp
+// directory. Keep disabled for normal builds; it is only useful while tuning
+// generated theme surfaces.
+constexpr bool OklchThemeDebugReportEnabled = false;
+
 // Theme surfaces are generated as six OKLCH shades from the result-display
 // background. Keep visual-role-to-shade choices here so small UI tuning does
 // not require hunting through individual widgets.
