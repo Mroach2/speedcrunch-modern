@@ -569,8 +569,8 @@ User Interface Settings
 
     Theme files use JSON and map role names to color values. Supported role names are:
     ``cursor``, ``number``, ``parens``, ``list``, ``unit``, ``result``,
-    ``comment``, ``matched``, ``function``, ``operator``, ``variable``,
-    ``separator``, ``background``.
+    ``comment``, ``function``, ``operator``, ``variable``, ``separator``,
+    ``background``.
     The editor surface and scrollbar colors are generated from ``background``.
     For the full schema, see :doc:`theme_json_schema`.
 

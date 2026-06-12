@@ -1376,6 +1376,7 @@ Editor::Editor(QWidget* parent)
     m_completionTimer = new QTimer(this);
     m_isAutoCalcEnabled = true;
     m_highlighter = new SyntaxHighlighter(this);
+    updateMatchedParenthesisColors();
     m_matchingTimer = new QTimer(this);
     m_cursorBlinkTimer = new QTimer(this);
     m_customCursorVisible = true;
@@ -1765,13 +1766,13 @@ void Editor::doMatchingLeft()
     hilite1.cursor = textCursor();
     hilite1.cursor.setPosition(matchPos);
     hilite1.cursor.setPosition(matchPos + 1, QTextCursor::KeepAnchor);
-    hilite1.format.setBackground(m_highlighter->colorForRole(ColorScheme::Matched));
+    hilite1.format = matchedParenthesisFormat();
 
     QTextEdit::ExtraSelection hilite2;
     hilite2.cursor = textCursor();
     hilite2.cursor.setPosition(closePos);
     hilite2.cursor.setPosition(closePos + 1, QTextCursor::KeepAnchor);
-    hilite2.format.setBackground(m_highlighter->colorForRole(ColorScheme::Matched));
+    hilite2.format = hilite1.format;
 
     QList<QTextEdit::ExtraSelection> extras;
     extras << hilite1;
@@ -1834,13 +1835,13 @@ void Editor::doMatchingRight()
     hilite1.cursor = textCursor();
     hilite1.cursor.setPosition(matchPos);
     hilite1.cursor.setPosition(matchPos + 1, QTextCursor::KeepAnchor);
-    hilite1.format.setBackground(m_highlighter->colorForRole(ColorScheme::Matched));
+    hilite1.format = matchedParenthesisFormat();
 
     QTextEdit::ExtraSelection hilite2;
     hilite2.cursor = textCursor();
     hilite2.cursor.setPosition(openPos);
     hilite2.cursor.setPosition(openPos + 1, QTextCursor::KeepAnchor);
-    hilite2.format.setBackground(m_highlighter->colorForRole(ColorScheme::Matched));
+    hilite2.format = hilite1.format;
 
     QList<QTextEdit::ExtraSelection> extras;
     extras << hilite1;
@@ -3956,6 +3957,7 @@ void Editor::rehighlight()
             ColorScheme::fromJsonObject(m_themePreviewColorScheme->toJsonObject()));
     else
         m_highlighter->update();
+    updateMatchedParenthesisColors();
     const QColor themeBackground = m_highlighter->colorForRole(ColorScheme::Background);
     const QColor generatedPrimary = generatePrimaryFromBackground(themeBackground);
     // Editors can rehighlight before MainWindow injects the resolved theme
@@ -4032,6 +4034,26 @@ void Editor::setThemeSurfaceColor(const QColor& color, const QColor& outerColor)
 {
     m_themeSurfaceColor = color;
     m_themeOuterSurfaceColor = outerColor;
+}
+
+void Editor::updateMatchedParenthesisColors()
+{
+    const QColor background = m_highlighter->colorForRole(ColorScheme::Parens);
+    if (background == m_matchedParenthesisBackgroundColor
+        && m_matchedParenthesisForegroundColor.isValid()) {
+        return;
+    }
+
+    m_matchedParenthesisBackgroundColor = background;
+    m_matchedParenthesisForegroundColor = aaForegroundForBackground(background);
+}
+
+QTextCharFormat Editor::matchedParenthesisFormat() const
+{
+    QTextCharFormat format;
+    format.setBackground(m_matchedParenthesisBackgroundColor);
+    format.setForeground(m_matchedParenthesisForegroundColor);
+    return format;
 }
 
 void Editor::setThemePrimaryColor(const QColor& color, bool usePrimaryOutline)

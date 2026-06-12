@@ -4,6 +4,7 @@
 
 #include "gui/editor.h"
 #include "gui/editorutils.h"
+#include "gui/oklchutils.h"
 #include "gui/syntaxhighlighter.h"
 #include "gui/uiconfig.h"
 #include "core/evaluator.h"
@@ -140,6 +141,7 @@ private slots:
     void completion_popup_uses_expected_icons_for_all_symbol_types();
     void wrap_selection_method_wraps_selected_text();
     void wrap_selection_method_wraps_whole_expression_without_selection();
+    void matching_parentheses_use_parens_and_generated_foreground_colors();
     void keeps_wrapped_cursor_line_visible_at_height_cap();
     void editor_height_adds_only_one_line_height_per_visible_line();
     void adding_second_wrapped_character_keeps_first_line_visible();
@@ -4138,6 +4140,37 @@ void TestEditorUi::wrap_selection_method_wraps_whole_expression_without_selectio
 
     editor.wrapSelection();
     QCOMPARE(editor.text(), QStringLiteral("(1+2)"));
+}
+
+void TestEditorUi::matching_parentheses_use_parens_and_generated_foreground_colors()
+{
+    const QColor parensColor(QStringLiteral("#c8a2c8"));
+    const QColor resultBackground(QStringLiteral("#102030"));
+    const QColor generatedForeground = aaForegroundForBackground(parensColor);
+    const ColorScheme scheme = ColorScheme::fromJsonObject(QJsonObject{
+        {QStringLiteral("parens"), parensColor.name()},
+        {QStringLiteral("background"), QStringLiteral("#010203")}
+    });
+    QVERIFY(scheme.isValid());
+
+    Editor editor;
+    editor.setThemeSurfaceColor(QColor(QStringLiteral("#203040")), resultBackground);
+    editor.setThemePreviewColorScheme(scheme);
+    editor.setText(QStringLiteral("()"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(QMetaObject::invokeMethod(
+        &editor,
+        "doMatchingPar",
+        Qt::DirectConnection));
+
+    const QList<QTextEdit::ExtraSelection> selections = editor.extraSelections();
+    QCOMPARE(selections.count(), 2);
+    for (const QTextEdit::ExtraSelection& selection : selections) {
+        QCOMPARE(selection.format.background().color(), parensColor);
+        QCOMPARE(selection.format.foreground().color(), generatedForeground);
+        QVERIFY(selection.format.foreground().color() != resultBackground);
+    }
 }
 
 void TestEditorUi::keeps_wrapped_cursor_line_visible_at_height_cap()

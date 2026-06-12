@@ -23,7 +23,6 @@ public:
         Unit,
         Result,
         Comment,
-        Matched,
         Function,
         Operator,
         Variable,

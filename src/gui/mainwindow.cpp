@@ -685,7 +685,6 @@ QString colorSchemeRoleLabel(ColorScheme::Role role)
     case ColorScheme::Unit: return QStringLiteral("unit");
     case ColorScheme::Result: return QStringLiteral("result");
     case ColorScheme::Comment: return QStringLiteral("comment");
-    case ColorScheme::Matched: return QStringLiteral("matched");
     case ColorScheme::Function: return QStringLiteral("function");
     case ColorScheme::Operator: return QStringLiteral("operator");
     case ColorScheme::Variable: return QStringLiteral("variable");

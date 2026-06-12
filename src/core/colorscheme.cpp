@@ -157,7 +157,6 @@ QVector<QPair<QString, ColorScheme::Role>> ColorScheme::roleNames()
         { QStringLiteral("unit"), ColorScheme::Unit },
         { QStringLiteral("result"), ColorScheme::Result },
         { QStringLiteral("comment"), ColorScheme::Comment },
-        { QStringLiteral("matched"), ColorScheme::Matched },
         { QStringLiteral("function"), ColorScheme::Function },
         { QStringLiteral("operator"), ColorScheme::Operator },
         { QStringLiteral("variable"), ColorScheme::Variable },

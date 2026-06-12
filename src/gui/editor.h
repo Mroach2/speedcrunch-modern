@@ -10,6 +10,7 @@
 
 #include <QColor>
 #include <QPlainTextEdit>
+#include <QTextCharFormat>
 #include <memory>
 #include <optional>
 
@@ -167,6 +168,8 @@ private:
     QColor m_themeSurfaceColor;
     QColor m_themeOuterSurfaceColor;
     QColor m_themePrimaryColor;
+    QColor m_matchedParenthesisBackgroundColor;
+    QColor m_matchedParenthesisForegroundColor;
     QColor m_completionBackgroundColor;
     QColor m_completionForegroundColor;
     QColor m_completionScrollbarThumbColor;
@@ -184,6 +187,8 @@ private:
     void updateHeightAndEnsureCursorVisible();
     void showThemedCursorAndRestartBlink();
     void hideThemedCursorAndStopBlink();
+    void updateMatchedParenthesisColors();
+    QTextCharFormat matchedParenthesisFormat() const;
     bool shouldPaintThemedCursor() const;
     QRect themedCursorRect() const;
 };

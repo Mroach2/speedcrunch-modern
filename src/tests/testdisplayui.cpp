@@ -282,15 +282,19 @@ private slots:
 void TestDisplayUi::color_scheme_roles_exclude_obsolete_scrollbar()
 {
     const auto roles = ColorScheme::roleNames();
-    for (const auto& roleEntry : roles)
+    for (const auto& roleEntry : roles) {
         QVERIFY(roleEntry.first != QStringLiteral("scrollbar"));
+        QVERIFY(roleEntry.first != QStringLiteral("matched"));
+    }
 
     const ColorScheme scheme = ColorScheme::fromJsonObject(QJsonObject{
         {QStringLiteral("background"), QStringLiteral("#1f3229")},
-        {QStringLiteral("scrollbar"), QStringLiteral("#ff00ff")}
+        {QStringLiteral("scrollbar"), QStringLiteral("#ff00ff")},
+        {QStringLiteral("matched"), QStringLiteral("#00ffff")}
     });
     QVERIFY(scheme.isValid());
     QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("scrollbar")));
+    QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("matched")));
 }
 
 void TestDisplayUi::result_display_insets_viewport_horizontally()

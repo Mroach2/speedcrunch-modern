@@ -7,7 +7,6 @@
     "parens": "#CCCCCC",
     "result": "#99CC99",
     "comment": "#999999",
-    "matched": "#FFCC66",
     "function": "#6699CC",
     "operator": "#66CCCC",
     "variable": "#F2777A",
