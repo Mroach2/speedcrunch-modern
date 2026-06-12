@@ -678,7 +678,6 @@ static bool isWaylandPlatform()
 QString colorSchemeRoleLabel(ColorScheme::Role role)
 {
     switch (role) {
-    case ColorScheme::Cursor: return QStringLiteral("cursor");
     case ColorScheme::Number: return QStringLiteral("number");
     case ColorScheme::Parens: return QStringLiteral("parens");
     case ColorScheme::List: return QStringLiteral("list");
@@ -699,8 +698,7 @@ void updateColorButtonStyle(QPushButton* button, const QColor& color)
     if (!button || !color.isValid())
         return;
 
-    const int brightness = qRound(0.299 * color.red() + 0.587 * color.green() + 0.114 * color.blue());
-    const QString textColor = brightness >= 160 ? QStringLiteral("#111111") : QStringLiteral("#f5f5f5");
+    const QColor textColor = aaForegroundForBackground(color);
 
     button->setText(color.name());
     button->setStyleSheet(QStringLiteral(R"(
@@ -708,7 +706,7 @@ void updateColorButtonStyle(QPushButton* button, const QColor& color)
             background-color: %1;
             color: %2;
         }
-    )").arg(color.name(), textColor));
+    )").arg(color.name(), textColor.name()));
 }
 
 enum class ColorSchemeFilter {
@@ -7831,7 +7829,7 @@ void MainWindow::showCustomThemeDialog()
     };
 
     int roleIndex = 0;
-    constexpr int roleRowsPerColumn = 5;
+    constexpr int roleRowsPerColumn = 4;
     for (const auto& roleEntry : roleEntries) {
         const ColorScheme::Role role = roleEntry.second;
         QLabel* roleLabel = new QLabel(colorSchemeRoleLabel(role), rolesWidget);
@@ -7978,8 +7976,10 @@ void MainWindow::showCustomThemeDialog()
         for (const auto& roleEntry : roleEntries) {
             const QColor color = importedScheme.colorForRole(roleEntry.second);
             colorsByRole[roleEntry.second] = color;
-            updateColorButtonStyle(roleButtons.value(roleEntry.second), color);
         }
+        for (const auto& roleEntry : roleEntries)
+            updateColorButtonStyle(roleButtons.value(roleEntry.second),
+                                   colorsByRole.value(roleEntry.second));
         selectedSchemeName = themeName;
         isCustomScheme = false;
         if (okButton != nullptr)

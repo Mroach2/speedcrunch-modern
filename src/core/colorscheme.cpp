@@ -150,7 +150,6 @@ ColorScheme ColorScheme::fromJsonObject(const QJsonObject& object)
 QVector<QPair<QString, ColorScheme::Role>> ColorScheme::roleNames()
 {
     return {
-        { QStringLiteral("cursor"), ColorScheme::Cursor },
         { QStringLiteral("number"), ColorScheme::Number },
         { QStringLiteral("parens"), ColorScheme::Parens },
         { QStringLiteral("list"), ColorScheme::List },

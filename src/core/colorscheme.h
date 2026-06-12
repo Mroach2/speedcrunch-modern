@@ -16,7 +16,6 @@ class ColorScheme {
 public:
     // Theme JSON schema documentation: doc/src/userguide/theme_json_schema.rst
     enum Role {
-        Cursor,
         Number,
         Parens,
         List,

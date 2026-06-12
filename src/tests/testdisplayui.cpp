@@ -284,16 +284,19 @@ void TestDisplayUi::color_scheme_roles_exclude_obsolete_scrollbar()
     const auto roles = ColorScheme::roleNames();
     for (const auto& roleEntry : roles) {
         QVERIFY(roleEntry.first != QStringLiteral("scrollbar"));
+        QVERIFY(roleEntry.first != QStringLiteral("cursor"));
         QVERIFY(roleEntry.first != QStringLiteral("matched"));
     }
 
     const ColorScheme scheme = ColorScheme::fromJsonObject(QJsonObject{
         {QStringLiteral("background"), QStringLiteral("#1f3229")},
+        {QStringLiteral("cursor"), QStringLiteral("#ffff00")},
         {QStringLiteral("scrollbar"), QStringLiteral("#ff00ff")},
         {QStringLiteral("matched"), QStringLiteral("#00ffff")}
     });
     QVERIFY(scheme.isValid());
     QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("scrollbar")));
+    QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("cursor")));
     QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("matched")));
 }
 
