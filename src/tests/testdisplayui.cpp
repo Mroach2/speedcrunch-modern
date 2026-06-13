@@ -20,6 +20,7 @@
 #include <QAbstractButton>
 #include <QApplication>
 #include <QComboBox>
+#include <QCursor>
 #include <QDockWidget>
 #include <QDir>
 #include <QFile>
@@ -38,11 +39,15 @@
 #include <QMouseEvent>
 #include <QMargins>
 #include <QLineEdit>
+#include <QPainter>
 #include <QPointer>
 #include <QPushButton>
 #include <QScrollBar>
 #include <QSplitter>
+#include <QSplitterHandle>
 #include <QStatusBar>
+#include <QStyle>
+#include <QStyleOption>
 #include <QTabBar>
 #include <QTest>
 #include <QTextBrowser>
@@ -160,6 +165,38 @@ bool colorsAreClose(const QColor& actual, const QColor& expected, int tolerance 
     return qAbs(actual.red() - expected.red()) <= tolerance
         && qAbs(actual.green() - expected.green()) <= tolerance
         && qAbs(actual.blue() - expected.blue()) <= tolerance;
+}
+
+QImage dockSeparatorPrimitiveImage(QWidget* widget,
+                                   QStyle::State state,
+                                   const QRect& separatorRect,
+                                   const QSize& imageSize)
+{
+    QImage image(imageSize, QImage::Format_ARGB32_Premultiplied);
+    image.fill(Qt::transparent);
+
+    QStyleOption option;
+    option.rect = separatorRect;
+    option.state = state;
+    option.palette = widget->palette();
+
+    QPainter painter(&image);
+    QApplication::style()->drawPrimitive(QStyle::PE_IndicatorDockWidgetResizeHandle,
+                                         &option,
+                                         &painter,
+                                         widget);
+    return image;
+}
+
+QImage dockSeparatorPrimitiveImage(QWidget* widget, QStyle::State state, const QSize& size = QSize(32, 8))
+{
+    return dockSeparatorPrimitiveImage(widget, state, QRect(QPoint(0, 0), size), size);
+}
+
+QColor dockSeparatorPrimitiveColor(QWidget* widget, QStyle::State state)
+{
+    const QImage image = dockSeparatorPrimitiveImage(widget, state);
+    return image.pixelColor(image.rect().center());
 }
 
 QRect sessionTabPillRect(const QTabBar* tabBar)
@@ -290,10 +327,13 @@ private slots:
     void main_window_applies_primary_role_to_active_editor_and_dock_selection();
     void current_result_tooltip_stays_hidden_after_escape_and_arrow_caret_move();
     void current_result_tooltip_stays_hidden_after_escape_and_mouse_caret_move();
+    void current_result_tooltip_hides_when_dragging_splitters();
     void calculation_settings_dialog_matches_notation_precision_layout();
     void main_window_uses_generated_theme_surface_for_chrome_and_editor();
     void restored_session_layout_reapplies_generated_theme_surfaces();
     void dock_surfaces_use_successive_generated_shades();
+    void dock_separator_style_uses_primary_while_hovered_or_dragged();
+    void constants_dock_uses_configured_narrow_minimum_width();
     void dock_search_focus_suppresses_editor_primary_outline_across_panes();
     void dock_selection_inserts_into_active_session_pane_after_focus_transfer();
     void clicking_tab_activates_own_pane_in_nested_split_layout();
@@ -534,6 +574,51 @@ void TestDisplayUi::current_result_tooltip_stays_hidden_after_escape_and_mouse_c
                                 .arg(visibleResultPreviewText(window))));
 }
 
+void TestDisplayUi::current_result_tooltip_hides_when_dragging_splitters()
+{
+    MainWindowStateGuard guard;
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QVERIFY(QMetaObject::invokeMethod(&window, "splitActivePaneRight", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+
+    Editor* editor = window.findChild<Editor*>();
+    QVERIFY(editor != nullptr);
+    editor->setFocus();
+    editor->setText(QStringLiteral("1+24"));
+    editor->setCursorPosition(editor->text().size());
+    editor->refreshAutoCalc();
+    QTRY_VERIFY(visibleResultPreviewText(window).contains(QStringLiteral("Current result:")));
+
+    QSplitter* splitContainer =
+        window.findChild<QSplitter*>(QStringLiteral("MainSplitContainer"));
+    QVERIFY(splitContainer != nullptr);
+    QVERIFY(splitContainer->count() > 1);
+    QSplitterHandle* handle = splitContainer->handle(1);
+    QVERIFY(handle != nullptr);
+    const QPoint handleCenter = handle->rect().center();
+    QTest::mousePress(handle, Qt::LeftButton, Qt::NoModifier, handleCenter);
+    QTest::mouseMove(handle, handleCenter + QPoint(8, 0));
+    QTest::mouseRelease(handle, Qt::LeftButton, Qt::NoModifier, handleCenter + QPoint(8, 0));
+    QTRY_VERIFY(visibleResultPreviewText(window).isEmpty());
+
+    editor->setText(QStringLiteral("1+25"));
+    editor->setCursorPosition(editor->text().size());
+    editor->refreshAutoCalc();
+    QTRY_VERIFY(visibleResultPreviewText(window).contains(QStringLiteral("Current result:")));
+
+    window.setCursor(Qt::SplitHCursor);
+    QTest::mousePress(&window, Qt::LeftButton, Qt::NoModifier, window.rect().center());
+    QTest::mouseMove(&window, window.rect().center() + QPoint(8, 0));
+    QTest::mouseRelease(&window, Qt::LeftButton, Qt::NoModifier,
+                        window.rect().center() + QPoint(8, 0));
+    window.unsetCursor();
+    QTRY_VERIFY(visibleResultPreviewText(window).isEmpty());
+}
+
 void TestDisplayUi::calculation_settings_dialog_matches_notation_precision_layout()
 {
     EvaluationContext context;
@@ -618,16 +703,18 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         const QColor base(baseName);
         const QVector<QColor> shades = generateOklchShades(base, 6, polarity);
         const QVector<QColor> foregrounds = aaForegroundsForBackgrounds(shades);
-        const QColor expectedResultSurface = shades.at(1);
-        const QColor expectedSurface = shades.at(0);
-        const QColor expectedEditorSurface = shades.at(2);
-        const QColor expectedHeaderSurface = shades.at(3);
-        const QColor expectedInputSurface = shades.at(4);
+        const QColor expectedResultSurface = shades.at(UiConfig::ResultDisplayShade);
+        const QColor expectedSurface = shades.at(UiConfig::KeypadBackgroundShade);
+        const QColor expectedEditorSurface = shades.at(UiConfig::DockBackgroundShade);
+        const QColor expectedHeaderSurface = shades.at(UiConfig::DockHeaderShade);
+        const QColor expectedInputSurface = shades.at(UiConfig::DockUnfocusedSelectedItemShade);
+        const QColor expectedStatusBarSurface = shades.at(UiConfig::StatusBarBackgroundShade);
         const QColor expectedPrimary = generatePrimaryFromBackground(base);
-        const QColor expectedForeground = foregrounds.at(0);
-        const QColor expectedEditorForeground = foregrounds.at(2);
-        const QColor expectedHeaderForeground = foregrounds.at(3);
-        const QColor expectedInputForeground = foregrounds.at(4);
+        const QColor expectedForeground = foregrounds.at(UiConfig::KeypadBackgroundShade);
+        const QColor expectedEditorForeground = foregrounds.at(UiConfig::DockBackgroundShade);
+        const QColor expectedHeaderForeground = foregrounds.at(UiConfig::DockHeaderShade);
+        const QColor expectedInputForeground =
+            foregrounds.at(UiConfig::DockUnfocusedSelectedItemShade);
 
         MainWindow window;
         window.show();
@@ -747,7 +834,8 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         QVERIFY(bitfieldButton->styleSheet().contains(expectedHeaderForeground.name()));
         QVERIFY(bitfieldButton->styleSheet().contains(expectedInputSurface.name()));
         QVERIFY(bitfieldButton->styleSheet().contains(expectedInputForeground.name()));
-        QCOMPARE(statusBar->palette().color(QPalette::Window).name(), expectedSurface.name());
+        QCOMPARE(statusBar->palette().color(QPalette::Window).name(),
+                 expectedStatusBarSurface.name());
     };
 
     verifyTheme(QStringLiteral("#300a24"), ThemePolarity::Dark);
@@ -772,15 +860,15 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
     QVERIFY(changedEditor != nullptr);
     QVERIFY(changedBitfield != nullptr);
     QCOMPARE(changedWindow.palette().color(QPalette::Window).name(),
-             changedShades.at(0).name());
+             changedShades.at(UiConfig::KeypadBackgroundShade).name());
     QCOMPARE(changedDisplay->palette().color(QPalette::Base).name(),
-             changedShades.at(1).name());
+             changedShades.at(UiConfig::ResultDisplayShade).name());
     QCOMPARE(changedEditor->viewport()->palette().color(QPalette::Base).name(),
-             changedShades.at(2).name());
+             changedShades.at(UiConfig::DockBackgroundShade).name());
     QCOMPARE(changedEditor->parentWidget()->palette().color(QPalette::Window).name(),
-             changedShades.at(1).name());
+             changedShades.at(UiConfig::ResultDisplayShade).name());
     QCOMPARE(changedBitfield->palette().color(QPalette::Window).name(),
-             changedShades.at(2).name());
+             changedShades.at(UiConfig::DockBackgroundShade).name());
     const QImage changedDisplayImage = changedDisplay->viewport()->grab().toImage();
     QVERIFY(!changedDisplayImage.isNull());
     QCOMPARE(changedDisplayImage.pixelColor(changedDisplayImage.width() / 2,
@@ -905,9 +993,9 @@ void TestDisplayUi::restored_session_layout_reapplies_generated_theme_surfaces()
 
     const QVector<QColor> shades =
         generateOklchShades(QColor(QStringLiteral("#300a24")), 6, ThemePolarity::Dark);
-    const QColor paneFill = shades.at(1);
-    const QColor chromeFill = shades.at(0);
-    const QColor editorFill = shades.at(2);
+    const QColor paneFill = shades.at(UiConfig::ResultDisplayShade);
+    const QColor chromeFill = shades.at(UiConfig::KeypadBackgroundShade);
+    const QColor editorFill = shades.at(UiConfig::DockBackgroundShade);
 
     QSplitter* splitContainer =
         restoredWindow.findChild<QSplitter*>(QStringLiteral("MainSplitContainer"));
@@ -943,6 +1031,7 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
         Settings* settings;
         QString oldColorScheme;
         QString oldCustomColorSchemeJson;
+        QByteArray oldWindowState;
         bool oldConstantsDockVisible;
         bool oldHasNumberFormatStyleSetting;
         QByteArray oldSkipUpdateCheck;
@@ -952,6 +1041,7 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
         {
             settings->colorScheme = oldColorScheme;
             settings->customColorSchemeJson = oldCustomColorSchemeJson;
+            settings->windowState = oldWindowState;
             settings->constantsDockVisible = oldConstantsDockVisible;
             settings->hasNumberFormatStyleSetting = oldHasNumberFormatStyleSetting;
             if (hadSkipUpdateCheck)
@@ -963,6 +1053,7 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
         settings,
         settings->colorScheme,
         settings->customColorSchemeJson,
+        settings->windowState,
         settings->constantsDockVisible,
         settings->hasNumberFormatStyleSetting,
         qgetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK"),
@@ -972,6 +1063,7 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
     settings->colorScheme = QStringLiteral("Custom");
     settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#1f3229\"}");
+    settings->windowState.clear();
     settings->constantsDockVisible = true;
     settings->hasNumberFormatStyleSetting = true;
 
@@ -991,11 +1083,15 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     const QColor controlText = foregrounds.at(4);
     const QColor contentFill = shades.at(2);
     const QColor contentText = foregrounds.at(2);
+    const QColor chromeFill = shades.at(UiConfig::KeypadBackgroundShade);
+    const QColor chromeText = foregrounds.at(UiConfig::KeypadBackgroundShade);
+    const QColor resultFill = shades.at(UiConfig::ResultDisplayShade);
+    const QColor resultText = foregrounds.at(UiConfig::ResultDisplayShade);
     const QColor hoverFill = shades.at(5);
     const QColor textInputOutlineFill = shades.at(UiConfig::DockTextInputOutlineShade);
     const QColor scrollToBottomOutlineFill =
         shades.at(UiConfig::ScrollToBottomButtonOutlineShade);
-    const QColor splitterFill = shades.at(0);
+    const QColor splitterFill = shades.at(UiConfig::SplitterShade);
 
     const QList<QDockWidget*> docks = window.findChildren<QDockWidget*>();
     QVERIFY(!docks.isEmpty());
@@ -1008,6 +1104,19 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     Editor* editor = pane ? pane->findChild<Editor*>() : nullptr;
     QVERIFY(editor != nullptr);
     QVERIFY(splitContainer->styleSheet().contains(splitterFill.name()));
+    QVERIFY(splitContainer->styleSheet().contains(primary.name()));
+    QVERIFY(splitContainer->styleSheet().contains(QStringLiteral("QSplitter::handle:hover")));
+    QVERIFY(splitContainer->styleSheet().contains(QStringLiteral("QSplitter::handle:pressed")));
+    const QList<QSplitterHandle*> splitterHandles = window.findChildren<QSplitterHandle*>();
+    QVERIFY(!splitterHandles.isEmpty());
+    for (QSplitterHandle* splitterHandle : splitterHandles) {
+        QVERIFY(splitterHandle->styleSheet().contains(splitterFill.name()));
+        QVERIFY(splitterHandle->styleSheet().contains(primary.name()));
+        QVERIFY(splitterHandle->styleSheet().contains(QStringLiteral("QSplitterHandle:hover")));
+        QVERIFY(splitterHandle->styleSheet().contains(QStringLiteral("QSplitterHandle:pressed")));
+    }
+    QCOMPARE(window.property("speedcrunchDockSeparatorNormalColor").value<QColor>(), splitterFill);
+    QCOMPARE(window.property("speedcrunchDockSeparatorActiveColor").value<QColor>(), primary);
     const QString resultScrollBarStyle = display->verticalScrollBar()->styleSheet();
     QVERIFY(resultScrollBarStyle.contains(shades.at(1).name()));
     QVERIFY(resultScrollBarStyle.contains(contentFill.name()));
@@ -1180,6 +1289,10 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
                                       Q_ARG(QWidget*, searchBox)));
     constantsDock->show();
     constantsDock->raise();
+    constantsDock->setMinimumWidth(UiConfig::ConstantsDockDefaultWidth);
+    window.resizeDocks(QList<QDockWidget*> { constantsDock },
+                       QList<int> { UiConfig::ConstantsDockDefaultWidth },
+                       Qt::Horizontal);
     QCoreApplication::processEvents();
     searchBox->clear();
     QVERIFY2(searchBox->focusPolicy() != Qt::NoFocus,
@@ -1333,10 +1446,10 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
             foundDockTabs = true;
             QCOMPARE(tabBar->palette().color(QPalette::WindowText).name(), titleText.name());
             QVERIFY(tabBar->styleSheet().contains(QStringLiteral("background-color: transparent")));
-            QVERIFY(tabBar->styleSheet().contains(shades.at(0).name()));
-            QVERIFY(tabBar->styleSheet().contains(foregrounds.at(0).name()));
-            QVERIFY(tabBar->styleSheet().contains(shades.at(1).name()));
-            QVERIFY(tabBar->styleSheet().contains(foregrounds.at(1).name()));
+            QVERIFY(tabBar->styleSheet().contains(chromeFill.name()));
+            QVERIFY(tabBar->styleSheet().contains(chromeText.name()));
+            QVERIFY(tabBar->styleSheet().contains(resultFill.name()));
+            QVERIFY(tabBar->styleSheet().contains(resultText.name()));
             QVERIFY(tabBar->styleSheet().contains(titleFill.name()));
             QVERIFY(tabBar->styleSheet().contains(titleText.name()));
             QVERIFY(tabBar->styleSheet().contains(QStringLiteral("padding: 5px 14px")));
@@ -1395,6 +1508,178 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QCOMPARE(table->viewport()->palette().color(QPalette::Base).name(),
              changedContentFill.name());
     QVERIFY(table->styleSheet().contains(changedContentFill.name()));
+}
+
+void TestDisplayUi::dock_separator_style_uses_primary_while_hovered_or_dragged()
+{
+    MainWindowStateGuard guard;
+    guard.settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    const QColor normal(QStringLiteral("#123456"));
+    const QColor primary(QStringLiteral("#abcdef"));
+
+    QWidget propertyOwner;
+    propertyOwner.setProperty("speedcrunchDockSeparatorNormalColor", normal);
+    propertyOwner.setProperty("speedcrunchDockSeparatorActiveColor", primary);
+    propertyOwner.resize(96, 64);
+    QWidget styleHost(&propertyOwner);
+    styleHost.resize(64, 32);
+    styleHost.move(0, 0);
+    propertyOwner.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&propertyOwner));
+
+    QCursor::setPos(styleHost.mapToGlobal(QPoint(50, 24)));
+    QCoreApplication::processEvents();
+    QCOMPARE(dockSeparatorPrimitiveColor(&styleHost, QStyle::State_None).name(),
+             normal.name());
+
+    QCursor::setPos(styleHost.mapToGlobal(QPoint(4, 4)));
+    QCoreApplication::processEvents();
+    QCOMPARE(dockSeparatorPrimitiveColor(&styleHost, QStyle::State_None).name(),
+             primary.name());
+    QImage horizontalSeparator =
+        dockSeparatorPrimitiveImage(&styleHost, QStyle::State_None, QSize(32, 8));
+    const int horizontalStrokeTop =
+        (horizontalSeparator.height() - UiConfig::DockSplitterStrokeWidth) / 2;
+    const int horizontalStrokeBottom =
+        horizontalStrokeTop + UiConfig::DockSplitterStrokeWidth - 1;
+    for (int y = horizontalStrokeTop; y <= horizontalStrokeBottom; ++y)
+        QCOMPARE(horizontalSeparator.pixelColor(horizontalSeparator.width() / 2, y).name(),
+                 primary.name());
+    if (horizontalStrokeTop > 0)
+        QCOMPARE(horizontalSeparator.pixelColor(horizontalSeparator.width() / 2,
+                                                horizontalStrokeTop - 1).alpha(), 0);
+    if (horizontalStrokeBottom + 1 < horizontalSeparator.height())
+        QCOMPARE(horizontalSeparator.pixelColor(horizontalSeparator.width() / 2,
+                                                horizontalStrokeBottom + 1).alpha(), 0);
+
+    QImage verticalSeparator =
+        dockSeparatorPrimitiveImage(&styleHost, QStyle::State_None, QSize(8, 32));
+    const int verticalStrokeLeft =
+        (verticalSeparator.width() - UiConfig::DockSplitterStrokeWidth) / 2;
+    const int verticalStrokeRight =
+        verticalStrokeLeft + UiConfig::DockSplitterStrokeWidth - 1;
+    for (int x = verticalStrokeLeft; x <= verticalStrokeRight; ++x)
+        QCOMPARE(verticalSeparator.pixelColor(x, verticalSeparator.height() / 2).name(),
+                 primary.name());
+    if (verticalStrokeLeft > 0)
+        QCOMPARE(verticalSeparator.pixelColor(verticalStrokeLeft - 1,
+                                              verticalSeparator.height() / 2).alpha(), 0);
+    if (verticalStrokeRight + 1 < verticalSeparator.width())
+        QCOMPARE(verticalSeparator.pixelColor(verticalStrokeRight + 1,
+                                              verticalSeparator.height() / 2).alpha(), 0);
+
+    QCursor::setPos(styleHost.mapToGlobal(QPoint(4, 1)));
+    QCoreApplication::processEvents();
+    QImage thinHorizontalSeparator = dockSeparatorPrimitiveImage(&styleHost,
+                                                                QStyle::State_None,
+                                                                QRect(0, 0, 32, 1),
+                                                                QSize(32, 3));
+    QCOMPARE(thinHorizontalSeparator.pixelColor(thinHorizontalSeparator.width() / 2, 1).name(),
+             primary.name());
+    QCOMPARE(thinHorizontalSeparator.pixelColor(thinHorizontalSeparator.width() / 2, 2).alpha(),
+             0);
+
+    QCursor::setPos(styleHost.mapToGlobal(QPoint(1, 4)));
+    QCoreApplication::processEvents();
+    QImage thinVerticalSeparator = dockSeparatorPrimitiveImage(&styleHost,
+                                                              QStyle::State_None,
+                                                              QRect(0, 0, 1, 32),
+                                                              QSize(3, 32));
+    QCOMPARE(thinVerticalSeparator.pixelColor(1, thinVerticalSeparator.height() / 2).name(),
+             primary.name());
+    QCOMPARE(thinVerticalSeparator.pixelColor(2, thinVerticalSeparator.height() / 2).alpha(),
+             0);
+
+    QCursor::setPos(styleHost.mapToGlobal(QPoint(50, 24)));
+    QCoreApplication::processEvents();
+    QCOMPARE(dockSeparatorPrimitiveColor(&styleHost, QStyle::State_Sunken).name(),
+             primary.name());
+}
+
+void TestDisplayUi::constants_dock_uses_configured_narrow_minimum_width()
+{
+    Settings* settings = Settings::instance();
+    struct SettingsGuard {
+        Settings* settings;
+        bool oldConstantsDockVisible;
+        bool oldFunctionsDockVisible;
+        bool oldHistoryDockVisible;
+        bool oldFormulaBookDockVisible;
+        bool oldVariablesDockVisible;
+        bool oldUserFunctionsDockVisible;
+        bool oldUserUnitsDockVisible;
+        bool oldBitfieldVisible;
+        Settings::KeypadMode oldKeypadMode;
+        bool oldKeypadVisible;
+        bool oldHasNumberFormatStyleSetting;
+        QByteArray oldSkipUpdateCheck;
+        bool hadSkipUpdateCheck;
+
+        ~SettingsGuard()
+        {
+            settings->constantsDockVisible = oldConstantsDockVisible;
+            settings->functionsDockVisible = oldFunctionsDockVisible;
+            settings->historyDockVisible = oldHistoryDockVisible;
+            settings->formulaBookDockVisible = oldFormulaBookDockVisible;
+            settings->variablesDockVisible = oldVariablesDockVisible;
+            settings->userFunctionsDockVisible = oldUserFunctionsDockVisible;
+            settings->userUnitsDockVisible = oldUserUnitsDockVisible;
+            settings->bitfieldVisible = oldBitfieldVisible;
+            settings->keypadMode = oldKeypadMode;
+            settings->keypadVisible = oldKeypadVisible;
+            settings->hasNumberFormatStyleSetting = oldHasNumberFormatStyleSetting;
+            if (hadSkipUpdateCheck)
+                qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", oldSkipUpdateCheck);
+            else
+                qunsetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
+        }
+    } guard {
+        settings,
+        settings->constantsDockVisible,
+        settings->functionsDockVisible,
+        settings->historyDockVisible,
+        settings->formulaBookDockVisible,
+        settings->variablesDockVisible,
+        settings->userFunctionsDockVisible,
+        settings->userUnitsDockVisible,
+        settings->bitfieldVisible,
+        settings->keypadMode,
+        settings->keypadVisible,
+        settings->hasNumberFormatStyleSetting,
+        qgetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK"),
+        qEnvironmentVariableIsSet("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK")
+    };
+
+    qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
+    settings->constantsDockVisible = true;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->keypadMode = Settings::KeypadModeDisabled;
+    settings->keypadVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QDockWidget* constantsDock =
+        window.findChild<QDockWidget*>(QStringLiteral("ConstantsDock"));
+    QVERIFY(constantsDock != nullptr);
+    QCOMPARE(constantsDock->minimumWidth(), UiConfig::ConstantsDockMinimumWidth);
+
+    QVERIFY(constantsDock->widget()->minimumSizeHint().width()
+            <= UiConfig::ConstantsDockMinimumWidth);
 }
 
 void TestDisplayUi::dock_search_focus_suppresses_editor_primary_outline_across_panes()

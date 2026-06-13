@@ -10,7 +10,9 @@
 #include "core/mathdsl.h"
 #include "gui/dockliststyle.h"
 #include "gui/themedlineedit.h"
+#include "gui/uiconfig.h"
 
+#include <QAbstractScrollArea>
 #include <QEvent>
 #include <QResizeEvent>
 #include <QTimer>
@@ -115,6 +117,7 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
 
     m_list = new QTreeWidget(this);
     m_list->setAutoScroll(true);
+    m_list->setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
     m_list->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     m_list->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_list->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -123,6 +126,7 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
     m_list->setMouseTracking(true);
     m_list->setEditTriggers(QTreeWidget::NoEditTriggers);
     m_list->setSelectionBehavior(QTreeWidget::SelectRows);
+    m_list->header()->setStretchLastSection(false);
     DockListStyle::apply(m_list);
 
     connect(m_list, SIGNAL(itemActivated(QTreeWidgetItem*, int)), SLOT(handleItem(QTreeWidgetItem*)));
@@ -168,6 +172,13 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
 ConstantsWidget::~ConstantsWidget()
 {
     m_filterTimer->stop();
+}
+
+QSize ConstantsWidget::minimumSizeHint() const
+{
+    QSize hint = QWidget::minimumSizeHint();
+    hint.setWidth(UiConfig::ConstantsDockMinimumWidth);
+    return hint;
 }
 
 QString ConstantsWidget::selectedDomain() const { return m_domain->currentText(); }

@@ -104,6 +104,7 @@
 #include <QPlainTextEdit>
 #include <QPixmap>
 #include <QPointer>
+#include <QProxyStyle>
 #include <QDropEvent>
 #include <QPushButton>
 #include <QScreen>
@@ -112,12 +113,14 @@
 #include <QSignalBlocker>
 #include <QSpinBox>
 #include <QSplitter>
+#include <QSplitterHandle>
 #include <QStackedWidget>
 #include <QStandardPaths>
 #include <QScrollBar>
 #include <QSet>
 #include <QStatusBar>
 #include <QStyle>
+#include <QStyleOption>
 #include <QTabBar>
 #include <QToolButton>
 #include <QToolTip>
@@ -867,6 +870,92 @@ ThemeScrollBarColors scrollBarColorsForSurfaceIndex(const GeneratedThemeSurfaces
         colorAt(surfaceIndex + 2),
         colorAt(surfaceIndex + 3)
     };
+}
+
+constexpr auto DockSeparatorNormalColorProperty = "speedcrunchDockSeparatorNormalColor";
+constexpr auto DockSeparatorActiveColorProperty = "speedcrunchDockSeparatorActiveColor";
+constexpr auto DockSeparatorStyleInstalledProperty = "speedcrunchDockSeparatorStyleInstalled";
+
+QColor dockSeparatorColorForWidget(const QWidget* widget, const char* propertyName)
+{
+    for (const QWidget* current = widget; current != nullptr; current = current->parentWidget()) {
+        const QColor color = current->property(propertyName).value<QColor>();
+        if (color.isValid())
+            return color;
+    }
+    return QColor();
+}
+
+QRect dockSeparatorStrokeRect(const QRect& separatorRect)
+{
+    QRect strokeRect = separatorRect;
+    if (strokeRect.width() > strokeRect.height()) {
+        const int height = qMax(1, UiConfig::DockSplitterStrokeWidth);
+        strokeRect.setTop(strokeRect.center().y() - (height - 1) / 2);
+        strokeRect.setHeight(height);
+    } else {
+        const int width = qMax(1, UiConfig::DockSplitterStrokeWidth);
+        strokeRect.setLeft(strokeRect.center().x() - (width - 1) / 2);
+        strokeRect.setWidth(width);
+    }
+    return strokeRect;
+}
+
+class DockSeparatorStyle : public QProxyStyle {
+public:
+    using QProxyStyle::QProxyStyle;
+
+    void drawPrimitive(PrimitiveElement element,
+                       const QStyleOption* option,
+                       QPainter* painter,
+                       const QWidget* widget = nullptr) const override
+    {
+        if (element != PE_IndicatorDockWidgetResizeHandle || option == nullptr || widget == nullptr) {
+            QProxyStyle::drawPrimitive(element, option, painter, widget);
+            return;
+        }
+
+        const QColor normalColor = dockSeparatorColorForWidget(widget, DockSeparatorNormalColorProperty);
+        const QColor activeColor = dockSeparatorColorForWidget(widget, DockSeparatorActiveColorProperty);
+        if (!normalColor.isValid() || !activeColor.isValid()) {
+            QProxyStyle::drawPrimitive(element, option, painter, widget);
+            return;
+        }
+
+        const QRect strokeRect = dockSeparatorStrokeRect(option->rect);
+        const QPoint cursorPosition = widget->mapFromGlobal(QCursor::pos());
+        const bool cursorOverStroke = strokeRect.contains(cursorPosition);
+        const bool active = option->state.testFlag(State_MouseOver)
+            || option->state.testFlag(State_Sunken)
+            || cursorOverStroke;
+        painter->fillRect(strokeRect, active ? activeColor : normalColor);
+    }
+};
+
+void ensureDockSeparatorStyleInstalled()
+{
+    if (QApplication::style()->property(DockSeparatorStyleInstalledProperty).toBool())
+        return;
+
+    QStyle* style = new DockSeparatorStyle(QApplication::style());
+    style->setProperty(DockSeparatorStyleInstalledProperty, true);
+    QApplication::setStyle(style);
+}
+
+QString splitterStyleSheet(const QColor& normal, const QColor& active)
+{
+    return QStringLiteral(
+        "QSplitter::handle { background-color: %1; }"
+        "QSplitter::handle:hover, QSplitter::handle:pressed { background-color: %2; }")
+        .arg(normal.name(), active.name());
+}
+
+QString splitterHandleStyleSheet(const QColor& normal, const QColor& active)
+{
+    return QStringLiteral(
+        "QSplitterHandle { background-color: %1; }"
+        "QSplitterHandle:hover, QSplitterHandle:pressed { background-color: %2; }")
+        .arg(normal.name(), active.name());
 }
 
 QString scrollBarStyleSheet(const ThemeScrollBarColors& colors)
@@ -4353,6 +4442,7 @@ void MainWindow::splitActivePane(Qt::Orientation orientation, bool insertAfter)
     display->refresh();
     editor->updateHistory();
     editor->refreshAutoCalc();
+    updateSplitterStyleSheet();
     updatePaneLoadedSessionCounts();
     cancelWindowActivationRestore();
     setActiveEditorDisplayPane(display, editor);
@@ -5052,6 +5142,7 @@ void MainWindow::splitPaneWithSession(QTabBar* sourceTabBar, ResultDisplay* targ
     editor->updateHistory();
     editor->refreshAutoCalc();
     removeSessionTabFromPane(sourceDisplay, name, true);
+    updateSplitterStyleSheet();
     updatePaneLoadedSessionCounts();
     setActiveEditorDisplayPane(display, editor);
     updatePaneTabBars();
@@ -5191,7 +5282,13 @@ void MainWindow::updateSplitterStyleSheet()
 
     const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
     const QColor handle = themeSurfaceForShadeIndex(surfaces, UiConfig::SplitterShade).background;
-    const QString styleSheet = QStringLiteral("QSplitter::handle { background: %1; }").arg(handle.name());
+    const QColor hoveredHandle = UiConfig::SplitterHoverUsesPrimary
+        ? surfaces.primary.background
+        : themeSurfaceForShadeIndex(surfaces, UiConfig::SplitterHoverShade).background;
+    setProperty(DockSeparatorNormalColorProperty, handle);
+    setProperty(DockSeparatorActiveColorProperty, hoveredHandle);
+
+    const QString styleSheet = splitterStyleSheet(handle, hoveredHandle);
     const auto applyStyle = [&styleSheet](QSplitter* splitter, const auto& applyStyleRef) -> void {
         if (splitter == nullptr)
             return;
@@ -5202,6 +5299,13 @@ void MainWindow::updateSplitterStyleSheet()
         }
     };
     applyStyle(m_widgets.splitContainer, applyStyle);
+
+    const QString handleStyleSheet = splitterHandleStyleSheet(handle, hoveredHandle);
+    for (QSplitterHandle* splitterHandle : findChildren<QSplitterHandle*>()) {
+        splitterHandle->installEventFilter(this);
+        splitterHandle->setStyleSheet(handleStyleSheet);
+        splitterHandle->update();
+    }
 }
 
 void MainWindow::refreshPaneThemes()
@@ -5701,6 +5805,7 @@ void MainWindow::createConstantsDock(bool takeFocus)
 
     m_docks.constants = new GenericDock<ConstantsWidget>("MainWindow", QT_TR_NOOP("Constants"), this);
     m_docks.constants->setObjectName("ConstantsDock");
+    m_docks.constants->setMinimumWidth(UiConfig::ConstantsDockMinimumWidth);
     m_docks.constants->installEventFilter(this);
     m_docks.constants->setAllowedAreas(Qt::AllDockWidgetAreas);
 
@@ -5900,6 +6005,7 @@ void MainWindow::addTabifiedDock(QDockWidget* newDock, bool takeFocus, Qt::DockW
     const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
     applyGeneratedDockContentSurfaces(this, newDock, surfaces);
     applyGeneratedDockChromeSurfaces(newDock, surfaces);
+    updateSplitterStyleSheet();
     QPointer<QDockWidget> guardedDock(newDock);
     QTimer::singleShot(0, newDock, [this, guardedDock]() {
         if (guardedDock == nullptr)
@@ -5907,6 +6013,7 @@ void MainWindow::addTabifiedDock(QDockWidget* newDock, bool takeFocus, Qt::DockW
         const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
         applyGeneratedDockContentSurfaces(this, guardedDock, surfaces);
         applyGeneratedDockChromeSurfaces(guardedDock, surfaces);
+        updateSplitterStyleSheet();
     });
     if (takeFocus)
         newDock->setFocus();
@@ -6253,6 +6360,18 @@ void MainWindow::applySettings()
         move(screenGeometry.center() - rect().center());
     }
     restoreState(m_settings->windowState, DockLayoutStateVersion);
+    if (m_settings->windowState.isEmpty()
+        && constantsDockVisible
+        && m_docks.constants != nullptr) {
+        QPointer<QDockWidget> constantsDock(m_docks.constants);
+        QTimer::singleShot(0, this, [this, constantsDock]() {
+            if (constantsDock == nullptr || !constantsDock->isVisible())
+                return;
+            resizeDocks(QList<QDockWidget*> { constantsDock },
+                        QList<int> { UiConfig::ConstantsDockDefaultWidth },
+                        Qt::Horizontal);
+        });
+    }
 
     m_actions.viewFullScreenMode->setChecked(m_settings->windowOnfullScreen);
     if (!isWaylandPlatform())
@@ -6883,6 +7002,8 @@ MainWindow::MainWindow()
     : QMainWindow()
 {
     qApp->setQuitOnLastWindowClosed(false);
+    setAttribute(Qt::WA_Hover, true);
+    setMouseTracking(true);
     if (primaryMainWindow().isNull())
         primaryMainWindow() = this;
     allMainWindows().append(QPointer<MainWindow>(this));
@@ -6948,6 +7069,7 @@ MainWindow::MainWindow()
     applySettings();
     applyThemeSurfacePalette();
     refreshPaneThemes();
+    ensureDockSeparatorStyleInstalled();
     updatePaneLoadedSessionCounts();
 
     if (!m_settings->hasNumberFormatStyleSetting)
@@ -8172,6 +8294,17 @@ void MainWindow::hideStateLabel()
     m_widgets.state->hide();
 }
 
+void MainWindow::hideCurrentResultPreview()
+{
+    if (m_widgets.state == nullptr
+        || !m_widgets.state->isVisible()
+        || !m_widgets.state->text().contains(QStringLiteral("Current result:"))) {
+        return;
+    }
+
+    hideStateLabel();
+}
+
 void MainWindow::handleEditorEscapePressed()
 {
     if (m_widgets.state->isVisible()) {
@@ -9312,6 +9445,32 @@ void MainWindow::setFullScreenEnabled(bool b)
 
 bool MainWindow::event(QEvent* e)
 {
+    if (e != nullptr) {
+        const bool updateDockSeparators =
+            e->type() == QEvent::Enter
+            || e->type() == QEvent::Leave
+            || e->type() == QEvent::HoverEnter
+            || e->type() == QEvent::HoverMove
+            || e->type() == QEvent::HoverLeave
+            || e->type() == QEvent::MouseButtonPress
+            || e->type() == QEvent::MouseButtonRelease
+            || e->type() == QEvent::MouseMove;
+        if (updateDockSeparators && !m_allDocks.isEmpty())
+            update();
+
+        const bool splitCursor = cursor().shape() == Qt::SplitHCursor
+            || cursor().shape() == Qt::SplitVCursor;
+        if (splitCursor && e->type() == QEvent::MouseButtonPress) {
+            const QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(e);
+            if (mouseEvent->button() == Qt::LeftButton)
+                hideCurrentResultPreview();
+        } else if (splitCursor && e->type() == QEvent::MouseMove) {
+            const QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(e);
+            if (mouseEvent->buttons() & Qt::LeftButton)
+                hideCurrentResultPreview();
+        }
+    }
+
     if (e != nullptr
         && (e->type() == QEvent::KeyPress || e->type() == QEvent::ShortcutOverride)) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
@@ -9427,6 +9586,19 @@ bool MainWindow::event(QEvent* e)
 
 bool MainWindow::eventFilter(QObject* o, QEvent* e)
 {
+    if (qobject_cast<QSplitterHandle*>(o) != nullptr) {
+        if (e->type() == QEvent::MouseButtonPress) {
+            const QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(e);
+            if (mouseEvent->button() == Qt::LeftButton)
+                hideCurrentResultPreview();
+        } else if (e->type() == QEvent::MouseMove) {
+            const QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(e);
+            if (mouseEvent->buttons() & Qt::LeftButton)
+                hideCurrentResultPreview();
+        }
+        return QMainWindow::eventFilter(o, e);
+    }
+
     if (QWidget* widget = qobject_cast<QWidget*>(o); isDockTextInput(widget)) {
         if (e->type() == QEvent::MouseButtonPress) {
             pendingDockTextInputFocusTarget() = widget;
@@ -11389,6 +11561,10 @@ void MainWindow::handleDockWidgetVisibilityChanged(bool visible)
     QWidget* focusWidget = dock->focusWidget();
     if (focusWidget && !visible && focusWidget->hasFocus())
         m_widgets.editor->setFocus();
+
+    QTimer::singleShot(0, this, [this]() {
+        updateSplitterStyleSheet();
+    });
 }
 
 void MainWindow::insertVariableIntoEditor(const QString& v)

@@ -7,7 +7,8 @@
 
 namespace UiConfig {
 
-constexpr int SessionPaneSplitterWidth = 5;
+constexpr int SessionPaneSplitterWidth = 1;
+constexpr int DockSplitterStrokeWidth = 2;
 constexpr int OutlineStrokeWidth = 1;
 constexpr int ActiveSessionTabIndicatorStrokeWidth = 2;
 constexpr int KeypadButtonMargin = 3;
@@ -30,7 +31,9 @@ constexpr int Shade500 = 4;
 constexpr int Shade600 = 5;
 
 constexpr int ResultDisplayShade = Shade200;
-constexpr int SplitterShade = Shade100;
+constexpr int SplitterShade = Shade300;
+constexpr bool SplitterHoverUsesPrimary = true;
+constexpr int SplitterHoverShade = Shade400;
 constexpr int ScrollToBottomButtonBackgroundShade = Shade300;
 constexpr int ScrollToBottomButtonHoverBackgroundShade = Shade400;
 constexpr int ScrollToBottomButtonOutlineShade = Shade400;
@@ -48,11 +51,13 @@ constexpr int ResultDisplayScrollbarHoverShade = Shade400;
 constexpr int ResultDisplayScrollbarPressedShade = Shade500;
 constexpr int DockBackgroundShade = Shade300;
 constexpr int DockHeaderShade = Shade400;
+constexpr int ConstantsDockMinimumWidth = 120;
+constexpr int ConstantsDockDefaultWidth = 320;
 constexpr int DockTextInputShade = Shade300;
 constexpr int DockTextInputOutlineShade = Shade400;
 constexpr int DockHoveredItemShade = Shade400;
 constexpr int DockUnfocusedSelectedItemShade = Shade500;
-constexpr int KeypadBackgroundShade = Shade100;
+constexpr int KeypadBackgroundShade = Shade200;
 constexpr int KeypadButtonShade = Shade300;
 constexpr int KeypadButtonHoverShade = Shade400;
 constexpr int KeypadButtonPressedShade = Shade500;

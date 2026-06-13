@@ -7,6 +7,7 @@
 
 #include <QWidget>
 
+class QSize;
 class QComboBox;
 class QHBoxLayout;
 class QLabel;
@@ -21,6 +22,7 @@ class ConstantsWidget : public QWidget {
 public:
     explicit ConstantsWidget(QWidget* parent = nullptr);
     ~ConstantsWidget();
+    QSize minimumSizeHint() const override;
     QString selectedDomain() const;
     QString selectedSubdomain() const;
     QString searchText() const;
@@ -42,8 +44,8 @@ protected slots:
     void updateList();
 
 protected:
-    virtual void changeEvent(QEvent*);
-    virtual void resizeEvent(QResizeEvent* event);
+    void changeEvent(QEvent*) override;
+    void resizeEvent(QResizeEvent* event) override;
 
 private:
     void updateDomainLayout();
