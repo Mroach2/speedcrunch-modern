@@ -24,6 +24,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFrame>
+#include <QFocusEvent>
 #include <QHeaderView>
 #include <QImage>
 #include <QLabel>
@@ -215,10 +216,22 @@ QString visibleResultPreviewText(const MainWindow& window)
 
 struct MainWindowStateGuard {
     Settings* settings = Settings::instance();
+    QString oldColorScheme = settings->colorScheme;
+    QString oldCustomColorSchemeJson = settings->customColorSchemeJson;
     QString oldSessionLayoutJson = settings->sessionLayoutJson;
     QByteArray oldWindowState = settings->windowState;
     QByteArray oldWindowGeometry = settings->windowGeometry;
+    bool oldConstantsDockVisible = settings->constantsDockVisible;
+    bool oldFunctionsDockVisible = settings->functionsDockVisible;
+    bool oldHistoryDockVisible = settings->historyDockVisible;
+    bool oldKeypadVisible = settings->keypadVisible;
+    bool oldFormulaBookDockVisible = settings->formulaBookDockVisible;
+    bool oldVariablesDockVisible = settings->variablesDockVisible;
+    bool oldUserFunctionsDockVisible = settings->userFunctionsDockVisible;
+    bool oldUserUnitsDockVisible = settings->userUnitsDockVisible;
+    bool oldBitfieldVisible = settings->bitfieldVisible;
     bool oldWindowPositionSave = settings->windowPositionSave;
+    bool oldHasNumberFormatStyleSetting = settings->hasNumberFormatStyleSetting;
     QByteArray oldSkipUpdateCheck = qgetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
     bool hadSkipUpdateCheck = qEnvironmentVariableIsSet("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
 
@@ -230,10 +243,22 @@ struct MainWindowStateGuard {
 
     ~MainWindowStateGuard()
     {
+        settings->colorScheme = oldColorScheme;
+        settings->customColorSchemeJson = oldCustomColorSchemeJson;
         settings->sessionLayoutJson = oldSessionLayoutJson;
         settings->windowState = oldWindowState;
         settings->windowGeometry = oldWindowGeometry;
+        settings->constantsDockVisible = oldConstantsDockVisible;
+        settings->functionsDockVisible = oldFunctionsDockVisible;
+        settings->historyDockVisible = oldHistoryDockVisible;
+        settings->keypadVisible = oldKeypadVisible;
+        settings->formulaBookDockVisible = oldFormulaBookDockVisible;
+        settings->variablesDockVisible = oldVariablesDockVisible;
+        settings->userFunctionsDockVisible = oldUserFunctionsDockVisible;
+        settings->userUnitsDockVisible = oldUserUnitsDockVisible;
+        settings->bitfieldVisible = oldBitfieldVisible;
         settings->windowPositionSave = oldWindowPositionSave;
+        settings->hasNumberFormatStyleSetting = oldHasNumberFormatStyleSetting;
         if (hadSkipUpdateCheck)
             qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", oldSkipUpdateCheck);
         else
@@ -272,6 +297,8 @@ private slots:
     void dock_search_focus_suppresses_editor_primary_outline_across_panes();
     void dock_selection_inserts_into_active_session_pane_after_focus_transfer();
     void clicking_tab_activates_own_pane_in_nested_split_layout();
+    void active_pane_survives_window_reactivation_focus_replay();
+    void focused_dock_search_survives_window_reactivation_focus_replay();
     void focusing_loaded_pane_preserves_its_current_scroll_position();
     void persisting_layout_captures_visible_scroll_positions_for_all_panes();
     void switching_session_tabs_preserves_each_editor_text();
@@ -1773,6 +1800,163 @@ void TestDisplayUi::clicking_tab_activates_own_pane_in_nested_split_layout()
     QVERIFY(selectedSessionTabHasBottomIndicator(tabA, primary));
     QVERIFY(!editorHasPrimaryOutline(editorC, primary));
     QVERIFY(!selectedSessionTabHasBottomIndicator(tabC, primary));
+}
+
+void TestDisplayUi::active_pane_survives_window_reactivation_focus_replay()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = Settings::instance();
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#1f3229\"}");
+    settings->sessionLayoutJson.clear();
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    const QColor primary = generatePrimaryFromBackground(QColor(QStringLiteral("#1f3229")));
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCoreApplication::processEvents();
+
+    QVERIFY(QMetaObject::invokeMethod(&window, "splitActivePaneRight", Qt::DirectConnection));
+    QVERIFY(QMetaObject::invokeMethod(&window, "splitActivePaneRight", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.findChildren<ResultDisplay*>().size(), 3);
+
+    QList<ResultDisplay*> displays = window.findChildren<ResultDisplay*>();
+    std::sort(displays.begin(), displays.end(), [](ResultDisplay* lhs, ResultDisplay* rhs) {
+        return lhs->mapToGlobal(QPoint(0, 0)).x() < rhs->mapToGlobal(QPoint(0, 0)).x();
+    });
+
+    ResultDisplay* firstDisplay = displays.at(0);
+    Editor* firstEditor = editorForDisplay(firstDisplay);
+    QVERIFY(firstEditor != nullptr);
+
+    QTest::mouseClick(firstDisplay->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      firstDisplay->viewport()->rect().center());
+    QTRY_VERIFY(editorHasPrimaryOutline(firstEditor, primary));
+
+    for (ResultDisplay* display : displays) {
+        Editor* editor = editorForDisplay(display);
+        QVERIFY(editor != nullptr);
+        QFocusEvent focusIn(QEvent::FocusIn, Qt::OtherFocusReason);
+        QCoreApplication::sendEvent(editor->viewport(), &focusIn);
+    }
+    QCoreApplication::processEvents();
+
+    QVERIFY(QMetaObject::invokeMethod(&window,
+                                      "insertTextIntoEditor",
+                                      Qt::DirectConnection,
+                                      Q_ARG(QString, QStringLiteral("p"))));
+    QVERIFY2(firstEditor->text() == QStringLiteral("p"),
+             qPrintable(QStringLiteral("passive replay pane0='%1' pane1='%2' pane2='%3'")
+                            .arg(editorForDisplay(displays.at(0))->text(),
+                                 editorForDisplay(displays.at(1))->text(),
+                                 editorForDisplay(displays.at(2))->text())));
+    firstEditor->clear();
+
+    // Let pane-creation focus timers settle, then reselect the first pane so
+    // WindowDeactivate captures the same stable state as a real app switch.
+    QCoreApplication::processEvents();
+    QTest::mouseClick(firstDisplay->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      firstDisplay->viewport()->rect().center());
+    QTRY_VERIFY(editorHasPrimaryOutline(firstEditor, primary));
+
+    QEvent windowDeactivate(QEvent::WindowDeactivate);
+    QCoreApplication::sendEvent(&window, &windowDeactivate);
+    QEvent windowActivate(QEvent::WindowActivate);
+    QCoreApplication::sendEvent(&window, &windowActivate);
+    for (ResultDisplay* display : displays) {
+        Editor* editor = editorForDisplay(display);
+        QVERIFY(editor != nullptr);
+        QFocusEvent focusIn(QEvent::FocusIn, Qt::OtherFocusReason);
+        QCoreApplication::sendEvent(editor->viewport(), &focusIn);
+    }
+    QCoreApplication::processEvents();
+
+    QVERIFY(QMetaObject::invokeMethod(&window,
+                                      "insertTextIntoEditor",
+                                      Qt::DirectConnection,
+                                      Q_ARG(QString, QStringLiteral("z"))));
+    QVERIFY2(firstEditor->text() == QStringLiteral("z"),
+             qPrintable(QStringLiteral("after activation pane0='%1' pane1='%2' pane2='%3'")
+                            .arg(editorForDisplay(displays.at(0))->text(),
+                                 editorForDisplay(displays.at(1))->text(),
+                                 editorForDisplay(displays.at(2))->text())));
+
+    QTRY_VERIFY2(editorHasPrimaryOutline(firstEditor, primary),
+                 qPrintable(QStringLiteral("pane0=%1 pane1=%2 pane2=%3 focus=%4")
+                                .arg(editorHasPrimaryOutline(editorForDisplay(displays.at(0)), primary))
+                                .arg(editorHasPrimaryOutline(editorForDisplay(displays.at(1)), primary))
+                                .arg(editorHasPrimaryOutline(editorForDisplay(displays.at(2)), primary))
+                                .arg(QApplication::focusWidget()
+                                         ? QString::fromLatin1(QApplication::focusWidget()->metaObject()->className())
+                                         : QStringLiteral("<none>"))));
+    for (int i = 1; i < displays.size(); ++i)
+        QVERIFY(!editorHasPrimaryOutline(editorForDisplay(displays.at(i)), primary));
+}
+
+void TestDisplayUi::focused_dock_search_survives_window_reactivation_focus_replay()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = Settings::instance();
+    settings->sessionLayoutJson.clear();
+    settings->constantsDockVisible = true;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCoreApplication::processEvents();
+
+    QVERIFY(QMetaObject::invokeMethod(&window, "splitActivePaneRight", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.findChildren<Editor*>().size(), 2);
+
+    QDockWidget* constantsDock =
+        window.findChild<QDockWidget*>(QStringLiteral("ConstantsDock"));
+    QVERIFY(constantsDock != nullptr);
+    QLineEdit* searchBox = constantsDock->findChild<QLineEdit*>();
+    QVERIFY(searchBox != nullptr);
+
+    constantsDock->show();
+    constantsDock->raise();
+    QCoreApplication::processEvents();
+    QTest::mouseClick(searchBox, Qt::LeftButton);
+    QTRY_VERIFY(searchBox->hasFocus());
+
+    QEvent windowDeactivate(QEvent::WindowDeactivate);
+    QCoreApplication::sendEvent(&window, &windowDeactivate);
+    QEvent windowActivate(QEvent::WindowActivate);
+    QCoreApplication::sendEvent(&window, &windowActivate);
+    for (Editor* editor : window.findChildren<Editor*>()) {
+        QFocusEvent focusIn(QEvent::FocusIn, Qt::OtherFocusReason);
+        QCoreApplication::sendEvent(editor->viewport(), &focusIn);
+    }
+    QCoreApplication::processEvents();
+
+    QTRY_VERIFY(searchBox->hasFocus());
+    QTest::keyClicks(searchBox, "mol");
+    QCOMPARE(searchBox->text(), QStringLiteral("mol"));
 }
 
 void TestDisplayUi::focusing_loaded_pane_preserves_its_current_scroll_position()

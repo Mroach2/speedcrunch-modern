@@ -1514,6 +1514,49 @@ QPointer<Editor>& pendingSessionTabActivationEditor()
     return editor;
 }
 
+QPointer<Editor>& pendingWindowActivationEditor()
+{
+    static QPointer<Editor> editor;
+    return editor;
+}
+
+QPointer<Editor>& editorBeforeWindowDeactivate()
+{
+    static QPointer<Editor> editor;
+    return editor;
+}
+
+QPointer<QWidget>& focusWidgetBeforeWindowDeactivate()
+{
+    static QPointer<QWidget> widget;
+    return widget;
+}
+
+QPointer<QWidget>& lastFocusWidgetInActiveWindow()
+{
+    static QPointer<QWidget> widget;
+    return widget;
+}
+
+QPointer<QWidget>& pendingWindowActivationFocusWidget()
+{
+    static QPointer<QWidget> widget;
+    return widget;
+}
+
+int& windowActivationRestoreGeneration()
+{
+    static int generation = 0;
+    return generation;
+}
+
+void cancelWindowActivationRestore()
+{
+    pendingWindowActivationEditor() = nullptr;
+    pendingWindowActivationFocusWidget() = nullptr;
+    ++windowActivationRestoreGeneration();
+}
+
 class DockTextInputFocusTransferGuard {
 public:
     DockTextInputFocusTransferGuard()
@@ -3906,8 +3949,10 @@ void MainWindow::setActiveEditorDisplayPane(ResultDisplay* display, Editor* edit
     if (display == nullptr || editor == nullptr)
         return;
 
-    if (forceEditorFocus)
+    if (forceEditorFocus) {
+        cancelWindowActivationRestore();
         pendingDockTextInputFocusTarget() = nullptr;
+    }
 
     const bool dockWidgetHasFocus = !forceEditorFocus
         && pendingDockFocusTarget() != nullptr;
@@ -4089,7 +4134,11 @@ void MainWindow::deactivateActiveEditorForTextInputFocus()
 
 void MainWindow::handleApplicationFocusChanged(QWidget* previous, QWidget* focused)
 {
-    Q_UNUSED(previous);
+    if (focused != nullptr && focused->window() == this)
+        lastFocusWidgetInActiveWindow() = focused;
+    else if (previous != nullptr && previous->window() == this)
+        lastFocusWidgetInActiveWindow() = previous;
+
     if (!isDockTextInput(focused))
         return;
 
@@ -4111,7 +4160,14 @@ void MainWindow::configureEditorDisplayPane(ResultDisplay* display, Editor* edit
     editor->viewport()->installEventFilter(this);
 
     connect(editor, &Editor::textChanged, this, [this, display, editor]() {
-        setActiveEditorDisplayPane(display, editor);
+        // Programmatic text changes in an inactive pane must not make that pane
+        // active. Real editor input activates the pane through the mouse/key/input
+        // event path before the text changes.
+        if (editor == m_widgets.editor
+            || editor->hasFocus()
+            || editor->viewport()->hasFocus()) {
+            setActiveEditorDisplayPane(display, editor);
+        }
     });
     connect(editor, &Editor::returnPressed, this, [this, display, editor]() {
         setActiveEditorDisplayPane(display, editor);
@@ -4141,7 +4197,13 @@ void MainWindow::configureEditorDisplayPane(ResultDisplay* display, Editor* edit
     connect(editor, &Editor::shiftPageDownPressed, display, &ResultDisplay::scrollLineDown);
     connect(editor, &Editor::pageUpPressed, display, &ResultDisplay::scrollPageUp);
     connect(editor, &Editor::pageDownPressed, display, &ResultDisplay::scrollPageDown);
-    connect(editor, &Editor::textChanged, this, &MainWindow::handleEditorTextChange);
+    connect(editor, &Editor::textChanged, this, [this, editor]() {
+        if (editor == m_widgets.editor
+            || editor->hasFocus()
+            || editor->viewport()->hasFocus()) {
+            handleEditorTextChange();
+        }
+    });
     connect(editor, &Editor::copyAvailable, this, &MainWindow::handleCopyAvailable);
     connect(editor, &Editor::copySequencePressed, this, &MainWindow::copy);
     connect(this, &MainWindow::historyChanged, editor, &Editor::updateHistory);
@@ -4292,6 +4354,7 @@ void MainWindow::splitActivePane(Qt::Orientation orientation, bool insertAfter)
     editor->updateHistory();
     editor->refreshAutoCalc();
     updatePaneLoadedSessionCounts();
+    cancelWindowActivationRestore();
     setActiveEditorDisplayPane(display, editor);
     saveSessionLayout();
 }
@@ -5862,7 +5925,11 @@ void MainWindow::createFixedConnections()
     ResultDisplay* initialDisplay = m_widgets.display;
     Editor* initialEditor = m_widgets.editor;
     connect(initialEditor, &Editor::textChanged, this, [this, initialDisplay, initialEditor]() {
-        setActiveEditorDisplayPane(initialDisplay, initialEditor);
+        if (initialEditor == m_widgets.editor
+            || initialEditor->hasFocus()
+            || initialEditor->viewport()->hasFocus()) {
+            setActiveEditorDisplayPane(initialDisplay, initialEditor);
+        }
     });
     connect(initialEditor, &Editor::selectionChanged, this, [this, initialDisplay, initialEditor]() {
         setActiveEditorDisplayPane(initialDisplay, initialEditor);
@@ -6007,7 +6074,13 @@ void MainWindow::createFixedConnections()
     connect(m_widgets.editor, SIGNAL(shiftPageDownPressed()), m_widgets.display, SLOT(scrollLineDown()));
     connect(m_widgets.editor, SIGNAL(pageUpPressed()), m_widgets.display, SLOT(scrollPageUp()));
     connect(m_widgets.editor, SIGNAL(pageDownPressed()), m_widgets.display, SLOT(scrollPageDown()));
-    connect(m_widgets.editor, SIGNAL(textChanged()), SLOT(handleEditorTextChange()));
+    connect(initialEditor, &Editor::textChanged, this, [this, initialEditor]() {
+        if (initialEditor == m_widgets.editor
+            || initialEditor->hasFocus()
+            || initialEditor->viewport()->hasFocus()) {
+            handleEditorTextChange();
+        }
+    });
     connect(m_widgets.editor, SIGNAL(copyAvailable(bool)), SLOT(handleCopyAvailable(bool)));
     connect(m_widgets.editor, SIGNAL(copySequencePressed()), SLOT(copy()));
     connect(m_widgets.editor, SIGNAL(selectionChanged()), SLOT(handleEditorSelectionChange()));
@@ -9252,7 +9325,65 @@ bool MainWindow::event(QEvent* e)
         }
     }
 
+    if (e != nullptr && e->type() == QEvent::WindowDeactivate) {
+        QWidget* focusWidget = lastFocusWidgetInActiveWindow();
+        if (focusWidget == nullptr)
+            focusWidget = QApplication::focusWidget();
+        focusWidgetBeforeWindowDeactivate() =
+            focusWidget != nullptr && focusWidget->window() == this
+            ? focusWidget
+            : m_widgets.editor;
+        editorBeforeWindowDeactivate() = m_widgets.editor;
+    }
+
     if (e != nullptr && e->type() == QEvent::WindowActivate) {
+        // Restore the exact widget that had focus before the app lost focus.
+        // On macOS the toolkit may later replay passive editor FocusIn events
+        // in widget order, and the replay can otherwise promote the last pane.
+        QPointer<QWidget> focusWidget(focusWidgetBeforeWindowDeactivate());
+        QPointer<Editor> activeEditor(qobject_cast<Editor*>(focusWidget.data()));
+        if (activeEditor == nullptr && focusWidget != nullptr)
+            activeEditor = qobject_cast<Editor*>(focusWidget->parentWidget());
+        if (activeEditor == nullptr)
+            activeEditor = editorBeforeWindowDeactivate();
+        if (activeEditor == nullptr)
+            activeEditor = m_widgets.editor;
+        focusWidgetBeforeWindowDeactivate() = nullptr;
+        editorBeforeWindowDeactivate() = nullptr;
+        pendingWindowActivationEditor() = activeEditor;
+        pendingWindowActivationFocusWidget() = focusWidget;
+        const int restoreGeneration = ++windowActivationRestoreGeneration();
+        const auto restoreWindowFocus = [this, activeEditor, focusWidget, restoreGeneration]() {
+            if (activeEditor == nullptr
+                || windowActivationRestoreGeneration() != restoreGeneration)
+                return;
+            QWidget* pane = activeEditor->parentWidget();
+            ResultDisplay* display = pane
+                ? pane->findChild<ResultDisplay*>(QString(), Qt::FindDirectChildrenOnly)
+                : nullptr;
+            if (display != nullptr)
+                setActiveEditorDisplayPane(display, activeEditor);
+            if (focusWidget != nullptr
+                && focusWidget->window() == this
+                && windowActivationRestoreGeneration() == restoreGeneration) {
+                focusWidget->setFocus(Qt::ActiveWindowFocusReason);
+            }
+        };
+        QTimer::singleShot(0, this, restoreWindowFocus);
+        QTimer::singleShot(50, this, restoreWindowFocus);
+        QTimer::singleShot(150, this, restoreWindowFocus);
+        // Some platforms deliver a delayed focus replay after the activation
+        // event has returned. Keep one late restore before clearing the guard.
+        QTimer::singleShot(300, this, restoreWindowFocus);
+        QTimer::singleShot(350, this, [activeEditor, focusWidget, restoreGeneration]() {
+            if (windowActivationRestoreGeneration() == restoreGeneration
+                && pendingWindowActivationEditor() == activeEditor
+                && pendingWindowActivationFocusWidget() == focusWidget) {
+                pendingWindowActivationEditor() = nullptr;
+                pendingWindowActivationFocusWidget() = nullptr;
+            }
+        });
+
         const QString activeName = m_paneSessionNames.value(m_widgets.display);
         if (!activeName.isEmpty()) {
             if (Session* activeSession = m_loadedSessions.value(activeName, nullptr))
@@ -9361,21 +9492,11 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
             filteredEditor = qobject_cast<Editor*>(widget->parentWidget());
     }
     if (Editor* editor = filteredEditor) {
-        if (Editor* completionOwner = Editor::completionMouseSelectionOwner()) {
-            if (editor != completionOwner
-                && (e->type() == QEvent::FocusIn || e->type() == QEvent::MouseButtonPress)) {
-                QPointer<Editor> owner(completionOwner);
-                QTimer::singleShot(0, completionOwner, [owner]() {
-                    if (owner != nullptr) {
-                        owner->window()->activateWindow();
-                        owner->setFocus(Qt::OtherFocusReason);
-                        owner->viewport()->setFocus(Qt::OtherFocusReason);
-                    }
-                });
-                return true;
-            }
-        }
         if (e->type() == QEvent::FocusIn && pendingDockFocusTarget() != nullptr) {
+            // A dock click is explicit focus intent. Handle it before editor
+            // completion focus recovery, otherwise a pending completion owner can
+            // pull focus back to an editor and make dock selection use stale pane
+            // state.
             QPointer<QWidget> focusTarget(pendingDockFocusTarget());
             editor->clearFocus();
             QTimer::singleShot(0, focusTarget, [focusTarget]() {
@@ -9392,6 +9513,20 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
             });
             return true;
         }
+        if (Editor* completionOwner = Editor::completionMouseSelectionOwner()) {
+            if (editor != completionOwner
+                && (e->type() == QEvent::FocusIn || e->type() == QEvent::MouseButtonPress)) {
+                QPointer<Editor> owner(completionOwner);
+                QTimer::singleShot(0, completionOwner, [owner]() {
+                    if (owner != nullptr) {
+                        owner->window()->activateWindow();
+                        owner->setFocus(Qt::OtherFocusReason);
+                        owner->viewport()->setFocus(Qt::OtherFocusReason);
+                    }
+                });
+                return true;
+            }
+        }
         if (dockTextInputFocusTransferInProgress() && e->type() == QEvent::FocusIn)
             return QMainWindow::eventFilter(o, e);
         if (e->type() == QEvent::KeyPress) {
@@ -9403,10 +9538,39 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
                 editor->dismissCurrentAutoCalc();
             }
         }
-        if (e->type() == QEvent::FocusIn
-            || e->type() == QEvent::MouseButtonPress
+        // A bare FocusIn is not pane-selection intent. Window activation can
+        // replay FocusIn through every editor viewport in layout order, which
+        // used to make the last pane active after each app switch. Only input
+        // events that originate from the editor path below may select a pane.
+        if (e->type() == QEvent::MouseButtonPress
             || e->type() == QEvent::KeyPress
             || e->type() == QEvent::InputMethod) {
+            if (pendingWindowActivationEditor() != nullptr
+                && (e->type() == QEvent::MouseButtonPress
+                    || e->type() == QEvent::KeyPress)) {
+                cancelWindowActivationRestore();
+            }
+            if (pendingWindowActivationEditor() != nullptr
+                && editor != pendingWindowActivationEditor()) {
+                // Input method events can still arrive while the activation
+                // restore is settling. Until mouse/key intent cancels the
+                // guard above, keep the previously active editor selected.
+                QPointer<Editor> activeEditor(pendingWindowActivationEditor());
+                QPointer<MainWindow> window(this);
+                QTimer::singleShot(0, this, [window, activeEditor]() {
+                    if (activeEditor != nullptr
+                        && window != nullptr
+                        && pendingWindowActivationEditor() == activeEditor) {
+                        QWidget* pane = activeEditor->parentWidget();
+                        ResultDisplay* display = pane
+                            ? pane->findChild<ResultDisplay*>(QString(), Qt::FindDirectChildrenOnly)
+                            : nullptr;
+                        if (display != nullptr)
+                            window->setActiveEditorDisplayPane(display, activeEditor);
+                    }
+                });
+                return true;
+            }
             if (pendingSessionTabActivationEditor() != nullptr
                 && editor != pendingSessionTabActivationEditor()) {
                 QPointer<Editor> targetEditor(pendingSessionTabActivationEditor());
