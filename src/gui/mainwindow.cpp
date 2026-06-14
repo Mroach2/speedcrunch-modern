@@ -5425,7 +5425,8 @@ void MainWindow::applyThemeSurfacePalette()
                                                keypadButtonHover.background,
                                                keypadButtonHover.foreground,
                                                keypadButtonPressed.background,
-                                               keypadButtonPressed.foreground);
+                                               keypadButtonPressed.foreground,
+                                               surfaces.primary.background);
         QEvent paletteChange(QEvent::PaletteChange);
         QApplication::sendEvent(m_widgets.keypad, &paletteChange);
     }

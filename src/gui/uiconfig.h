@@ -13,7 +13,12 @@ constexpr int OutlineStrokeWidth = 1;
 constexpr int ActiveSessionTabIndicatorStrokeWidth = 2;
 constexpr int KeypadButtonMargin = 3;
 constexpr int KeypadButtonPadding = 3;
-constexpr int KeypadButtonCornerRadius = 12;
+constexpr int KeypadButtonCornerRadius = 8;
+// 0 keeps arithmetic operators on the normal button surface; 100 gives them
+// the same primary fill as the evaluate button. Intermediate values blend in
+// OKLCH while using the primary hue.
+constexpr int KeypadOperatorPrimaryHueChromaPercent = 50;
+constexpr double KeypadButtonGradientLightnessDelta = 0.035;
 
 // Enables the temporary OKLCH HTML diagnostics report in the system temp
 // directory. Keep disabled for normal builds; it is only useful while tuning

@@ -7,6 +7,7 @@
 #include "core/settings.h"
 #include "core/unicodechars.h"
 #include "core/mathdsl.h"
+#include "gui/oklchutils.h"
 #include "gui/uiconfig.h"
 
 #include <QLocale>
@@ -17,6 +18,7 @@
 #include <QPushButton>
 #include <QStyle>
 #include <QStyleOptionButton>
+#include <QTimer>
 
 #if QT_VERSION >= 0x040400 && defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
@@ -250,6 +252,203 @@ QFont scaledFont(const QFont& base, int scalePercent)
     return font;
 }
 
+enum class KeypadButtonVisualRole {
+    Normal,
+    ArithmeticOperator,
+    Evaluate
+};
+
+struct KeypadButtonColors {
+    QColor background;
+    QColor foreground;
+    QColor hoverBackground;
+    QColor hoverForeground;
+    QColor pressedBackground;
+    QColor pressedForeground;
+};
+
+bool isArithmeticOperatorButton(Keypad::Button button)
+{
+    switch (button) {
+    case Keypad::KeyPlus:
+    case Keypad::KeyMinus:
+    case Keypad::KeyTimes:
+    case Keypad::KeyDivide:
+        return true;
+    default:
+        return false;
+    }
+}
+
+KeypadButtonVisualRole visualRoleForButton(Keypad::Button button)
+{
+    if (button == Keypad::KeyEquals)
+        return KeypadButtonVisualRole::Evaluate;
+    if (isArithmeticOperatorButton(button))
+        return KeypadButtonVisualRole::ArithmeticOperator;
+    return KeypadButtonVisualRole::Normal;
+}
+
+bool isArithmeticOperatorText(const QString& text)
+{
+    const QString trimmed = text.trimmed();
+    if (trimmed.size() != 1)
+        return false;
+
+    const QChar ch = trimmed.at(0);
+    return MathDsl::isAdditionOperator(ch)
+        || MathDsl::isAdditionOperatorAlias(ch)
+        || MathDsl::isSubtractionOperator(ch)
+        || MathDsl::isSubtractionOperatorAlias(ch)
+        || MathDsl::isMultiplicationOperator(ch)
+        || MathDsl::isMultiplicationOperatorAlias(ch)
+        || MathDsl::isDivisionOperator(ch)
+        || MathDsl::isDivisionOperatorAlias(ch);
+}
+
+KeypadButtonVisualRole visualRoleForCustomButton(
+    const Keypad::CustomButtonDescription& button)
+{
+    if (button.action == Settings::CustomKeypadActionEvaluateExpression)
+        return KeypadButtonVisualRole::Evaluate;
+    if (button.action == Settings::CustomKeypadActionInsertText
+            && isArithmeticOperatorText(button.text)) {
+        return KeypadButtonVisualRole::ArithmeticOperator;
+    }
+    return KeypadButtonVisualRole::Normal;
+}
+
+QColor oklchWithLightnessOffset(const QColor& color, double offset)
+{
+    if (!color.isValid())
+        return color;
+
+    Oklch oklch = qColorToOklch(color);
+    oklch.l = qBound(0.0, oklch.l + offset, 1.0);
+    const QColor adjusted = oklchToValidSrgbQColor(oklch);
+    return adjusted.isValid() ? adjusted : color;
+}
+
+QColor keypadGradientTopColor(const QColor& background)
+{
+    return oklchWithLightnessOffset(background, UiConfig::KeypadButtonGradientLightnessDelta);
+}
+
+QColor keypadGradientBottomColor(const QColor& background)
+{
+    return oklchWithLightnessOffset(background, -UiConfig::KeypadButtonGradientLightnessDelta);
+}
+
+QColor keypadPrimaryStateBackground(const QColor& primary,
+                                    const QColor& stateBackground,
+                                    const QColor& normalBackground)
+{
+    if (!primary.isValid() || !stateBackground.isValid() || !normalBackground.isValid())
+        return primary.isValid() ? primary : stateBackground;
+
+    Oklch accent = qColorToOklch(primary);
+    const Oklch state = qColorToOklch(stateBackground);
+    const Oklch normal = qColorToOklch(normalBackground);
+    const double offset = state.l - normal.l;
+    if (qAbs(offset) < 1e-9)
+        return primary;
+
+    accent.l = qBound(0.0, accent.l + offset, 1.0);
+    const QColor color = oklchToValidSrgbQColor(accent);
+    return color.isValid() ? color : primary;
+}
+
+QColor keypadPrimaryHueFillBackground(const QColor& primary,
+                                      const QColor& stateBackground,
+                                      const QColor& normalBackground)
+{
+    if (!primary.isValid() || !stateBackground.isValid() || !normalBackground.isValid())
+        return stateBackground;
+
+    const double primaryRatio =
+        double(qBound(0, UiConfig::KeypadOperatorPrimaryHueChromaPercent, 100)) / 100.0;
+    if (primaryRatio <= 0.0)
+        return stateBackground;
+
+    const QColor primaryStateBackground =
+        keypadPrimaryStateBackground(primary, stateBackground, normalBackground);
+    if (primaryRatio >= 1.0)
+        return primaryStateBackground;
+
+    const Oklch stateOklch = qColorToOklch(stateBackground);
+    const Oklch primaryStateOklch = qColorToOklch(primaryStateBackground);
+
+    // The percent is a blend toward the full primary state, not just a chroma
+    // multiplier. That makes 100 match the evaluate button exactly while 50
+    // still reads as a quieter primary-hue operator fill.
+    Oklch fill {
+        stateOklch.l + (primaryStateOklch.l - stateOklch.l) * primaryRatio,
+        stateOklch.c + (primaryStateOklch.c - stateOklch.c) * primaryRatio,
+        primaryStateOklch.h,
+        stateOklch.alpha
+    };
+    const QColor color = oklchToValidSrgbQColor(fill);
+    return color.isValid() ? color : stateBackground;
+}
+
+KeypadButtonColors keypadButtonColorsForRole(const KeypadButtonColors& normalColors,
+                                             const QColor& primaryBackground,
+                                             KeypadButtonVisualRole role)
+{
+    if (!primaryBackground.isValid() || role == KeypadButtonVisualRole::Normal)
+        return normalColors;
+
+    const auto withForegrounds = [](const QColor& background,
+                                    const QColor& hoverBackground,
+                                    const QColor& pressedBackground) {
+        return KeypadButtonColors {
+            background,
+            aaForegroundForBackground(background),
+            hoverBackground,
+            aaForegroundForBackground(hoverBackground),
+            pressedBackground,
+            aaForegroundForBackground(pressedBackground)
+        };
+    };
+
+    if (role == KeypadButtonVisualRole::Evaluate) {
+        const QColor background = keypadPrimaryStateBackground(
+            primaryBackground, normalColors.background, normalColors.background);
+        const QColor hoverBackground = keypadPrimaryStateBackground(
+            primaryBackground, normalColors.hoverBackground, normalColors.background);
+        const QColor pressedBackground = keypadPrimaryStateBackground(
+            primaryBackground, normalColors.pressedBackground, normalColors.background);
+        return withForegrounds(background, hoverBackground, pressedBackground);
+    }
+
+    const QColor background =
+        keypadPrimaryHueFillBackground(
+            primaryBackground, normalColors.background, normalColors.background);
+    const QColor hoverBackground =
+        keypadPrimaryHueFillBackground(
+            primaryBackground, normalColors.hoverBackground, normalColors.background);
+    const QColor pressedBackground =
+        keypadPrimaryHueFillBackground(
+            primaryBackground, normalColors.pressedBackground, normalColors.background);
+    return withForegrounds(background, hoverBackground, pressedBackground);
+}
+
+QPalette keypadButtonPalette(const QPalette& source,
+                             const QColor& background,
+                             const QColor& foreground)
+{
+    QPalette palette = source;
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        palette.setColor(group, QPalette::Button, background);
+        palette.setColor(group, QPalette::ButtonText, foreground);
+        palette.setColor(group, QPalette::Window, background);
+        palette.setColor(group, QPalette::WindowText, foreground);
+    }
+    return palette;
+}
+
 QString keypadButtonStyleSheet(const QPalette& palette,
                                const QColor& background,
                                const QColor& foreground,
@@ -258,6 +457,47 @@ QString keypadButtonStyleSheet(const QPalette& palette,
                                const QColor& pressedBackground,
                                const QColor& pressedForeground);
 
+void applyKeypadButtonStyle(QPushButton* button,
+                            const QPalette& sourcePalette,
+                            const KeypadButtonColors& colors)
+{
+    if (button == nullptr)
+        return;
+
+    // Qt repolishes a widget when its stylesheet changes, and that can reset
+    // palette roles exposed through QPalette. Apply the stylesheet first, then
+    // restore the semantic button/text colors so runtime theme changes keep the
+    // same inspectable palette roles as startup theme application.
+    button->setStyleSheet(keypadButtonStyleSheet(sourcePalette,
+                                                 colors.background,
+                                                 colors.foreground,
+                                                 colors.hoverBackground,
+                                                 colors.hoverForeground,
+                                                 colors.pressedBackground,
+                                                 colors.pressedForeground));
+    button->setPalette(keypadButtonPalette(sourcePalette,
+                                           colors.background,
+                                           colors.foreground));
+}
+
+QString keypadButtonBackgroundStyle(const QColor& background)
+{
+    return QString::fromLatin1(
+        " background-color: %1;"
+        " background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,"
+        " stop: 0 %2, stop: 1 %3);")
+        .arg(background.name(),
+             keypadGradientTopColor(background).name(),
+             keypadGradientBottomColor(background).name());
+}
+
+QString keypadButtonStyleSheet(const QPalette& palette,
+                               const QColor& background,
+                               const QColor& foreground,
+                               const QColor& hoverBackground,
+                               const QColor& hoverForeground,
+                               const QColor& pressedBackground,
+                               const QColor& pressedForeground);
 QString keypadButtonStyleSheet(const QPalette& palette)
 {
     return keypadButtonStyleSheet(palette,
@@ -287,27 +527,27 @@ QString keypadButtonStyleSheet(const QPalette& palette,
         " border-radius: %2px;"
         " margin: %1px;"
         " padding: %3px;"
-        " background-color: %4;"
+        "%4"
         " color: %5;"
         "}"
         "QPushButton:hover {"
         " border: none;"
-        " background-color: %6;"
+        "%6"
         " color: %7;"
         "}"
         "QPushButton:pressed {"
         " border: none;"
-        " background-color: %8;"
+        "%8"
         " color: %9;"
         "}")
         .arg(margin,
              cornerRadius,
              padding,
-             background.name(),
+             keypadButtonBackgroundStyle(background),
              foreground.name(),
-             hoverBackground.name(),
+             keypadButtonBackgroundStyle(hoverBackground),
              hoverForeground.name(),
-             pressedBackground.name(),
+             keypadButtonBackgroundStyle(pressedBackground),
              pressedForeground.name());
 }
 } // namespace
@@ -526,38 +766,39 @@ void Keypad::layoutCustomButtons()
 void Keypad::updateButtonStyleSheets()
 {
     const bool hasThemeButtonColors = m_buttonBackground.isValid();
-    QPalette buttonPalette = palette();
-    if (hasThemeButtonColors) {
-        for (const QPalette::ColorGroup group : {QPalette::Active,
-                                                 QPalette::Inactive,
-                                                 QPalette::Disabled}) {
-            buttonPalette.setColor(group, QPalette::Button, m_buttonBackground);
-            buttonPalette.setColor(group, QPalette::ButtonText, m_buttonForeground);
-            buttonPalette.setColor(group, QPalette::Window, m_buttonBackground);
-            buttonPalette.setColor(group, QPalette::WindowText, m_buttonForeground);
-        }
-    }
-
-    const QString styleSheet = hasThemeButtonColors
-        ? keypadButtonStyleSheet(palette(),
-                                 m_buttonBackground,
-                                 m_buttonForeground,
-                                 m_buttonHoverBackground,
-                                 m_buttonHoverForeground,
-                                 m_buttonPressedBackground,
-                                 m_buttonPressedForeground)
-        : keypadButtonStyleSheet(palette());
+    const KeypadButtonColors normalColors {
+        m_buttonBackground,
+        m_buttonForeground,
+        m_buttonHoverBackground,
+        m_buttonHoverForeground,
+        m_buttonPressedBackground,
+        m_buttonPressedForeground
+    };
+    const QString fallbackStyleSheet = keypadButtonStyleSheet(palette());
     QHashIterator<Button, QPair<QPushButton*, const KeyDescription*> > i(keys);
     while (i.hasNext()) {
         i.next();
-        if (hasThemeButtonColors)
-            i.value().first->setPalette(buttonPalette);
-        i.value().first->setStyleSheet(styleSheet);
+        QPushButton* button = i.value().first;
+        if (hasThemeButtonColors) {
+            const KeypadButtonColors colors = keypadButtonColorsForRole(
+                normalColors, m_primaryBackground, visualRoleForButton(i.key()));
+            applyKeypadButtonStyle(button, palette(), colors);
+        } else {
+            button->setStyleSheet(fallbackStyleSheet);
+        }
     }
-    for (QPushButton* button : m_customWidgets) {
-        if (hasThemeButtonColors)
-            button->setPalette(buttonPalette);
-        button->setStyleSheet(styleSheet);
+    for (int index = 0; index < m_customWidgets.size(); ++index) {
+        QPushButton* button = m_customWidgets.at(index);
+        if (hasThemeButtonColors) {
+            const KeypadButtonVisualRole role = index < m_customButtons.size()
+                ? visualRoleForCustomButton(m_customButtons.at(index))
+                : KeypadButtonVisualRole::Normal;
+            const KeypadButtonColors colors = keypadButtonColorsForRole(
+                normalColors, m_primaryBackground, role);
+            applyKeypadButtonStyle(button, palette(), colors);
+        } else {
+            button->setStyleSheet(fallbackStyleSheet);
+        }
     }
 }
 
@@ -566,7 +807,8 @@ void Keypad::setThemeButtonColors(const QColor& background,
                                   const QColor& hoverBackground,
                                   const QColor& hoverForeground,
                                   const QColor& pressedBackground,
-                                  const QColor& pressedForeground)
+                                  const QColor& pressedForeground,
+                                  const QColor& primaryBackground)
 {
     m_buttonBackground = background;
     m_buttonForeground = foreground;
@@ -574,7 +816,16 @@ void Keypad::setThemeButtonColors(const QColor& background,
     m_buttonHoverForeground = hoverForeground;
     m_buttonPressedBackground = pressedBackground;
     m_buttonPressedForeground = pressedForeground;
+    m_primaryBackground = primaryBackground;
     updateButtonStyleSheets();
+
+    // Runtime theme changes can still have queued Qt palette/style polish work
+    // from parent widgets after this call returns. Reapply once at the end of
+    // the event turn so keyed buttons keep their role-specific fills instead
+    // of being flattened back to the inherited QPushButton palette.
+    QTimer::singleShot(0, this, [this]() {
+        updateButtonStyleSheets();
+    });
 }
 
 void Keypad::setButtonTooltips()

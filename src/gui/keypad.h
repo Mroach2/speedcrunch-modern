@@ -51,7 +51,8 @@ public:
                               const QColor& hoverBackground,
                               const QColor& hoverForeground,
                               const QColor& pressedBackground,
-                              const QColor& pressedForeground);
+                              const QColor& pressedForeground,
+                              const QColor& primaryBackground);
 
 signals:
     void buttonPressed(Keypad::Button) const;
@@ -95,6 +96,7 @@ private:
     QColor m_buttonHoverForeground;
     QColor m_buttonPressedBackground;
     QColor m_buttonPressedForeground;
+    QColor m_primaryBackground;
     QHash<Button, QPair<QPushButton*, const KeyDescription*> > keys;
     QList<CustomButtonDescription> m_customButtons;
     QList<QPushButton*> m_customWidgets;
