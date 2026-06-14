@@ -708,6 +708,7 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         const QColor expectedEditorSurface = shades.at(UiConfig::DockBackgroundShade);
         const QColor expectedHeaderSurface = shades.at(UiConfig::DockHeaderShade);
         const QColor expectedInputSurface = shades.at(UiConfig::DockUnfocusedSelectedItemShade);
+        const QColor expectedKeypadButtonSurface = shades.at(UiConfig::KeypadButtonShade);
         const QColor expectedStatusBarSurface = shades.at(UiConfig::StatusBarBackgroundShade);
         const QColor expectedPrimary = generatePrimaryFromBackground(base);
         const QColor expectedForeground = foregrounds.at(UiConfig::KeypadBackgroundShade);
@@ -715,6 +716,7 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         const QColor expectedHeaderForeground = foregrounds.at(UiConfig::DockHeaderShade);
         const QColor expectedInputForeground =
             foregrounds.at(UiConfig::DockUnfocusedSelectedItemShade);
+        const QColor expectedKeypadButtonForeground = foregrounds.at(UiConfig::KeypadButtonShade);
 
         MainWindow window;
         window.show();
@@ -796,8 +798,12 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         QPushButton* keypadButton = keypad->findChild<QPushButton*>();
         QVERIFY(keypadButton != nullptr);
         const QString keypadButtonStyle = keypadButton->styleSheet();
-        QVERIFY(keypadButtonStyle.contains(expectedEditorSurface.name()));
-        QVERIFY(keypadButtonStyle.contains(expectedEditorForeground.name()));
+        QCOMPARE(keypadButton->palette().color(QPalette::Button).name(),
+                 expectedKeypadButtonSurface.name());
+        QCOMPARE(keypadButton->palette().color(QPalette::ButtonText).name(),
+                 expectedKeypadButtonForeground.name());
+        QVERIFY(keypadButtonStyle.contains(expectedKeypadButtonSurface.name()));
+        QVERIFY(keypadButtonStyle.contains(expectedKeypadButtonForeground.name()));
         QVERIFY(keypadButtonStyle.contains(expectedHeaderSurface.name()));
         QVERIFY(keypadButtonStyle.contains(expectedHeaderForeground.name()));
         QVERIFY(keypadButtonStyle.contains(expectedInputSurface.name()));
@@ -856,9 +862,14 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
     ResultDisplay* changedDisplay = changedWindow.findChild<ResultDisplay*>();
     Editor* changedEditor = changedWindow.findChild<Editor*>();
     BitFieldWidget* changedBitfield = changedWindow.findChild<BitFieldWidget*>();
+    Keypad* changedKeypad = changedWindow.findChild<Keypad*>();
+    QPushButton* changedKeypadButton =
+        changedKeypad ? changedKeypad->findChild<QPushButton*>() : nullptr;
     QVERIFY(changedDisplay != nullptr);
     QVERIFY(changedEditor != nullptr);
     QVERIFY(changedBitfield != nullptr);
+    QVERIFY(changedKeypad != nullptr);
+    QVERIFY(changedKeypadButton != nullptr);
     QCOMPARE(changedWindow.palette().color(QPalette::Window).name(),
              changedShades.at(UiConfig::KeypadBackgroundShade).name());
     QCOMPARE(changedDisplay->palette().color(QPalette::Base).name(),
@@ -869,6 +880,14 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
              changedShades.at(UiConfig::ResultDisplayShade).name());
     QCOMPARE(changedBitfield->palette().color(QPalette::Window).name(),
              changedShades.at(UiConfig::DockBackgroundShade).name());
+    QCOMPARE(changedKeypadButton->palette().color(QPalette::Button).name(),
+             changedShades.at(UiConfig::KeypadButtonShade).name());
+    QVERIFY(changedKeypadButton->styleSheet().contains(
+        changedShades.at(UiConfig::KeypadButtonShade).name()));
+    QVERIFY(!changedKeypadButton->styleSheet().contains(
+        generateOklchShades(QColor(QStringLiteral("#e5eee8")), 6, ThemePolarity::Light)
+            .at(UiConfig::KeypadButtonShade)
+            .name()));
     const QImage changedDisplayImage = changedDisplay->viewport()->grab().toImage();
     QVERIFY(!changedDisplayImage.isNull());
     QCOMPARE(changedDisplayImage.pixelColor(changedDisplayImage.width() / 2,

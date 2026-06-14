@@ -525,7 +525,20 @@ void Keypad::layoutCustomButtons()
 
 void Keypad::updateButtonStyleSheets()
 {
-    const QString styleSheet = m_buttonBackground.isValid()
+    const bool hasThemeButtonColors = m_buttonBackground.isValid();
+    QPalette buttonPalette = palette();
+    if (hasThemeButtonColors) {
+        for (const QPalette::ColorGroup group : {QPalette::Active,
+                                                 QPalette::Inactive,
+                                                 QPalette::Disabled}) {
+            buttonPalette.setColor(group, QPalette::Button, m_buttonBackground);
+            buttonPalette.setColor(group, QPalette::ButtonText, m_buttonForeground);
+            buttonPalette.setColor(group, QPalette::Window, m_buttonBackground);
+            buttonPalette.setColor(group, QPalette::WindowText, m_buttonForeground);
+        }
+    }
+
+    const QString styleSheet = hasThemeButtonColors
         ? keypadButtonStyleSheet(palette(),
                                  m_buttonBackground,
                                  m_buttonForeground,
@@ -537,10 +550,15 @@ void Keypad::updateButtonStyleSheets()
     QHashIterator<Button, QPair<QPushButton*, const KeyDescription*> > i(keys);
     while (i.hasNext()) {
         i.next();
+        if (hasThemeButtonColors)
+            i.value().first->setPalette(buttonPalette);
         i.value().first->setStyleSheet(styleSheet);
     }
-    for (QPushButton* button : m_customWidgets)
+    for (QPushButton* button : m_customWidgets) {
+        if (hasThemeButtonColors)
+            button->setPalette(buttonPalette);
         button->setStyleSheet(styleSheet);
+    }
 }
 
 void Keypad::setThemeButtonColors(const QColor& background,
@@ -674,8 +692,9 @@ void Keypad::changeEvent(QEvent* event)
 {
     if (event->type() == QEvent::LanguageChange)
         retranslateText();
-    else if (event->type() == QEvent::PaletteChange
-             || event->type() == QEvent::ApplicationPaletteChange)
-        updateButtonStyleSheets();
+    const bool paletteChanged = event->type() == QEvent::PaletteChange
+        || event->type() == QEvent::ApplicationPaletteChange;
     QWidget::changeEvent(event);
+    if (paletteChanged)
+        updateButtonStyleSheets();
 }
