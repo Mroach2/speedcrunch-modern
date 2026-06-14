@@ -554,6 +554,7 @@ private:
         Editor* editor;
         QSplitter* splitContainer = nullptr;
         Keypad* keypad = nullptr;
+        QWidget* keypadContainer = nullptr;
         QWidget* root;
         ManualWindow* manual = nullptr;
         BitFieldWidget* bitField = nullptr;

@@ -771,8 +771,7 @@ struct GeneratedThemeSurfaces
     ThemePolarity polarity;
     QVector<QColor> backgrounds;
     QVector<QColor> foregrounds;
-    // 100: outer window chrome, including tab-row empty space, dock padding,
-    // status bar, and the keypad container.
+    // 100: outer window chrome, including tab-row empty space and dock padding.
     ThemeSurfaceColors window;
     // 200: result display and active session surface. This is the background
     // role from the selected SpeedCrunch theme.
@@ -825,7 +824,7 @@ GeneratedThemeSurfaces generatedSurfaceColorsForScheme(const ColorScheme& scheme
         polarity,
         shades,
         foregrounds,
-        surface(UiConfig::KeypadBackgroundShade),
+        surface(UiConfig::WindowBackgroundShade),
         surface(UiConfig::ResultDisplayShade),
         surface(UiConfig::DockBackgroundShade),
         surface(UiConfig::DockHeaderShade),
@@ -1426,6 +1425,22 @@ void applyThemeBackgroundRoleToWidget(QWidget* widget, const QColor& background)
     widget->setAttribute(Qt::WA_StyledBackground, true);
     if (!qobject_cast<QSplitter*>(widget))
         widget->setStyleSheet(QStringLiteral("background-color: %1;").arg(background.name()));
+}
+
+void applyDockTabBarBackgroundToWidget(QWidget* widget, const ThemeSurfaceColors& surface)
+{
+    if (widget == nullptr)
+        return;
+
+    widget->setProperty("speedcrunchDockTabBackground", true);
+    widget->setPalette(paletteForThemeSurface(widget->palette(), surface));
+    widget->setAutoFillBackground(true);
+    widget->setAttribute(Qt::WA_StyledBackground, true);
+    widget->setStyleSheet(QStringLiteral(
+        "QWidget[speedcrunchDockTabBackground=\"true\"] {"
+        " background-color: %1; border: 0;"
+        "}")
+                              .arg(surface.background.name()));
 }
 
 QString oklchThemeReportPath()
@@ -5414,7 +5429,16 @@ void MainWindow::applyThemeSurfacePalette()
         for (QTabBar* tabBar : findChildren<QTabBar*>()) {
             if (m_tabBarDisplays.contains(tabBar))
                 continue;
-            tabBar->setPalette(paletteForThemeSurface(tabBar->palette(), tabSurfaces.headersAndBorders));
+            QWidget* tabBarParent = tabBar->parentWidget();
+            if (tabBarParent != nullptr
+                && tabBarParent != this
+                && !qobject_cast<QDockWidget*>(tabBarParent)) {
+                applyDockTabBarBackgroundToWidget(tabBarParent, tabSurfaces.window);
+            }
+            const QPalette tabBarPalette =
+                paletteForThemeSurface(tabBar->palette(), tabSurfaces.headersAndBorders);
+            tabBar->setDrawBase(false);
+            tabBar->setPalette(tabBarPalette);
             tabBar->setStyleSheet(QStringLiteral(
                 "QTabBar { background-color: %1; }"
                 "QTabBar::tab {"
@@ -5435,6 +5459,7 @@ void MainWindow::applyThemeSurfacePalette()
                                            tabSurfaces.result.foreground.name(),
                                            tabSurfaces.headersAndBorders.background.name(),
                                            tabSurfaces.headersAndBorders.foreground.name()));
+            tabBar->setPalette(tabBarPalette);
         }
     };
     if (UiConfig::OklchThemeDebugReportEnabled) {
@@ -5463,9 +5488,13 @@ void MainWindow::applyThemeSurfacePalette()
     pal.setColor(QPalette::Button, surface.background);
     pal.setColor(QPalette::ButtonText, surface.foreground);
     setPalette(pal);
+    setAutoFillBackground(true);
+    setAttribute(Qt::WA_StyledBackground, true);
+    setStyleSheet(QStringLiteral("QMainWindow { background-color: %1; }")
+                      .arg(surface.background.name()));
 
     if (m_widgets.root)
-        m_widgets.root->setPalette(pal);
+        applyThemeBackgroundRoleToWidget(m_widgets.root, surface.background);
     applyKeypadThemeSurfacePalette();
     if (QStatusBar* bar = findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly)) {
         const ThemeSurfaceColors statusBarSurface =
@@ -5520,7 +5549,9 @@ void MainWindow::applyKeypadThemeSurfacePalette()
         return;
 
     const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
-    const QPalette keypadPalette = paletteForThemeSurface(palette(), surfaces.window);
+    const ThemeSurfaceColors keypadBackground =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadBackgroundShade);
+    const QPalette keypadPalette = paletteForThemeSurface(palette(), keypadBackground);
     const ThemeSurfaceColors keypadButton =
         themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonShade);
     const ThemeSurfaceColors keypadButtonHover =
@@ -5528,7 +5559,9 @@ void MainWindow::applyKeypadThemeSurfacePalette()
     const ThemeSurfaceColors keypadButtonPressed =
         themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonPressedShade);
 
+    applyThemeBackgroundRoleToWidget(m_widgets.keypadContainer, keypadBackground.background);
     m_widgets.keypad->setPalette(keypadPalette);
+    m_widgets.keypad->setAutoFillBackground(true);
     m_widgets.keypad->setThemeButtonColors(keypadButton.background,
                                            keypadButton.foreground,
                                            keypadButtonHover.background,
@@ -5669,9 +5702,11 @@ void MainWindow::writeThemeRuntimeDiagnosticsReport()
                             shortStyleSheet(editor));
     }
 
+    const ThemeSurfaceColors keypadBackground =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadBackgroundShade);
     appendDiagnosticRow(out,
                         QStringLiteral("Keypad"),
-                        debugColorName(surfaces.window.background),
+                        debugColorName(keypadBackground.background),
                         paletteColorName(m_widgets.keypad, QPalette::Window),
                         QStringLiteral("(n/a)"),
                         grabbedCenterColorName(m_widgets.keypad),
@@ -5787,6 +5822,8 @@ void MainWindow::createKeypad()
     if (m_widgets.keypad)
         return;
 
+    m_widgets.keypadContainer = new QWidget(m_widgets.root);
+
     if (m_settings->keypadMode == Settings::KeypadModeCustom) {
         QList<Keypad::CustomButtonDescription> customButtons;
         for (const auto& button : m_settings->customKeypad.buttons) {
@@ -5802,7 +5839,9 @@ void MainWindow::createKeypad()
             description.column = button.column;
             customButtons.append(description);
         }
-        m_widgets.keypad = new Keypad(customButtons, m_widgets.root, m_settings->keypadZoomPercent);
+        m_widgets.keypad = new Keypad(customButtons,
+                                      m_widgets.keypadContainer,
+                                      m_settings->keypadZoomPercent);
         connect(m_widgets.keypad, &Keypad::customButtonPressed,
                 this, &MainWindow::handleCustomKeypadButtonPress);
     } else {
@@ -5811,7 +5850,9 @@ void MainWindow::createKeypad()
             layoutMode = Keypad::LayoutModeBasicWide;
         else if (m_settings->keypadMode == Settings::KeypadModeScientificNarrow)
             layoutMode = Keypad::LayoutModeScientificNarrow;
-        m_widgets.keypad = new Keypad(layoutMode, m_widgets.root, m_settings->keypadZoomPercent);
+        m_widgets.keypad = new Keypad(layoutMode,
+                                      m_widgets.keypadContainer,
+                                      m_settings->keypadZoomPercent);
         connect(m_widgets.keypad, SIGNAL(buttonPressed(Keypad::Button)), SLOT(handleKeypadButtonPress(Keypad::Button)));
         connect(this, SIGNAL(radixCharacterChanged()), m_widgets.keypad, SLOT(handleRadixCharacterChange()));
     }
@@ -5820,13 +5861,15 @@ void MainWindow::createKeypad()
     connect(m_widgets.keypad, SIGNAL(customContextMenuRequested(const QPoint&)),
             SLOT(showKeypadContextMenu(const QPoint&)));
 
-    m_layouts.keypad = new QHBoxLayout();
+    m_layouts.keypad = new QHBoxLayout(m_widgets.keypadContainer);
+    m_layouts.keypad->setContentsMargins(0, 0, 0, 0);
     m_layouts.keypad->addStretch();
     m_layouts.keypad->addWidget(m_widgets.keypad);
     m_layouts.keypad->addStretch();
     m_widgets.keypad->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_layouts.root->addLayout(m_layouts.keypad, 0);
+    m_layouts.root->addWidget(m_widgets.keypadContainer, 0);
 
+    m_widgets.keypadContainer->show();
     m_widgets.keypad->show();
     m_settings->keypadVisible = true;
     applyKeypadThemeSurfacePalette();
@@ -7074,6 +7117,7 @@ MainWindow::MainWindow()
 
     m_widgets.manual = 0;
     m_widgets.keypad  = 0;
+    m_widgets.keypadContainer = 0;
 
     m_conditions.autoAns = false;
 
@@ -9958,8 +10002,14 @@ void MainWindow::deleteKeypad()
     m_widgets.keypad->deleteLater();
     m_widgets.keypad = 0;
 
-    m_layouts.root->removeItem(m_layouts.keypad);
-    m_layouts.keypad->deleteLater();
+    if (m_widgets.keypadContainer) {
+        m_layouts.root->removeWidget(m_widgets.keypadContainer);
+        m_widgets.keypadContainer->deleteLater();
+        m_widgets.keypadContainer = 0;
+    } else {
+        m_layouts.root->removeItem(m_layouts.keypad);
+        m_layouts.keypad->deleteLater();
+    }
     m_layouts.keypad = 0;
 
     m_settings->keypadVisible = false;

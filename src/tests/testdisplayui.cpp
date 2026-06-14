@@ -1057,14 +1057,16 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         const QVector<QColor> shades = generateOklchShades(base, 6, polarity);
         const QVector<QColor> foregrounds = aaForegroundsForBackgrounds(shades);
         const QColor expectedResultSurface = shades.at(UiConfig::ResultDisplayShade);
-        const QColor expectedSurface = shades.at(UiConfig::KeypadBackgroundShade);
+        const QColor expectedWindowSurface = shades.at(UiConfig::WindowBackgroundShade);
+        const QColor expectedKeypadSurface = shades.at(UiConfig::KeypadBackgroundShade);
         const QColor expectedEditorSurface = shades.at(UiConfig::DockBackgroundShade);
         const QColor expectedHeaderSurface = shades.at(UiConfig::DockHeaderShade);
         const QColor expectedInputSurface = shades.at(UiConfig::DockUnfocusedSelectedItemShade);
         const QColor expectedKeypadButtonSurface = shades.at(UiConfig::KeypadButtonShade);
         const QColor expectedStatusBarSurface = shades.at(UiConfig::StatusBarBackgroundShade);
         const QColor expectedPrimary = generatePrimaryFromBackground(base);
-        const QColor expectedForeground = foregrounds.at(UiConfig::KeypadBackgroundShade);
+        const QColor expectedWindowForeground = foregrounds.at(UiConfig::WindowBackgroundShade);
+        const QColor expectedKeypadForeground = foregrounds.at(UiConfig::KeypadBackgroundShade);
         const QColor expectedEditorForeground = foregrounds.at(UiConfig::DockBackgroundShade);
         const QColor expectedHeaderForeground = foregrounds.at(UiConfig::DockHeaderShade);
         const QColor expectedInputForeground =
@@ -1075,9 +1077,11 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         window.show();
         QCoreApplication::processEvents();
 
-        QCOMPARE(window.palette().color(QPalette::Window).name(), expectedSurface.name());
-        QCOMPARE(window.palette().color(QPalette::WindowText).name(), expectedForeground.name());
-        QCOMPARE(window.palette().color(QPalette::ButtonText).name(), expectedForeground.name());
+        QCOMPARE(window.palette().color(QPalette::Window).name(), expectedWindowSurface.name());
+        QCOMPARE(window.palette().color(QPalette::WindowText).name(),
+                 expectedWindowForeground.name());
+        QCOMPARE(window.palette().color(QPalette::ButtonText).name(),
+                 expectedWindowForeground.name());
 
         Editor* editor = window.findChild<Editor*>();
         ResultDisplay* display = window.findChild<ResultDisplay*>();
@@ -1108,7 +1112,7 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         QVERIFY(page != nullptr);
         QVERIFY(sessionTabBar != nullptr);
         QCOMPARE(splitContainer->palette().color(QPalette::Window).name(),
-                 expectedSurface.name());
+                 expectedWindowSurface.name());
         QCOMPARE(pane->palette().color(QPalette::Window).name(),
                  expectedResultSurface.name());
         QCOMPARE(page->palette().color(QPalette::Window).name(),
@@ -1132,12 +1136,12 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         QVERIFY(!tabBarImage.isNull());
         QCOMPARE(tabBarImage.pixelColor(tabBarImage.width() - 1,
                                         tabBarImage.height() / 2).name(),
-                 expectedSurface.name());
+                 expectedWindowSurface.name());
         QWidget* tabBarRow = sessionTabBar->parentWidget();
         QVERIFY(tabBarRow != nullptr);
         QCOMPARE(tabBarRow->palette().color(QPalette::Window).name(),
-                 expectedSurface.name());
-        QVERIFY(tabBarRow->styleSheet().contains(expectedSurface.name()));
+                 expectedWindowSurface.name());
+        QVERIFY(tabBarRow->styleSheet().contains(expectedWindowSurface.name()));
         QCOMPARE(editor->palette().color(QPalette::Base).name(),
                  expectedEditorSurface.name());
         QVERIFY(editor->styleSheet().contains(expectedEditorSurface.name()));
@@ -1147,11 +1151,25 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         QCOMPARE(editor->cursorWidth(), 2);
         QCOMPARE(editor->graphicsEffect(), nullptr);
         QVERIFY(editor->mask().isEmpty());
-        QCOMPARE(keypad->palette().color(QPalette::Window).name(), expectedSurface.name());
+        QCOMPARE(keypad->palette().color(QPalette::Window).name(), expectedKeypadSurface.name());
+        QCOMPARE(keypad->palette().color(QPalette::WindowText).name(),
+                 expectedKeypadForeground.name());
         QPushButton* keypadButton = keypadButtonWithText(keypad, QStringLiteral("7"));
         QPushButton* keypadEvaluateButton = keypadButtonWithText(keypad, QStringLiteral("="));
         QVERIFY(keypadButton != nullptr);
         QVERIFY(keypadEvaluateButton != nullptr);
+        QWidget* keypadContainer = keypad->parentWidget();
+        QVERIFY(keypadContainer != nullptr);
+        QCOMPARE(keypadContainer->palette().color(QPalette::Window).name(),
+                 expectedKeypadSurface.name());
+        QVERIFY(keypadContainer->styleSheet().contains(expectedKeypadSurface.name()));
+        const QImage keypadContainerImage = keypadContainer->grab().toImage();
+        QVERIFY(!keypadContainerImage.isNull());
+        QCOMPARE(keypadContainerImage.pixelColor(0, keypadContainerImage.height() / 2).name(),
+                 expectedKeypadSurface.name());
+        QCOMPARE(keypadContainerImage.pixelColor(keypadContainerImage.width() - 1,
+                                                 keypadContainerImage.height() / 2).name(),
+                 expectedKeypadSurface.name());
         const QString keypadButtonStyle = keypadButton->styleSheet();
         QCOMPARE(keypadButton->palette().color(QPalette::Button).name(),
                  expectedKeypadButtonSurface.name());
@@ -1278,7 +1296,7 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
     QVERIFY(changedOperatorButton != nullptr);
     QVERIFY(changedEvaluateButton != nullptr);
     QCOMPARE(changedWindow.palette().color(QPalette::Window).name(),
-             changedShades.at(UiConfig::KeypadBackgroundShade).name());
+             changedShades.at(UiConfig::WindowBackgroundShade).name());
     QCOMPARE(changedDisplay->palette().color(QPalette::Base).name(),
              changedShades.at(UiConfig::ResultDisplayShade).name());
     QCOMPARE(changedEditor->viewport()->palette().color(QPalette::Base).name(),
@@ -1463,7 +1481,8 @@ void TestDisplayUi::restored_session_layout_reapplies_generated_theme_surfaces()
     const QVector<QColor> shades =
         generateOklchShades(QColor(QStringLiteral("#300a24")), 6, ThemePolarity::Dark);
     const QColor paneFill = shades.at(UiConfig::ResultDisplayShade);
-    const QColor chromeFill = shades.at(UiConfig::KeypadBackgroundShade);
+    const QColor chromeFill = shades.at(UiConfig::WindowBackgroundShade);
+    const QColor keypadFill = shades.at(UiConfig::KeypadBackgroundShade);
     const QColor editorFill = shades.at(UiConfig::DockBackgroundShade);
 
     QSplitter* splitContainer =
@@ -1490,7 +1509,10 @@ void TestDisplayUi::restored_session_layout_reapplies_generated_theme_surfaces()
 
     Keypad* keypad = restoredWindow.findChild<Keypad*>();
     QVERIFY(keypad != nullptr);
-    QCOMPARE(keypad->palette().color(QPalette::Window).name(), chromeFill.name());
+    QCOMPARE(keypad->palette().color(QPalette::Window).name(), keypadFill.name());
+    QWidget* keypadContainer = keypad->parentWidget();
+    QVERIFY(keypadContainer != nullptr);
+    QCOMPARE(keypadContainer->palette().color(QPalette::Window).name(), keypadFill.name());
 }
 
 void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
@@ -1552,8 +1574,8 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     const QColor controlText = foregrounds.at(4);
     const QColor contentFill = shades.at(2);
     const QColor contentText = foregrounds.at(2);
-    const QColor chromeFill = shades.at(UiConfig::KeypadBackgroundShade);
-    const QColor chromeText = foregrounds.at(UiConfig::KeypadBackgroundShade);
+    const QColor chromeFill = shades.at(UiConfig::WindowBackgroundShade);
+    const QColor chromeText = foregrounds.at(UiConfig::WindowBackgroundShade);
     const QColor resultFill = shades.at(UiConfig::ResultDisplayShade);
     const QColor resultText = foregrounds.at(UiConfig::ResultDisplayShade);
     const QColor hoverFill = shades.at(5);
@@ -1911,7 +1933,17 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
 
     bool foundDockTabs = false;
     for (QTabBar* tabBar : window.findChildren<QTabBar*>()) {
-        if (tabBar->styleSheet().contains(titleFill.name())) {
+        bool dockNavigationTabBar = false;
+        for (int i = 0; i < tabBar->count(); ++i) {
+            const QString text = tabBar->tabText(i);
+            if (text == QStringLiteral("Constants") || text == QStringLiteral("Functions")) {
+                dockNavigationTabBar = true;
+                break;
+            }
+        }
+        if (dockNavigationTabBar
+            && tabBar->isVisible()
+            && tabBar->styleSheet().contains(titleFill.name())) {
             foundDockTabs = true;
             QCOMPARE(tabBar->palette().color(QPalette::WindowText).name(), titleText.name());
             QVERIFY(tabBar->styleSheet().contains(QStringLiteral("background-color: transparent")));
@@ -1923,6 +1955,18 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
             QVERIFY(tabBar->styleSheet().contains(titleText.name()));
             QVERIFY(tabBar->styleSheet().contains(QStringLiteral("padding: 5px 14px")));
             QVERIFY(tabBar->styleSheet().contains(QStringLiteral("margin: 2px 1px")));
+            QVERIFY(!tabBar->drawBase());
+            QWidget* tabBarParent = tabBar->parentWidget();
+            QVERIFY(tabBarParent != nullptr);
+            QCOMPARE(tabBarParent->palette().color(QPalette::Window).name(), chromeFill.name());
+            QVERIFY(tabBarParent->styleSheet().contains(chromeFill.name()));
+            const QImage tabBarImage = tabBar->grab().toImage();
+            QVERIFY(!tabBarImage.isNull());
+            QCOMPARE(tabBarImage.pixelColor(tabBarImage.width() - 1,
+                                            tabBarImage.height() / 2).name(),
+                     chromeFill.name());
+            QCOMPARE(tabBarImage.pixelColor(tabBarImage.width() - 1, 0).name(),
+                     chromeFill.name());
         }
     }
     QVERIFY(foundDockTabs);

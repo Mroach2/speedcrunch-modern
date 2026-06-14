@@ -35,6 +35,7 @@ constexpr int Shade400 = 3;
 constexpr int Shade500 = 4;
 constexpr int Shade600 = 5;
 
+constexpr int WindowBackgroundShade = Shade100;
 constexpr int ResultDisplayShade = Shade200;
 constexpr int SplitterShade = Shade300;
 constexpr bool SplitterHoverUsesPrimary = true;
