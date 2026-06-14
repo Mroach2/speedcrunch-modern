@@ -331,6 +331,7 @@ private:
     void removePaneForDisplay(ResultDisplay* display);
     void normalizeSplitContainerTree();
     void applyThemeSurfacePalette();
+    void applyKeypadThemeSurfacePalette();
     void scheduleThemeRuntimeDiagnosticsReport();
     void writeThemeRuntimeDiagnosticsReport();
     void updateSplitterStyleSheet();

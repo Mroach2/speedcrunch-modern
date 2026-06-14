@@ -1224,6 +1224,45 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
     QCOMPARE(changedEvaluateButton->palette().color(QPalette::ButtonText).name(),
              aaForegroundForBackground(changedPrimary).name());
     QVERIFY(changedEvaluateButton->styleSheet().contains(changedPrimary.name()));
+
+    const auto findKeypadModeAction = [&changedWindow](Settings::KeypadMode mode) -> QAction* {
+        for (QAction* action : changedWindow.findChildren<QAction*>()) {
+            if (action->isCheckable()
+                    && action->data().isValid()
+                    && action->data().toInt() == static_cast<int>(mode)) {
+                return action;
+            }
+        }
+        return nullptr;
+    };
+    QAction* scientificNarrowAction =
+        findKeypadModeAction(Settings::KeypadModeScientificNarrow);
+    QVERIFY(scientificNarrowAction != nullptr);
+    QVERIFY(QMetaObject::invokeMethod(&changedWindow,
+                                      "setKeypadMode",
+                                      Qt::DirectConnection,
+                                      Q_ARG(QAction*, scientificNarrowAction)));
+    QCoreApplication::processEvents();
+
+    Keypad* switchedKeypad = changedWindow.findChild<Keypad*>();
+    QPushButton* switchedOperatorButton =
+        switchedKeypad ? keypadButtonWithText(switchedKeypad, QStringLiteral("+")) : nullptr;
+    QPushButton* switchedEvaluateButton =
+        switchedKeypad ? keypadButtonWithText(switchedKeypad, QStringLiteral("=")) : nullptr;
+    QVERIFY(switchedKeypad != nullptr);
+    QVERIFY(switchedOperatorButton != nullptr);
+    QVERIFY(switchedEvaluateButton != nullptr);
+    QCOMPARE(switchedOperatorButton->palette().color(QPalette::Button).name(),
+             changedOperatorSurface.name());
+    QCOMPARE(switchedOperatorButton->palette().color(QPalette::ButtonText).name(),
+             aaForegroundForBackground(changedOperatorSurface).name());
+    QVERIFY(switchedOperatorButton->styleSheet().contains(changedOperatorSurface.name()));
+    QCOMPARE(switchedEvaluateButton->palette().color(QPalette::Button).name(),
+             changedPrimary.name());
+    QCOMPARE(switchedEvaluateButton->palette().color(QPalette::ButtonText).name(),
+             aaForegroundForBackground(changedPrimary).name());
+    QVERIFY(switchedEvaluateButton->styleSheet().contains(changedPrimary.name()));
+
     QVERIFY(!changedKeypadButton->styleSheet().contains(
         generateOklchShades(QColor(QStringLiteral("#e5eee8")), 6, ThemePolarity::Light)
             .at(UiConfig::KeypadButtonShade)

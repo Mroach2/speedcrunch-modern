@@ -5416,24 +5416,7 @@ void MainWindow::applyThemeSurfacePalette()
 
     if (m_widgets.root)
         m_widgets.root->setPalette(pal);
-    if (m_widgets.keypad) {
-        const ThemeSurfaceColors keypadButton =
-            themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonShade);
-        const ThemeSurfaceColors keypadButtonHover =
-            themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonHoverShade);
-        const ThemeSurfaceColors keypadButtonPressed =
-            themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonPressedShade);
-        m_widgets.keypad->setPalette(pal);
-        m_widgets.keypad->setThemeButtonColors(keypadButton.background,
-                                               keypadButton.foreground,
-                                               keypadButtonHover.background,
-                                               keypadButtonHover.foreground,
-                                               keypadButtonPressed.background,
-                                               keypadButtonPressed.foreground,
-                                               surfaces.primary.background);
-        QEvent paletteChange(QEvent::PaletteChange);
-        QApplication::sendEvent(m_widgets.keypad, &paletteChange);
-    }
+    applyKeypadThemeSurfacePalette();
     if (QStatusBar* bar = findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly)) {
         const ThemeSurfaceColors statusBarSurface =
             themeSurfaceForShadeIndex(surfaces, UiConfig::StatusBarBackgroundShade);
@@ -5479,6 +5462,32 @@ void MainWindow::applyThemeSurfacePalette()
             applyMenuSurface(menu, surfaces.headersAndBorders, surfaces.inputs);
         applyDockTabBarSurfaces(surfaces);
     });
+}
+
+void MainWindow::applyKeypadThemeSurfacePalette()
+{
+    if (!m_widgets.keypad)
+        return;
+
+    const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+    const QPalette keypadPalette = paletteForThemeSurface(palette(), surfaces.window);
+    const ThemeSurfaceColors keypadButton =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonShade);
+    const ThemeSurfaceColors keypadButtonHover =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonHoverShade);
+    const ThemeSurfaceColors keypadButtonPressed =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonPressedShade);
+
+    m_widgets.keypad->setPalette(keypadPalette);
+    m_widgets.keypad->setThemeButtonColors(keypadButton.background,
+                                           keypadButton.foreground,
+                                           keypadButtonHover.background,
+                                           keypadButtonHover.foreground,
+                                           keypadButtonPressed.background,
+                                           keypadButtonPressed.foreground,
+                                           surfaces.primary.background);
+    QEvent paletteChange(QEvent::PaletteChange);
+    QApplication::sendEvent(m_widgets.keypad, &paletteChange);
 }
 
 void MainWindow::scheduleThemeRuntimeDiagnosticsReport()
@@ -5770,6 +5779,7 @@ void MainWindow::createKeypad()
 
     m_widgets.keypad->show();
     m_settings->keypadVisible = true;
+    applyKeypadThemeSurfacePalette();
 }
 
 void MainWindow::createBookDock(bool)
