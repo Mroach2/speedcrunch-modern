@@ -341,6 +341,7 @@ private:
     void saveSessionLayout(bool captureCurrentViewport = true);
     void flushPendingSessionSave();
     bool configureCustomKeypad();
+    void updateKeypadModeActionState();
     void setActionsText();
     void updateKeypadDisabledActionText();
     void setMenusText();

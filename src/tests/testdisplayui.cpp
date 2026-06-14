@@ -184,6 +184,21 @@ QPushButton* keypadButtonWithText(Keypad* keypad, const QString& text)
     return nullptr;
 }
 
+QAction* keypadModeAction(MainWindow* window, Settings::KeypadMode mode)
+{
+    if (window == nullptr)
+        return nullptr;
+
+    for (QAction* action : window->findChildren<QAction*>()) {
+        if (action->isCheckable()
+                && action->data().isValid()
+                && action->data().toInt() == static_cast<int>(mode)) {
+            return action;
+        }
+    }
+    return nullptr;
+}
+
 QColor keypadPrimaryStateBackgroundForTest(const QColor& primary,
                                            const QColor& stateBackground,
                                            const QColor& normalBackground)
@@ -383,6 +398,7 @@ private slots:
     void result_display_context_menu_hides_main_menu_when_menu_bar_visible();
     void bitfield_selected_bit_keeps_primary_fill_while_hovered();
     void dock_list_selected_row_keeps_primary_fill_while_hovered();
+    void custom_keypad_action_stays_checked_after_dialog_accepts();
     void main_window_applies_primary_role_to_active_editor_and_dock_selection();
     void current_result_tooltip_stays_hidden_after_escape_and_arrow_caret_move();
     void current_result_tooltip_stays_hidden_after_escape_and_mouse_caret_move();
@@ -703,6 +719,70 @@ void TestDisplayUi::dock_list_selected_row_keeps_primary_fill_while_hovered()
     QTRY_VERIFY(table.hasFocus());
     QTRY_COMPARE(table.viewport()->grab().toImage().pixelColor(sampledFill).name(),
                  primaryBackground.name());
+}
+
+void TestDisplayUi::custom_keypad_action_stays_checked_after_dialog_accepts()
+{
+    Settings* settings = Settings::instance();
+    struct SettingsGuard {
+        Settings* settings;
+        Settings::KeypadMode oldKeypadMode;
+        bool oldKeypadVisible;
+        Settings::CustomKeypad oldCustomKeypad;
+        bool oldHasNumberFormatStyleSetting;
+        QByteArray oldSkipUpdateCheck;
+        bool hadSkipUpdateCheck;
+
+        ~SettingsGuard()
+        {
+            settings->keypadMode = oldKeypadMode;
+            settings->keypadVisible = oldKeypadVisible;
+            settings->customKeypad = oldCustomKeypad;
+            settings->hasNumberFormatStyleSetting = oldHasNumberFormatStyleSetting;
+            if (hadSkipUpdateCheck)
+                qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", oldSkipUpdateCheck);
+            else
+                qunsetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
+        }
+    } guard {
+        settings,
+        settings->keypadMode,
+        settings->keypadVisible,
+        settings->customKeypad,
+        settings->hasNumberFormatStyleSetting,
+        qgetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK"),
+        qEnvironmentVariableIsSet("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK")
+    };
+
+    qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
+    settings->keypadMode = Settings::KeypadModeBasicWide;
+    settings->keypadVisible = true;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QAction* basicAction = keypadModeAction(&window, Settings::KeypadModeBasicWide);
+    QAction* customAction = keypadModeAction(&window, Settings::KeypadModeCustom);
+    QVERIFY(basicAction != nullptr);
+    QVERIFY(customAction != nullptr);
+    QVERIFY(basicAction->isChecked());
+
+    QTimer::singleShot(0, &window, []() {
+        QDialog* dialog = qobject_cast<QDialog*>(QApplication::activeModalWidget());
+        if (dialog != nullptr)
+            dialog->accept();
+    });
+    QVERIFY(QMetaObject::invokeMethod(&window,
+                                      "setKeypadMode",
+                                      Qt::DirectConnection,
+                                      Q_ARG(QAction*, customAction)));
+    QCoreApplication::processEvents();
+
+    QCOMPARE(settings->keypadMode, Settings::KeypadModeCustom);
+    QVERIFY(customAction->isChecked());
+    QVERIFY(!basicAction->isChecked());
 }
 
 void TestDisplayUi::main_window_applies_primary_role_to_active_editor_and_dock_selection()
@@ -1225,18 +1305,8 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
              aaForegroundForBackground(changedPrimary).name());
     QVERIFY(changedEvaluateButton->styleSheet().contains(changedPrimary.name()));
 
-    const auto findKeypadModeAction = [&changedWindow](Settings::KeypadMode mode) -> QAction* {
-        for (QAction* action : changedWindow.findChildren<QAction*>()) {
-            if (action->isCheckable()
-                    && action->data().isValid()
-                    && action->data().toInt() == static_cast<int>(mode)) {
-                return action;
-            }
-        }
-        return nullptr;
-    };
     QAction* scientificNarrowAction =
-        findKeypadModeAction(Settings::KeypadModeScientificNarrow);
+        keypadModeAction(&changedWindow, Settings::KeypadModeScientificNarrow);
     QVERIFY(scientificNarrowAction != nullptr);
     QVERIFY(QMetaObject::invokeMethod(&changedWindow,
                                       "setKeypadMode",

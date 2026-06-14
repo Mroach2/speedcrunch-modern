@@ -3618,6 +3618,29 @@ void MainWindow::updateKeypadDisabledActionText()
         m_actions.viewKeypadDisabled->setText(MainWindow::tr("&Disable"));
 }
 
+void MainWindow::updateKeypadModeActionState()
+{
+    const QSignalBlocker keypadBlocker(m_actionGroups.keypad);
+    switch (m_settings->keypadMode) {
+    case Settings::KeypadModeBasicWide:
+        m_actions.viewKeypadBasicWide->setChecked(true);
+        break;
+    case Settings::KeypadModeScientificWide:
+        m_actions.viewKeypadScientificWide->setChecked(true);
+        break;
+    case Settings::KeypadModeScientificNarrow:
+        m_actions.viewKeypadScientificNarrow->setChecked(true);
+        break;
+    case Settings::KeypadModeCustom:
+        m_actions.viewKeypadCustom->setChecked(true);
+        break;
+    case Settings::KeypadModeDisabled:
+    default:
+        m_actions.viewKeypadDisabled->setChecked(true);
+        break;
+    }
+}
+
 void MainWindow::createStatusBar()
 {
     QStatusBar* bar = statusBar();
@@ -6327,24 +6350,7 @@ void MainWindow::applySettings()
     createBitField();
     setBitfieldVisible(bitfieldVisible);
     m_actions.viewBitfield->setChecked(bitfieldVisible);
-    switch (m_settings->keypadMode) {
-    case Settings::KeypadModeBasicWide:
-        m_actions.viewKeypadBasicWide->setChecked(true);
-        break;
-    case Settings::KeypadModeScientificWide:
-        m_actions.viewKeypadScientificWide->setChecked(true);
-        break;
-    case Settings::KeypadModeScientificNarrow:
-        m_actions.viewKeypadScientificNarrow->setChecked(true);
-        break;
-    case Settings::KeypadModeCustom:
-        m_actions.viewKeypadCustom->setChecked(true);
-        break;
-    case Settings::KeypadModeDisabled:
-    default:
-        m_actions.viewKeypadDisabled->setChecked(true);
-        break;
-    }
+    updateKeypadModeActionState();
     switch (m_settings->keypadZoomPercent) {
     case 150:
         m_actions.viewKeypadZoom150->setChecked(true);
@@ -9616,28 +9622,11 @@ bool MainWindow::event(QEvent* e)
         QStatusBar* existingStatusBar = findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly);
         m_actions.viewStatusBar->setChecked(existingStatusBar != nullptr && existingStatusBar->isVisible());
 
-        const QSignalBlocker keypadBlocker(m_actionGroups.keypad);
         if (m_widgets.keypad == nullptr) {
+            const QSignalBlocker keypadBlocker(m_actionGroups.keypad);
             m_actions.viewKeypadDisabled->setChecked(true);
         } else {
-            switch (m_settings->keypadMode) {
-            case Settings::KeypadModeBasicWide:
-                m_actions.viewKeypadBasicWide->setChecked(true);
-                break;
-            case Settings::KeypadModeScientificWide:
-                m_actions.viewKeypadScientificWide->setChecked(true);
-                break;
-            case Settings::KeypadModeScientificNarrow:
-                m_actions.viewKeypadScientificNarrow->setChecked(true);
-                break;
-            case Settings::KeypadModeCustom:
-                m_actions.viewKeypadCustom->setChecked(true);
-                break;
-            case Settings::KeypadModeDisabled:
-            default:
-                m_actions.viewKeypadDisabled->setChecked(true);
-                break;
-            }
+            updateKeypadModeActionState();
         }
     }
 
@@ -10128,24 +10117,7 @@ void MainWindow::setKeypadMode(QAction* action)
     const Settings::KeypadMode mode = static_cast<Settings::KeypadMode>(action->data().toInt());
     const bool isCustomMode = (mode == Settings::KeypadModeCustom);
     if (isCustomMode && !configureCustomKeypad()) {
-        switch (m_settings->keypadMode) {
-        case Settings::KeypadModeBasicWide:
-            m_actions.viewKeypadBasicWide->setChecked(true);
-            break;
-        case Settings::KeypadModeScientificWide:
-            m_actions.viewKeypadScientificWide->setChecked(true);
-            break;
-        case Settings::KeypadModeScientificNarrow:
-            m_actions.viewKeypadScientificNarrow->setChecked(true);
-            break;
-        case Settings::KeypadModeCustom:
-            m_actions.viewKeypadCustom->setChecked(true);
-            break;
-        case Settings::KeypadModeDisabled:
-        default:
-            m_actions.viewKeypadDisabled->setChecked(true);
-            break;
-        }
+        updateKeypadModeActionState();
         return;
     }
 
@@ -10155,6 +10127,7 @@ void MainWindow::setKeypadMode(QAction* action)
     const bool wasVisible = isVisibleKeypadMode(m_settings->keypadMode);
     const bool nowVisible = isVisibleKeypadMode(mode);
     m_settings->keypadMode = mode;
+    updateKeypadModeActionState();
 
     if (wasVisible && nowVisible) {
         deleteKeypad();
