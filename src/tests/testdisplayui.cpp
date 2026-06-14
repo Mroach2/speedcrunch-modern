@@ -407,6 +407,7 @@ private slots:
     void main_window_uses_generated_theme_surface_for_chrome_and_editor();
     void restored_session_layout_reapplies_generated_theme_surfaces();
     void dock_surfaces_use_successive_generated_shades();
+    void dock_scroll_corner_uses_scrollbar_track_fill();
     void dock_separator_style_uses_primary_while_hovered_or_dragged();
     void constants_dock_uses_configured_narrow_minimum_width();
     void dock_search_focus_suppresses_editor_primary_outline_across_panes();
@@ -1976,6 +1977,85 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QCOMPARE(table->viewport()->palette().color(QPalette::Base).name(),
              changedContentFill.name());
     QVERIFY(table->styleSheet().contains(changedContentFill.name()));
+}
+
+void TestDisplayUi::dock_scroll_corner_uses_scrollbar_track_fill()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+
+    qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#1f3229\"}");
+    settings->sessionLayoutJson.clear();
+    settings->windowState.clear();
+    settings->constantsDockVisible = true;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->windowPositionSave = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    const QColor base(QStringLiteral("#1f3229"));
+    const QVector<QColor> shades = generateOklchShades(base, 6, ThemePolarity::Dark);
+    const QColor expectedTrackFill = shades.at(UiConfig::DockBackgroundShade);
+
+    MainWindow window;
+    window.resize(700, 420);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    QCoreApplication::processEvents();
+
+    QDockWidget* constantsDock =
+        window.findChild<QDockWidget*>(QStringLiteral("ConstantsDock"));
+    QVERIFY(constantsDock != nullptr);
+    QTreeWidget* table = constantsDock->findChild<QTreeWidget*>();
+    QVERIFY(table != nullptr);
+
+    table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    for (int column = 0; column < table->columnCount(); ++column)
+        table->setColumnWidth(column, 240);
+    constantsDock->show();
+    constantsDock->raise();
+    window.resizeDocks(QList<QDockWidget*> { constantsDock },
+                       QList<int> { UiConfig::ConstantsDockMinimumWidth },
+                       Qt::Horizontal);
+    QCoreApplication::processEvents();
+
+    QWidget* corner = table->cornerWidget();
+    QVERIFY(corner != nullptr);
+    QCOMPARE(corner->palette().color(QPalette::Window).name(), expectedTrackFill.name());
+    QVERIFY(corner->styleSheet().contains(expectedTrackFill.name()));
+    QVERIFY(corner->styleSheet().contains(QStringLiteral("border: 0")));
+    QTRY_VERIFY(table->horizontalScrollBar()->isVisible());
+    QTRY_VERIFY(table->verticalScrollBar()->isVisible());
+    QTRY_VERIFY(corner->isVisible());
+
+    const QImage image = corner->grab().toImage();
+    QVERIFY(!image.isNull());
+    QVERIFY(image.width() > 1);
+    QVERIFY(image.height() > 1);
+    const QList<QPoint> samplePoints {
+        QPoint(0, 0),
+        QPoint(image.width() - 1, 0),
+        QPoint(0, image.height() - 1),
+        QPoint(image.width() - 1, image.height() - 1),
+        image.rect().center()
+    };
+    for (const QPoint& point : samplePoints) {
+        const QColor sampled = image.pixelColor(point);
+        QVERIFY2(colorsAreClose(sampled, expectedTrackFill, 3),
+                 qPrintable(QStringLiteral("corner sample %1,%2 is %3, expected %4")
+                                .arg(point.x())
+                                .arg(point.y())
+                                .arg(sampled.name(), expectedTrackFill.name())));
+    }
 }
 
 void TestDisplayUi::dock_separator_style_uses_primary_while_hovered_or_dragged()

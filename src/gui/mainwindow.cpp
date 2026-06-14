@@ -994,6 +994,32 @@ QString scrollBarStyleSheet(const ThemeScrollBarColors& colors)
              colors.pressedThumb.name());
 }
 
+void applyScrollCornerColorToScrollArea(QAbstractScrollArea* area, const QColor& color)
+{
+    if (area == nullptr || !color.isValid())
+        return;
+
+    QWidget* corner = area->cornerWidget();
+    if (corner == nullptr) {
+        corner = new QWidget(area);
+        area->setCornerWidget(corner);
+    }
+
+    QPalette palette = corner->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        palette.setColor(group, QPalette::Window, color);
+        palette.setColor(group, QPalette::Base, color);
+        palette.setColor(group, QPalette::Button, color);
+    }
+    corner->setPalette(palette);
+    corner->setAutoFillBackground(true);
+    corner->setAttribute(Qt::WA_StyledBackground, true);
+    corner->setStyleSheet(QStringLiteral("QWidget { background-color: %1; border: 0; }")
+                              .arg(color.name()));
+}
+
 void applyMenuSurface(QMenu* menu,
                       const ThemeSurfaceColors& surface,
                       const ThemeSurfaceColors& selectedSurface,
@@ -1058,6 +1084,7 @@ void applyScrollBarColorsToScrollArea(QAbstractScrollArea* area, const ThemeScro
         bar->setStyleSheet(styleSheet);
     if (QScrollBar* bar = area->horizontalScrollBar())
         bar->setStyleSheet(styleSheet);
+    applyScrollCornerColorToScrollArea(area, colors.track);
 }
 
 QIcon dockTitleButtonIcon(bool isCloseButton, const QColor& foreground)
