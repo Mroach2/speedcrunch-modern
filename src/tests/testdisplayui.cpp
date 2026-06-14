@@ -5,6 +5,7 @@
 #include "core/colorscheme.h"
 #include "core/settings.h"
 #include "gui/bitfieldwidget.h"
+#include "gui/dockliststyle.h"
 #include "gui/editor.h"
 #include "gui/keypad.h"
 #include "gui/mainwindow.h"
@@ -324,6 +325,8 @@ private slots:
     void result_display_insets_viewport_horizontally();
     void result_display_scrollbar_hover_keeps_viewport_width_stable();
     void result_display_context_menu_hides_main_menu_when_menu_bar_visible();
+    void bitfield_selected_bit_keeps_primary_fill_while_hovered();
+    void dock_list_selected_row_keeps_primary_fill_while_hovered();
     void main_window_applies_primary_role_to_active_editor_and_dock_selection();
     void current_result_tooltip_stays_hidden_after_escape_and_arrow_caret_move();
     void current_result_tooltip_stays_hidden_after_escape_and_mouse_caret_move();
@@ -431,6 +434,96 @@ void TestDisplayUi::result_display_context_menu_hides_main_menu_when_menu_bar_vi
     window.menuBar()->hide();
     QVERIFY(!window.menuBar()->isVisible());
     QVERIFY(contextMenuContainsMainMenu(display));
+}
+
+void TestDisplayUi::bitfield_selected_bit_keeps_primary_fill_while_hovered()
+{
+    const QColor background(QStringLiteral("#202124"));
+    const QColor foreground(QStringLiteral("#d6d8dc"));
+    const QColor hoverBackground(QStringLiteral("#4a5568"));
+    const QColor hoverForeground(QStringLiteral("#f8fafc"));
+    const QColor primaryBackground(QStringLiteral("#2f80ed"));
+    const QColor primaryForeground(QStringLiteral("#ffffff"));
+
+    BitWidget bit(3);
+    bit.setThemeColors(background,
+                       foreground,
+                       hoverBackground,
+                       hoverForeground,
+                       primaryBackground,
+                       primaryForeground);
+    bit.resize(48, 48);
+    bit.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&bit));
+
+    const QPoint sampledFill(4, 4);
+    QTest::mouseMove(&bit, bit.rect().center());
+    QTRY_VERIFY(bit.underMouse());
+    QTRY_COMPARE(bit.grab().toImage().pixelColor(sampledFill).name(),
+                 hoverBackground.name());
+
+    bit.setState(true);
+    QTRY_COMPARE(bit.grab().toImage().pixelColor(sampledFill).name(),
+                 primaryBackground.name());
+}
+
+void TestDisplayUi::dock_list_selected_row_keeps_primary_fill_while_hovered()
+{
+    const QColor background(QStringLiteral("#202124"));
+    const QColor foreground(QStringLiteral("#d6d8dc"));
+    const QColor hoverBackground(QStringLiteral("#4a5568"));
+    const QColor hoverForeground(QStringLiteral("#f8fafc"));
+    const QColor primaryBackground(QStringLiteral("#2f80ed"));
+    const QColor primaryForeground(QStringLiteral("#ffffff"));
+    const QColor inactiveBackground(QStringLiteral("#3b4252"));
+    const QColor inactiveForeground(QStringLiteral("#eceff4"));
+
+    QTreeWidget table;
+    table.setColumnCount(2);
+    table.setRootIsDecorated(false);
+    table.setSelectionBehavior(QAbstractItemView::SelectRows);
+    table.header()->hide();
+    DockListStyle::apply(&table);
+    table.setProperty("dockListHoverBackground", hoverBackground);
+    table.setProperty("dockListHoverForeground", hoverForeground);
+    table.setProperty("dockListActiveSelectionBackground", primaryBackground);
+    table.setProperty("dockListActiveSelectionForeground", primaryForeground);
+    table.setProperty("dockListInactiveSelectionBackground", inactiveBackground);
+    table.setProperty("dockListInactiveSelectionForeground", inactiveForeground);
+    table.setStyleSheet(QStringLiteral(
+        "QAbstractItemView { background-color: %1; color: %2; border: 0; }"
+        "QAbstractItemView::item:hover { background-color: %3; color: %4; }")
+                            .arg(background.name(),
+                                 foreground.name(),
+                                 hoverBackground.name(),
+                                 hoverForeground.name()));
+
+    auto* item = new QTreeWidgetItem(&table, QStringList{
+        QStringLiteral("x"),
+        QStringLiteral("42")
+    });
+    table.resize(260, 80);
+    table.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&table));
+
+    const QModelIndex index = table.indexFromItem(item, 0);
+    const QRect itemRect = table.visualRect(index);
+    QVERIFY(itemRect.isValid());
+    const QPoint sampledFill(itemRect.right() - 4, itemRect.center().y());
+
+    QTest::mouseMove(table.viewport(), itemRect.center());
+    QTRY_COMPARE(table.property("dockListHoveredRow").toInt(), 0);
+    QTRY_VERIFY(table.viewport()->grab().toImage().pixelColor(sampledFill).name()
+                != background.name());
+    QVERIFY(table.viewport()->grab().toImage().pixelColor(sampledFill).name()
+            != primaryBackground.name());
+
+    table.setCurrentItem(item);
+    item->setSelected(true);
+    table.setFocus(Qt::OtherFocusReason);
+    QTRY_VERIFY(table.hasFocus());
+    QTRY_COMPARE(table.viewport()->grab().toImage().pixelColor(sampledFill).name(),
+                 primaryBackground.name());
 }
 
 void TestDisplayUi::main_window_applies_primary_role_to_active_editor_and_dock_selection()

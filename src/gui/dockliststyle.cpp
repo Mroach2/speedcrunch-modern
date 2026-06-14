@@ -88,7 +88,8 @@ public:
             opt.palette.setColor(QPalette::WindowText, selectedTextColorForView(m_view));
             opt.palette.setColor(QPalette::HighlightedText, selectedTextColorForView(m_view));
             opt.backgroundBrush = Qt::NoBrush;
-            opt.state &= ~QStyle::State_Selected;
+            // The selected fill is painted above; suppress style hover/focus backgrounds.
+            opt.state &= ~(QStyle::State_Selected | QStyle::State_MouseOver | QStyle::State_HasFocus);
         } else if (index.row() == m_view->property("dockListHoveredRow").toInt()) {
             painter->save();
             painter->fillRect(opt.rect, hoverColorForView(m_view));

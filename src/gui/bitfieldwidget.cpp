@@ -108,7 +108,11 @@ void BitWidget::updateStyle()
                 "QLabel[bitState=\"true\"], QLabel[bitPressed=\"true\"] {"
                 " background-color: %5; color: %6;"
                 "}"
-                "QLabel:hover { background-color: %3; color: %4; }")
+                "QLabel:hover { background-color: %3; color: %4; }"
+                // Keep selected/pressed bits visually selected when they also match :hover.
+                "QLabel[bitState=\"true\"]:hover, QLabel[bitPressed=\"true\"]:hover {"
+                " background-color: %5; color: %6;"
+                "}")
             .arg(background.name(),
                  foreground.name(),
                  hoverBackground.name(),
