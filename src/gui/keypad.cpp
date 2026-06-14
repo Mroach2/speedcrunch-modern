@@ -254,6 +254,7 @@ QFont scaledFont(const QFont& base, int scalePercent)
 
 enum class KeypadButtonVisualRole {
     Normal,
+    Numeric,
     ArithmeticOperator,
     Evaluate
 };
@@ -280,12 +281,34 @@ bool isArithmeticOperatorButton(Keypad::Button button)
     }
 }
 
+bool isNumericButton(Keypad::Button button)
+{
+    switch (button) {
+    case Keypad::Key0:
+    case Keypad::Key1:
+    case Keypad::Key2:
+    case Keypad::Key3:
+    case Keypad::Key4:
+    case Keypad::Key5:
+    case Keypad::Key6:
+    case Keypad::Key7:
+    case Keypad::Key8:
+    case Keypad::Key9:
+    case Keypad::KeyRadixChar:
+        return true;
+    default:
+        return false;
+    }
+}
+
 KeypadButtonVisualRole visualRoleForButton(Keypad::Button button)
 {
     if (button == Keypad::KeyEquals)
         return KeypadButtonVisualRole::Evaluate;
     if (isArithmeticOperatorButton(button))
         return KeypadButtonVisualRole::ArithmeticOperator;
+    if (isNumericButton(button))
+        return KeypadButtonVisualRole::Numeric;
     return KeypadButtonVisualRole::Normal;
 }
 
@@ -306,6 +329,18 @@ bool isArithmeticOperatorText(const QString& text)
         || MathDsl::isDivisionOperatorAlias(ch);
 }
 
+bool isNumericButtonText(const QString& text)
+{
+    const QString trimmed = text.trimmed();
+    if (trimmed.size() != 1)
+        return false;
+
+    const QChar ch = trimmed.at(0);
+    return ch.isDigit()
+        || ch == MathDsl::DotSep
+        || ch == MathDsl::CommaSep;
+}
+
 KeypadButtonVisualRole visualRoleForCustomButton(
     const Keypad::CustomButtonDescription& button)
 {
@@ -315,7 +350,26 @@ KeypadButtonVisualRole visualRoleForCustomButton(
             && isArithmeticOperatorText(button.text)) {
         return KeypadButtonVisualRole::ArithmeticOperator;
     }
+    if (button.action == Settings::CustomKeypadActionInsertText
+            && isNumericButtonText(button.text)) {
+        return KeypadButtonVisualRole::Numeric;
+    }
     return KeypadButtonVisualRole::Normal;
+}
+
+int primaryHueChromaPercentForRole(KeypadButtonVisualRole role)
+{
+    switch (role) {
+    case KeypadButtonVisualRole::Evaluate:
+        return UiConfig::KeypadEvaluatePrimaryHueChromaPercent;
+    case KeypadButtonVisualRole::ArithmeticOperator:
+        return UiConfig::KeypadOperatorPrimaryHueChromaPercent;
+    case KeypadButtonVisualRole::Numeric:
+        return UiConfig::KeypadDigitPrimaryHueChromaPercent;
+    case KeypadButtonVisualRole::Normal:
+        break;
+    }
+    return 0;
 }
 
 QColor oklchWithLightnessOffset(const QColor& color, double offset)
@@ -360,13 +414,14 @@ QColor keypadPrimaryStateBackground(const QColor& primary,
 
 QColor keypadPrimaryHueFillBackground(const QColor& primary,
                                       const QColor& stateBackground,
-                                      const QColor& normalBackground)
+                                      const QColor& normalBackground,
+                                      int primaryPercent)
 {
     if (!primary.isValid() || !stateBackground.isValid() || !normalBackground.isValid())
         return stateBackground;
 
     const double primaryRatio =
-        double(qBound(0, UiConfig::KeypadOperatorPrimaryHueChromaPercent, 100)) / 100.0;
+        double(qBound(0, primaryPercent, 100)) / 100.0;
     if (primaryRatio <= 0.0)
         return stateBackground;
 
@@ -379,8 +434,8 @@ QColor keypadPrimaryHueFillBackground(const QColor& primary,
     const Oklch primaryStateOklch = qColorToOklch(primaryStateBackground);
 
     // The percent is a blend toward the full primary state, not just a chroma
-    // multiplier. That makes 100 match the evaluate button exactly while 50
-    // still reads as a quieter primary-hue operator fill.
+    // multiplier. That makes 100 match the primary accent exactly while lower
+    // role percentages still read as quieter primary-hue fills.
     Oklch fill {
         stateOklch.l + (primaryStateOklch.l - stateOklch.l) * primaryRatio,
         stateOklch.c + (primaryStateOklch.c - stateOklch.c) * primaryRatio,
@@ -411,25 +466,16 @@ KeypadButtonColors keypadButtonColorsForRole(const KeypadButtonColors& normalCol
         };
     };
 
-    if (role == KeypadButtonVisualRole::Evaluate) {
-        const QColor background = keypadPrimaryStateBackground(
-            primaryBackground, normalColors.background, normalColors.background);
-        const QColor hoverBackground = keypadPrimaryStateBackground(
-            primaryBackground, normalColors.hoverBackground, normalColors.background);
-        const QColor pressedBackground = keypadPrimaryStateBackground(
-            primaryBackground, normalColors.pressedBackground, normalColors.background);
-        return withForegrounds(background, hoverBackground, pressedBackground);
-    }
-
+    const int primaryPercent = primaryHueChromaPercentForRole(role);
     const QColor background =
         keypadPrimaryHueFillBackground(
-            primaryBackground, normalColors.background, normalColors.background);
+            primaryBackground, normalColors.background, normalColors.background, primaryPercent);
     const QColor hoverBackground =
         keypadPrimaryHueFillBackground(
-            primaryBackground, normalColors.hoverBackground, normalColors.background);
+            primaryBackground, normalColors.hoverBackground, normalColors.background, primaryPercent);
     const QColor pressedBackground =
         keypadPrimaryHueFillBackground(
-            primaryBackground, normalColors.pressedBackground, normalColors.background);
+            primaryBackground, normalColors.pressedBackground, normalColors.background, primaryPercent);
     return withForegrounds(background, hoverBackground, pressedBackground);
 }
 

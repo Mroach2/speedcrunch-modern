@@ -216,10 +216,11 @@ QColor keypadPrimaryStateBackgroundForTest(const QColor& primary,
 
 QColor keypadPrimaryHueFillForTest(const QColor& primary,
                                    const QColor& stateBackground,
-                                   const QColor& normalBackground)
+                                   const QColor& normalBackground,
+                                   int primaryPercent)
 {
     const double primaryRatio =
-        double(qBound(0, UiConfig::KeypadOperatorPrimaryHueChromaPercent, 100)) / 100.0;
+        double(qBound(0, primaryPercent, 100)) / 100.0;
     if (primaryRatio <= 0.0)
         return stateBackground;
 
@@ -1154,9 +1155,14 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         QCOMPARE(keypad->palette().color(QPalette::Window).name(), expectedKeypadSurface.name());
         QCOMPARE(keypad->palette().color(QPalette::WindowText).name(),
                  expectedKeypadForeground.name());
-        QPushButton* keypadButton = keypadButtonWithText(keypad, QStringLiteral("7"));
+        QPushButton* keypadButton = keypadButtonWithText(keypad, QStringLiteral("%"));
+        QPushButton* keypadDigitButton = keypadButtonWithText(keypad, QStringLiteral("7"));
+        QPushButton* keypadDecimalButton =
+            keypadButtonWithText(keypad, QString(QChar(settings->radixCharacter())));
         QPushButton* keypadEvaluateButton = keypadButtonWithText(keypad, QStringLiteral("="));
         QVERIFY(keypadButton != nullptr);
+        QVERIFY(keypadDigitButton != nullptr);
+        QVERIFY(keypadDecimalButton != nullptr);
         QVERIFY(keypadEvaluateButton != nullptr);
         QWidget* keypadContainer = keypad->parentWidget();
         QVERIFY(keypadContainer != nullptr);
@@ -1196,15 +1202,41 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
                           UiConfig::KeypadButtonMargin,
                           UiConfig::KeypadButtonMargin,
                           UiConfig::KeypadButtonMargin));
+        const QColor expectedDigitSurface =
+            keypadPrimaryHueFillForTest(
+                expectedPrimary,
+                expectedKeypadButtonSurface,
+                expectedKeypadButtonSurface,
+                UiConfig::KeypadDigitPrimaryHueChromaPercent);
+        const QColor expectedDigitForeground = aaForegroundForBackground(expectedDigitSurface);
+        for (QPushButton* digitButton : {keypadDigitButton, keypadDecimalButton}) {
+            const QString digitStyle = digitButton->styleSheet();
+            QCOMPARE(digitButton->palette().color(QPalette::Button).name(),
+                     expectedDigitSurface.name());
+            QCOMPARE(digitButton->palette().color(QPalette::ButtonText).name(),
+                     expectedDigitForeground.name());
+            QVERIFY(digitStyle.contains(expectedDigitSurface.name()));
+            QVERIFY(digitStyle.contains(expectedDigitForeground.name()));
+            QVERIFY(digitStyle.contains(QStringLiteral("qlineargradient")));
+        }
         const QColor expectedOperatorSurface =
             keypadPrimaryHueFillForTest(
-                expectedPrimary, expectedKeypadButtonSurface, expectedKeypadButtonSurface);
+                expectedPrimary,
+                expectedKeypadButtonSurface,
+                expectedKeypadButtonSurface,
+                UiConfig::KeypadOperatorPrimaryHueChromaPercent);
         const QColor expectedOperatorHoverSurface =
             keypadPrimaryHueFillForTest(
-                expectedPrimary, expectedHeaderSurface, expectedKeypadButtonSurface);
+                expectedPrimary,
+                expectedHeaderSurface,
+                expectedKeypadButtonSurface,
+                UiConfig::KeypadOperatorPrimaryHueChromaPercent);
         const QColor expectedOperatorPressedSurface =
             keypadPrimaryHueFillForTest(
-                expectedPrimary, expectedInputSurface, expectedKeypadButtonSurface);
+                expectedPrimary,
+                expectedInputSurface,
+                expectedKeypadButtonSurface,
+                UiConfig::KeypadOperatorPrimaryHueChromaPercent);
         const QColor expectedOperatorForeground = aaForegroundForBackground(expectedOperatorSurface);
         const QColor expectedOperatorHoverForeground =
             aaForegroundForBackground(expectedOperatorHoverSurface);
@@ -1232,13 +1264,20 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
             QVERIFY(keypadOperatorStyle.contains(expectedOperatorPressedForeground.name()));
             QVERIFY(keypadOperatorStyle.contains(QStringLiteral("qlineargradient")));
         }
+        const QColor expectedEvaluateSurface =
+            keypadPrimaryHueFillForTest(
+                expectedPrimary,
+                expectedKeypadButtonSurface,
+                expectedKeypadButtonSurface,
+                UiConfig::KeypadEvaluatePrimaryHueChromaPercent);
+        const QColor expectedEvaluateForeground =
+            aaForegroundForBackground(expectedEvaluateSurface);
         QCOMPARE(keypadEvaluateButton->palette().color(QPalette::Button).name(),
-                 expectedPrimary.name());
+                 expectedEvaluateSurface.name());
         QCOMPARE(keypadEvaluateButton->palette().color(QPalette::ButtonText).name(),
-                 aaForegroundForBackground(expectedPrimary).name());
-        QVERIFY(keypadEvaluateButton->styleSheet().contains(expectedPrimary.name()));
-        QVERIFY(keypadEvaluateButton->styleSheet().contains(
-            aaForegroundForBackground(expectedPrimary).name()));
+                 expectedEvaluateForeground.name());
+        QVERIFY(keypadEvaluateButton->styleSheet().contains(expectedEvaluateSurface.name()));
+        QVERIFY(keypadEvaluateButton->styleSheet().contains(expectedEvaluateForeground.name()));
         QVERIFY(keypadEvaluateButton->styleSheet().contains(QStringLiteral("qlineargradient")));
         QCOMPARE(bitfield->palette().color(QPalette::Window).name(), expectedEditorSurface.name());
         QCOMPARE(bitfield->palette().color(QPalette::Button).name(), expectedEditorSurface.name());
@@ -1283,6 +1322,8 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
     BitFieldWidget* changedBitfield = changedWindow.findChild<BitFieldWidget*>();
     Keypad* changedKeypad = changedWindow.findChild<Keypad*>();
     QPushButton* changedKeypadButton =
+        changedKeypad ? keypadButtonWithText(changedKeypad, QStringLiteral("%")) : nullptr;
+    QPushButton* changedDigitButton =
         changedKeypad ? keypadButtonWithText(changedKeypad, QStringLiteral("7")) : nullptr;
     QPushButton* changedOperatorButton =
         changedKeypad ? keypadButtonWithText(changedKeypad, QStringLiteral("+")) : nullptr;
@@ -1293,6 +1334,7 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
     QVERIFY(changedBitfield != nullptr);
     QVERIFY(changedKeypad != nullptr);
     QVERIFY(changedKeypadButton != nullptr);
+    QVERIFY(changedDigitButton != nullptr);
     QVERIFY(changedOperatorButton != nullptr);
     QVERIFY(changedEvaluateButton != nullptr);
     QCOMPARE(changedWindow.palette().color(QPalette::Window).name(),
@@ -1309,20 +1351,36 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
              changedShades.at(UiConfig::KeypadButtonShade).name());
     QVERIFY(changedKeypadButton->styleSheet().contains(
         changedShades.at(UiConfig::KeypadButtonShade).name()));
+    const QColor changedDigitSurface = keypadPrimaryHueFillForTest(
+        changedPrimary,
+        changedShades.at(UiConfig::KeypadButtonShade),
+        changedShades.at(UiConfig::KeypadButtonShade),
+        UiConfig::KeypadDigitPrimaryHueChromaPercent);
+    QCOMPARE(changedDigitButton->palette().color(QPalette::Button).name(),
+             changedDigitSurface.name());
+    QCOMPARE(changedDigitButton->palette().color(QPalette::ButtonText).name(),
+             aaForegroundForBackground(changedDigitSurface).name());
+    QVERIFY(changedDigitButton->styleSheet().contains(changedDigitSurface.name()));
     const QColor changedOperatorSurface = keypadPrimaryHueFillForTest(
         changedPrimary,
         changedShades.at(UiConfig::KeypadButtonShade),
-        changedShades.at(UiConfig::KeypadButtonShade));
+        changedShades.at(UiConfig::KeypadButtonShade),
+        UiConfig::KeypadOperatorPrimaryHueChromaPercent);
     QCOMPARE(changedOperatorButton->palette().color(QPalette::Button).name(),
              changedOperatorSurface.name());
     QCOMPARE(changedOperatorButton->palette().color(QPalette::ButtonText).name(),
              aaForegroundForBackground(changedOperatorSurface).name());
     QVERIFY(changedOperatorButton->styleSheet().contains(changedOperatorSurface.name()));
+    const QColor changedEvaluateSurface = keypadPrimaryHueFillForTest(
+        changedPrimary,
+        changedShades.at(UiConfig::KeypadButtonShade),
+        changedShades.at(UiConfig::KeypadButtonShade),
+        UiConfig::KeypadEvaluatePrimaryHueChromaPercent);
     QCOMPARE(changedEvaluateButton->palette().color(QPalette::Button).name(),
-             changedPrimary.name());
+             changedEvaluateSurface.name());
     QCOMPARE(changedEvaluateButton->palette().color(QPalette::ButtonText).name(),
-             aaForegroundForBackground(changedPrimary).name());
-    QVERIFY(changedEvaluateButton->styleSheet().contains(changedPrimary.name()));
+             aaForegroundForBackground(changedEvaluateSurface).name());
+    QVERIFY(changedEvaluateButton->styleSheet().contains(changedEvaluateSurface.name()));
 
     QAction* scientificNarrowAction =
         keypadModeAction(&changedWindow, Settings::KeypadModeScientificNarrow);
@@ -1334,23 +1392,31 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
     QCoreApplication::processEvents();
 
     Keypad* switchedKeypad = changedWindow.findChild<Keypad*>();
+    QPushButton* switchedDigitButton =
+        switchedKeypad ? keypadButtonWithText(switchedKeypad, QStringLiteral("7")) : nullptr;
     QPushButton* switchedOperatorButton =
         switchedKeypad ? keypadButtonWithText(switchedKeypad, QStringLiteral("+")) : nullptr;
     QPushButton* switchedEvaluateButton =
         switchedKeypad ? keypadButtonWithText(switchedKeypad, QStringLiteral("=")) : nullptr;
     QVERIFY(switchedKeypad != nullptr);
+    QVERIFY(switchedDigitButton != nullptr);
     QVERIFY(switchedOperatorButton != nullptr);
     QVERIFY(switchedEvaluateButton != nullptr);
+    QCOMPARE(switchedDigitButton->palette().color(QPalette::Button).name(),
+             changedDigitSurface.name());
+    QCOMPARE(switchedDigitButton->palette().color(QPalette::ButtonText).name(),
+             aaForegroundForBackground(changedDigitSurface).name());
+    QVERIFY(switchedDigitButton->styleSheet().contains(changedDigitSurface.name()));
     QCOMPARE(switchedOperatorButton->palette().color(QPalette::Button).name(),
              changedOperatorSurface.name());
     QCOMPARE(switchedOperatorButton->palette().color(QPalette::ButtonText).name(),
              aaForegroundForBackground(changedOperatorSurface).name());
     QVERIFY(switchedOperatorButton->styleSheet().contains(changedOperatorSurface.name()));
     QCOMPARE(switchedEvaluateButton->palette().color(QPalette::Button).name(),
-             changedPrimary.name());
+             changedEvaluateSurface.name());
     QCOMPARE(switchedEvaluateButton->palette().color(QPalette::ButtonText).name(),
-             aaForegroundForBackground(changedPrimary).name());
-    QVERIFY(switchedEvaluateButton->styleSheet().contains(changedPrimary.name()));
+             aaForegroundForBackground(changedEvaluateSurface).name());
+    QVERIFY(switchedEvaluateButton->styleSheet().contains(changedEvaluateSurface.name()));
 
     QVERIFY(!changedKeypadButton->styleSheet().contains(
         generateOklchShades(QColor(QStringLiteral("#e5eee8")), 6, ThemePolarity::Light)

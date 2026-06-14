@@ -14,10 +14,11 @@ constexpr int ActiveSessionTabIndicatorStrokeWidth = 2;
 constexpr int KeypadButtonMargin = 3;
 constexpr int KeypadButtonPadding = 3;
 constexpr int KeypadButtonCornerRadius = 8;
-// 0 keeps arithmetic operators on the normal button surface; 100 gives them
-// the same primary fill as the evaluate button. Intermediate values blend in
-// OKLCH while using the primary hue.
+// 0 keeps keyed buttons on the normal button surface; 100 gives them the full
+// primary fill. Intermediate values blend in OKLCH while using the primary hue.
+constexpr int KeypadDigitPrimaryHueChromaPercent = 25;
 constexpr int KeypadOperatorPrimaryHueChromaPercent = 50;
+constexpr int KeypadEvaluatePrimaryHueChromaPercent = 90;
 constexpr double KeypadButtonGradientLightnessDelta = 0.035;
 
 // Enables the temporary OKLCH HTML diagnostics report in the system temp
