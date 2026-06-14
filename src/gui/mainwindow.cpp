@@ -704,10 +704,14 @@ void updateColorButtonStyle(QPushButton* button, const QColor& color)
     const QColor textColor = aaForegroundForBackground(color);
 
     button->setText(color.name());
+    button->setMinimumWidth(button->fontMetrics().horizontalAdvance(QStringLiteral("#000000")) + 22);
     button->setStyleSheet(QStringLiteral(R"(
         QPushButton {
             background-color: %1;
             color: %2;
+            border: 1px solid %2;
+            border-radius: 3px;
+            padding: 2px 8px;
         }
     )").arg(color.name(), textColor.name()));
 }
@@ -7850,6 +7854,7 @@ void MainWindow::setResultPrecisionCustom()
 void MainWindow::showCustomThemeDialog()
 {
     QDialog dialog(this);
+    dialog.setObjectName(QStringLiteral("ThemeDialog"));
     dialog.setWindowTitle(tr("Theme"));
 
     QVBoxLayout* layout = new QVBoxLayout(&dialog);
@@ -7862,12 +7867,14 @@ void MainWindow::showCustomThemeDialog()
     QGroupBox* lightThemesGroup = new QGroupBox(tr("Light Themes"), themeWidget);
     QVBoxLayout* lightThemesLayout = new QVBoxLayout(lightThemesGroup);
     QListWidget* lightThemeList = new QListWidget(lightThemesGroup);
+    lightThemeList->setObjectName(QStringLiteral("LightThemeList"));
     lightThemesLayout->addWidget(lightThemeList);
     themeLayout->addWidget(lightThemesGroup);
 
     QGroupBox* darkThemesGroup = new QGroupBox(tr("Dark Themes"), themeWidget);
     QVBoxLayout* darkThemesLayout = new QVBoxLayout(darkThemesGroup);
     QListWidget* darkThemeList = new QListWidget(darkThemesGroup);
+    darkThemeList->setObjectName(QStringLiteral("DarkThemeList"));
     darkThemesLayout->addWidget(darkThemeList);
     themeLayout->addWidget(darkThemesGroup);
     layout->addWidget(themeWidget);
@@ -8014,6 +8021,50 @@ void MainWindow::showCustomThemeDialog()
         const int rowHeight = list->sizeHintForRow(0) > 0 ? list->sizeHintForRow(0) : list->fontMetrics().height() + 6;
         list->setMaximumHeight(rowHeight * visibleRows + list->frameWidth() * 2);
     };
+    const auto restoreThemeListScroll = [&dialog](QListWidget* list, int scrollValue) {
+        if (list == nullptr || list->verticalScrollBar() == nullptr)
+            return;
+
+        list->verticalScrollBar()->setValue(scrollValue);
+        QPointer<QListWidget> guardedList(list);
+        QTimer::singleShot(0, &dialog, [guardedList, scrollValue]() {
+            if (guardedList != nullptr && guardedList->verticalScrollBar() != nullptr)
+                guardedList->verticalScrollBar()->setValue(scrollValue);
+        });
+    };
+    QHash<QListWidget*, int> pressedThemeListScrollValues;
+    const auto rememberThemeListScroll = [&](QListWidget* list) {
+        if (list != nullptr && list->verticalScrollBar() != nullptr)
+            pressedThemeListScrollValues.insert(list, list->verticalScrollBar()->value());
+    };
+    const auto restorePressedThemeListScroll = [&](QListWidget* list) {
+        if (!pressedThemeListScrollValues.contains(list))
+            return;
+
+        restoreThemeListScroll(list, pressedThemeListScrollValues.take(list));
+    };
+    const auto clearThemeListSelection = [&](QListWidget* list) {
+        if (list == nullptr)
+            return;
+
+        const int scrollValue = list->verticalScrollBar() ? list->verticalScrollBar()->value() : 0;
+        const QSignalBlocker blocker(list);
+        list->clearSelection();
+        restoreThemeListScroll(list, scrollValue);
+    };
+    connect(lightThemeList, &QListWidget::itemPressed, &dialog, [&, lightThemeList](QListWidgetItem*) {
+        rememberThemeListScroll(lightThemeList);
+    });
+    connect(darkThemeList, &QListWidget::itemPressed, &dialog, [&, darkThemeList](QListWidgetItem*) {
+        rememberThemeListScroll(darkThemeList);
+    });
+    connect(lightThemeList, &QListWidget::itemClicked, &dialog, [&, lightThemeList](QListWidgetItem*) {
+        restorePressedThemeListScroll(lightThemeList);
+    });
+    connect(darkThemeList, &QListWidget::itemClicked, &dialog, [&, darkThemeList](QListWidgetItem*) {
+        restorePressedThemeListScroll(darkThemeList);
+    });
+
     const auto populateThemeList = [&](QListWidget* list, ColorSchemeFilter filter) {
         const QSignalBlocker blocker(list);
         list->clear();
@@ -8023,8 +8074,6 @@ void MainWindow::showCustomThemeDialog()
                 continue;
             auto item = new QListWidgetItem(schemeName, list);
             item->setData(Qt::UserRole, schemeName);
-            if (schemeName == selectedSchemeName)
-                list->setCurrentItem(item);
         }
         updateThemeListHeight(list);
     };
@@ -8035,6 +8084,7 @@ void MainWindow::showCustomThemeDialog()
             QListWidgetItem* item = list->item(row);
             if (item->data(Qt::UserRole).toString() != selectedSchemeName)
                 continue;
+            const QSignalBlocker blocker(list);
             list->setCurrentItem(item);
             item->setSelected(true);
             list->setFocus(Qt::OtherFocusReason);
@@ -8058,6 +8108,7 @@ void MainWindow::showCustomThemeDialog()
         const ColorScheme::Role role = roleEntry.second;
         QLabel* roleLabel = new QLabel(colorSchemeRoleLabel(role), rolesWidget);
         QPushButton* colorButton = new QPushButton(rolesWidget);
+        colorButton->setObjectName(QStringLiteral("ThemeColorButton_%1").arg(roleEntry.first));
         updateColorButtonStyle(colorButton, colorsByRole.value(role));
         roleButtons.insert(role, colorButton);
         const int row = roleIndex % roleRowsPerColumn;
@@ -8084,14 +8135,11 @@ void MainWindow::showCustomThemeDialog()
 
     applyPreview();
     populateThemeLists();
-    QTimer::singleShot(0, &dialog, populateThemeLists);
 
-    const auto handleThemeSelection = [&](QListWidget* otherList, QListWidgetItem* current) {
+    const auto handleThemeSelection = [&](QListWidget* currentList, QListWidget* otherList, QListWidgetItem* current) {
         if (!current)
             return;
-        const QSignalBlocker blocker(otherList);
-        otherList->clearSelection();
-        otherList->setCurrentItem(nullptr);
+        clearThemeListSelection(otherList);
         const QString schemeName = current->data(Qt::UserRole).toString();
         const ColorScheme scheme = ColorScheme::loadByName(schemeName);
         if (!scheme.isValid())
@@ -8103,12 +8151,13 @@ void MainWindow::showCustomThemeDialog()
         if (okButton != nullptr)
             okButton->setEnabled(true);
         applyPreview();
+        restorePressedThemeListScroll(currentList);
     };
     connect(lightThemeList, &QListWidget::currentItemChanged, &dialog, [&](QListWidgetItem* current) {
-        handleThemeSelection(darkThemeList, current);
+        handleThemeSelection(lightThemeList, darkThemeList, current);
     });
     connect(darkThemeList, &QListWidget::currentItemChanged, &dialog, [&](QListWidgetItem* current) {
-        handleThemeSelection(lightThemeList, current);
+        handleThemeSelection(darkThemeList, lightThemeList, current);
     });
 
     QDialogButtonBox* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);

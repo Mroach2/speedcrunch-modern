@@ -477,6 +477,7 @@ math/rational.cpp
 math/quantity.cpp
 core/units.cpp
 core/unitdisplayformat.cpp
+resources/speedcrunch.qrc
 tests/testdisplayui.cpp
 )
 

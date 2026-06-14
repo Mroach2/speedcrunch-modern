@@ -47,4 +47,6 @@ HEADERS += ../core/userdefinitions.h \
            ../gui/userunitlistwidget.h \
            ../gui/versioncheck.h
 
+RESOURCES += ../resources/speedcrunch.qrc
+
 TARGET = testdisplayui

@@ -22,6 +22,7 @@
 #include <QApplication>
 #include <QComboBox>
 #include <QCursor>
+#include <QDialog>
 #include <QDockWidget>
 #include <QDir>
 #include <QFile>
@@ -35,6 +36,7 @@
 #include <QJsonObject>
 #include <QLayout>
 #include <QMainWindow>
+#include <QListWidget>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMouseEvent>
@@ -44,6 +46,7 @@
 #include <QPointer>
 #include <QPushButton>
 #include <QScrollBar>
+#include <QScopeGuard>
 #include <QSplitter>
 #include <QSplitterHandle>
 #include <QStatusBar>
@@ -53,6 +56,7 @@
 #include <QTest>
 #include <QTextBrowser>
 #include <QToolButton>
+#include <QTimer>
 #include <QTreeWidget>
 
 namespace {
@@ -373,6 +377,7 @@ class TestDisplayUi : public QObject {
 
 private slots:
     void color_scheme_roles_exclude_obsolete_scrollbar();
+    void theme_dialog_preserves_list_scroll_and_fills_role_color_buttons();
     void result_display_insets_viewport_horizontally();
     void result_display_scrollbar_hover_keeps_viewport_width_stable();
     void result_display_context_menu_hides_main_menu_when_menu_bar_visible();
@@ -419,6 +424,129 @@ void TestDisplayUi::color_scheme_roles_exclude_obsolete_scrollbar()
     QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("scrollbar")));
     QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("cursor")));
     QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("matched")));
+}
+
+void TestDisplayUi::theme_dialog_preserves_list_scroll_and_fills_role_color_buttons()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = Settings::instance();
+
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(QJsonObject{
+        {QStringLiteral("background"), QStringLiteral("#123456")}
+    }).toJson(QJsonDocument::Compact));
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+
+    MainWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QString failure;
+    int lightScrollBefore = -1;
+    int lightScrollAfter = -1;
+    int darkScrollBefore = -1;
+    int darkScrollAfter = -1;
+    QColor backgroundButtonColor;
+    QColor backgroundButtonPixel;
+
+    const auto recordFailure = [&failure](const QString& message) {
+        if (failure.isEmpty())
+            failure = message;
+    };
+
+    QTimer::singleShot(0, &window, [&]() {
+        QDialog* dialog = window.findChild<QDialog*>(QStringLiteral("ThemeDialog"));
+        if (dialog == nullptr) {
+            recordFailure(QStringLiteral("Theme dialog was not found."));
+            return;
+        }
+
+        const auto finishDialog = qScopeGuard([dialog]() {
+            dialog->reject();
+        });
+        Q_UNUSED(finishDialog);
+
+        QListWidget* lightList = dialog->findChild<QListWidget*>(QStringLiteral("LightThemeList"));
+        QListWidget* darkList = dialog->findChild<QListWidget*>(QStringLiteral("DarkThemeList"));
+        QPushButton* backgroundButton = dialog->findChild<QPushButton*>(
+            QStringLiteral("ThemeColorButton_background"));
+
+        if (lightList == nullptr || darkList == nullptr || backgroundButton == nullptr) {
+            recordFailure(QStringLiteral("Theme dialog controls were not found."));
+            return;
+        }
+        const auto constrainListHeight = [](QListWidget* list) {
+            const int rowHeight = list->sizeHintForRow(0) > 0
+                ? list->sizeHintForRow(0)
+                : list->fontMetrics().height() + 6;
+            list->setFixedHeight(rowHeight * 3 + list->frameWidth() * 2);
+        };
+        constrainListHeight(lightList);
+        constrainListHeight(darkList);
+        if (dialog->layout() != nullptr)
+            dialog->layout()->activate();
+        QCoreApplication::processEvents();
+
+        if (lightList->verticalScrollBar()->maximum() <= 0
+                || darkList->verticalScrollBar()->maximum() <= 0) {
+            recordFailure(QStringLiteral("Theme lists are not scrollable: light count %1 max %2, dark count %3 max %4.")
+                              .arg(lightList->count())
+                              .arg(lightList->verticalScrollBar()->maximum())
+                              .arg(darkList->count())
+                              .arg(darkList->verticalScrollBar()->maximum()));
+            return;
+        }
+
+        const auto clickVisibleTheme = [&recordFailure](QListWidget* list) {
+            const QModelIndex index = list->indexAt(QPoint(list->viewport()->width() / 2,
+                                                           list->viewport()->height() / 2));
+            if (!index.isValid()) {
+                recordFailure(QStringLiteral("No visible theme item was found for clicking."));
+                return false;
+            }
+
+            QTest::mouseClick(list->viewport(),
+                              Qt::LeftButton,
+                              Qt::NoModifier,
+                              list->visualRect(index).center());
+            QCoreApplication::processEvents();
+            QCoreApplication::processEvents();
+            return true;
+        };
+
+        lightList->verticalScrollBar()->setValue(qMin(2, lightList->verticalScrollBar()->maximum()));
+        QCoreApplication::processEvents();
+        lightScrollBefore = lightList->verticalScrollBar()->value();
+        if (!clickVisibleTheme(lightList))
+            return;
+        lightScrollAfter = lightList->verticalScrollBar()->value();
+
+        darkList->verticalScrollBar()->setValue(qMin(2, darkList->verticalScrollBar()->maximum()));
+        QCoreApplication::processEvents();
+        darkScrollBefore = darkList->verticalScrollBar()->value();
+        if (!clickVisibleTheme(darkList))
+            return;
+        darkScrollAfter = darkList->verticalScrollBar()->value();
+
+        backgroundButtonColor = QColor(backgroundButton->text());
+        const QImage buttonImage = backgroundButton->grab().toImage();
+        backgroundButtonPixel = buttonImage.pixelColor(buttonImage.width() - 6,
+                                                       buttonImage.height() / 2);
+    });
+
+    QVERIFY(QMetaObject::invokeMethod(&window, "showCustomThemeDialog", Qt::DirectConnection));
+    QVERIFY2(failure.isEmpty(), qPrintable(failure));
+    QCOMPARE(lightScrollAfter, lightScrollBefore);
+    QCOMPARE(darkScrollAfter, darkScrollBefore);
+    QVERIFY(colorsAreClose(backgroundButtonPixel, backgroundButtonColor, 3));
 }
 
 void TestDisplayUi::result_display_insets_viewport_horizontally()
