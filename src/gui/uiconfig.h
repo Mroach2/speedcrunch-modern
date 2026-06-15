@@ -9,7 +9,7 @@ namespace UiConfig {
 
 constexpr int SessionPaneSplitterWidth = 1;
 constexpr int DockSplitterStrokeWidth = 2;
-constexpr int OutlineStrokeWidth = 1;
+constexpr int OutlineStrokeWidth = 2;
 constexpr int ActiveSessionTabIndicatorStrokeWidth = 2;
 constexpr int KeypadButtonMargin = 3;
 constexpr int KeypadButtonPadding = 3;
@@ -65,7 +65,8 @@ constexpr int ConstantsDockMinimumWidth = 120;
 constexpr int ConstantsDockDefaultWidth = 320;
 constexpr int DockTextInputShade = Shade300;
 constexpr int DockTextInputOutlineShade = Shade400;
-constexpr int DockHoveredItemShade = Shade400;
+constexpr int DockHoveredItemShade = Shade500;
+constexpr int DockHoveredItemCornerRadius = 6;
 constexpr int DockUnfocusedSelectedItemShade = Shade500;
 constexpr int KeypadBackgroundShade = Shade200;
 constexpr int KeypadButtonShade = Shade300;

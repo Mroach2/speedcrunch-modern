@@ -701,11 +701,15 @@ void TestDisplayUi::dock_list_selected_row_keeps_primary_fill_while_hovered()
     table.setProperty("dockListInactiveSelectionForeground", inactiveForeground);
     table.setStyleSheet(QStringLiteral(
         "QAbstractItemView { background-color: %1; color: %2; border: 0; }"
-        "QAbstractItemView::item:hover { background-color: %3; color: %4; }")
+        "QAbstractItemView::item:hover {"
+        " background-color: %3; color: %4;"
+        " border-radius: %5px;"
+        "}")
                             .arg(background.name(),
                                  foreground.name(),
                                  hoverBackground.name(),
-                                 hoverForeground.name()));
+                                 hoverForeground.name())
+                            .arg(UiConfig::DockHoveredItemCornerRadius));
 
     auto* item = new QTreeWidgetItem(&table, QStringList{
         QStringLiteral("x"),
@@ -719,13 +723,17 @@ void TestDisplayUi::dock_list_selected_row_keeps_primary_fill_while_hovered()
     const QRect itemRect = table.visualRect(index);
     QVERIFY(itemRect.isValid());
     const QPoint sampledFill(itemRect.right() - 4, itemRect.center().y());
+    const QPoint sampledRoundedCorner(itemRect.left() + 1, itemRect.top() + 1);
 
     QTest::mouseMove(table.viewport(), itemRect.center());
     QTRY_COMPARE(table.property("dockListHoveredRow").toInt(), 0);
-    QTRY_VERIFY(table.viewport()->grab().toImage().pixelColor(sampledFill).name()
-                != background.name());
-    QVERIFY(table.viewport()->grab().toImage().pixelColor(sampledFill).name()
-            != primaryBackground.name());
+    QImage hoveredImage = table.viewport()->grab().toImage();
+    QVERIFY2(colorsAreClose(hoveredImage.pixelColor(sampledFill), hoverBackground, 24),
+             qPrintable(QStringLiteral("hover sample is %1, expected %2")
+                            .arg(hoveredImage.pixelColor(sampledFill).name(),
+                                 hoverBackground.name())));
+    QVERIFY(!colorsAreClose(hoveredImage.pixelColor(sampledRoundedCorner), hoverBackground, 8));
+    QVERIFY(hoveredImage.pixelColor(sampledFill).name() != primaryBackground.name());
 
     table.setCurrentItem(item);
     item->setSelected(true);
@@ -1700,6 +1708,11 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     const QColor controlText = foregrounds.at(4);
     const QColor contentFill = shades.at(2);
     const QColor contentText = foregrounds.at(2);
+    const QColor hoveredItemFill = shades.at(UiConfig::DockHoveredItemShade);
+    const QColor hoveredItemText = foregrounds.at(UiConfig::DockHoveredItemShade);
+    const int comboPopupShade = qMin(UiConfig::DockBackgroundShade + 1, UiConfig::Shade600);
+    const QColor comboPopupFill = shades.at(comboPopupShade);
+    const QColor comboPopupText = foregrounds.at(comboPopupShade);
     const QColor chromeFill = shades.at(UiConfig::WindowBackgroundShade);
     const QColor chromeText = foregrounds.at(UiConfig::WindowBackgroundShade);
     const QColor resultFill = shades.at(UiConfig::ResultDisplayShade);
@@ -1836,15 +1849,20 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QVERIFY(comboBox->styleSheet().contains(contentText.name()));
     QVERIFY(comboBox->styleSheet().contains(QStringLiteral("padding: 4px 32px 4px 8px")));
     QVERIFY(comboBox->styleSheet().contains(QStringLiteral("width: 28px")));
-    QVERIFY(comboBox->view()->styleSheet().contains(titleFill.name()));
-    QVERIFY(comboBox->view()->styleSheet().contains(titleText.name()));
+    QVERIFY(comboBox->styleSheet().contains(comboPopupFill.name()));
+    QVERIFY(comboBox->styleSheet().contains(comboPopupText.name()));
+    QCOMPARE(comboBox->view()->palette().color(QPalette::Base).name(), comboPopupFill.name());
+    QCOMPARE(comboBox->view()->palette().color(QPalette::Text).name(), comboPopupText.name());
+    QVERIFY(comboBox->view()->styleSheet().contains(comboPopupFill.name()));
+    QVERIFY(comboBox->view()->styleSheet().contains(comboPopupText.name()));
     QVERIFY(comboBox->styleSheet().contains(QStringLiteral("QComboBox QAbstractItemView")));
     QVERIFY(comboBox->styleSheet().contains(QStringLiteral("border: 0; outline: 0")));
     QVERIFY(comboBox->view()->styleSheet().contains(QStringLiteral("border: 0; border-radius: 8px; outline: 0")));
     QVERIFY(comboBox->view()->styleSheet().contains(QStringLiteral("QAbstractItemView::item")));
-    QVERIFY(comboBox->view()->styleSheet().contains(QStringLiteral("border: 0;")));
-    QVERIFY(comboBox->view()->verticalScrollBar()->styleSheet().contains(contentFill.name()));
-    QVERIFY(comboBox->view()->verticalScrollBar()->styleSheet().contains(titleFill.name()));
+    QVERIFY(comboBox->view()->styleSheet().contains(QStringLiteral("border: 0; border-radius: 6px;")));
+    QVERIFY(comboBox->view()->styleSheet().contains(hoveredItemFill.name()));
+    QVERIFY(comboBox->view()->styleSheet().contains(hoveredItemText.name()));
+    QVERIFY(comboBox->view()->verticalScrollBar()->styleSheet().contains(comboPopupFill.name()));
     QVERIFY(comboBox->view()->verticalScrollBar()->styleSheet().contains(controlFill.name()));
     QVERIFY(comboBox->view()->verticalScrollBar()->styleSheet().contains(hoverFill.name()));
     QVERIFY(table->header()->styleSheet().contains(contentFill.name()));
@@ -1992,15 +2010,16 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QCOMPARE(table->palette().color(QPalette::Base).name(), contentFill.name());
     QCOMPARE(table->palette().color(QPalette::Text).name(), contentText.name());
     QCOMPARE(table->property("dockListHoverBackground").value<QColor>().name(),
-             titleFill.name());
+             hoveredItemFill.name());
     QCOMPARE(table->property("dockListHoverForeground").value<QColor>().name(),
-             titleText.name());
+             hoveredItemText.name());
     QCOMPARE(table->viewport()->palette().color(QPalette::Base).name(), contentFill.name());
     QVERIFY(table->styleSheet().contains(QStringLiteral("padding: 6px 8px")));
     QVERIFY(table->styleSheet().contains(QStringLiteral("border: 0")));
     QCOMPARE(table->frameShape(), QFrame::NoFrame);
-    QVERIFY(table->styleSheet().contains(titleFill.name()));
-    QVERIFY(table->styleSheet().contains(titleText.name()));
+    QVERIFY(table->styleSheet().contains(hoveredItemFill.name()));
+    QVERIFY(table->styleSheet().contains(hoveredItemText.name()));
+    QVERIFY(table->styleSheet().contains(QStringLiteral("border-radius: 6px")));
     QCOMPARE(table->property("dockListInactiveSelectionBackground").value<QColor>().name(),
              controlFill.name());
     QCOMPARE(table->property("dockListInactiveSelectionForeground").value<QColor>().name(),

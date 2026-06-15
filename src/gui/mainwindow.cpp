@@ -777,14 +777,14 @@ struct GeneratedThemeSurfaces
     // 200: result display and active session surface. This is the background
     // role from the selected SpeedCrunch theme.
     ThemeSurfaceColors result;
-    // 300: expression editor, dock list/table content, combo popup fill,
-    // bitfield, and normal keypad buttons. The editor no longer has an
-    // independent theme role; it is derived from the result-display background
-    // by moving one OKLCH shade step away from the base surface.
+    // 300: expression editor, dock list/table content, bitfield, and normal
+    // keypad buttons. The editor no longer has an independent theme role; it
+    // is derived from the result-display background by moving one OKLCH shade
+    // step away from the base surface.
     ThemeSurfaceColors editorAndLists;
-    // 400: dock title bars, dock/list/table headers, list/table hovered
-    // items, active dock tabs, selected session tabs, popup/input borders,
-    // and hovered keypad or bitfield buttons.
+    // 400: dock title bars, dock/list/table headers, combo popup fill,
+    // list/table hovered items, active dock tabs, selected session tabs,
+    // popup/input borders, and hovered keypad or bitfield buttons.
     ThemeSurfaceColors headersAndBorders;
     // 500: input controls, search boxes, combo boxes, hovered session tabs,
     // and pressed keypad or bitfield buttons.
@@ -1303,6 +1303,10 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
         themeSurfaceForShadeIndex(surfaces, UiConfig::DockHeaderShade);
     const ThemeSurfaceColors dockHoveredItem =
         themeSurfaceForShadeIndex(surfaces, UiConfig::DockHoveredItemShade);
+    const int dockComboPopupShade =
+        qMin(UiConfig::DockBackgroundShade + 1, UiConfig::Shade600);
+    const ThemeSurfaceColors dockComboPopup =
+        themeSurfaceForShadeIndex(surfaces, dockComboPopupShade);
     const ThemeSurfaceColors dockTextInput =
         themeSurfaceForShadeIndex(surfaces, UiConfig::DockTextInputShade);
     const ThemeSurfaceColors dockTextInputOutline =
@@ -1337,6 +1341,8 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
                                  surfaces.primary.foreground);
     const ThemeScrollBarColors listScrollBars =
         scrollBarColorsForSurfaceIndex(surfaces, UiConfig::DockBackgroundShade);
+    const ThemeScrollBarColors comboPopupScrollBars =
+        scrollBarColorsForSurfaceIndex(surfaces, dockComboPopupShade);
 
     if (BookDock* bookDock = qobject_cast<BookDock*>(dock)) {
         bookDock->setContentSurfaceColors(dockBackground.background,
@@ -1371,15 +1377,15 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
                                     .arg(dockTextInput.background.name(),
                                          dockTextInput.foreground.name(),
                                          dockTextInputOutline.background.name(),
-                                         dockBackground.background.name(),
-                                         dockBackground.foreground.name())
+                                         dockComboPopup.background.name(),
+                                         dockComboPopup.foreground.name())
                                     .arg(DockComboBoxChevron::IndicatorWidth + 4)
                                     .arg(DockComboBoxChevron::IndicatorWidth));
         DockComboBoxChevron::apply(comboBox,
                                    dockTextInput.foreground,
                                    dockTextInputOutline.background);
         if (QAbstractItemView* popupView = comboBox->view()) {
-            QPalette popupPalette = paletteForThemeSurface(popupView->palette(), dockBackground);
+            QPalette popupPalette = paletteForThemeSurface(popupView->palette(), dockComboPopup);
             popupPalette.setColor(QPalette::Highlight, dockHoveredItem.background);
             popupPalette.setColor(QPalette::HighlightedText, dockHoveredItem.foreground);
             popupView->setStyleSheet(QStringLiteral(
@@ -1389,22 +1395,24 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
                 " padding: %3px %4px;"
                 "}"
                 "QAbstractItemView::item {"
-                " border: 0;"
+                " border: 0; border-radius: %8px;"
                 "}"
                 "QAbstractItemView::item:hover {"
                 " background-color: %5; color: %6;"
+                " border-radius: %8px;"
                 "}")
-                                         .arg(dockBackground.background.name(),
-                                              dockBackground.foreground.name())
+                                         .arg(dockComboPopup.background.name(),
+                                              dockComboPopup.foreground.name())
                                          .arg(kDockListVerticalPadding)
                                          .arg(kDockListHorizontalPadding)
                                          .arg(dockHoveredItem.background.name(),
                                               dockHoveredItem.foreground.name())
                                          .arg(UiConfig::CompletionPopupCornerRadius)
-                                     + scrollBarStyleSheet(listScrollBars));
+                                         .arg(UiConfig::DockHoveredItemCornerRadius)
+                                     + scrollBarStyleSheet(comboPopupScrollBars));
             popupView->setPalette(popupPalette);
             popupView->viewport()->setPalette(popupPalette);
-            applyScrollBarColorsToScrollArea(popupView, listScrollBars);
+            applyScrollBarColorsToScrollArea(popupView, comboPopupScrollBars);
         }
     }
 
@@ -1454,13 +1462,17 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
             " border: 0;"
             " padding: %5px %6px;"
             "}"
-            "QAbstractItemView::item:hover { background-color: %3; color: %4; }")
+            "QAbstractItemView::item:hover {"
+            " background-color: %3; color: %4;"
+            " border-radius: %7px;"
+            "}")
                                 .arg(dockBackground.background.name(),
                                      dockBackground.foreground.name(),
                                      dockHoveredItem.background.name(),
                                      dockHoveredItem.foreground.name())
                                 .arg(kDockListVerticalPadding)
                                 .arg(kDockListHorizontalPadding)
+                                .arg(UiConfig::DockHoveredItemCornerRadius)
                             + scrollBarStyleSheet(listScrollBars));
         view->setPalette(palette);
         view->viewport()->setPalette(palette);

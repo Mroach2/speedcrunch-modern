@@ -56,27 +56,27 @@ static QString subdomainToDisplay(ConstantSubdomain subdomain)
     case ConstantSubdomain::Physicochemical:
         return Constants::tr("Physicochemical");
     case ConstantSubdomain::AtomicNuclearGeneral:
-        return Constants::tr("Atomic & Nuclear  — General");
+        return Constants::tr("Atomic & Nuclear — General");
     case ConstantSubdomain::AtomicNuclearElectroweak:
-        return Constants::tr("Atomic & Nuclear  — Electroweak");
+        return Constants::tr("Atomic & Nuclear — Electroweak");
     case ConstantSubdomain::AtomicNuclearElectron:
-        return Constants::tr("Atomic & Nuclear  — Electron");
+        return Constants::tr("Atomic & Nuclear — Electron");
     case ConstantSubdomain::AtomicNuclearMuon:
-        return Constants::tr("Atomic & Nuclear  — Muon");
+        return Constants::tr("Atomic & Nuclear — Muon");
     case ConstantSubdomain::AtomicNuclearTau:
-        return Constants::tr("Atomic & Nuclear  — Tau");
+        return Constants::tr("Atomic & Nuclear — Tau");
     case ConstantSubdomain::AtomicNuclearProton:
-        return Constants::tr("Atomic & Nuclear  — Proton");
+        return Constants::tr("Atomic & Nuclear — Proton");
     case ConstantSubdomain::AtomicNuclearNeutron:
-        return Constants::tr("Atomic & Nuclear  — Neutron");
+        return Constants::tr("Atomic & Nuclear — Neutron");
     case ConstantSubdomain::AtomicNuclearDeuteron:
-        return Constants::tr("Atomic & Nuclear  — Deuteron");
+        return Constants::tr("Atomic & Nuclear — Deuteron");
     case ConstantSubdomain::AtomicNuclearTriton:
-        return Constants::tr("Atomic & Nuclear  — Triton");
+        return Constants::tr("Atomic & Nuclear — Triton");
     case ConstantSubdomain::AtomicNuclearHelion:
-        return Constants::tr("Atomic & Nuclear  — Helion");
+        return Constants::tr("Atomic & Nuclear — Helion");
     case ConstantSubdomain::AtomicNuclearAlphaParticle:
-        return Constants::tr("Atomic & Nuclear  — Alpha particle");
+        return Constants::tr("Atomic & Nuclear — Alpha particle");
     case ConstantSubdomain::AtomicNuclearAtomicUnits:
         return Constants::tr("Atomic & Nuclear — Atomic units");
     case ConstantSubdomain::AtomicNuclearEnergyConversionRelationships:

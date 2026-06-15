@@ -3,7 +3,10 @@
 
 #include "gui/dockliststyle.h"
 
+#include "gui/uiconfig.h"
+
 #include <QAbstractItemView>
+#include <QAbstractItemModel>
 #include <QEvent>
 #include <QFrame>
 #include <QHoverEvent>
@@ -66,6 +69,41 @@ QColor selectedTextColorForView(const QAbstractItemView* view)
     return view->palette().color(QPalette::HighlightedText);
 }
 
+QRect rowRectForIndex(const QAbstractItemView* view, const QModelIndex& index)
+{
+    QRect rowRect = view->visualRect(index);
+    const QAbstractItemModel* model = view->model();
+    if (model == nullptr)
+        return rowRect;
+
+    const int columnCount = model->columnCount(index.parent());
+    for (int column = 0; column < columnCount; ++column) {
+        const QRect cellRect = view->visualRect(index.sibling(index.row(), column));
+        if (cellRect.isValid())
+            rowRect = rowRect.united(cellRect);
+    }
+    return rowRect;
+}
+
+void fillRoundedRow(QPainter* painter,
+                    const QRect& clipRect,
+                    const QRect& rowRect,
+                    const QColor& color)
+{
+    if (rowRect.isEmpty())
+        return;
+
+    painter->save();
+    painter->setClipRect(clipRect);
+    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(color);
+    painter->drawRoundedRect(QRectF(rowRect).adjusted(1.0, 1.0, -1.0, -1.0),
+                             UiConfig::DockHoveredItemCornerRadius,
+                             UiConfig::DockHoveredItemCornerRadius);
+    painter->restore();
+}
+
 class DockListItemDelegate : public QStyledItemDelegate {
 public:
     explicit DockListItemDelegate(QAbstractItemView* view)
@@ -91,9 +129,10 @@ public:
             // The selected fill is painted above; suppress style hover/focus backgrounds.
             opt.state &= ~(QStyle::State_Selected | QStyle::State_MouseOver | QStyle::State_HasFocus);
         } else if (index.row() == m_view->property("dockListHoveredRow").toInt()) {
-            painter->save();
-            painter->fillRect(opt.rect, hoverColorForView(m_view));
-            painter->restore();
+            fillRoundedRow(painter,
+                           opt.rect,
+                           rowRectForIndex(m_view, index),
+                           hoverColorForView(m_view));
             opt.palette.setColor(QPalette::Text, hoverTextColorForView(m_view));
             opt.palette.setColor(QPalette::WindowText, hoverTextColorForView(m_view));
             opt.backgroundBrush = Qt::NoBrush;
