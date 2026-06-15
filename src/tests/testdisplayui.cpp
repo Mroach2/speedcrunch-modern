@@ -1881,7 +1881,7 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QCOMPARE(themedSearchBox->cursorColor().name(), primary.name());
     const QString focusRingBorderTemplate = QStringLiteral("border: %1px solid %2");
     QVERIFY(searchBox->styleSheet().contains(focusRingBorderTemplate
-                                                 .arg(UiConfig::OutlineStrokeWidth)
+                                                 .arg(UiConfig::DockTextInputUnfocusedOutlineStrokeWidth)
                                                  .arg(textInputOutlineFill.name())));
     QVERIFY(searchBox->styleSheet().contains(QStringLiteral("QLineEdit:focus")));
     QVERIFY(searchBox->styleSheet().contains(focusRingBorderTemplate

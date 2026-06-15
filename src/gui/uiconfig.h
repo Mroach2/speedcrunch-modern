@@ -65,6 +65,7 @@ constexpr int ConstantsDockMinimumWidth = 120;
 constexpr int ConstantsDockDefaultWidth = 320;
 constexpr int DockTextInputShade = Shade300;
 constexpr int DockTextInputOutlineShade = Shade400;
+constexpr int DockTextInputUnfocusedOutlineStrokeWidth = 1;
 constexpr int DockHoveredItemShade = Shade500;
 constexpr int DockHoveredItemCornerRadius = 6;
 constexpr int DockUnfocusedSelectedItemShade = Shade500;

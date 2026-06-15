@@ -1430,12 +1430,13 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
             " border: %5px solid %3; border-radius: 8px; padding: 4px 8px;"
             "}"
             "QLineEdit:focus {"
-            " border: %5px solid %4;"
+            " border: %6px solid %4;"
             "}")
                                      .arg(dockTextInput.background.name(),
                                           dockTextInput.foreground.name(),
                                           dockTextInputOutline.background.name(),
                                           surfaces.primary.background.name())
+                                     .arg(UiConfig::DockTextInputUnfocusedOutlineStrokeWidth)
                                      .arg(UiConfig::OutlineStrokeWidth));
         applyDockSearchClearButtonIcon(searchBox, surfaces);
     }
