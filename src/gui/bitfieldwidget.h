@@ -82,7 +82,13 @@ public slots:
                         const QColor& pressedBackground = QColor(),
                         const QColor& pressedForeground = QColor(),
                         const QColor& selectedBackground = QColor(),
-                        const QColor& selectedForeground = QColor());
+                        const QColor& selectedForeground = QColor(),
+                        const QColor& buttonBackground = QColor(),
+                        const QColor& buttonForeground = QColor(),
+                        const QColor& buttonHoverBackground = QColor(),
+                        const QColor& buttonHoverForeground = QColor(),
+                        const QColor& buttonPressedBackground = QColor(),
+                        const QColor& buttonPressedForeground = QColor());
     void refreshTheme();
 
 private slots:
@@ -118,6 +124,12 @@ private:
     QColor m_themePressedForeground;
     QColor m_themeSelectedBackground;
     QColor m_themeSelectedForeground;
+    QColor m_themeButtonBackground;
+    QColor m_themeButtonForeground;
+    QColor m_themeButtonHoverBackground;
+    QColor m_themeButtonHoverForeground;
+    QColor m_themeButtonPressedBackground;
+    QColor m_themeButtonPressedForeground;
 };
 
 #endif // BITFIELDWIDGET_H

@@ -75,6 +75,9 @@ constexpr int KeypadButtonHoverShade = Shade400;
 constexpr int KeypadButtonPressedShade = Shade500;
 constexpr int StatusBarBackgroundShade = Shade100;
 constexpr int BitfieldBitHoverShade = Shade400;
+constexpr int BitfieldButtonFillShade = Shade400;
+constexpr int BitfieldButtonHoverFillShade = Shade500;
+constexpr int BitfieldButtonPressedFillShade = Shade600;
 
 } // namespace UiConfig
 

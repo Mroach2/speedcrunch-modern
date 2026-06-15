@@ -264,6 +264,24 @@ void BitFieldWidget::refreshTheme()
     const QColor pressedForeground = m_themePressedForeground.isValid()
         ? m_themePressedForeground
         : palette.color(QPalette::ButtonText);
+    const QColor buttonBackground = m_themeButtonBackground.isValid()
+        ? m_themeButtonBackground
+        : background;
+    const QColor buttonForeground = m_themeButtonForeground.isValid()
+        ? m_themeButtonForeground
+        : foreground;
+    const QColor buttonHoverBackground = m_themeButtonHoverBackground.isValid()
+        ? m_themeButtonHoverBackground
+        : hoverBackground;
+    const QColor buttonHoverForeground = m_themeButtonHoverForeground.isValid()
+        ? m_themeButtonHoverForeground
+        : hoverForeground;
+    const QColor buttonPressedBackground = m_themeButtonPressedBackground.isValid()
+        ? m_themeButtonPressedBackground
+        : pressedBackground;
+    const QColor buttonPressedForeground = m_themeButtonPressedForeground.isValid()
+        ? m_themeButtonPressedForeground
+        : pressedForeground;
     const QColor borderColor = foreground;
     const QString cssBorderColor = QString("rgba(%1, %2, %3, %4)")
         .arg(borderColor.red())
@@ -288,12 +306,12 @@ void BitFieldWidget::refreshTheme()
                       .arg(background.name(),
                            foreground.name(),
                            cssBorderColor));
-    const QString buttonStyle = bitFieldButtonStyleSheet(background,
-                                                        foreground,
-                                                        hoverBackground,
-                                                        hoverForeground,
-                                                        pressedBackground,
-                                                        pressedForeground);
+    const QString buttonStyle = bitFieldButtonStyleSheet(buttonBackground,
+                                                        buttonForeground,
+                                                        buttonHoverBackground,
+                                                        buttonHoverForeground,
+                                                        buttonPressedBackground,
+                                                        buttonPressedForeground);
     for (QPushButton* button : {m_resetButton,
                                 m_invertButton,
                                 m_shiftLeftButton,
@@ -301,10 +319,10 @@ void BitFieldWidget::refreshTheme()
         if (button == nullptr)
             continue;
         QPalette buttonPalette = button->palette();
-        buttonPalette.setColor(QPalette::Button, background);
-        buttonPalette.setColor(QPalette::ButtonText, foreground);
-        buttonPalette.setColor(QPalette::Highlight, hoverBackground);
-        buttonPalette.setColor(QPalette::HighlightedText, hoverForeground);
+        buttonPalette.setColor(QPalette::Button, buttonBackground);
+        buttonPalette.setColor(QPalette::ButtonText, buttonForeground);
+        buttonPalette.setColor(QPalette::Highlight, buttonHoverBackground);
+        buttonPalette.setColor(QPalette::HighlightedText, buttonHoverForeground);
         button->setPalette(buttonPalette);
         button->setStyleSheet(buttonStyle);
     }
@@ -330,7 +348,13 @@ void BitFieldWidget::setThemeColors(const QColor& background,
                                     const QColor& pressedBackground,
                                     const QColor& pressedForeground,
                                     const QColor& selectedBackground,
-                                    const QColor& selectedForeground)
+                                    const QColor& selectedForeground,
+                                    const QColor& buttonBackground,
+                                    const QColor& buttonForeground,
+                                    const QColor& buttonHoverBackground,
+                                    const QColor& buttonHoverForeground,
+                                    const QColor& buttonPressedBackground,
+                                    const QColor& buttonPressedForeground)
 {
     m_themeBackground = background;
     m_themeForeground = foreground;
@@ -340,6 +364,12 @@ void BitFieldWidget::setThemeColors(const QColor& background,
     m_themePressedForeground = pressedForeground;
     m_themeSelectedBackground = selectedBackground;
     m_themeSelectedForeground = selectedForeground;
+    m_themeButtonBackground = buttonBackground;
+    m_themeButtonForeground = buttonForeground;
+    m_themeButtonHoverBackground = buttonHoverBackground;
+    m_themeButtonHoverForeground = buttonHoverForeground;
+    m_themeButtonPressedBackground = buttonPressedBackground;
+    m_themeButtonPressedForeground = buttonPressedForeground;
     refreshTheme();
 }
 

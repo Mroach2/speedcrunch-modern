@@ -777,19 +777,21 @@ struct GeneratedThemeSurfaces
     // 200: result display and active session surface. This is the background
     // role from the selected SpeedCrunch theme.
     ThemeSurfaceColors result;
-    // 300: expression editor, dock list/table content, bitfield, and normal
-    // keypad buttons. The editor no longer has an independent theme role; it
-    // is derived from the result-display background by moving one OKLCH shade
-    // step away from the base surface.
+    // 300: expression editor, dock list/table content, bitfield bit cells, and
+    // normal keypad buttons. The editor no longer has an independent theme
+    // role; it is derived from the result-display background by moving one
+    // OKLCH shade step away from the base surface.
     ThemeSurfaceColors editorAndLists;
     // 400: dock title bars, dock/list/table headers, combo popup fill,
     // list/table hovered items, active dock tabs, selected session tabs,
-    // popup/input borders, and hovered keypad or bitfield buttons.
+    // popup/input borders, normal bitfield buttons, hovered keypad buttons,
+    // and hovered bitfield bit cells.
     ThemeSurfaceColors headersAndBorders;
     // 500: input controls, search boxes, combo boxes, hovered session tabs,
-    // and pressed keypad or bitfield buttons.
+    // hovered bitfield buttons, and pressed keypad buttons.
     ThemeSurfaceColors inputs;
-    // 600: inactive tabs and session tab close-button hover fills.
+    // 600: inactive tabs, session tab close-button hover fills, and pressed
+    // bitfield buttons.
     ThemeSurfaceColors hoverAndInactiveTabs;
 };
 
@@ -1330,7 +1332,13 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
     applySurfaceToStructuralDockWidget(dockContent, dockSurface);
     for (QWidget* child : dockContent->findChildren<QWidget*>())
         applySurfaceToStructuralDockWidget(child, dockSurface);
-    if (bitField != nullptr)
+    if (bitField != nullptr) {
+        const ThemeSurfaceColors bitfieldButton =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldButtonFillShade);
+        const ThemeSurfaceColors bitfieldButtonHover =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldButtonHoverFillShade);
+        const ThemeSurfaceColors bitfieldButtonPressed =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldButtonPressedFillShade);
         bitField->setThemeColors(dockBackground.background,
                                  dockBackground.foreground,
                                  dockHeader.background,
@@ -1338,7 +1346,14 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
                                  dockUnfocusedSelection.background,
                                  dockUnfocusedSelection.foreground,
                                  surfaces.primary.background,
-                                 surfaces.primary.foreground);
+                                 surfaces.primary.foreground,
+                                 bitfieldButton.background,
+                                 bitfieldButton.foreground,
+                                 bitfieldButtonHover.background,
+                                 bitfieldButtonHover.foreground,
+                                 bitfieldButtonPressed.background,
+                                 bitfieldButtonPressed.foreground);
+    }
     const ThemeScrollBarColors listScrollBars =
         scrollBarColorsForSurfaceIndex(surfaces, UiConfig::DockBackgroundShade);
     const ThemeScrollBarColors comboPopupScrollBars =
@@ -5637,6 +5652,12 @@ void MainWindow::applyThemeSurfacePalette()
             themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldBitHoverShade);
         const ThemeSurfaceColors bitfieldPressed =
             themeSurfaceForShadeIndex(surfaces, UiConfig::DockUnfocusedSelectedItemShade);
+        const ThemeSurfaceColors bitfieldButton =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldButtonFillShade);
+        const ThemeSurfaceColors bitfieldButtonHover =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldButtonHoverFillShade);
+        const ThemeSurfaceColors bitfieldButtonPressed =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldButtonPressedFillShade);
         const QPalette bitFieldPalette =
             paletteForThemeSurface(m_widgets.bitField->palette(), bitfieldBackground);
         m_widgets.bitField->setPalette(bitFieldPalette);
@@ -5648,7 +5669,13 @@ void MainWindow::applyThemeSurfacePalette()
                                            bitfieldPressed.background,
                                            bitfieldPressed.foreground,
                                            surfaces.primary.background,
-                                           surfaces.primary.foreground);
+                                           surfaces.primary.foreground,
+                                           bitfieldButton.background,
+                                           bitfieldButton.foreground,
+                                           bitfieldButtonHover.background,
+                                           bitfieldButtonHover.foreground,
+                                           bitfieldButtonPressed.background,
+                                           bitfieldButtonPressed.foreground);
     }
     QTimer::singleShot(0, this, [this, applyDockTabBarSurfaces]() {
         const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);

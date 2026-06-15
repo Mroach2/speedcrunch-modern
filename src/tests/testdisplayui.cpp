@@ -408,6 +408,7 @@ private slots:
     void result_display_scrollbar_hover_keeps_viewport_width_stable();
     void result_display_context_menu_hides_main_menu_when_menu_bar_visible();
     void bitfield_selected_bit_keeps_primary_fill_while_hovered();
+    void bitfield_buttons_use_configured_generated_shades();
     void dock_list_selected_row_keeps_primary_fill_while_hovered();
     void custom_keypad_action_stays_checked_after_dialog_accepts();
     void keypad_power_button_uses_exponent_label_but_inserts_caret();
@@ -674,6 +675,54 @@ void TestDisplayUi::bitfield_selected_bit_keeps_primary_fill_while_hovered()
     bit.setState(true);
     QTRY_COMPARE(bit.grab().toImage().pixelColor(sampledFill).name(),
                  primaryBackground.name());
+}
+
+void TestDisplayUi::bitfield_buttons_use_configured_generated_shades()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#e5eee8\"}");
+    settings->bitfieldVisible = true;
+    settings->keypadVisible = false;
+
+    const QVector<QColor> shades =
+        generateOklchShades(QColor(QStringLiteral("#e5eee8")), 6, ThemePolarity::Light);
+    const QVector<QColor> foregrounds = aaForegroundsForBackgrounds(shades);
+    const QColor buttonFill = shades.at(UiConfig::BitfieldButtonFillShade);
+    const QColor buttonForeground = foregrounds.at(UiConfig::BitfieldButtonFillShade);
+    const QColor buttonHoverFill = shades.at(UiConfig::BitfieldButtonHoverFillShade);
+    const QColor buttonHoverForeground =
+        foregrounds.at(UiConfig::BitfieldButtonHoverFillShade);
+    const QColor buttonPressedFill = shades.at(UiConfig::BitfieldButtonPressedFillShade);
+    const QColor buttonPressedForeground =
+        foregrounds.at(UiConfig::BitfieldButtonPressedFillShade);
+
+    MainWindow window;
+    window.show();
+    QCoreApplication::processEvents();
+
+    BitFieldWidget* bitfield = window.findChild<BitFieldWidget*>();
+    QVERIFY(bitfield != nullptr);
+    const QList<QPushButton*> buttons = bitfield->findChildren<QPushButton*>();
+    QCOMPARE(buttons.size(), 4);
+
+    for (QPushButton* button : buttons) {
+        const QString style = button->styleSheet();
+        QCOMPARE(button->palette().color(QPalette::Button).name(), buttonFill.name());
+        QCOMPARE(button->palette().color(QPalette::ButtonText).name(),
+                 buttonForeground.name());
+        QVERIFY(style.contains(QStringLiteral("background-color: %1")
+                                   .arg(buttonFill.name())));
+        QVERIFY(style.contains(QStringLiteral("color: %1").arg(buttonForeground.name())));
+        QVERIFY(style.contains(QStringLiteral("background-color: %1")
+                                   .arg(buttonHoverFill.name())));
+        QVERIFY(style.contains(QStringLiteral("color: %1").arg(buttonHoverForeground.name())));
+        QVERIFY(style.contains(QStringLiteral("background-color: %1")
+                                   .arg(buttonPressedFill.name())));
+        QVERIFY(style.contains(QStringLiteral("color: %1")
+                                   .arg(buttonPressedForeground.name())));
+    }
 }
 
 void TestDisplayUi::dock_list_selected_row_keeps_primary_fill_while_hovered()
@@ -1132,6 +1181,12 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         const QColor expectedHeaderSurface = shades.at(UiConfig::DockHeaderShade);
         const QColor expectedInputSurface = shades.at(UiConfig::DockUnfocusedSelectedItemShade);
         const QColor expectedKeypadButtonSurface = shades.at(UiConfig::KeypadButtonShade);
+        const QColor expectedBitfieldButtonSurface =
+            shades.at(UiConfig::BitfieldButtonFillShade);
+        const QColor expectedBitfieldButtonHoverSurface =
+            shades.at(UiConfig::BitfieldButtonHoverFillShade);
+        const QColor expectedBitfieldButtonPressedSurface =
+            shades.at(UiConfig::BitfieldButtonPressedFillShade);
         const QColor expectedStatusBarSurface = shades.at(UiConfig::StatusBarBackgroundShade);
         const QColor expectedPrimary = generatePrimaryFromBackground(base);
         const QColor expectedWindowForeground = foregrounds.at(UiConfig::WindowBackgroundShade);
@@ -1141,6 +1196,12 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         const QColor expectedInputForeground =
             foregrounds.at(UiConfig::DockUnfocusedSelectedItemShade);
         const QColor expectedKeypadButtonForeground = foregrounds.at(UiConfig::KeypadButtonShade);
+        const QColor expectedBitfieldButtonForeground =
+            foregrounds.at(UiConfig::BitfieldButtonFillShade);
+        const QColor expectedBitfieldButtonHoverForeground =
+            foregrounds.at(UiConfig::BitfieldButtonHoverFillShade);
+        const QColor expectedBitfieldButtonPressedForeground =
+            foregrounds.at(UiConfig::BitfieldButtonPressedFillShade);
 
         MainWindow window;
         window.show();
@@ -1359,12 +1420,18 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         QVERIFY(bitfield->styleSheet().contains(expectedEditorSurface.name()));
         QPushButton* bitfieldButton = bitfield->findChild<QPushButton*>();
         QVERIFY(bitfieldButton != nullptr);
-        QVERIFY(bitfieldButton->styleSheet().contains(expectedEditorSurface.name()));
-        QVERIFY(bitfieldButton->styleSheet().contains(expectedEditorForeground.name()));
-        QVERIFY(bitfieldButton->styleSheet().contains(expectedHeaderSurface.name()));
-        QVERIFY(bitfieldButton->styleSheet().contains(expectedHeaderForeground.name()));
-        QVERIFY(bitfieldButton->styleSheet().contains(expectedInputSurface.name()));
-        QVERIFY(bitfieldButton->styleSheet().contains(expectedInputForeground.name()));
+        QCOMPARE(bitfieldButton->palette().color(QPalette::Button).name(),
+                 expectedBitfieldButtonSurface.name());
+        QCOMPARE(bitfieldButton->palette().color(QPalette::ButtonText).name(),
+                 expectedBitfieldButtonForeground.name());
+        QVERIFY(bitfieldButton->styleSheet().contains(expectedBitfieldButtonSurface.name()));
+        QVERIFY(bitfieldButton->styleSheet().contains(expectedBitfieldButtonForeground.name()));
+        QVERIFY(bitfieldButton->styleSheet().contains(expectedBitfieldButtonHoverSurface.name()));
+        QVERIFY(bitfieldButton->styleSheet().contains(
+            expectedBitfieldButtonHoverForeground.name()));
+        QVERIFY(bitfieldButton->styleSheet().contains(expectedBitfieldButtonPressedSurface.name()));
+        QVERIFY(bitfieldButton->styleSheet().contains(
+            expectedBitfieldButtonPressedForeground.name()));
         QCOMPARE(statusBar->palette().color(QPalette::Window).name(),
                  expectedStatusBarSurface.name());
     };
