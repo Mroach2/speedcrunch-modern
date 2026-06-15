@@ -48,6 +48,8 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
 
 private:
+    void scheduleEmptyHeaderStretch();
+    void updateEmptyHeaderStretch();
     void updateDomainLayout();
     void updateDomainLabelAlignment();
 
@@ -70,6 +72,7 @@ private:
     QHBoxLayout* m_domainRow2Layout;
     bool m_isCompactDomainLayout = false;
     bool m_domainLayoutInitialized = false;
+    bool m_emptyHeaderStretchQueued = false;
 };
 
 #endif

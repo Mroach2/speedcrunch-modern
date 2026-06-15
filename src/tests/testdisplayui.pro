@@ -6,6 +6,7 @@ SOURCES += ../core/userdefinitions.cpp \
            ../gui/bookdock.cpp \
            ../gui/constantswidget.cpp \
            ../gui/customkeypaddialog.cpp \
+           ../gui/dockcomboboxchevron.cpp \
            ../gui/dockliststyle.cpp \
            ../gui/editor.cpp \
            ../gui/functionswidget.cpp \
@@ -30,6 +31,7 @@ HEADERS += ../core/userdefinitions.h \
            ../gui/bookdock.h \
            ../gui/constantswidget.h \
            ../gui/customkeypaddialog.h \
+           ../gui/dockcomboboxchevron.h \
            ../gui/dockliststyle.h \
            ../gui/editor.h \
            ../gui/functionswidget.h \

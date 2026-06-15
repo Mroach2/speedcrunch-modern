@@ -87,6 +87,7 @@ HEADERS += core/book.h \
            gui/constantswidget.h \
            gui/customkeypaddialog.h \
            gui/displayformatutils.h \
+           gui/dockcomboboxchevron.h \
            gui/dockliststyle.h \
            gui/resultdisplay.h \
            gui/editor.h \
@@ -157,6 +158,7 @@ SOURCES += main.cpp \
            gui/constantswidget.cpp \
            gui/customkeypaddialog.cpp \
            gui/displayformatutils.cpp \
+           gui/dockcomboboxchevron.cpp \
            gui/dockliststyle.cpp \
            gui/resultdisplay.cpp \
            gui/editor.cpp \

@@ -302,14 +302,19 @@ void ConstantsWidget::filter()
         }
     }
 
+    const bool hasMatches = m_list->topLevelItemCount() > 0;
+    m_list->header()->setStretchLastSection(false);
+    m_list->header()->setSectionResizeMode(2, QHeaderView::Interactive);
     m_list->resizeColumnToContents(0);
     m_list->resizeColumnToContents(1);
     m_list->resizeColumnToContents(2);
 
-    if (m_list->topLevelItemCount() > 0) {
+    if (hasMatches) {
         m_noMatchLabel->hide();
         m_list->sortItems(0, Qt::AscendingOrder);
     } else {
+        updateEmptyHeaderStretch();
+        scheduleEmptyHeaderStretch();
         DockListStyle::showCenteredNoMatchLabel(m_list, m_noMatchLabel);
     }
 
@@ -409,6 +414,40 @@ void ConstantsWidget::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
     updateDomainLayout();
+    updateEmptyHeaderStretch();
+    scheduleEmptyHeaderStretch();
+}
+
+void ConstantsWidget::scheduleEmptyHeaderStretch()
+{
+    if (m_emptyHeaderStretchQueued
+        || m_list == nullptr
+        || m_list->topLevelItemCount() > 0) {
+        return;
+    }
+
+    m_emptyHeaderStretchQueued = true;
+    QTimer::singleShot(0, this, [this]() {
+        m_emptyHeaderStretchQueued = false;
+        updateEmptyHeaderStretch();
+    });
+}
+
+void ConstantsWidget::updateEmptyHeaderStretch()
+{
+    if (m_list == nullptr || m_list->topLevelItemCount() > 0)
+        return;
+
+    QHeaderView* header = m_list->header();
+    if (header == nullptr || header->count() < 3)
+        return;
+
+    const int fixedWidth = header->sectionSize(0) + header->sectionSize(1);
+    const int targetWidth = qMax(header->width(), m_list->viewport()->width());
+    if (targetWidth <= fixedWidth)
+        return;
+
+    header->resizeSection(2, qMax(header->sectionSizeHint(2), targetWidth - fixedWidth));
 }
 
 void ConstantsWidget::updateDomainLayout()

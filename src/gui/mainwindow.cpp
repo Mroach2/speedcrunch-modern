@@ -24,6 +24,7 @@
 #include "gui/genericdock.h"
 #include "gui/constantswidget.h"
 #include "gui/customkeypaddialog.h"
+#include "gui/dockcomboboxchevron.h"
 #include "gui/editorutils.h"
 #include "gui/functionswidget.h"
 #include "gui/historywidget.h"
@@ -1354,7 +1355,14 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
         comboBox->setStyleSheet(QStringLiteral(
             "QComboBox {"
             " background-color: %1; color: %2;"
-            " border: 1px solid %3; border-radius: 8px; padding: 4px 8px;"
+            " border: 1px solid transparent; border-radius: 8px; padding: 4px %6px 4px 8px;"
+            "}"
+            "QComboBox::drop-down {"
+            " subcontrol-origin: border; subcontrol-position: top right;"
+            " width: %7px; border: none; background: transparent;"
+            "}"
+            "QComboBox::down-arrow {"
+            " image: none; width: 0px; height: 0px;"
             "}"
             "QComboBox QAbstractItemView {"
             " background-color: %4; color: %5;"
@@ -1364,7 +1372,12 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
                                          dockTextInput.foreground.name(),
                                          dockHeader.background.name(),
                                          dockBackground.background.name(),
-                                         dockBackground.foreground.name()));
+                                         dockBackground.foreground.name())
+                                    .arg(DockComboBoxChevron::IndicatorWidth + 4)
+                                    .arg(DockComboBoxChevron::IndicatorWidth));
+        DockComboBoxChevron::apply(comboBox,
+                                   dockTextInput.foreground,
+                                   dockTextInputOutline.background);
         if (QAbstractItemView* popupView = comboBox->view()) {
             QPalette popupPalette = paletteForThemeSurface(popupView->palette(), dockBackground);
             popupPalette.setColor(QPalette::Highlight, dockHoveredItem.background);

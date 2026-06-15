@@ -30,6 +30,7 @@ gui/bookdock.h
 gui/constantswidget.h
 gui/customkeypaddialog.h
 gui/displayformatutils.h
+gui/dockcomboboxchevron.h
 gui/dockliststyle.h
 gui/editor.h
 gui/functiontooltiputils.h
@@ -101,6 +102,7 @@ gui/bookdock.cpp
 gui/constantswidget.cpp
 gui/customkeypaddialog.cpp
 gui/displayformatutils.cpp
+gui/dockcomboboxchevron.cpp
 gui/dockliststyle.cpp
 gui/editor.cpp
 gui/functiontooltiputils.cpp
@@ -439,6 +441,7 @@ gui/functiontooltiputils.cpp
 gui/functionswidget.cpp
 gui/historywidget.cpp
 gui/keypad.cpp
+gui/dockcomboboxchevron.cpp
 gui/mainwindow.cpp
 gui/manualwindow.cpp
 gui/numberformatdialog.cpp

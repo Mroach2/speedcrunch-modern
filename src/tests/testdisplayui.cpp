@@ -328,6 +328,9 @@ struct MainWindowStateGuard {
     QString oldColorScheme = settings->colorScheme;
     QString oldCustomColorSchemeJson = settings->customColorSchemeJson;
     QString oldSessionLayoutJson = settings->sessionLayoutJson;
+    QString oldConstantsDockDomain = settings->constantsDockDomain;
+    QString oldConstantsDockSubdomain = settings->constantsDockSubdomain;
+    QString oldConstantsDockSearchText = settings->constantsDockSearchText;
     QByteArray oldWindowState = settings->windowState;
     QByteArray oldWindowGeometry = settings->windowGeometry;
     bool oldConstantsDockVisible = settings->constantsDockVisible;
@@ -339,7 +342,9 @@ struct MainWindowStateGuard {
     bool oldUserFunctionsDockVisible = settings->userFunctionsDockVisible;
     bool oldUserUnitsDockVisible = settings->userUnitsDockVisible;
     bool oldBitfieldVisible = settings->bitfieldVisible;
+    Settings::KeypadMode oldKeypadMode = settings->keypadMode;
     bool oldWindowPositionSave = settings->windowPositionSave;
+    bool oldStatusBarVisible = settings->statusBarVisible;
     bool oldHasNumberFormatStyleSetting = settings->hasNumberFormatStyleSetting;
     QByteArray oldSkipUpdateCheck = qgetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
     bool hadSkipUpdateCheck = qEnvironmentVariableIsSet("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
@@ -355,6 +360,9 @@ struct MainWindowStateGuard {
         settings->colorScheme = oldColorScheme;
         settings->customColorSchemeJson = oldCustomColorSchemeJson;
         settings->sessionLayoutJson = oldSessionLayoutJson;
+        settings->constantsDockDomain = oldConstantsDockDomain;
+        settings->constantsDockSubdomain = oldConstantsDockSubdomain;
+        settings->constantsDockSearchText = oldConstantsDockSearchText;
         settings->windowState = oldWindowState;
         settings->windowGeometry = oldWindowGeometry;
         settings->constantsDockVisible = oldConstantsDockVisible;
@@ -366,7 +374,9 @@ struct MainWindowStateGuard {
         settings->userFunctionsDockVisible = oldUserFunctionsDockVisible;
         settings->userUnitsDockVisible = oldUserUnitsDockVisible;
         settings->bitfieldVisible = oldBitfieldVisible;
+        settings->keypadMode = oldKeypadMode;
         settings->windowPositionSave = oldWindowPositionSave;
+        settings->statusBarVisible = oldStatusBarVisible;
         settings->hasNumberFormatStyleSetting = oldHasNumberFormatStyleSetting;
         if (hadSkipUpdateCheck)
             qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", oldSkipUpdateCheck);
@@ -409,6 +419,7 @@ private slots:
     void main_window_uses_generated_theme_surface_for_chrome_and_editor();
     void restored_session_layout_reapplies_generated_theme_surfaces();
     void dock_surfaces_use_successive_generated_shades();
+    void restored_constants_dock_empty_filter_fills_header();
     void dock_scroll_corner_uses_scrollbar_track_fill();
     void dock_separator_style_uses_primary_while_hovered_or_dragged();
     void constants_dock_uses_configured_narrow_minimum_width();
@@ -2000,9 +2011,19 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QVERIFY(!noMatchLabel->isHidden());
     QCOMPARE(noMatchLabel->palette().color(QPalette::WindowText).name(), contentText.name());
     QVERIFY(noMatchLabel->styleSheet().contains(contentText.name()));
+    QCOMPARE(table->topLevelItemCount(), 0);
+    QVERIFY2(table->header()->length() >= table->header()->width() - 1,
+             qPrintable(QStringLiteral("length=%1 header=%2 sections=%3,%4,%5")
+                            .arg(table->header()->length())
+                            .arg(table->header()->width())
+                            .arg(table->header()->sectionSize(0))
+                            .arg(table->header()->sectionSize(1))
+                            .arg(table->header()->sectionSize(2))));
     searchBox->clear();
     QTest::qWait(650);
     QCoreApplication::processEvents();
+    QVERIFY(table->topLevelItemCount() > 0);
+    QVERIFY(!table->header()->stretchLastSection());
 
     QLabel* domainLabel = nullptr;
     for (QLabel* label : functionsDock->findChildren<QLabel*>()) {
@@ -2136,6 +2157,54 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QCOMPARE(table->viewport()->palette().color(QPalette::Base).name(),
              changedContentFill.name());
     QVERIFY(table->styleSheet().contains(changedContentFill.name()));
+}
+
+void TestDisplayUi::restored_constants_dock_empty_filter_fills_header()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+
+    settings->sessionLayoutJson.clear();
+    settings->windowState.clear();
+    settings->windowGeometry.clear();
+    settings->constantsDockVisible = true;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->keypadMode = Settings::KeypadModeDisabled;
+    settings->keypadVisible = false;
+    settings->statusBarVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+    settings->constantsDockDomain.clear();
+    settings->constantsDockSubdomain.clear();
+    settings->constantsDockSearchText = QStringLiteral("no-such-constant-filter-value");
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QDockWidget* constantsDock =
+        window.findChild<QDockWidget*>(QStringLiteral("ConstantsDock"));
+    QVERIFY(constantsDock != nullptr);
+    QLineEdit* searchBox = constantsDock->findChild<QLineEdit*>();
+    QTreeWidget* table = constantsDock->findChild<QTreeWidget*>();
+    QVERIFY(searchBox != nullptr);
+    QVERIFY(table != nullptr);
+    QVERIFY(table->header() != nullptr);
+    QCOMPARE(searchBox->text(), QStringLiteral("no-such-constant-filter-value"));
+    QCOMPARE(table->topLevelItemCount(), 0);
+    QTRY_VERIFY2(table->header()->length() >= table->header()->width() - 1,
+                 qPrintable(QStringLiteral("length=%1 header=%2 sections=%3,%4,%5")
+                                .arg(table->header()->length())
+                                .arg(table->header()->width())
+                                .arg(table->header()->sectionSize(0))
+                                .arg(table->header()->sectionSize(1))
+                                .arg(table->header()->sectionSize(2))));
 }
 
 void TestDisplayUi::dock_scroll_corner_uses_scrollbar_track_fill()
