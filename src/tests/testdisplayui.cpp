@@ -400,6 +400,7 @@ private slots:
     void bitfield_selected_bit_keeps_primary_fill_while_hovered();
     void dock_list_selected_row_keeps_primary_fill_while_hovered();
     void custom_keypad_action_stays_checked_after_dialog_accepts();
+    void keypad_power_button_uses_exponent_label_but_inserts_caret();
     void main_window_applies_primary_role_to_active_editor_and_dock_selection();
     void current_result_tooltip_stays_hidden_after_escape_and_arrow_caret_move();
     void current_result_tooltip_stays_hidden_after_escape_and_mouse_caret_move();
@@ -785,6 +786,54 @@ void TestDisplayUi::custom_keypad_action_stays_checked_after_dialog_accepts()
     QCOMPARE(settings->keypadMode, Settings::KeypadModeCustom);
     QVERIFY(customAction->isChecked());
     QVERIFY(!basicAction->isChecked());
+}
+
+void TestDisplayUi::keypad_power_button_uses_exponent_label_but_inserts_caret()
+{
+    const QString powerLabel = QString::fromUtf8("xʸ");
+
+    for (const Keypad::LayoutMode layoutMode : {
+             Keypad::LayoutModeScientificWide,
+             Keypad::LayoutModeScientificNarrow
+         }) {
+        const QList<Keypad::CustomButtonDescription> presetButtons =
+            Keypad::presetCustomButtons(layoutMode, QLatin1Char('.'));
+        bool foundPowerButton = false;
+        for (const auto& button : presetButtons) {
+            QVERIFY(button.label != QStringLiteral("^"));
+            if (button.label != powerLabel)
+                continue;
+
+            foundPowerButton = true;
+            QCOMPARE(button.action, int(Settings::CustomKeypadActionInsertText));
+            QCOMPARE(button.text, QStringLiteral("^"));
+        }
+        QVERIFY(foundPowerButton);
+    }
+
+    MainWindowStateGuard guard;
+    Settings* settings = Settings::instance();
+    settings->keypadMode = Settings::KeypadModeScientificWide;
+    settings->keypadVisible = true;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    Keypad* keypad = window.findChild<Keypad*>();
+    QVERIFY(keypad != nullptr);
+    QPushButton* powerButton = keypadButtonWithText(keypad, powerLabel);
+    QVERIFY(powerButton != nullptr);
+    QCOMPARE(keypadButtonWithText(keypad, QStringLiteral("^")), nullptr);
+
+    Editor* editor = window.findChild<Editor*>();
+    QVERIFY(editor != nullptr);
+    editor->setText(QStringLiteral("2"));
+    editor->setCursorPosition(editor->text().size());
+
+    QTest::mouseClick(powerButton, Qt::LeftButton);
+    QTRY_COMPARE(editor->text(), QStringLiteral("2^"));
 }
 
 void TestDisplayUi::main_window_applies_primary_role_to_active_editor_and_dock_selection()
