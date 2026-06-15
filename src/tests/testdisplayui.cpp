@@ -1834,9 +1834,15 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QCOMPARE(comboBox->palette().color(QPalette::ButtonText).name(), contentText.name());
     QVERIFY(comboBox->styleSheet().contains(contentFill.name()));
     QVERIFY(comboBox->styleSheet().contains(contentText.name()));
-    QVERIFY(comboBox->styleSheet().contains(titleFill.name()));
+    QVERIFY(comboBox->styleSheet().contains(QStringLiteral("padding: 4px 32px 4px 8px")));
+    QVERIFY(comboBox->styleSheet().contains(QStringLiteral("width: 28px")));
     QVERIFY(comboBox->view()->styleSheet().contains(titleFill.name()));
     QVERIFY(comboBox->view()->styleSheet().contains(titleText.name()));
+    QVERIFY(comboBox->styleSheet().contains(QStringLiteral("QComboBox QAbstractItemView")));
+    QVERIFY(comboBox->styleSheet().contains(QStringLiteral("border: 0; outline: 0")));
+    QVERIFY(comboBox->view()->styleSheet().contains(QStringLiteral("border: 0; border-radius: 8px; outline: 0")));
+    QVERIFY(comboBox->view()->styleSheet().contains(QStringLiteral("QAbstractItemView::item")));
+    QVERIFY(comboBox->view()->styleSheet().contains(QStringLiteral("border: 0;")));
     QVERIFY(comboBox->view()->verticalScrollBar()->styleSheet().contains(contentFill.name()));
     QVERIFY(comboBox->view()->verticalScrollBar()->styleSheet().contains(titleFill.name()));
     QVERIFY(comboBox->view()->verticalScrollBar()->styleSheet().contains(controlFill.name()));
@@ -1911,6 +1917,21 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
                        QList<int> { UiConfig::ConstantsDockDefaultWidth },
                        Qt::Horizontal);
     QCoreApplication::processEvents();
+    const auto visibleComboTextPixelCount = [&]() {
+        const QImage image = comboBox->grab().toImage();
+        int textPixels = 0;
+        for (int y = 4; y < image.height() - 4; ++y) {
+            for (int x = 8; x < image.width() - 40; ++x) {
+                if (colorsAreClose(image.pixelColor(x, y), contentText, 42))
+                    ++textPixels;
+            }
+        }
+        return textPixels;
+    };
+    QTRY_VERIFY2(visibleComboTextPixelCount() > 8,
+                 qPrintable(QStringLiteral("visible text pixels=%1 width=%2")
+                                .arg(visibleComboTextPixelCount())
+                                .arg(comboBox->width())));
     searchBox->clear();
     QVERIFY2(searchBox->focusPolicy() != Qt::NoFocus,
              qPrintable(QStringLiteral("focusPolicy=%1").arg(int(searchBox->focusPolicy()))));
@@ -1954,6 +1975,16 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QTest::keyClicks(searchBox, "mol");
     QCOMPARE(searchBox->text(), QStringLiteral("mol"));
     searchBox->clear();
+    comboBox->showPopup();
+    QTRY_VERIFY(comboBox->view()->isVisible());
+    QCOMPARE(comboBox->view()->frameShape(), QFrame::NoFrame);
+    QWidget* comboPopupChrome = comboBox->view()->window();
+    if (comboPopupChrome == comboBox->window())
+        comboPopupChrome = comboBox->view();
+    QVERIFY(comboPopupChrome != nullptr);
+    QTRY_VERIFY(!comboPopupChrome->mask().isEmpty());
+    comboBox->hidePopup();
+    QTRY_VERIFY(!comboBox->view()->isVisible());
     QCOMPARE(searchLabel->palette().color(QPalette::Window).name(), contentFill.name());
     QCOMPARE(searchLabel->palette().color(QPalette::WindowText).name(), contentText.name());
     QVERIFY(searchLabel->styleSheet().contains(contentFill.name()));

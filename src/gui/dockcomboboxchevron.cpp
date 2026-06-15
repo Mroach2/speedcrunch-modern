@@ -3,11 +3,15 @@
 
 #include "gui/dockcomboboxchevron.h"
 
+#include "gui/uiconfig.h"
+
 #include <QAbstractAnimation>
 #include <QAbstractItemView>
+#include <QBitmap>
 #include <QComboBox>
 #include <QEasingCurve>
 #include <QEvent>
+#include <QFrame>
 #include <QPainter>
 #include <QPainterPath>
 #include <QVariantAnimation>
@@ -16,6 +20,34 @@ namespace {
 
 constexpr int kChevronAnimationMs = 150;
 constexpr qreal kChevronOpacity = 0.76;
+
+void removeFrame(QWidget* widget)
+{
+    QFrame* frame = qobject_cast<QFrame*>(widget);
+    if (frame == nullptr)
+        return;
+
+    frame->setFrameShape(QFrame::NoFrame);
+    frame->setLineWidth(0);
+    frame->setMidLineWidth(0);
+}
+
+void applyRoundedMask(QWidget* widget)
+{
+    if (widget == nullptr || widget->size().isEmpty())
+        return;
+
+    QBitmap mask(widget->size());
+    mask.fill(Qt::color0);
+    QPainter painter(&mask);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(Qt::color1);
+    painter.drawRoundedRect(QRectF(mask.rect()).adjusted(0, 0, -1, -1),
+                            UiConfig::CompletionPopupCornerRadius,
+                            UiConfig::CompletionPopupCornerRadius);
+    widget->setMask(mask);
+}
 
 } // namespace
 
@@ -26,6 +58,9 @@ DockComboBoxChevron::DockComboBoxChevron(QComboBox* comboBox)
 {
     setObjectName(QStringLiteral("speedcrunchDockComboBoxChevron"));
     setAttribute(Qt::WA_TransparentForMouseEvents);
+    setAttribute(Qt::WA_NoSystemBackground);
+    setAttribute(Qt::WA_TranslucentBackground);
+    setAutoFillBackground(false);
     setFocusPolicy(Qt::NoFocus);
 
     m_animation->setDuration(kChevronAnimationMs);
@@ -103,10 +138,14 @@ bool DockComboBoxChevron::eventFilter(QObject* watched, QEvent* event)
             break;
         }
     } else if (watched == m_view || watched == m_popupWindow) {
-        if (event->type() == QEvent::Show)
+        if (event->type() == QEvent::Show) {
+            stylePopupChrome();
             setPopupOpen(true);
-        else if (event->type() == QEvent::Hide)
+        } else if (event->type() == QEvent::Hide) {
             setPopupOpen(false);
+        } else if (event->type() == QEvent::Resize) {
+            stylePopupChrome();
+        }
     }
 
     return QWidget::eventFilter(watched, event);
@@ -114,7 +153,7 @@ bool DockComboBoxChevron::eventFilter(QObject* watched, QEvent* event)
 
 void DockComboBoxChevron::paintEvent(QPaintEvent*)
 {
-    if (!m_chevronColor.isValid() && !m_outlineColor.isValid())
+    if (!m_chevronColor.isValid())
         return;
 
     const qreal dpr = devicePixelRatioF();
@@ -125,28 +164,18 @@ void DockComboBoxChevron::paintEvent(QPaintEvent*)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
 
-    if (m_outlineColor.isValid()) {
-        const QRectF outlineRect(0.5, 0.5, qMax(0, width() - 1), qMax(0, height() - 1));
-        QPen outlinePen(m_outlineColor, 1.0);
-        painter.setPen(outlinePen);
-        painter.setBrush(Qt::NoBrush);
-        painter.drawRoundedRect(outlineRect, 8.0, 8.0);
-    }
+    painter.translate(QPointF(aligned(width() / 2.0), aligned(height() / 2.0)));
+    painter.rotate(m_rotation);
 
-    if (m_chevronColor.isValid()) {
-        painter.translate(QPointF(aligned(width() - IndicatorWidth / 2.0), aligned(height() / 2.0)));
-        painter.rotate(m_rotation);
+    QPainterPath path;
+    path.moveTo(QPointF(-5.0, -3.0));
+    path.lineTo(QPointF(0.0, 3.0));
+    path.lineTo(QPointF(5.0, -3.0));
 
-        QPainterPath path;
-        path.moveTo(QPointF(-5.0, -3.0));
-        path.lineTo(QPointF(0.0, 3.0));
-        path.lineTo(QPointF(5.0, -3.0));
-
-        QPen pen(m_chevronColor, 1.65, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-        painter.setPen(pen);
-        painter.setBrush(Qt::NoBrush);
-        painter.drawPath(path);
-    }
+    QPen pen(m_chevronColor, 1.65, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    painter.setPen(pen);
+    painter.setBrush(Qt::NoBrush);
+    painter.drawPath(path);
 }
 
 void DockComboBoxChevron::installPopupEventFilters()
@@ -173,6 +202,15 @@ void DockComboBoxChevron::installPopupEventFilters()
         if (m_popupWindow != nullptr)
             m_popupWindow->installEventFilter(this);
     }
+
+    stylePopupChrome();
+}
+
+QWidget* DockComboBoxChevron::popupChromeWidget() const
+{
+    if (m_popupWindow != nullptr)
+        return m_popupWindow;
+    return m_view;
 }
 
 void DockComboBoxChevron::reposition()
@@ -180,11 +218,45 @@ void DockComboBoxChevron::reposition()
     if (m_comboBox == nullptr)
         return;
 
-    setGeometry(0, 0, m_comboBox->width(), m_comboBox->height());
+    setGeometry(qMax(0, m_comboBox->width() - IndicatorWidth),
+                0,
+                IndicatorWidth,
+                m_comboBox->height());
+}
+
+void DockComboBoxChevron::stylePopupChrome()
+{
+    if (m_view == nullptr)
+        return;
+
+    removeFrame(m_view);
+    m_view->setAutoFillBackground(false);
+    m_view->viewport()->setAutoFillBackground(false);
+    m_view->viewport()->setAttribute(Qt::WA_StyledBackground, true);
+
+    QWidget* popupChrome = popupChromeWidget();
+    if (popupChrome == nullptr)
+        return;
+
+    removeFrame(popupChrome);
+    popupChrome->setAutoFillBackground(false);
+    popupChrome->setAttribute(Qt::WA_StyledBackground, true);
+    if (popupChrome != m_view) {
+        popupChrome->setObjectName(QStringLiteral("speedcrunchDockComboBoxPopupChrome"));
+        popupChrome->setStyleSheet(QStringLiteral(
+            "QWidget#speedcrunchDockComboBoxPopupChrome,"
+            "QFrame#speedcrunchDockComboBoxPopupChrome {"
+            " background: transparent; border: 0;"
+            "}"));
+    }
+    applyRoundedMask(popupChrome);
 }
 
 void DockComboBoxChevron::setPopupOpen(bool open)
 {
+    if (open)
+        stylePopupChrome();
+
     if (m_popupOpen == open && m_animation->state() != QAbstractAnimation::Running)
         return;
 

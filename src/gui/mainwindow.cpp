@@ -1355,7 +1355,7 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
         comboBox->setStyleSheet(QStringLiteral(
             "QComboBox {"
             " background-color: %1; color: %2;"
-            " border: 1px solid transparent; border-radius: 8px; padding: 4px %6px 4px 8px;"
+            " border: 1px solid %3; border-radius: 8px; padding: 4px %6px 4px 8px;"
             "}"
             "QComboBox::drop-down {"
             " subcontrol-origin: border; subcontrol-position: top right;"
@@ -1366,11 +1366,11 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
             "}"
             "QComboBox QAbstractItemView {"
             " background-color: %4; color: %5;"
-            " border: 1px solid %3;"
+            " border: 0; outline: 0;"
             "}")
                                     .arg(dockTextInput.background.name(),
                                          dockTextInput.foreground.name(),
-                                         dockHeader.background.name(),
+                                         dockTextInputOutline.background.name(),
                                          dockBackground.background.name(),
                                          dockBackground.foreground.name())
                                     .arg(DockComboBoxChevron::IndicatorWidth + 4)
@@ -1385,7 +1385,11 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
             popupView->setStyleSheet(QStringLiteral(
                 "QAbstractItemView {"
                 " background-color: %1; color: %2;"
+                " border: 0; border-radius: %7px; outline: 0;"
                 " padding: %3px %4px;"
+                "}"
+                "QAbstractItemView::item {"
+                " border: 0;"
                 "}"
                 "QAbstractItemView::item:hover {"
                 " background-color: %5; color: %6;"
@@ -1396,6 +1400,7 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
                                          .arg(kDockListHorizontalPadding)
                                          .arg(dockHoveredItem.background.name(),
                                               dockHoveredItem.foreground.name())
+                                         .arg(UiConfig::CompletionPopupCornerRadius)
                                      + scrollBarStyleSheet(listScrollBars));
             popupView->setPalette(popupPalette);
             popupView->viewport()->setPalette(popupPalette);

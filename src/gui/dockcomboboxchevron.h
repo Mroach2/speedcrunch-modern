@@ -31,7 +31,9 @@ protected:
 
 private:
     void installPopupEventFilters();
+    QWidget* popupChromeWidget() const;
     void reposition();
+    void stylePopupChrome();
     void setPopupOpen(bool open);
 
     QPointer<QComboBox> m_comboBox;
