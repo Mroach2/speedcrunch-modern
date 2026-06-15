@@ -1103,6 +1103,61 @@ QIcon dockTitleButtonIcon(bool isCloseButton, const QColor& foreground)
     return QIcon(pixmap);
 }
 
+QIcon dockSearchClearButtonIcon(const QColor& fill, const QColor& cross)
+{
+    QPixmap pixmap(16, 16);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(fill);
+    painter.drawEllipse(QRectF(1.5, 1.5, 13.0, 13.0));
+
+    QPen pen(cross, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    painter.setPen(pen);
+    painter.drawLine(QPointF(5.5, 5.5), QPointF(10.5, 10.5));
+    painter.drawLine(QPointF(10.5, 5.5), QPointF(5.5, 10.5));
+    return QIcon(pixmap);
+}
+
+void applyDockSearchClearButtonIcon(QLineEdit* searchBox, const QIcon& icon)
+{
+    if (searchBox == nullptr)
+        return;
+
+    for (QAction* action : searchBox->actions())
+        action->setIcon(icon);
+
+    for (QToolButton* button : searchBox->findChildren<QToolButton*>()) {
+        if (QAction* action = button->defaultAction())
+            action->setIcon(icon);
+        button->setIcon(icon);
+        button->setIconSize(QSize(16, 16));
+    }
+}
+
+void applyDockSearchClearButtonIcon(QLineEdit* searchBox,
+                                    const GeneratedThemeSurfaces& surfaces,
+                                    bool focused)
+{
+    if (searchBox == nullptr)
+        return;
+
+    const ThemeSurfaceColors clearButtonSurface = focused
+        ? surfaces.primary
+        : themeSurfaceForShadeIndex(surfaces, UiConfig::DockTextInputOutlineShade);
+    applyDockSearchClearButtonIcon(searchBox,
+                                   dockSearchClearButtonIcon(clearButtonSurface.background,
+                                                             clearButtonSurface.foreground));
+}
+
+void applyDockSearchClearButtonIcon(QLineEdit* searchBox,
+                                    const GeneratedThemeSurfaces& surfaces)
+{
+    applyDockSearchClearButtonIcon(searchBox, surfaces, searchBox != nullptr && searchBox->hasFocus());
+}
+
 void applySurfaceToLabel(QLabel* label, const ThemeSurfaceColors& surface)
 {
     if (label == nullptr)
@@ -1345,6 +1400,7 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
                                           dockTextInputOutline.background.name(),
                                           surfaces.primary.background.name())
                                      .arg(UiConfig::OutlineStrokeWidth));
+        applyDockSearchClearButtonIcon(searchBox, surfaces);
     }
 
     for (QAbstractItemView* view : dockContent->findChildren<QAbstractItemView*>()) {
@@ -9757,6 +9813,11 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
             });
         } else if (e->type() == QEvent::FocusIn) {
             deactivateActiveEditorForTextInputFocus();
+            if (QLineEdit* lineEdit = qobject_cast<QLineEdit*>(widget))
+                applyDockSearchClearButtonIcon(lineEdit, generatedSurfaceColors(m_settings), true);
+        } else if (e->type() == QEvent::FocusOut) {
+            if (QLineEdit* lineEdit = qobject_cast<QLineEdit*>(widget))
+                applyDockSearchClearButtonIcon(lineEdit, generatedSurfaceColors(m_settings), false);
         }
         return QMainWindow::eventFilter(o, e);
     }
