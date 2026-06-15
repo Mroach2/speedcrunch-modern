@@ -1105,20 +1105,31 @@ QIcon dockTitleButtonIcon(bool isCloseButton, const QColor& foreground)
 
 QIcon dockSearchClearButtonIcon(const QColor& fill, const QColor& cross)
 {
-    QPixmap pixmap(16, 16);
-    pixmap.fill(Qt::transparent);
+    const auto pixmapForScale = [&fill, &cross](qreal scale) {
+        constexpr int logicalSize = 16;
+        const int physicalSize = qRound(logicalSize * scale);
+        QPixmap pixmap(physicalSize, physicalSize);
+        pixmap.setDevicePixelRatio(scale);
+        pixmap.fill(Qt::transparent);
 
-    QPainter painter(&pixmap);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    painter.setPen(Qt::NoPen);
-    painter.setBrush(fill);
-    painter.drawEllipse(QRectF(1.5, 1.5, 13.0, 13.0));
+        QPainter painter(&pixmap);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(fill);
+        painter.drawEllipse(QRectF(1.5, 1.5, 13.0, 13.0));
 
-    QPen pen(cross, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-    painter.setPen(pen);
-    painter.drawLine(QPointF(5.5, 5.5), QPointF(10.5, 10.5));
-    painter.drawLine(QPointF(10.5, 5.5), QPointF(5.5, 10.5));
-    return QIcon(pixmap);
+        QPen pen(cross, 1.45, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        painter.setPen(pen);
+        painter.drawLine(QPointF(5.25, 5.25), QPointF(10.75, 10.75));
+        painter.drawLine(QPointF(10.75, 5.25), QPointF(5.25, 10.75));
+        return pixmap;
+    };
+
+    QIcon icon;
+    icon.addPixmap(pixmapForScale(1.0));
+    icon.addPixmap(pixmapForScale(2.0));
+    icon.addPixmap(pixmapForScale(3.0));
+    return icon;
 }
 
 void applyDockSearchClearButtonIcon(QLineEdit* searchBox, const QIcon& icon)
