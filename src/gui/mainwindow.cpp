@@ -782,13 +782,13 @@ struct GeneratedThemeSurfaces
     // by moving one OKLCH shade step away from the base surface.
     ThemeSurfaceColors editorAndLists;
     // 400: dock title bars, dock/list/table headers, list/table hovered
-    // items, active dock tabs, popup/input borders, and hovered keypad or
-    // bitfield buttons.
+    // items, active dock tabs, selected session tabs, popup/input borders,
+    // and hovered keypad or bitfield buttons.
     ThemeSurfaceColors headersAndBorders;
-    // 500: input controls, search boxes, combo boxes, and pressed keypad or
-    // bitfield buttons.
+    // 500: input controls, search boxes, combo boxes, hovered session tabs,
+    // and pressed keypad or bitfield buttons.
     ThemeSurfaceColors inputs;
-    // 600: inactive tabs.
+    // 600: inactive tabs and session tab close-button hover fills.
     ThemeSurfaceColors hoverAndInactiveTabs;
 };
 
@@ -1798,7 +1798,9 @@ public:
                     const QColor& hoverText = QColor(),
                     const QColor& hoverSurface = QColor(),
                     const QColor& stripSurface = QColor(),
-                    const QColor& inactiveText = QColor())
+                    const QColor& inactiveText = QColor(),
+                    const QColor& closeButtonHoverText = QColor(),
+                    const QColor& closeButtonHoverSurface = QColor())
     {
         const QColor fg = selectedText.isValid()
             ? selectedText
@@ -1815,6 +1817,12 @@ public:
         const QColor hoveredText = hoverText.isValid()
             ? hoverText
             : text;
+        const QColor closeButtonHovered = closeButtonHoverSurface.isValid()
+            ? closeButtonHoverSurface
+            : hovered;
+        const QColor closeButtonHoveredText = closeButtonHoverText.isValid()
+            ? closeButtonHoverText
+            : hoveredText;
         m_tabStripColor = strip;
         m_inactiveTabColor = strip;
         m_hoveredTabColor = hovered;
@@ -1822,6 +1830,8 @@ public:
         m_tabTextColor = text;
         m_hoveredTextColor = hoveredText;
         m_selectedTextColor = fg;
+        m_closeButtonHoverColor = closeButtonHovered;
+        m_closeButtonHoverTextColor = closeButtonHoveredText;
 
         setStyleSheet(QStringLiteral(R"(
                 QToolButton {
@@ -1941,7 +1951,9 @@ public:
             const bool selected = i == currentIndex();
             const bool hovered = i == m_hoveredTabIndex;
             const QColor normalText = selected ? m_selectedTextColor : (hovered ? m_hoveredTextColor : m_tabTextColor);
-            const QColor hoveredText = m_hoveredTextColor.isValid() ? m_hoveredTextColor : normalText;
+            const QColor hoveredText = m_closeButtonHoverTextColor.isValid()
+                ? m_closeButtonHoverTextColor
+                : normalText;
             closeButton->setStyleSheet(QStringLiteral(R"(
                     QToolButton {
                         background: transparent;
@@ -1969,7 +1981,7 @@ public:
                     }
                 )")
                                            .arg(normalText.name(),
-                                                m_hoveredTabColor.name(),
+                                                m_closeButtonHoverColor.name(),
                                                 hoveredText.name()));
             visibilityChanged = visibilityChanged || closeButton->isVisible() != showButton;
             closeButton->setVisible(showButton);
@@ -2415,6 +2427,8 @@ private:
     QColor m_tabTextColor;
     QColor m_hoveredTextColor;
     QColor m_selectedTextColor;
+    QColor m_closeButtonHoverColor;
+    QColor m_closeButtonHoverTextColor;
     QString m_dragSessionName;
 
     int indexOfDragSession() const
@@ -5291,17 +5305,25 @@ void MainWindow::updatePaneTabBars()
     const QList<ResultDisplay*> displays = splitPaneDisplays();
     const bool singlePaneSingleTab = displays.size() == 1 && paneSessionNames(displays.first()).size() == 1;
     const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
+    const ThemeSurfaceColors selectedSessionTab =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::SelectedSessionTabFillShade);
+    const ThemeSurfaceColors hoveredSessionTab =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::HoveredSessionTabFillShade);
+    const ThemeSurfaceColors closeButtonHover =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::SessionTabCloseButtonHoverFillShade);
     for (ResultDisplay* display : displays) {
         QTabBar* tabBar = displayTabBar(display);
         if (tabBar == nullptr)
             continue;
         static_cast<SessionTabBar*>(tabBar)->applyStyle(
-            surfaces.result.foreground,
-            surfaces.result.background,
-            surfaces.result.foreground,
-            surfaces.result.background,
+            selectedSessionTab.foreground,
+            selectedSessionTab.background,
+            hoveredSessionTab.foreground,
+            hoveredSessionTab.background,
             surfaces.window.background,
-            surfaces.window.foreground);
+            surfaces.window.foreground,
+            closeButtonHover.foreground,
+            closeButtonHover.background);
 
         const QSignalBlocker blocker(tabBar);
         const QStringList names = paneSessionNames(display);

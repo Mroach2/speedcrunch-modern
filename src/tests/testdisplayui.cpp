@@ -2482,7 +2482,7 @@ void TestDisplayUi::dock_search_focus_suppresses_editor_primary_outline_across_p
 
     const QVector<QColor> shades =
         generateOklchShades(QColor(QStringLiteral("#1f3229")), 6, ThemePolarity::Dark);
-    const QColor selectedTabFill = shades.at(UiConfig::ResultDisplayShade);
+    const QColor selectedTabFill = shades.at(UiConfig::SelectedSessionTabFillShade);
     QList<QTabBar*> tabBars = window.findChildren<QTabBar*>();
     tabBars.erase(std::remove_if(tabBars.begin(), tabBars.end(), [](QTabBar* tabBar) {
         return tabBar->count() == 0 || !tabBar->isVisible();
