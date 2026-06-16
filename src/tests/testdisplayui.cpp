@@ -739,7 +739,7 @@ void TestDisplayUi::dock_list_selected_row_keeps_primary_fill_while_hovered()
     const QColor inactiveForeground(QStringLiteral("#eceff4"));
 
     QTreeWidget table;
-    table.setColumnCount(2);
+    table.setColumnCount(3);
     table.setRootIsDecorated(false);
     table.setSelectionBehavior(QAbstractItemView::SelectRows);
     table.header()->hide();
@@ -751,29 +751,30 @@ void TestDisplayUi::dock_list_selected_row_keeps_primary_fill_while_hovered()
     table.setProperty("dockListInactiveSelectionBackground", inactiveBackground);
     table.setProperty("dockListInactiveSelectionForeground", inactiveForeground);
     table.setStyleSheet(QStringLiteral(
-        "QAbstractItemView { background-color: %1; color: %2; border: 0; }"
-        "QAbstractItemView::item:hover {"
-        " background-color: %3; color: %4;"
-        " border-radius: %5px;"
-        "}")
+        "QAbstractItemView { background-color: %1; color: %2; border: 0; }")
                             .arg(background.name(),
-                                 foreground.name(),
-                                 hoverBackground.name(),
-                                 hoverForeground.name())
-                            .arg(UiConfig::DockHoveredItemCornerRadius));
+                                 foreground.name()));
 
     auto* item = new QTreeWidgetItem(&table, QStringList{
         QStringLiteral("x"),
-        QStringLiteral("42")
+        QStringLiteral("42"),
+        QStringLiteral("m")
     });
+    table.setColumnWidth(0, 70);
+    table.setColumnWidth(1, 70);
+    table.setColumnWidth(2, 70);
     table.resize(260, 80);
     table.show();
     QVERIFY(QTest::qWaitForWindowExposed(&table));
 
     const QModelIndex index = table.indexFromItem(item, 0);
+    const QModelIndex secondColumnIndex = table.indexFromItem(item, 1);
     const QRect itemRect = table.visualRect(index);
+    const QRect secondColumnRect = table.visualRect(secondColumnIndex);
     QVERIFY(itemRect.isValid());
+    QVERIFY(secondColumnRect.isValid());
     const QPoint sampledFill(itemRect.right() - 4, itemRect.center().y());
+    const QPoint sampledColumnBoundary(secondColumnRect.left() + 1, itemRect.top() + 2);
     const QPoint sampledRoundedCorner(itemRect.left() + 1, itemRect.top() + 1);
 
     QTest::mouseMove(table.viewport(), itemRect.center());
@@ -782,6 +783,10 @@ void TestDisplayUi::dock_list_selected_row_keeps_primary_fill_while_hovered()
     QVERIFY2(colorsAreClose(hoveredImage.pixelColor(sampledFill), hoverBackground, 24),
              qPrintable(QStringLiteral("hover sample is %1, expected %2")
                             .arg(hoveredImage.pixelColor(sampledFill).name(),
+                                 hoverBackground.name())));
+    QVERIFY2(colorsAreClose(hoveredImage.pixelColor(sampledColumnBoundary), hoverBackground, 32),
+             qPrintable(QStringLiteral("column-boundary hover sample is %1, expected %2")
+                            .arg(hoveredImage.pixelColor(sampledColumnBoundary).name(),
                                  hoverBackground.name())));
     QVERIFY(!colorsAreClose(hoveredImage.pixelColor(sampledRoundedCorner), hoverBackground, 8));
     QVERIFY(hoveredImage.pixelColor(sampledFill).name() != primaryBackground.name());
@@ -2139,9 +2144,6 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QVERIFY(table->styleSheet().contains(QStringLiteral("padding: 6px 8px")));
     QVERIFY(table->styleSheet().contains(QStringLiteral("border: 0")));
     QCOMPARE(table->frameShape(), QFrame::NoFrame);
-    QVERIFY(table->styleSheet().contains(hoveredItemFill.name()));
-    QVERIFY(table->styleSheet().contains(hoveredItemText.name()));
-    QVERIFY(table->styleSheet().contains(QStringLiteral("border-radius: 6px")));
     QCOMPARE(table->property("dockListInactiveSelectionBackground").value<QColor>().name(),
              controlFill.name());
     QCOMPARE(table->property("dockListInactiveSelectionForeground").value<QColor>().name(),

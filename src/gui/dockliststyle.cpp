@@ -9,6 +9,7 @@
 #include <QAbstractItemModel>
 #include <QEvent>
 #include <QFrame>
+#include <QHeaderView>
 #include <QHoverEvent>
 #include <QLabel>
 #include <QModelIndex>
@@ -18,6 +19,8 @@
 #include <QPainter>
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
+#include <QTreeView>
+#include <QVector>
 #include <QWidget>
 
 namespace {
@@ -69,32 +72,68 @@ QColor selectedTextColorForView(const QAbstractItemView* view)
     return view->palette().color(QPalette::HighlightedText);
 }
 
-QRect rowRectForIndex(const QAbstractItemView* view, const QModelIndex& index)
+bool columnIsHidden(const QAbstractItemView* view, int column)
 {
-    QRect rowRect = view->visualRect(index);
+    const QTreeView* treeView = qobject_cast<const QTreeView*>(view);
+    return treeView != nullptr && treeView->isColumnHidden(column);
+}
+
+QVector<int> visibleColumnsForIndex(const QAbstractItemView* view, const QModelIndex& index)
+{
+    QVector<int> columns;
     const QAbstractItemModel* model = view->model();
     if (model == nullptr)
-        return rowRect;
+        return columns;
 
     const int columnCount = model->columnCount(index.parent());
+    const QTreeView* treeView = qobject_cast<const QTreeView*>(view);
+    const QHeaderView* header = treeView != nullptr ? treeView->header() : nullptr;
+    if (header != nullptr && header->count() == columnCount) {
+        for (int visualIndex = 0; visualIndex < header->count(); ++visualIndex) {
+            const int column = header->logicalIndex(visualIndex);
+            if (!columnIsHidden(view, column))
+                columns.append(column);
+        }
+        return columns;
+    }
+
     for (int column = 0; column < columnCount; ++column) {
+        if (!columnIsHidden(view, column))
+            columns.append(column);
+    }
+    return columns;
+}
+
+QRect rowRectForIndex(const QAbstractItemView* view, const QModelIndex& index)
+{
+    QRect rowRect;
+    for (const int column : visibleColumnsForIndex(view, index)) {
         const QRect cellRect = view->visualRect(index.sibling(index.row(), column));
-        if (cellRect.isValid())
+        if (!cellRect.isEmpty())
             rowRect = rowRect.united(cellRect);
     }
+
+    if (rowRect.isEmpty())
+        rowRect = view->visualRect(index);
+
     return rowRect;
 }
 
-void fillRoundedRow(QPainter* painter,
-                    const QRect& clipRect,
-                    const QRect& rowRect,
-                    const QColor& color)
+bool isFirstVisibleColumnForIndex(const QAbstractItemView* view, const QModelIndex& index)
+{
+    const QVector<int> columns = visibleColumnsForIndex(view, index);
+    if (columns.isEmpty())
+        return index.column() == 0;
+
+    return index.column() == columns.first();
+}
+
+void fillRoundedRow(QPainter* painter, const QRect& rowRect, const QColor& color)
 {
     if (rowRect.isEmpty())
         return;
 
     painter->save();
-    painter->setClipRect(clipRect);
     painter->setRenderHint(QPainter::Antialiasing, true);
     painter->setPen(Qt::NoPen);
     painter->setBrush(color);
@@ -129,10 +168,8 @@ public:
             // The selected fill is painted above; suppress style hover/focus backgrounds.
             opt.state &= ~(QStyle::State_Selected | QStyle::State_MouseOver | QStyle::State_HasFocus);
         } else if (index.row() == m_view->property("dockListHoveredRow").toInt()) {
-            fillRoundedRow(painter,
-                           opt.rect,
-                           rowRectForIndex(m_view, index),
-                           hoverColorForView(m_view));
+            if (isFirstVisibleColumnForIndex(m_view, index))
+                fillRoundedRow(painter, rowRectForIndex(m_view, index), hoverColorForView(m_view));
             opt.palette.setColor(QPalette::Text, hoverTextColorForView(m_view));
             opt.palette.setColor(QPalette::WindowText, hoverTextColorForView(m_view));
             opt.backgroundBrush = Qt::NoBrush;
@@ -205,10 +242,10 @@ private:
         if (row < 0 || !m_view->model())
             return;
 
-        const int columnCount = m_view->model()->columnCount(m_view->rootIndex());
-        for (int column = 0; column < columnCount; ++column)
-            m_view->viewport()->update(m_view->visualRect(
-                m_view->model()->index(row, column, m_view->rootIndex())));
+        const QModelIndex rowIndex = m_view->model()->index(row, 0, m_view->rootIndex());
+        const QRect rowRect = rowRectForIndex(m_view, rowIndex);
+        if (!rowRect.isEmpty())
+            m_view->viewport()->update(rowRect.adjusted(-2, -2, 2, 2));
     }
 
     QAbstractItemView* m_view;

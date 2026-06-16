@@ -1578,19 +1578,12 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
             "QAbstractItemView {"
             " background-color: %1; color: %2;"
             " border: 0;"
-            " padding: %5px %6px;"
-            "}"
-            "QAbstractItemView::item:hover {"
-            " background-color: %3; color: %4;"
-            " border-radius: %7px;"
+            " padding: %3px %4px;"
             "}")
                                 .arg(dockBackground.background.name(),
-                                     dockBackground.foreground.name(),
-                                     dockHoveredItem.background.name(),
-                                     dockHoveredItem.foreground.name())
+                                     dockBackground.foreground.name())
                                 .arg(kDockListVerticalPadding)
                                 .arg(kDockListHorizontalPadding)
-                                .arg(UiConfig::DockHoveredItemCornerRadius)
                             + scrollBarStyleSheet(listScrollBars));
         view->setPalette(palette);
         view->viewport()->setPalette(palette);
