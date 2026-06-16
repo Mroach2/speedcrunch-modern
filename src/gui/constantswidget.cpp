@@ -13,8 +13,16 @@
 #include "gui/uiconfig.h"
 
 #include <QAbstractScrollArea>
+#include <QBitmap>
 #include <QEvent>
+#include <QFrame>
+#include <QGuiApplication>
+#include <QHelpEvent>
+#include <QPainter>
+#include <QPalette>
 #include <QResizeEvent>
+#include <QScreen>
+#include <QScrollBar>
 #include <QTimer>
 #include <QComboBox>
 #include <QHBoxLayout>
@@ -52,6 +60,52 @@ static QString displayValue(const Constant& constant)
         return constant.value;
 
     return constant.value.left(qMin(constant.value.length(), dotPos + 16));
+}
+
+static void applyRoundedPopupMask(QWidget* popup, int cornerRadius)
+{
+    if (popup == nullptr)
+        return;
+
+    if (cornerRadius > 0) {
+        QBitmap mask(popup->size());
+        mask.fill(Qt::color0);
+        QPainter painter(&mask);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(Qt::color1);
+        painter.drawRoundedRect(QRectF(mask.rect()).adjusted(0, 0, -1, -1),
+                                cornerRadius,
+                                cornerRadius);
+        popup->setMask(mask);
+    } else {
+        popup->clearMask();
+    }
+}
+
+static QPoint constrainedPopupPosition(QWidget* anchor,
+                                       const QPoint& globalPos,
+                                       const QSize& popupSize)
+{
+    constexpr int kPopupOffsetX = 12;
+    constexpr int kPopupOffsetY = 18;
+
+    QPoint pos = globalPos + QPoint(kPopupOffsetX, kPopupOffsetY);
+    QScreen* screen = anchor != nullptr ? anchor->screen() : QGuiApplication::primaryScreen();
+    if (screen == nullptr)
+        return pos;
+
+    const QRect available = screen->availableGeometry();
+    if (pos.x() + popupSize.width() > available.right())
+        pos.setX(globalPos.x() - popupSize.width() - kPopupOffsetX);
+    if (pos.y() + popupSize.height() > available.bottom())
+        pos.setY(globalPos.y() - popupSize.height() - kPopupOffsetY);
+
+    pos.setX(qBound(available.left(), pos.x(),
+                    qMax(available.left(), available.right() - popupSize.width())));
+    pos.setY(qBound(available.top(), pos.y(),
+                    qMax(available.top(), available.bottom() - popupSize.height())));
+    return pos;
 }
 
 ConstantsWidget::ConstantsWidget(QWidget* parent)
@@ -128,6 +182,12 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
     m_list->setSelectionBehavior(QTreeWidget::SelectRows);
     m_list->header()->setStretchLastSection(false);
     DockListStyle::apply(m_list);
+    m_list->installEventFilter(this);
+    m_list->viewport()->installEventFilter(this);
+    connect(m_list->verticalScrollBar(), &QScrollBar::valueChanged,
+            this, &ConstantsWidget::hideSummaryPopup);
+    connect(m_list->horizontalScrollBar(), &QScrollBar::valueChanged,
+            this, &ConstantsWidget::hideSummaryPopup);
 
     connect(m_list, SIGNAL(itemActivated(QTreeWidgetItem*, int)), SLOT(handleItem(QTreeWidgetItem*)));
     QShortcut* returnShortcut = new QShortcut(QKeySequence(Qt::Key_Return), this);
@@ -172,6 +232,7 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
 ConstantsWidget::~ConstantsWidget()
 {
     m_filterTimer->stop();
+    hideSummaryPopup();
 }
 
 QSize ConstantsWidget::minimumSizeHint() const
@@ -200,6 +261,18 @@ void ConstantsWidget::restoreState(const QString& domain, const QString& subdoma
             m_subdomain->setCurrentIndex(subdomainIndex);
     }
     filter();
+}
+
+void ConstantsWidget::setSummaryPopupThemeColors(const QColor& background,
+                                                 const QColor& foreground,
+                                                 const QColor& outline,
+                                                 int cornerRadius)
+{
+    m_summaryPopupBackgroundColor = background;
+    m_summaryPopupForegroundColor = foreground;
+    m_summaryPopupOutlineColor = outline;
+    m_summaryPopupCornerRadius = qMax(0, cornerRadius);
+    applySummaryPopupTheme();
 }
 
 void ConstantsWidget::handleRadixCharacterChange()
@@ -240,6 +313,7 @@ void ConstantsWidget::filter()
     const QString chosenDomain = m_domain->currentText();
     const QString chosenSubdomain = m_subdomain->currentText();
 
+    hideSummaryPopup();
     m_list->clear();
     for (int k = 0; k < clist.count(); ++k) {
         QStringList str;
@@ -410,12 +484,166 @@ void ConstantsWidget::changeEvent(QEvent* e)
         QWidget::changeEvent(e);
 }
 
+bool ConstantsWidget::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == m_list || watched == m_list->viewport()) {
+        switch (event->type()) {
+        case QEvent::ToolTip: {
+            QHelpEvent* helpEvent = static_cast<QHelpEvent*>(event);
+            const QPoint viewportPos = watched == m_list->viewport()
+                ? helpEvent->pos()
+                : m_list->viewport()->mapFrom(m_list, helpEvent->pos());
+            const QModelIndex index = m_list->indexAt(viewportPos);
+            QTreeWidgetItem* item = index.isValid() ? m_list->itemAt(viewportPos) : nullptr;
+            if (item == nullptr) {
+                hideSummaryPopup();
+                return true;
+            }
+
+            showSummaryPopup(item, index.column(), helpEvent->globalPos());
+            return true;
+        }
+        case QEvent::Hide:
+        case QEvent::KeyPress:
+        case QEvent::Leave:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::MouseButtonPress:
+        case QEvent::Resize:
+        case QEvent::Wheel:
+            hideSummaryPopup();
+            break;
+        default:
+            break;
+        }
+    }
+
+    return QWidget::eventFilter(watched, event);
+}
+
 void ConstantsWidget::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
     updateDomainLayout();
     updateEmptyHeaderStretch();
     scheduleEmptyHeaderStretch();
+}
+
+void ConstantsWidget::ensureSummaryPopup()
+{
+    if (m_summaryPopup != nullptr)
+        return;
+
+    m_summaryPopup = new QFrame(this, Qt::ToolTip | Qt::FramelessWindowHint);
+    m_summaryPopup->setObjectName(QStringLiteral("constantsSummaryPopup"));
+    m_summaryPopup->setAutoFillBackground(true);
+    m_summaryPopup->setAttribute(Qt::WA_ShowWithoutActivating, true);
+    m_summaryPopup->setAttribute(Qt::WA_StyledBackground, true);
+    m_summaryPopup->setFocusPolicy(Qt::NoFocus);
+    m_summaryPopup->setFrameStyle(QFrame::NoFrame);
+
+    QVBoxLayout* layout = new QVBoxLayout(m_summaryPopup);
+    layout->setContentsMargins(6, 4, 6, 4);
+    layout->setSpacing(0);
+
+    m_summaryPopupLabel = new QLabel(m_summaryPopup);
+    m_summaryPopupLabel->setObjectName(QStringLiteral("constantsSummaryPopupLabel"));
+    m_summaryPopupLabel->setTextFormat(Qt::RichText);
+    m_summaryPopupLabel->setTextInteractionFlags(Qt::NoTextInteraction);
+    m_summaryPopupLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
+    layout->addWidget(m_summaryPopupLabel);
+
+    applySummaryPopupTheme();
+}
+
+void ConstantsWidget::applySummaryPopupTheme()
+{
+    if (m_summaryPopup == nullptr)
+        return;
+
+    const QColor background = m_summaryPopupBackgroundColor.isValid()
+        ? m_summaryPopupBackgroundColor
+        : palette().color(QPalette::ToolTipBase);
+    const QColor foreground = m_summaryPopupForegroundColor.isValid()
+        ? m_summaryPopupForegroundColor
+        : palette().color(QPalette::ToolTipText);
+    const QColor outline = m_summaryPopupOutlineColor.isValid()
+        ? m_summaryPopupOutlineColor
+        : background;
+    const int cornerRadius = qMax(0, m_summaryPopupCornerRadius);
+
+    QPalette popupPalette = m_summaryPopup->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        popupPalette.setColor(group, QPalette::Window, background);
+        popupPalette.setColor(group, QPalette::WindowText, foreground);
+    }
+    m_summaryPopup->setPalette(popupPalette);
+
+    QPalette labelPalette = m_summaryPopupLabel->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        labelPalette.setColor(group, QPalette::WindowText, foreground);
+        labelPalette.setColor(group, QPalette::Text, foreground);
+    }
+    m_summaryPopupLabel->setPalette(labelPalette);
+
+    m_summaryPopup->setStyleSheet(QStringLiteral(
+        "QFrame#constantsSummaryPopup {"
+        " background: %1; color: %2;"
+        " border: %4px solid %3;"
+        " border-radius: %5px;"
+        "}"
+        "QLabel#constantsSummaryPopupLabel {"
+        " background: transparent; color: %2;"
+        "}")
+                                      .arg(background.name(),
+                                           foreground.name(),
+                                           outline.name())
+                                      .arg(UiConfig::OutlineStrokeWidth)
+                                      .arg(cornerRadius));
+    updateSummaryPopupMask();
+}
+
+void ConstantsWidget::hideSummaryPopup()
+{
+    if (m_summaryPopup != nullptr)
+        m_summaryPopup->hide();
+}
+
+void ConstantsWidget::showSummaryPopup(QTreeWidgetItem* item,
+                                       int column,
+                                       const QPoint& globalPos)
+{
+    if (item == nullptr)
+        return;
+
+    const QString tip = item->toolTip(column).isEmpty()
+        ? item->toolTip(0)
+        : item->toolTip(column);
+    if (tip.isEmpty()) {
+        hideSummaryPopup();
+        return;
+    }
+
+    ensureSummaryPopup();
+    m_summaryPopupLabel->setText(tip);
+    m_summaryPopup->adjustSize();
+    m_summaryPopup->resize(m_summaryPopup->sizeHint());
+    updateSummaryPopupMask();
+    m_summaryPopup->move(constrainedPopupPosition(m_list,
+                                                  globalPos,
+                                                  m_summaryPopup->size()));
+    m_summaryPopup->show();
+}
+
+void ConstantsWidget::updateSummaryPopupMask()
+{
+    if (m_summaryPopup == nullptr)
+        return;
+
+    applyRoundedPopupMask(m_summaryPopup, qMax(0, m_summaryPopupCornerRadius));
 }
 
 void ConstantsWidget::scheduleEmptyHeaderStretch()

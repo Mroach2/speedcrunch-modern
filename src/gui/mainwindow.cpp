@@ -1455,6 +1455,17 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
                                           dockBackground.foreground);
     }
 
+    if (ConstantsWidget* constantsWidget = qobject_cast<ConstantsWidget*>(dockContent)) {
+        const ThemeSurfaceColors completionPopup =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupBackgroundShade);
+        const ThemeSurfaceColors completionOutline =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupOutlineShade);
+        constantsWidget->setSummaryPopupThemeColors(completionPopup.background,
+                                                    completionPopup.foreground,
+                                                    completionOutline.background,
+                                                    UiConfig::CompletionPopupCornerRadius);
+    }
+
     for (QAbstractScrollArea* scrollArea : dockContent->findChildren<QAbstractScrollArea*>()) {
         if (qobject_cast<QAbstractItemView*>(scrollArea))
             continue;

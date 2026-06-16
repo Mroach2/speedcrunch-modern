@@ -5,6 +5,7 @@
 #include "core/colorscheme.h"
 #include "core/settings.h"
 #include "gui/bitfieldwidget.h"
+#include "gui/constantswidget.h"
 #include "gui/dockliststyle.h"
 #include "gui/editor.h"
 #include "gui/keypad.h"
@@ -29,6 +30,7 @@
 #include <QFrame>
 #include <QFocusEvent>
 #include <QHeaderView>
+#include <QHelpEvent>
 #include <QImage>
 #include <QLabel>
 #include <QJsonArray>
@@ -1786,6 +1788,9 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     const int comboPopupShade = qMin(UiConfig::DockBackgroundShade + 1, UiConfig::Shade600);
     const QColor comboPopupFill = shades.at(comboPopupShade);
     const QColor comboPopupText = foregrounds.at(comboPopupShade);
+    const QColor completionPopupFill = shades.at(UiConfig::CompletionPopupBackgroundShade);
+    const QColor completionPopupText = foregrounds.at(UiConfig::CompletionPopupBackgroundShade);
+    const QColor completionPopupOutlineFill = shades.at(UiConfig::CompletionPopupOutlineShade);
     const QColor chromeFill = shades.at(UiConfig::WindowBackgroundShade);
     const QColor chromeText = foregrounds.at(UiConfig::WindowBackgroundShade);
     const QColor resultFill = shades.at(UiConfig::ResultDisplayShade);
@@ -1888,6 +1893,8 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
         window.findChild<QDockWidget*>(QStringLiteral("FunctionsDock"));
     QVERIFY(constantsDock != nullptr);
     QVERIFY(functionsDock != nullptr);
+    ConstantsWidget* constantsWidget = qobject_cast<ConstantsWidget*>(constantsDock->widget());
+    QVERIFY(constantsWidget != nullptr);
     bool foundCloseButton = false;
     bool foundFloatButton = false;
     for (QAbstractButton* button : constantsDock->findChildren<QAbstractButton*>()) {
@@ -2141,6 +2148,41 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QVERIFY(tableScrollBarStyle.contains(titleFill.name()));
     QVERIFY(tableScrollBarStyle.contains(controlFill.name()));
     QVERIFY(tableScrollBarStyle.contains(hoverFill.name()));
+    QTRY_VERIFY(table->topLevelItemCount() > 0);
+    QTreeWidgetItem* tooltipItem = table->topLevelItem(0);
+    QVERIFY(tooltipItem != nullptr);
+    table->scrollToItem(tooltipItem);
+    QCoreApplication::processEvents();
+    const QRect tooltipRect = table->visualItemRect(tooltipItem);
+    QVERIFY(tooltipRect.isValid());
+    const QPoint tooltipPos = tooltipRect.center();
+    QHelpEvent tooltipEvent(QEvent::ToolTip,
+                            tooltipPos,
+                            table->viewport()->mapToGlobal(tooltipPos));
+    QCoreApplication::sendEvent(table->viewport(), &tooltipEvent);
+    QFrame* summaryPopup =
+        constantsWidget->findChild<QFrame*>(QStringLiteral("constantsSummaryPopup"));
+    QTRY_VERIFY(summaryPopup != nullptr && summaryPopup->isVisible());
+    QLabel* summaryPopupLabel =
+        summaryPopup->findChild<QLabel*>(QStringLiteral("constantsSummaryPopupLabel"));
+    QVERIFY(summaryPopupLabel != nullptr);
+    QCOMPARE(summaryPopup->palette().color(QPalette::Window).name(),
+             completionPopupFill.name());
+    QCOMPARE(summaryPopup->palette().color(QPalette::WindowText).name(),
+             completionPopupText.name());
+    QCOMPARE(summaryPopupLabel->palette().color(QPalette::WindowText).name(),
+             completionPopupText.name());
+    QVERIFY(summaryPopup->styleSheet().contains(completionPopupFill.name()));
+    QVERIFY(summaryPopup->styleSheet().contains(completionPopupText.name()));
+    QVERIFY(summaryPopup->styleSheet().contains(
+        QStringLiteral("border: %1px solid %2")
+            .arg(UiConfig::OutlineStrokeWidth)
+            .arg(completionPopupOutlineFill.name())));
+    QVERIFY(summaryPopup->styleSheet().contains(
+        QStringLiteral("border-radius: %1px")
+            .arg(UiConfig::CompletionPopupCornerRadius)));
+    QVERIFY(!summaryPopup->mask().isEmpty());
+    summaryPopup->hide();
     const QMargins dockRootMargins = constantsDock->widget()->layout()->contentsMargins();
     QCOMPARE(dockRootMargins, QMargins(0, 0, 0, 0));
     const QMargins searchRowMargins =
