@@ -2136,7 +2136,7 @@ public:
                         background: rgba(127, 127, 127, 192);
                     }
                 )"));
-                closeButton->setToolTip(tr("Close Session"));
+                closeButton->setToolTip(MainWindow::tr("Close Session"));
                 QFont closeFont = closeButton->font();
                 closeFont.setBold(false);
                 closeFont.setPixelSize(qMax(11, fontMetrics().height() - 5));
