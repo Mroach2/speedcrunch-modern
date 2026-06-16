@@ -1769,8 +1769,14 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QVERIFY(QTest::qWaitForWindowExposed(&window));
     QCoreApplication::processEvents();
 
-    const QColor titleFill = shades.at(3);
-    const QColor titleText = foregrounds.at(3);
+    const QColor titleFill = shades.at(UiConfig::DockHeaderShade);
+    const QColor titleText = foregrounds.at(UiConfig::DockHeaderShade);
+    const QColor headerButtonFill = shades.at(UiConfig::DockHeaderButtonFillShade);
+    const QColor headerButtonText = foregrounds.at(UiConfig::DockHeaderButtonFillShade);
+    const QColor headerButtonHoverFill =
+        shades.at(UiConfig::DockHeaderButtonHoverFillShade);
+    const QColor headerButtonHoverText =
+        foregrounds.at(UiConfig::DockHeaderButtonHoverFillShade);
     const QColor controlFill = shades.at(4);
     const QColor controlText = foregrounds.at(4);
     const QColor contentFill = shades.at(2);
@@ -1836,8 +1842,14 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
         QVERIFY(dock->styleSheet().contains(QStringLiteral("padding: 5px 4px")));
         QVERIFY(dock->styleSheet().contains(QStringLiteral("QDockWidget::close-button")));
         QVERIFY(dock->styleSheet().contains(QStringLiteral("QDockWidget::float-button")));
-        QVERIFY(dock->styleSheet().contains(controlFill.name()));
-        QVERIFY(dock->styleSheet().contains(controlText.name()));
+        QVERIFY(dock->styleSheet().contains(headerButtonFill.name()));
+        QVERIFY(dock->styleSheet().contains(headerButtonText.name()));
+        QVERIFY(dock->styleSheet().contains(headerButtonHoverFill.name()));
+        QVERIFY(dock->styleSheet().contains(headerButtonHoverText.name()));
+        QVERIFY(dock->styleSheet().contains(QStringLiteral("border: none")));
+        QVERIFY(dock->styleSheet().contains(QStringLiteral("border-radius: 9px")));
+        QVERIFY(dock->styleSheet().contains(QStringLiteral("width: 18px")));
+        QVERIFY(dock->styleSheet().contains(QStringLiteral("height: 18px")));
     }
 
     for (QDockWidget* dock : docks) {
@@ -1886,9 +1898,42 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
         }
         foundCloseButton |= name == QStringLiteral("qt_dockwidget_closebutton");
         foundFloatButton |= name == QStringLiteral("qt_dockwidget_floatbutton");
-        QCOMPARE(button->palette().color(QPalette::Button).name(), controlFill.name());
-        QCOMPARE(button->palette().color(QPalette::ButtonText).name(), controlText.name());
+        QCOMPARE(button->palette().color(QPalette::Button).name(), headerButtonFill.name());
+        QCOMPARE(button->palette().color(QPalette::ButtonText).name(), headerButtonText.name());
+        QCOMPARE(button->cursor().shape(), Qt::PointingHandCursor);
+        QVERIFY(button->hasMouseTracking());
+        QCOMPARE(button->minimumSize(), QSize(18, 18));
+        QCOMPARE(button->maximumSize(), QSize(18, 18));
+        QCOMPARE(button->iconSize(), QSize(18, 18));
+        QVERIFY(button->styleSheet().contains(headerButtonFill.name()));
+        QVERIFY(button->styleSheet().contains(headerButtonText.name()));
+        QVERIFY(button->styleSheet().contains(headerButtonHoverFill.name()));
+        QVERIFY(button->styleSheet().contains(headerButtonHoverText.name()));
+        QVERIFY(button->styleSheet().contains(QStringLiteral("border-radius: 9px")));
         QVERIFY(!button->icon().isNull());
+        const QImage iconImage = button->icon().pixmap(QSize(18, 18)).toImage();
+        QVERIFY(!iconImage.isNull());
+        QVERIFY(iconImage.pixelColor(0, 0).alpha() < 32);
+        QVERIFY2(colorsAreClose(iconImage.pixelColor(2, 9), headerButtonFill, 3),
+                 qPrintable(QStringLiteral("icon fill %1 expected %2")
+                                .arg(iconImage.pixelColor(2, 9).name(),
+                                     headerButtonFill.name())));
+        const QPoint buttonCenter = button->rect().center();
+        QMouseEvent buttonMoveEvent(QEvent::MouseMove,
+                                    QPointF(buttonCenter),
+                                    QPointF(button->mapToGlobal(buttonCenter)),
+                                    Qt::NoButton,
+                                    Qt::NoButton,
+                                    Qt::NoModifier);
+        QCoreApplication::sendEvent(button, &buttonMoveEvent);
+        const QImage hoverIconImage = button->icon().pixmap(QSize(18, 18)).toImage();
+        QVERIFY(!hoverIconImage.isNull());
+        QVERIFY2(colorsAreClose(hoverIconImage.pixelColor(2, 9), headerButtonHoverFill, 3),
+                 qPrintable(QStringLiteral("hover icon fill %1 expected %2")
+                                .arg(hoverIconImage.pixelColor(2, 9).name(),
+                                     headerButtonHoverFill.name())));
+        QEvent leaveEvent(QEvent::Leave);
+        QCoreApplication::sendEvent(button, &leaveEvent);
     }
     QVERIFY(foundCloseButton);
     QVERIFY(foundFloatButton);
@@ -2208,7 +2253,28 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
             QVERIFY(tabBar->styleSheet().contains(titleText.name()));
             QVERIFY(tabBar->styleSheet().contains(QStringLiteral("padding: 5px 14px")));
             QVERIFY(tabBar->styleSheet().contains(QStringLiteral("margin: 2px 1px")));
+            QVERIFY(tabBar->property("speedcrunchDockSystemTabBar").toBool());
+            QVERIFY(tabBar->hasMouseTracking());
             QVERIFY(!tabBar->drawBase());
+            int hoveredTab = -1;
+            for (int i = 0; i < tabBar->count(); ++i) {
+                if (tabBar->tabText(i) == QStringLiteral("Constants")
+                    || tabBar->tabText(i) == QStringLiteral("Functions")) {
+                    hoveredTab = i;
+                    break;
+                }
+            }
+            QVERIFY(hoveredTab >= 0);
+            const QPoint hoverPos = tabBar->tabRect(hoveredTab).center();
+            QCOMPARE(tabBar->tabAt(hoverPos), hoveredTab);
+            QMouseEvent moveEvent(QEvent::MouseMove,
+                                  QPointF(hoverPos),
+                                  QPointF(tabBar->mapToGlobal(hoverPos)),
+                                  Qt::NoButton,
+                                  Qt::NoButton,
+                                  Qt::NoModifier);
+            QCoreApplication::sendEvent(tabBar, &moveEvent);
+            QTRY_COMPARE(tabBar->cursor().shape(), Qt::PointingHandCursor);
             QWidget* tabBarParent = tabBar->parentWidget();
             QVERIFY(tabBarParent != nullptr);
             QCOMPARE(tabBarParent->palette().color(QPalette::Window).name(), chromeFill.name());

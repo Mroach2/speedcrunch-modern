@@ -777,10 +777,11 @@ struct GeneratedThemeSurfaces
     // 200: result display and active session surface. This is the background
     // role from the selected SpeedCrunch theme.
     ThemeSurfaceColors result;
-    // 300: expression editor, dock list/table content, bitfield bit cells, and
-    // normal keypad buttons. The editor no longer has an independent theme
-    // role; it is derived from the result-display background by moving one
-    // OKLCH shade step away from the base surface.
+    // 300: expression editor, dock list/table content, bitfield bit cells,
+    // hovered dock header buttons, and normal keypad buttons. The editor no
+    // longer has an independent theme role; it is derived from the
+    // result-display background by moving one OKLCH shade step away from the
+    // base surface.
     ThemeSurfaceColors editorAndLists;
     // 400: dock title bars, dock/list/table headers, combo popup fill,
     // list/table hovered items, active dock tabs, selected session tabs,
@@ -1089,21 +1090,55 @@ void applyScrollBarColorsToScrollArea(QAbstractScrollArea* area, const ThemeScro
     applyScrollCornerColorToScrollArea(area, colors.track);
 }
 
-QIcon dockTitleButtonIcon(bool isCloseButton, const QColor& foreground)
+QIcon dockTitleButtonIcon(bool isCloseButton, const QColor& fill, const QColor& foreground)
 {
-    QPixmap pixmap(12, 12);
-    pixmap.fill(Qt::transparent);
+    const auto pixmapForScale = [isCloseButton, &fill, &foreground](qreal scale) {
+        constexpr int logicalSize = 18;
+        const int physicalSize = qRound(logicalSize * scale);
+        QPixmap pixmap(physicalSize, physicalSize);
+        pixmap.setDevicePixelRatio(scale);
+        pixmap.fill(Qt::transparent);
 
-    QPainter painter(&pixmap);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(QPen(foreground, 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    if (isCloseButton) {
-        painter.drawLine(QPointF(3, 3), QPointF(9, 9));
-        painter.drawLine(QPointF(9, 3), QPointF(3, 9));
-    } else {
-        painter.drawRect(QRectF(3, 3, 6, 6));
-    }
-    return QIcon(pixmap);
+        QPainter painter(&pixmap);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(fill);
+        painter.drawEllipse(QRectF(0.5, 0.5, 17.0, 17.0));
+
+        painter.setBrush(Qt::NoBrush);
+        painter.setPen(QPen(foreground, 1.55, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        if (isCloseButton) {
+            painter.drawLine(QPointF(6.0, 6.0), QPointF(12.0, 12.0));
+            painter.drawLine(QPointF(12.0, 6.0), QPointF(6.0, 12.0));
+        } else {
+            painter.drawRect(QRectF(6.0, 6.0, 6.0, 6.0));
+        }
+        return pixmap;
+    };
+
+    QIcon icon;
+    icon.addPixmap(pixmapForScale(1.0));
+    icon.addPixmap(pixmapForScale(2.0));
+    icon.addPixmap(pixmapForScale(3.0));
+    return icon;
+}
+
+void applyDockTitleButtonIcon(QAbstractButton* button, bool hovered)
+{
+    if (button == nullptr)
+        return;
+
+    const bool closeButton =
+        button->property("speedcrunchDockHeaderCloseButton").toBool();
+    const QColor fill =
+        button->property(hovered
+                             ? "speedcrunchDockHeaderButtonHoverFill"
+                             : "speedcrunchDockHeaderButtonFill").value<QColor>();
+    const QColor foreground =
+        button->property(hovered
+                             ? "speedcrunchDockHeaderButtonHoverForeground"
+                             : "speedcrunchDockHeaderButtonForeground").value<QColor>();
+    button->setIcon(dockTitleButtonIcon(closeButton, fill, foreground));
 }
 
 QIcon dockSearchClearButtonIcon(const QColor& fill, const QColor& cross)
@@ -1258,11 +1293,27 @@ bool isComboBoxPopupView(const QAbstractItemView* view, const QList<QComboBox*>&
     return false;
 }
 
-void applyGeneratedDockChromeSurfaces(QDockWidget* dock, const GeneratedThemeSurfaces& surfaces)
+void updateDockSystemTabCursor(QTabBar* tabBar, const QPoint& pos)
+{
+    if (tabBar == nullptr)
+        return;
+
+    tabBar->setCursor(tabBar->tabAt(pos) >= 0
+                          ? Qt::PointingHandCursor
+                          : Qt::ArrowCursor);
+}
+
+void applyGeneratedDockChromeSurfaces(MainWindow* owner,
+                                      QDockWidget* dock,
+                                      const GeneratedThemeSurfaces& surfaces)
 {
     if (dock == nullptr)
         return;
 
+    const ThemeSurfaceColors titleButton =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::DockHeaderButtonFillShade);
+    const ThemeSurfaceColors titleButtonHover =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::DockHeaderButtonHoverFillShade);
     dock->setPalette(paletteForThemeSurface(dock->palette(), surfaces.headersAndBorders));
     dock->setStyleSheet(QStringLiteral(
         "QDockWidget {"
@@ -1272,13 +1323,26 @@ void applyGeneratedDockChromeSurfaces(QDockWidget* dock, const GeneratedThemeSur
         " background-color: %1; color: %2; padding: 5px 4px;"
         "}"
         "QDockWidget::close-button, QDockWidget::float-button {"
+        " background-color: transparent; border: none; padding: 0px;"
+        " width: 18px; height: 18px;"
+        "}"
+        "QAbstractButton#qt_dockwidget_closebutton,"
+        "QAbstractButton#qt_dockwidget_floatbutton {"
         " background-color: %3; color: %4;"
-        " border: 1px solid %1; border-radius: 8px; padding: 2px;"
+        " border: none; border-radius: 9px; padding: 0px;"
+        " min-width: 18px; max-width: 18px;"
+        " min-height: 18px; max-height: 18px;"
+        "}"
+        "QAbstractButton#qt_dockwidget_closebutton:hover,"
+        "QAbstractButton#qt_dockwidget_floatbutton:hover {"
+        " background-color: %5; color: %6;"
         "}")
                             .arg(surfaces.headersAndBorders.background.name(),
                                  surfaces.headersAndBorders.foreground.name(),
-                                 surfaces.inputs.background.name(),
-                                 surfaces.inputs.foreground.name()));
+                                 titleButton.background.name(),
+                                 titleButton.foreground.name(),
+                                 titleButtonHover.background.name(),
+                                 titleButtonHover.foreground.name()));
     dock->style()->unpolish(dock);
     dock->style()->polish(dock);
     dock->setWindowTitle(dock->windowTitle());
@@ -1288,8 +1352,35 @@ void applyGeneratedDockChromeSurfaces(QDockWidget* dock, const GeneratedThemeSur
         const bool floatButton = button->objectName() == QLatin1String("qt_dockwidget_floatbutton");
         if (!closeButton && !floatButton)
             continue;
-        button->setPalette(paletteForThemeSurface(button->palette(), surfaces.inputs));
-        button->setIcon(dockTitleButtonIcon(closeButton, surfaces.inputs.foreground));
+        button->setProperty("speedcrunchDockHeaderButton", true);
+        button->setProperty("speedcrunchDockHeaderCloseButton", closeButton);
+        button->setProperty("speedcrunchDockHeaderButtonFill", titleButton.background);
+        button->setProperty("speedcrunchDockHeaderButtonForeground", titleButton.foreground);
+        button->setProperty("speedcrunchDockHeaderButtonHoverFill", titleButtonHover.background);
+        button->setProperty("speedcrunchDockHeaderButtonHoverForeground",
+                            titleButtonHover.foreground);
+        if (owner != nullptr)
+            button->installEventFilter(owner);
+        button->setCursor(Qt::PointingHandCursor);
+        button->setMouseTracking(true);
+        button->setAttribute(Qt::WA_Hover, true);
+        button->setFixedSize(QSize(18, 18));
+        button->setIconSize(QSize(18, 18));
+        button->setStyleSheet(QStringLiteral(
+            "QAbstractButton {"
+            " background-color: %1; color: %2;"
+            " border: none; border-radius: 9px; padding: 0px;"
+            " min-width: 18px; max-width: 18px;"
+            " min-height: 18px; max-height: 18px;"
+            "}"
+            "QAbstractButton:hover {"
+            " background-color: %3; color: %4;"
+            "}").arg(titleButton.background.name(),
+                     titleButton.foreground.name(),
+                     titleButtonHover.background.name(),
+                     titleButtonHover.foreground.name()));
+        button->setPalette(paletteForThemeSurface(button->palette(), titleButton));
+        applyDockTitleButtonIcon(button, button->underMouse());
     }
 }
 
@@ -5572,6 +5663,13 @@ void MainWindow::applyThemeSurfacePalette()
             }
             const QPalette tabBarPalette =
                 paletteForThemeSurface(tabBar->palette(), tabSurfaces.headersAndBorders);
+            if (!tabBar->property("speedcrunchDockSystemTabBar").toBool()) {
+                tabBar->setProperty("speedcrunchDockSystemTabBar", true);
+                tabBar->setMouseTracking(true);
+                tabBar->setAttribute(Qt::WA_Hover, true);
+                tabBar->installEventFilter(this);
+            }
+            updateDockSystemTabCursor(tabBar, tabBar->mapFromGlobal(QCursor::pos()));
             tabBar->setDrawBase(false);
             tabBar->setPalette(tabBarPalette);
             tabBar->setStyleSheet(QStringLiteral(
@@ -5640,7 +5738,7 @@ void MainWindow::applyThemeSurfacePalette()
         if (dock == nullptr)
             continue;
         applyGeneratedDockContentSurfaces(this, dock, surfaces);
-        applyGeneratedDockChromeSurfaces(dock, surfaces);
+        applyGeneratedDockChromeSurfaces(this, dock, surfaces);
     }
     for (QMenu* menu : findChildren<QMenu*>())
         applyMenuSurface(menu, surfaces.headersAndBorders, surfaces.inputs);
@@ -5682,7 +5780,7 @@ void MainWindow::applyThemeSurfacePalette()
         const QList<QDockWidget*> docks = m_allDocks;
         for (QDockWidget* dock : docks) {
             applyGeneratedDockContentSurfaces(this, dock, surfaces);
-            applyGeneratedDockChromeSurfaces(dock, surfaces);
+            applyGeneratedDockChromeSurfaces(this, dock, surfaces);
         }
         for (QMenu* menu : findChildren<QMenu*>())
             applyMenuSurface(menu, surfaces.headersAndBorders, surfaces.inputs);
@@ -6259,7 +6357,7 @@ void MainWindow::addTabifiedDock(QDockWidget* newDock, bool takeFocus, Qt::DockW
     newDock->raise();
     const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
     applyGeneratedDockContentSurfaces(this, newDock, surfaces);
-    applyGeneratedDockChromeSurfaces(newDock, surfaces);
+    applyGeneratedDockChromeSurfaces(this, newDock, surfaces);
     updateSplitterStyleSheet();
     QPointer<QDockWidget> guardedDock(newDock);
     QTimer::singleShot(0, newDock, [this, guardedDock]() {
@@ -6267,7 +6365,7 @@ void MainWindow::addTabifiedDock(QDockWidget* newDock, bool takeFocus, Qt::DockW
             return;
         const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
         applyGeneratedDockContentSurfaces(this, guardedDock, surfaces);
-        applyGeneratedDockChromeSurfaces(guardedDock, surfaces);
+        applyGeneratedDockChromeSurfaces(this, guardedDock, surfaces);
         updateSplitterStyleSheet();
     });
     if (takeFocus)
@@ -9862,6 +9960,35 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
             const QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(e);
             if (mouseEvent->buttons() & Qt::LeftButton)
                 hideCurrentResultPreview();
+        }
+        return QMainWindow::eventFilter(o, e);
+    }
+
+    if (QAbstractButton* button = qobject_cast<QAbstractButton*>(o);
+        button != nullptr && button->property("speedcrunchDockHeaderButton").toBool()) {
+        if (e->type() == QEvent::Enter
+            || e->type() == QEvent::HoverEnter
+            || e->type() == QEvent::MouseMove) {
+            applyDockTitleButtonIcon(button, true);
+        } else if (e->type() == QEvent::Leave) {
+            applyDockTitleButtonIcon(button, false);
+        }
+        return QMainWindow::eventFilter(o, e);
+    }
+
+    if (QTabBar* tabBar = qobject_cast<QTabBar*>(o);
+        tabBar != nullptr && tabBar->property("speedcrunchDockSystemTabBar").toBool()) {
+        if (e->type() == QEvent::Enter) {
+            QEnterEvent* enterEvent = static_cast<QEnterEvent*>(e);
+            updateDockSystemTabCursor(tabBar, enterEvent->position().toPoint());
+        } else if (e->type() == QEvent::HoverEnter || e->type() == QEvent::HoverMove) {
+            QHoverEvent* hoverEvent = static_cast<QHoverEvent*>(e);
+            updateDockSystemTabCursor(tabBar, hoverEvent->position().toPoint());
+        } else if (e->type() == QEvent::MouseMove) {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(e);
+            updateDockSystemTabCursor(tabBar, mouseEvent->pos());
+        } else if (e->type() == QEvent::Leave) {
+            tabBar->setCursor(Qt::ArrowCursor);
         }
         return QMainWindow::eventFilter(o, e);
     }
