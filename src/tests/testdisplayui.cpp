@@ -1565,6 +1565,9 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
                                             changedDisplayImage.height() / 2).name(),
              QStringLiteral("#300a24"));
 
+    if (!UiConfig::OklchThemeDebugReportEnabled)
+        return;
+
     QFile report(QDir(QDir::tempPath()).absoluteFilePath(
         QStringLiteral("speedcrunch-oklch-theme-report.html")));
     QVERIFY(report.open(QIODevice::ReadOnly | QIODevice::Text));
