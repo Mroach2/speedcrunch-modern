@@ -1906,8 +1906,11 @@ QStringList Editor::matchFragment(const QString& id, bool unitContext) const
                     : userDescription;
             } else {
                 const QString localizedName = unitLocalizedIdentifierName(unitName);
-                if (!localizedName.isEmpty())
-                    unitDescription = tr(localizedName.toUtf8().constData());
+                if (!localizedName.isEmpty()) {
+                    unitDescription = isUnitLocalizedNameTranslatable(localizedName)
+                        ? tr(localizedName.toUtf8().constData())
+                        : localizedName;
+                }
             }
             unitChoices.append(unitName + QStringLiteral(":") + unitDescription);
         }

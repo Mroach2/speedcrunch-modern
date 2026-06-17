@@ -3418,7 +3418,7 @@ QString MainWindow::statusBarResultPrecisionValue() const
 
 void MainWindow::setActionsText()
 {
-    m_actions.sessionExportHtml->setText(MainWindow::tr("&HTML"));
+    m_actions.sessionExportHtml->setText(QStringLiteral("&HTML"));
     m_actions.sessionExportPlainText->setText(MainWindow::tr("Plain &text"));
     m_actions.sessionImport->setText(MainWindow::tr("&Import..."));
     m_actions.sessionImportUserDefinitions->setText(MainWindow::tr("User &Definitions..."));
@@ -3443,9 +3443,9 @@ void MainWindow::setActionsText()
     m_actions.viewKeypadScientificWide->setText(MainWindow::tr("&Scientific (wide)"));
     m_actions.viewKeypadScientificNarrow->setText(MainWindow::tr("Scientific (narrow)"));
     m_actions.viewKeypadCustom->setText(MainWindow::tr("&Custom..."));
-    m_actions.viewKeypadZoom100->setText(MainWindow::tr("100%"));
-    m_actions.viewKeypadZoom150->setText(MainWindow::tr("150%"));
-    m_actions.viewKeypadZoom200->setText(MainWindow::tr("200%"));
+    m_actions.viewKeypadZoom100->setText(QStringLiteral("100%"));
+    m_actions.viewKeypadZoom150->setText(QStringLiteral("150%"));
+    m_actions.viewKeypadZoom200->setText(QStringLiteral("200%"));
     m_actions.viewFormulaBook->setText(MainWindow::tr("Formula &Book"));
     m_actions.viewStatusBar->setText(MainWindow::tr("&Status Bar"));
     m_actions.viewMenuBar->setText(MainWindow::tr("Main &Menu"));
@@ -3530,10 +3530,10 @@ void MainWindow::setActionsText()
     m_actions.settingsResultFormatPolar->setText(MainWindow::tr("Exponential (reⁱᶿ)"));
     m_actions.settingsResultFormatTrigonometric->setText(
         MainWindow::tr("Trigonometric (r(cos θ + i·sin θ))"));
-    m_actions.settingsResultFormatCis->setText(MainWindow::tr("Cis (r·cis(θ))"));
+    m_actions.settingsResultFormatCis->setText(QStringLiteral("Cis (r·cis(θ))"));
     m_actions.settingsResultFormatPolarAngle->setText(MainWindow::tr("Phasor (r∠θ)"));
-    m_actions.settingsImaginaryUnitI->setText(MainWindow::tr("&i"));
-    m_actions.settingsImaginaryUnitJ->setText(MainWindow::tr("&j"));
+    m_actions.settingsImaginaryUnitI->setText(QStringLiteral("&i"));
+    m_actions.settingsImaginaryUnitJ->setText(QStringLiteral("&j"));
     m_actions.settingsDisplayFont->setText(MainWindow::tr("&Font..."));
     m_actions.settingsDisplayColorSchemeCustom->setText(MainWindow::tr("&Theme..."));
     m_actions.settingsLanguage->setText(MainWindow::tr("&Language..."));
@@ -5561,7 +5561,7 @@ void MainWindow::updateSessionWindowTitle()
     if (displays.size() == 1) {
         const QStringList names = paneSessionNames(displays.first());
         if (names.size() == 1) {
-            setWindowTitle(tr("SpeedCrunch - %1").arg(names.first()));
+            setWindowTitle(QStringLiteral("SpeedCrunch - %1").arg(names.first()));
             return;
         }
     }

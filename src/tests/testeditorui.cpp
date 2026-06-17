@@ -2529,8 +2529,8 @@ void TestEditorUi::unit_context_completion_includes_angle_units_and_long_forms()
     const QString aCDescription = descriptionFor(aChoices, QStringLiteral("aC"));
     QVERIFY(!acDescription.isEmpty());
     QVERIFY(!aCDescription.isEmpty());
-    QCOMPARE(acDescription, tr("acre"));
-    QVERIFY(aCDescription != tr("acre"));
+    QCOMPARE(acDescription, QStringLiteral("acre"));
+    QVERIFY(aCDescription != QStringLiteral("acre"));
     QVERIFY(aCDescription != tr("Unit"));
 }
 

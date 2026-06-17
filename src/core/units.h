@@ -258,6 +258,7 @@ UnitId unitId(const QString& normalizedName);
 QString unitName(UnitId id);
 const char* unitLocalizedName(UnitId id);
 QString unitLocalizedIdentifierName(const QString& identifier);
+bool isUnitLocalizedNameTranslatable(const QString& localizedName);
 QString unitSymbol(UnitId id);
 bool isPreferredCanonicalDisplayUnit(UnitId id);
 QStringView unitPhrase(UnitPhraseId key);

@@ -44,7 +44,7 @@ echo "Using lrelease: ${lrelease_bin}"
 echo "Project file: ${pro_file}"
 
 cd "${src_dir}"
-"${lupdate_bin}" speedcrunch.pro
+"${lupdate_bin}" -no-obsolete speedcrunch.pro
 "${lrelease_bin}" speedcrunch.pro
 
 echo "Done: TS updated and QM rebuilt."

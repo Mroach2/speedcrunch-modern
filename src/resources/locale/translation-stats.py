@@ -21,6 +21,11 @@ import xml.etree.ElementTree as ET
 
 MessageKey = tuple[str, str]
 
+RED = "\033[31m"
+GREEN = "\033[32m"
+YELLOW = "\033[33m"
+RESET = "\033[0m"
+
 
 def _pct(n: int, d: int) -> float:
     if d <= 0:
@@ -103,6 +108,11 @@ def main(argv: list[str]) -> int:
         default=0,
         help="Show up to N sample untranslated source strings per language.",
     )
+    ap.add_argument(
+        "--complete-ts-files",
+        action="store_true",
+        help="Only print a space-separated list of .ts files with 100%% completion.",
+    )
     args = ap.parse_args(argv)
 
     root_dir = os.path.abspath(args.root)
@@ -150,6 +160,7 @@ def main(argv: list[str]) -> int:
 
         rows.append(
             {
+                "ts_name": ts_name,
                 "lang": lang,
                 "total": total,
                 "translated": translated,
@@ -159,6 +170,10 @@ def main(argv: list[str]) -> int:
             }
         )
 
+    if args.complete_ts_files:
+        print(" ".join(r["ts_name"] for r in rows if r["completion"] == 100.0))
+        return 0
+
     print("Qt TS/QM Translation Statistics")
     print(f"Locale root: {root_dir}")
     print(f"Languages: {len(rows)}\n")
@@ -166,9 +181,17 @@ def main(argv: list[str]) -> int:
     header = f"{'language':<12} {'total':>7} {'translated':>11} {'unfinished':>11} {'completion':>11}"
     print(header)
     for r in rows:
-        print(
-            f"{r['lang']:<12} {r['total']:>7} {r['translated']:>11} {r['unfinished']:>11} {r['completion']:>10.1f}%"
+        row = (
+            f"{r['lang']:<12} {r['total']:>7} {r['translated']:>11} "
+            f"{r['unfinished']:>11} {r['completion']:>10.1f}%"
         )
+        if r["completion"] == 100.0:
+            row = f"{GREEN}{row}{RESET}"
+        elif r["completion"] < 50.0:
+            row = f"{RED}{row}{RESET}"
+        else:
+            row = f"{YELLOW}{row}{RESET}"
+        print(row)
 
         if args.samples > 0:
             shown = 0
