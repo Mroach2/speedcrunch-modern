@@ -73,6 +73,12 @@ def _ts_messages(ts_path: str) -> dict[MessageKey, bool]:
     return messages
 
 
+def _ts_message_stats(ts_path: str) -> tuple[int, int, dict[MessageKey, bool]]:
+    messages = _ts_messages(ts_path)
+    translated = sum(1 for is_translated in messages.values() if is_translated)
+    return len(messages), translated, messages
+
+
 def _qm_info(qm_path: str) -> dict:
     try:
         st = os.stat(qm_path)
@@ -128,18 +134,14 @@ def main(argv: list[str]) -> int:
             continue
         qm_name = lang + ".qm"
 
-        lang_messages = _ts_messages(ts_path)
-        translated = 0
+        total, translated, lang_messages = _ts_message_stats(ts_path)
 
         # Keep some samples for optional debug output.
         samples: list[tuple[str, str]] = []
-        for key in template_keys:
-            if lang_messages.get(key, False):
-                translated += 1
-            elif key[1]:
+        for key in sorted(template_keys - set(lang_messages.keys())):
+            if key[1]:
                 samples.append(key)
 
-        total = len(template_keys)
         unfinished = total - translated
 
         g_total += total
