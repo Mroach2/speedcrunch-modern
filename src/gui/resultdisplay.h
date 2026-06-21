@@ -21,6 +21,8 @@ class QPainter;
 class QPoint;
 class QMouseEvent;
 class QEvent;
+class QFrame;
+class QLabel;
 class QPaintEvent;
 class QRect;
 class QResizeEvent;
@@ -45,7 +47,11 @@ public:
     void setCloseSessionEnabled(bool enabled);
     void setSession(const Session* session);
     void setThemeSurfaceColor(const QColor& color);
+    void setThemeToolTipColors(const QColor& background,
+                               const QColor& foreground,
+                               const QColor& outline);
     void setThemeInteractionColors(const QColor& hoverBackground,
+                                   const QColor& primaryColor,
                                    const QColor& menuBackground,
                                    const QColor& menuForeground,
                                    const QColor& menuHoverBackground,
@@ -124,6 +130,7 @@ protected:
     void drawScrollEdgeGradients(QPainter* painter);
     void repositionScrollToBottomButton();
     void updateScrollToBottomButtonVisibility();
+    void updateSurfaceStyleSheet();
     void updateScrollToBottomButtonStyle();
     void updateScrollBarStyleSheet();
     int historyIndexAtPosition(const QPoint& pos) const;
@@ -150,6 +157,26 @@ protected:
 private:
     Q_DISABLE_COPY(ResultDisplay)
 
+    enum HoveredActionBadge {
+        NoActionBadge,
+        CopyActionBadge,
+        EditActionBadge,
+        SettingsActionBadge,
+        RemoveActionBadge,
+        CancelActionBadge
+    };
+
+    QRect actionBadgeRect(HoveredActionBadge badge) const;
+    void setHoveredActionBadge(HoveredActionBadge badge);
+    void setHoverActionToolTip(const QString& text);
+    void applyHoverActionPopupTheme();
+    void ensureHoverActionPopup();
+    void hideHoverActionPopup();
+    void showHoverActionPopup(const QString& text);
+    void updateHoverActionPopupMask();
+    QColor hoverActionBadgeFillColor() const;
+    QColor hoverActionIconColor(HoveredActionBadge badge) const;
+
     SyntaxHighlighter* m_highlighter;
     QBasicTimer m_scrollTimer;
     int m_scrolledLines;
@@ -168,11 +195,18 @@ private:
     bool m_closeSessionEnabled;
     const Session* m_session;
     QColor m_themeSurfaceColor;
+    QColor m_toolTipBackgroundColor;
+    QColor m_toolTipForegroundColor;
+    QColor m_toolTipOutlineColor;
+    QFrame* m_hoverActionPopup;
+    QLabel* m_hoverActionPopupLabel;
     QColor m_hoverHighlightColor;
+    QColor m_primaryColor;
     QColor m_contextMenuBackgroundColor;
     QColor m_contextMenuForegroundColor;
     QColor m_contextMenuHoverBackgroundColor;
     QColor m_contextMenuHoverForegroundColor;
+    HoveredActionBadge m_hoveredActionBadge;
     bool m_scrollToBottomButtonHovered;
     QToolButton* m_scrollToBottomButton;
 };

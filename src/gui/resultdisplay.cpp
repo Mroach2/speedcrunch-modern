@@ -25,9 +25,13 @@
 
 #include <QLatin1String>
 #include <QApplication>
+#include <QBitmap>
 #include <QClipboard>
 #include <QContextMenuEvent>
+#include <QFrame>
+#include <QGuiApplication>
 #include <QIcon>
+#include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
@@ -37,8 +41,9 @@
 #include <QPolygonF>
 #include <QLinearGradient>
 #include <QScrollBar>
+#include <QScreen>
 #include <QToolButton>
-#include <QToolTip>
+#include <QVBoxLayout>
 
 #include <limits>
 
@@ -94,6 +99,52 @@ QVector<QColor> resultDisplayShadesFromBackground(const QColor& background)
 QColor shadeOrFallback(const QVector<QColor>& shades, int index, const QColor& fallback)
 {
     return shades.value(index, fallback);
+}
+
+void applyRoundedPopupMask(QWidget* popup, int cornerRadius)
+{
+    if (popup == nullptr)
+        return;
+
+    if (cornerRadius > 0) {
+        QBitmap mask(popup->size());
+        mask.fill(Qt::color0);
+        QPainter painter(&mask);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(Qt::color1);
+        painter.drawRoundedRect(QRectF(mask.rect()).adjusted(0, 0, -1, -1),
+                                cornerRadius,
+                                cornerRadius);
+        popup->setMask(mask);
+    } else {
+        popup->clearMask();
+    }
+}
+
+QPoint constrainedPopupPosition(QWidget* anchor,
+                                const QPoint& globalPos,
+                                const QSize& popupSize)
+{
+    constexpr int kPopupOffsetX = 12;
+    constexpr int kPopupOffsetY = 18;
+
+    QPoint pos = globalPos + QPoint(kPopupOffsetX, kPopupOffsetY);
+    QScreen* screen = anchor != nullptr ? anchor->screen() : QGuiApplication::primaryScreen();
+    if (screen == nullptr)
+        return pos;
+
+    const QRect available = screen->availableGeometry();
+    if (pos.x() + popupSize.width() > available.right())
+        pos.setX(globalPos.x() - popupSize.width() - kPopupOffsetX);
+    if (pos.y() + popupSize.height() > available.bottom())
+        pos.setY(globalPos.y() - popupSize.height() - kPopupOffsetY);
+
+    pos.setX(qBound(available.left(), pos.x(),
+                    qMax(available.left(), available.right() - popupSize.width())));
+    pos.setY(qBound(available.top(), pos.y(),
+                    qMax(available.top(), available.bottom() - popupSize.height())));
+    return pos;
 }
 
 ResultDisplayScrollBarColors scrollBarColorsForResultBackground(const QColor& background)
@@ -434,6 +485,19 @@ ResultDisplay::ResultDisplay(QWidget* parent)
     , m_loadedSessionCount(1)
     , m_closeSessionEnabled(false)
     , m_session(nullptr)
+    , m_themeSurfaceColor()
+    , m_toolTipBackgroundColor()
+    , m_toolTipForegroundColor()
+    , m_toolTipOutlineColor()
+    , m_hoverActionPopup(nullptr)
+    , m_hoverActionPopupLabel(nullptr)
+    , m_hoverHighlightColor()
+    , m_primaryColor()
+    , m_contextMenuBackgroundColor()
+    , m_contextMenuForegroundColor()
+    , m_contextMenuHoverBackgroundColor()
+    , m_contextMenuHoverForegroundColor()
+    , m_hoveredActionBadge(NoActionBadge)
     , m_scrollToBottomButtonHovered(false)
     , m_scrollToBottomButton(new QToolButton(this))
 {
@@ -679,26 +743,46 @@ void ResultDisplay::rehighlight()
     viewport()->setAutoFillBackground(true);
     viewport()->setAttribute(Qt::WA_StyledBackground, true);
 
-    const QString background = backgroundColor.name();
-    setStyleSheet(QStringLiteral("QPlainTextEdit { background-color: %1; }").arg(background));
-    viewport()->setStyleSheet(QStringLiteral("background-color: %1;").arg(background));
+    updateSurfaceStyleSheet();
     updateScrollBarStyleSheet();
 }
 
 void ResultDisplay::setThemeSurfaceColor(const QColor& color)
 {
     m_themeSurfaceColor = color;
+    updateSurfaceStyleSheet();
     updateScrollToBottomButtonStyle();
     updateScrollBarStyleSheet();
 }
 
+void ResultDisplay::setThemeToolTipColors(const QColor& background,
+                                          const QColor& foreground,
+                                          const QColor& outline)
+{
+    m_toolTipBackgroundColor = background;
+    m_toolTipForegroundColor = foreground;
+    m_toolTipOutlineColor = outline;
+    applyHoverActionPopupTheme();
+}
+
+void ResultDisplay::updateSurfaceStyleSheet()
+{
+    const QString background = themeSurfaceBackground().name();
+    setStyleSheet(QStringLiteral("QPlainTextEdit { background-color: %1; }")
+                      .arg(background));
+    viewport()->setStyleSheet(QStringLiteral("QWidget { background-color: %1; }")
+                                  .arg(background));
+}
+
 void ResultDisplay::setThemeInteractionColors(const QColor& hoverBackground,
+                                              const QColor& primaryColor,
                                               const QColor& menuBackground,
                                               const QColor& menuForeground,
                                               const QColor& menuHoverBackground,
                                               const QColor& menuHoverForeground)
 {
     m_hoverHighlightColor = hoverBackground;
+    m_primaryColor = primaryColor;
     m_contextMenuBackgroundColor = menuBackground;
     m_contextMenuForegroundColor = menuForeground;
     m_contextMenuHoverBackgroundColor = menuHoverBackground;
@@ -720,10 +804,176 @@ void ResultDisplay::clearHoverFeedback()
 {
     const int previousHoveredHistoryIndex = m_hoveredHistoryIndex;
     m_hoveredHistoryIndex = -1;
-    QToolTip::hideText();
+    setHoveredActionBadge(NoActionBadge);
+    setHoverActionToolTip(QString());
     updateHoverHighlightSelection();
     if (previousHoveredHistoryIndex >= 0)
         viewport()->update(hoverActionRectForHistoryIndex(previousHoveredHistoryIndex));
+}
+
+QRect ResultDisplay::actionBadgeRect(HoveredActionBadge badge) const
+{
+    if (badge == CancelActionBadge)
+        return cancelGlyphBadgeRectForEditingIndex();
+    if (m_hoveredHistoryIndex < 0)
+        return QRect();
+
+    switch (badge) {
+    case CopyActionBadge:
+        return copyGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
+    case EditActionBadge:
+        return editGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
+    case SettingsActionBadge:
+        return settingsGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
+    case RemoveActionBadge:
+        return removeGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
+    default:
+        return QRect();
+    }
+}
+
+void ResultDisplay::setHoveredActionBadge(HoveredActionBadge badge)
+{
+    if (m_hoveredActionBadge == badge)
+        return;
+
+    const QRect previousRect = actionBadgeRect(m_hoveredActionBadge);
+    m_hoveredActionBadge = badge;
+    const QRect currentRect = actionBadgeRect(m_hoveredActionBadge);
+    if (previousRect.isValid())
+        viewport()->update(previousRect.adjusted(-1, -1, 1, 1));
+    if (currentRect.isValid())
+        viewport()->update(currentRect.adjusted(-1, -1, 1, 1));
+}
+
+void ResultDisplay::setHoverActionToolTip(const QString& text)
+{
+    if (text.isEmpty())
+        hideHoverActionPopup();
+    else
+        showHoverActionPopup(text);
+}
+
+void ResultDisplay::applyHoverActionPopupTheme()
+{
+    if (m_hoverActionPopup == nullptr)
+        return;
+
+    const QColor background = m_toolTipBackgroundColor.isValid()
+        ? m_toolTipBackgroundColor
+        : palette().color(QPalette::ToolTipBase);
+    const QColor foreground = m_toolTipForegroundColor.isValid()
+        ? m_toolTipForegroundColor
+        : palette().color(QPalette::ToolTipText);
+    const QColor outline = m_toolTipOutlineColor.isValid()
+        ? m_toolTipOutlineColor
+        : background;
+    const int cornerRadius = qMax(0, UiConfig::ResultTooltipCornerRadius);
+
+    QPalette popupPalette = m_hoverActionPopup->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        popupPalette.setColor(group, QPalette::Window, background);
+        popupPalette.setColor(group, QPalette::WindowText, foreground);
+    }
+    m_hoverActionPopup->setPalette(popupPalette);
+
+    QPalette labelPalette = m_hoverActionPopupLabel->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        labelPalette.setColor(group, QPalette::WindowText, foreground);
+        labelPalette.setColor(group, QPalette::Text, foreground);
+    }
+    m_hoverActionPopupLabel->setPalette(labelPalette);
+
+    m_hoverActionPopup->setStyleSheet(QStringLiteral(
+        "QFrame#resultActionPopup {"
+        " background: %1; color: %2;"
+        " border: %4px solid %3;"
+        " border-radius: %5px;"
+        "}"
+        "QLabel#resultActionPopupLabel {"
+        " background: transparent; color: %2;"
+        "}")
+                                          .arg(background.name(),
+                                               foreground.name(),
+                                               outline.name())
+                                          .arg(UiConfig::PopupOutlineStrokeWidth)
+                                          .arg(cornerRadius));
+    updateHoverActionPopupMask();
+}
+
+void ResultDisplay::ensureHoverActionPopup()
+{
+    if (m_hoverActionPopup != nullptr)
+        return;
+
+    m_hoverActionPopup = new QFrame(this, Qt::ToolTip | Qt::FramelessWindowHint);
+    m_hoverActionPopup->setObjectName(QStringLiteral("resultActionPopup"));
+    m_hoverActionPopup->setAutoFillBackground(true);
+    m_hoverActionPopup->setAttribute(Qt::WA_ShowWithoutActivating, true);
+    m_hoverActionPopup->setAttribute(Qt::WA_StyledBackground, true);
+    m_hoverActionPopup->setFocusPolicy(Qt::NoFocus);
+    m_hoverActionPopup->setFrameStyle(QFrame::NoFrame);
+
+    QVBoxLayout* layout = new QVBoxLayout(m_hoverActionPopup);
+    layout->setContentsMargins(6, 4, 6, 4);
+    layout->setSpacing(0);
+
+    m_hoverActionPopupLabel = new QLabel(m_hoverActionPopup);
+    m_hoverActionPopupLabel->setObjectName(QStringLiteral("resultActionPopupLabel"));
+    m_hoverActionPopupLabel->setTextFormat(Qt::RichText);
+    m_hoverActionPopupLabel->setTextInteractionFlags(Qt::NoTextInteraction);
+    m_hoverActionPopupLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
+    layout->addWidget(m_hoverActionPopupLabel);
+
+    applyHoverActionPopupTheme();
+}
+
+void ResultDisplay::hideHoverActionPopup()
+{
+    if (m_hoverActionPopup != nullptr)
+        m_hoverActionPopup->hide();
+}
+
+void ResultDisplay::showHoverActionPopup(const QString& text)
+{
+    ensureHoverActionPopup();
+    m_hoverActionPopupLabel->setText(text);
+    m_hoverActionPopup->adjustSize();
+    m_hoverActionPopup->resize(m_hoverActionPopup->sizeHint());
+    updateHoverActionPopupMask();
+    m_hoverActionPopup->move(constrainedPopupPosition(viewport(),
+                                                      QCursor::pos(),
+                                                      m_hoverActionPopup->size()));
+    m_hoverActionPopup->show();
+}
+
+void ResultDisplay::updateHoverActionPopupMask()
+{
+    if (m_hoverActionPopup == nullptr)
+        return;
+
+    applyRoundedPopupMask(m_hoverActionPopup, qMax(0, UiConfig::ResultTooltipCornerRadius));
+}
+
+QColor ResultDisplay::hoverActionBadgeFillColor() const
+{
+    const QColor hoverColor = m_hoverHighlightColor.isValid()
+        ? m_hoverHighlightColor
+        : hoverColorForBackground(themeSurfaceBackground());
+    return aaForegroundForBackground(hoverColor, 7.0);
+}
+
+QColor ResultDisplay::hoverActionIconColor(HoveredActionBadge badge) const
+{
+    if (badge == m_hoveredActionBadge && m_primaryColor.isValid())
+        return m_primaryColor;
+    return m_hoverHighlightColor.isValid()
+        ? m_hoverHighlightColor
+        : hoverColorForBackground(themeSurfaceBackground());
 }
 
 
@@ -1240,6 +1490,8 @@ void ResultDisplay::leaveEvent(QEvent* event)
 {
     QPlainTextEdit::leaveEvent(event);
     viewport()->unsetCursor();
+    setHoveredActionBadge(NoActionBadge);
+    setHoverActionToolTip(QString());
     if (m_hoveredHistoryIndex >= 0) {
         const int previousHoveredHistoryIndex = m_hoveredHistoryIndex;
         m_hoveredHistoryIndex = -1;
@@ -1316,23 +1568,21 @@ void ResultDisplay::mouseMoveEvent(QMouseEvent* event)
     QPlainTextEdit::mouseMoveEvent(event);
 
     if (event->buttons() & Qt::LeftButton) {
-        QToolTip::hideText();
+        setHoverActionToolTip(QString());
         viewport()->unsetCursor();
+        setHoveredActionBadge(NoActionBadge);
         return;
     }
 
     if (m_editingHistoryIndex >= 0) {
         const QRect cancelRect = cancelGlyphBadgeRectForEditingIndex();
         const bool overCancelGlyph = cancelRect.isValid() && cancelRect.contains(event->pos());
+        setHoveredActionBadge(overCancelGlyph ? CancelActionBadge : NoActionBadge);
+        setHoverActionToolTip(overCancelGlyph ? tr("Cancel editing") : QString());
         if (overCancelGlyph)
             viewport()->setCursor(Qt::PointingHandCursor);
         else
             viewport()->unsetCursor();
-
-        if (overCancelGlyph)
-            QToolTip::showText(QCursor::pos(), tr("Cancel editing"), this);
-        else
-            QToolTip::hideText();
         return;
     }
 
@@ -1340,10 +1590,11 @@ void ResultDisplay::mouseMoveEvent(QMouseEvent* event)
         if (m_hoveredHistoryIndex >= 0) {
             const int previousHoveredHistoryIndex = m_hoveredHistoryIndex;
             m_hoveredHistoryIndex = -1;
+            setHoveredActionBadge(NoActionBadge);
             updateHoverHighlightSelection();
             viewport()->update(hoverActionRectForHistoryIndex(previousHoveredHistoryIndex));
         }
-        QToolTip::hideText();
+        setHoverActionToolTip(QString());
         viewport()->unsetCursor();
         return;
     }
@@ -1380,22 +1631,21 @@ void ResultDisplay::mouseMoveEvent(QMouseEvent* event)
     const bool overSettingsGlyph = settingsRect.contains(event->pos());
     const bool overRemoveGlyph = removeRect.contains(event->pos());
     const bool overActionGlyph = overCopyGlyph || overEditGlyph || overSettingsGlyph || overRemoveGlyph;
+    setHoveredActionBadge(overCopyGlyph ? CopyActionBadge
+        : overEditGlyph ? EditActionBadge
+        : overSettingsGlyph ? SettingsActionBadge
+        : overRemoveGlyph ? RemoveActionBadge
+        : NoActionBadge);
     if (overActionGlyph)
         viewport()->setCursor(Qt::PointingHandCursor);
     else
         viewport()->unsetCursor();
 
-    if (overCopyGlyph) {
-        QToolTip::showText(QCursor::pos(), tr("Copy result"), this);
-    } else if (overEditGlyph) {
-        QToolTip::showText(QCursor::pos(), tr("Edit expression"), this);
-    } else if (overSettingsGlyph) {
-        QToolTip::showText(QCursor::pos(), tr("Change settings"), this);
-    } else if (overRemoveGlyph) {
-        QToolTip::showText(QCursor::pos(), tr("Remove calculation"), this);
-    } else {
-        QToolTip::hideText();
-    }
+    setHoverActionToolTip(overCopyGlyph ? tr("Copy result")
+        : overEditGlyph ? tr("Edit expression")
+        : overSettingsGlyph ? tr("Change settings")
+        : overRemoveGlyph ? tr("Remove calculation")
+        : QString());
 }
 
 void ResultDisplay::paintEvent(QPaintEvent* event)
@@ -1410,11 +1660,13 @@ void ResultDisplay::paintEvent(QPaintEvent* event)
         if (!cancelRect.isValid())
             return;
 
+        const QColor badgeFill = hoverActionBadgeFillColor();
+        const QColor iconColor = hoverActionIconColor(CancelActionBadge);
         painter.setRenderHint(QPainter::Antialiasing, true);
         painter.setPen(Qt::NoPen);
-        painter.setBrush(Qt::white);
+        painter.setBrush(badgeFill);
         painter.drawEllipse(cancelRect);
-        painter.setPen(QPen(QColor(200, 50, 0, 255), 1.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter.setPen(QPen(iconColor, 1.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         const QPointF center = badgeCenter(cancelRect);
         const qreal side = cancelRect.width() * 0.22;
         painter.drawRect(QRectF(center.x() - side, center.y() - side, side * 2.0, side * 2.0));
@@ -1433,10 +1685,11 @@ void ResultDisplay::paintEvent(QPaintEvent* event)
 
     painter.setRenderHint(QPainter::Antialiasing, true);
 
+    const QColor badgeFill = hoverActionBadgeFillColor();
     painter.setPen(Qt::NoPen);
-    painter.setBrush(Qt::white);
+    painter.setBrush(badgeFill);
     painter.drawEllipse(copyRect);
-    painter.setPen(QPen(QColor(80, 80, 80, 255), 1.3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(QPen(hoverActionIconColor(CopyActionBadge), 1.3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     const QPointF copyCenter = badgeCenter(copyRect);
     const qreal pageSize = copyRect.width() * 0.33;
     const QRectF backPage(copyCenter.x() - pageSize * 0.72,
@@ -1452,21 +1705,21 @@ void ResultDisplay::paintEvent(QPaintEvent* event)
     painter.drawRoundedRect(frontPage, radius, radius);
 
     painter.setPen(Qt::NoPen);
-    painter.setBrush(Qt::white);
+    painter.setBrush(badgeFill);
     painter.drawEllipse(editRect);
-    painter.setPen(QPen(QColor(40, 90, 180, 255), 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(QPen(hoverActionIconColor(EditActionBadge), 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     const QPointF editCenter = badgeCenter(editRect);
     const qreal editHalf = editRect.width() * 0.20;
     painter.drawLine(QPointF(editCenter.x() - editHalf, editCenter.y() + editHalf),
                      QPointF(editCenter.x() + editHalf, editCenter.y() - editHalf));
-    painter.setPen(QPen(QColor(40, 90, 180, 255), 1.1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(QPen(hoverActionIconColor(EditActionBadge), 1.1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.drawLine(QPointF(editCenter.x() + editHalf * 0.62, editCenter.y() - editHalf * 0.62),
                      QPointF(editCenter.x() + editHalf * 1.08, editCenter.y() - editHalf * 1.08));
 
     painter.setPen(Qt::NoPen);
-    painter.setBrush(Qt::white);
+    painter.setBrush(badgeFill);
     painter.drawEllipse(settingsRect);
-    painter.setPen(QPen(QColor(20, 120, 120, 255), 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(QPen(hoverActionIconColor(SettingsActionBadge), 1.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     const QPointF settingsCenter = badgeCenter(settingsRect);
     const qreal gear = settingsRect.width() * 0.16;
     painter.drawEllipse(QRectF(settingsCenter.x() - gear, settingsCenter.y() - gear, gear * 2.0, gear * 2.0));
@@ -1480,9 +1733,9 @@ void ResultDisplay::paintEvent(QPaintEvent* event)
                      QPointF(settingsCenter.x(), settingsCenter.y() + gear * 1.9));
 
     painter.setPen(Qt::NoPen);
-    painter.setBrush(Qt::white);
+    painter.setBrush(badgeFill);
     painter.drawEllipse(removeRect);
-    painter.setPen(QPen(QColor(220, 0, 0, 255), 1.8, Qt::SolidLine, Qt::RoundCap));
+    painter.setPen(QPen(hoverActionIconColor(RemoveActionBadge), 1.8, Qt::SolidLine, Qt::RoundCap));
     const QPointF center = badgeCenter(removeRect);
     const qreal half = removeRect.width() * 0.22;
     painter.drawLine(QPointF(center.x() - half, center.y() - half),

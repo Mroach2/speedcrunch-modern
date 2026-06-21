@@ -4089,7 +4089,15 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
     QWidget* page = new QWidget(stack);
     applyThemeBackgroundRoleToWidget(page, surfaces.result.background);
     display->setThemeSurfaceColor(surfaces.result.background);
+    const ThemeSurfaceColors resultToolTip =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::ResultTooltipBackgroundShade);
+    const ThemeSurfaceColors resultToolTipOutline =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::ResultTooltipOutlineShade);
+    display->setThemeToolTipColors(resultToolTip.background,
+                                   resultToolTip.foreground,
+                                   resultToolTipOutline.background);
     display->setThemeInteractionColors(surfaces.editorAndLists.background,
+                                       surfaces.primary.background,
                                        surfaces.headersAndBorders.background,
                                        surfaces.headersAndBorders.foreground,
                                        surfaces.inputs.background,
@@ -5611,9 +5619,17 @@ void MainWindow::refreshPaneThemes()
 {
     const GeneratedThemeSurfaces surfaces = generatedSurfaceColors(m_settings);
     applyThemeBackgroundRoleToWidget(m_widgets.splitContainer, surfaces.window.background);
+    const ThemeSurfaceColors resultToolTip =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::ResultTooltipBackgroundShade);
+    const ThemeSurfaceColors resultToolTipOutline =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::ResultTooltipOutlineShade);
     for (ResultDisplay* display : splitPaneDisplays()) {
         display->setThemeSurfaceColor(surfaces.result.background);
+        display->setThemeToolTipColors(resultToolTip.background,
+                                       resultToolTip.foreground,
+                                       resultToolTipOutline.background);
         display->setThemeInteractionColors(surfaces.editorAndLists.background,
+                                           surfaces.primary.background,
                                            surfaces.headersAndBorders.background,
                                            surfaces.headersAndBorders.foreground,
                                            surfaces.inputs.background,

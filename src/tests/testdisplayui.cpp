@@ -3,6 +3,7 @@
 
 
 #include "core/colorscheme.h"
+#include "core/session.h"
 #include "core/settings.h"
 #include "gui/bitfieldwidget.h"
 #include "gui/constantswidget.h"
@@ -143,6 +144,24 @@ public:
     using ResultDisplay::createContextMenu;
 };
 
+class BadgeTestResultDisplay : public ResultDisplay {
+public:
+    explicit BadgeTestResultDisplay(QWidget* parent = nullptr)
+        : ResultDisplay(parent)
+    {
+    }
+
+    QRect copyBadgeRect(int historyIndex) const
+    {
+        return copyGlyphBadgeRectForHistoryIndex(historyIndex);
+    }
+
+    QRect editBadgeRect(int historyIndex) const
+    {
+        return editGlyphBadgeRectForHistoryIndex(historyIndex);
+    }
+};
+
 bool contextMenuContainsMainMenu(MenuTestResultDisplay* display)
 {
     QMenu* menu = display->createContextMenu(display->rect().center());
@@ -174,6 +193,18 @@ bool colorsAreClose(const QColor& actual, const QColor& expected, int tolerance 
     return qAbs(actual.red() - expected.red()) <= tolerance
         && qAbs(actual.green() - expected.green()) <= tolerance
         && qAbs(actual.blue() - expected.blue()) <= tolerance;
+}
+
+QPoint firstPixelMatchingColor(const QImage& image, const QRect& rect, const QColor& color, int tolerance)
+{
+    const QRect bounded = rect.intersected(image.rect());
+    for (int y = bounded.top(); y <= bounded.bottom(); ++y) {
+        for (int x = bounded.left(); x <= bounded.right(); ++x) {
+            if (colorsAreClose(image.pixelColor(x, y), color, tolerance))
+                return QPoint(x, y);
+        }
+    }
+    return QPoint(-1, -1);
 }
 
 class FunctionsTestTranslator : public QTranslator {
@@ -429,6 +460,7 @@ private slots:
     void theme_dialog_preserves_list_scroll_and_fills_role_color_buttons();
     void result_display_insets_viewport_horizontally();
     void result_display_scrollbar_hover_keeps_viewport_width_stable();
+    void result_display_hover_action_badges_use_hover_and_primary_colors();
     void result_display_context_menu_hides_main_menu_when_menu_bar_visible();
     void bitfield_selected_bit_keeps_primary_fill_while_hovered();
     void bitfield_buttons_use_configured_generated_shades();
@@ -640,12 +672,90 @@ void TestDisplayUi::result_display_scrollbar_hover_keeps_viewport_width_stable()
     QCOMPARE(display.viewport()->geometry(), initialViewportGeometry);
 }
 
+void TestDisplayUi::result_display_hover_action_badges_use_hover_and_primary_colors()
+{
+    BadgeTestResultDisplay display;
+    const QColor resultBackground(QStringLiteral("#101820"));
+    const QColor hoverColor(QStringLiteral("#2a3038"));
+    const QColor primaryColor(QStringLiteral("#79b8ff"));
+    const QColor popupBackground(QStringLiteral("#45465f"));
+    const QColor popupForeground(QStringLiteral("#f0ecff"));
+    const QColor popupOutline(QStringLiteral("#696a80"));
+    const QColor expectedBadgeFill = aaForegroundForBackground(hoverColor, 7.0);
+    display.setThemeSurfaceColor(resultBackground);
+    display.setThemeToolTipColors(popupBackground, popupForeground, popupOutline);
+    display.setThemeInteractionColors(hoverColor,
+                                      primaryColor,
+                                      QColor(QStringLiteral("#111111")),
+                                      QColor(QStringLiteral("#eeeeee")),
+                                      QColor(QStringLiteral("#222222")),
+                                      QColor(QStringLiteral("#ffffff")));
+    Session session;
+    session.addHistoryEntry(HistoryEntry(QStringLiteral("120 / 8"), Quantity(15)));
+    display.setSession(&session);
+    display.resize(420, 120);
+    display.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&display));
+
+    const QRect copyRect = display.copyBadgeRect(0);
+    const QRect editRect = display.editBadgeRect(0);
+    QVERIFY(copyRect.isValid());
+    QVERIFY(editRect.isValid());
+
+    QTest::mouseMove(display.viewport(), QPoint(18, copyRect.center().y()));
+    QTRY_VERIFY(display.viewport()->cursor().shape() != Qt::PointingHandCursor);
+    QCOMPARE(display.viewport()->toolTip(), QString());
+    QImage rowHoverImage = display.viewport()->grab().toImage();
+    QVERIFY2(colorsAreClose(rowHoverImage.pixelColor(copyRect.center()), expectedBadgeFill, 3),
+             qPrintable(QStringLiteral("badge fill %1 expected %2")
+                            .arg(rowHoverImage.pixelColor(copyRect.center()).name(),
+                                 expectedBadgeFill.name())));
+    const QPoint defaultIconPixel =
+        firstPixelMatchingColor(rowHoverImage, copyRect, hoverColor, 10);
+    QVERIFY2(defaultIconPixel.x() >= 0,
+             qPrintable(QStringLiteral("copy glyph did not use hover color %1")
+                            .arg(hoverColor.name())));
+
+    QTest::mouseMove(display.viewport(), copyRect.center());
+    QTRY_COMPARE(display.viewport()->cursor().shape(), Qt::PointingHandCursor);
+    QCOMPARE(display.viewport()->toolTip(), QString());
+    QFrame* actionPopup = display.findChild<QFrame*>(QStringLiteral("resultActionPopup"));
+    QTRY_VERIFY(actionPopup != nullptr && actionPopup->isVisible());
+    QLabel* actionPopupLabel =
+        actionPopup->findChild<QLabel*>(QStringLiteral("resultActionPopupLabel"));
+    QVERIFY(actionPopupLabel != nullptr);
+    QCOMPARE(actionPopupLabel->text(), QStringLiteral("Copy result"));
+    QVERIFY(actionPopup->styleSheet().contains(popupBackground.name()));
+    QVERIFY(actionPopup->styleSheet().contains(popupForeground.name()));
+    QVERIFY(actionPopup->styleSheet().contains(QStringLiteral("border: %1px solid %2")
+                                                   .arg(UiConfig::PopupOutlineStrokeWidth)
+                                                   .arg(popupOutline.name())));
+    QVERIFY(!actionPopup->mask().isEmpty());
+    QImage copyHoverImage = display.viewport()->grab().toImage();
+    const QPoint primaryIconPixel =
+        firstPixelMatchingColor(copyHoverImage, copyRect, primaryColor, 10);
+    QVERIFY2(primaryIconPixel.x() >= 0,
+             qPrintable(QStringLiteral("hovered copy glyph did not use primary color %1")
+                            .arg(primaryColor.name())));
+    const QPoint editHoverPixel =
+        firstPixelMatchingColor(copyHoverImage, editRect, hoverColor, 10);
+    QVERIFY2(editHoverPixel.x() >= 0,
+             qPrintable(QStringLiteral("non-hovered edit glyph did not keep hover color %1")
+                            .arg(hoverColor.name())));
+
+    QTest::mouseMove(display.viewport(), QPoint(18, copyRect.center().y()));
+    QTRY_VERIFY(display.viewport()->cursor().shape() != Qt::PointingHandCursor);
+    QCOMPARE(display.viewport()->toolTip(), QString());
+    QTRY_VERIFY(actionPopup == nullptr || !actionPopup->isVisible());
+}
+
 void TestDisplayUi::result_display_context_menu_hides_main_menu_when_menu_bar_visible()
 {
     QMainWindow window;
     window.menuBar()->addMenu(QStringLiteral("File"))->addAction(QStringLiteral("Dummy"));
     MenuTestResultDisplay* display = new MenuTestResultDisplay(&window);
     display->setThemeInteractionColors(QColor(QStringLiteral("#333333")),
+                                       QColor(QStringLiteral("#5588ff")),
                                        QColor(QStringLiteral("#111111")),
                                        QColor(QStringLiteral("#eeeeee")),
                                        QColor(QStringLiteral("#222222")),
