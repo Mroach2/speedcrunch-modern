@@ -30,6 +30,7 @@
 #include <QContextMenuEvent>
 #include <QFrame>
 #include <QGuiApplication>
+#include <QHoverEvent>
 #include <QIcon>
 #include <QLabel>
 #include <QMainWindow>
@@ -527,10 +528,11 @@ ResultDisplay::ResultDisplay(QWidget* parent)
     m_scrollToBottomButton->setFocusPolicy(Qt::NoFocus);
     m_scrollToBottomButton->setObjectName(QStringLiteral("ScrollToBottomButton"));
     m_scrollToBottomButton->setCursor(Qt::PointingHandCursor);
-    m_scrollToBottomButton->setToolTip(tr("Scroll to bottom"));
+    m_scrollToBottomButton->setToolTip(QString());
     m_scrollToBottomButton->setIconSize(QSize(16, 16));
     m_scrollToBottomButton->setFixedSize(30, 30);
     m_scrollToBottomButton->setAttribute(Qt::WA_Hover, true);
+    m_scrollToBottomButton->setMouseTracking(true);
     m_scrollToBottomButton->installEventFilter(this);
     updateScrollToBottomButtonStyle();
     connect(m_scrollToBottomButton, &QToolButton::clicked, this, &ResultDisplay::scrollToBottom);
@@ -558,11 +560,30 @@ bool ResultDisplay::eventFilter(QObject* watched, QEvent* event)
                 m_scrollToBottomButtonHovered = true;
                 updateScrollToBottomButtonStyle();
             }
+            showHoverActionPopup(tr("Scroll to bottom"),
+                                 m_scrollToBottomButton,
+                                 m_scrollToBottomButton->mapToGlobal(
+                                     m_scrollToBottomButton->rect().center()));
+        } else if (event->type() == QEvent::MouseMove) {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            showHoverActionPopup(tr("Scroll to bottom"),
+                                 m_scrollToBottomButton,
+                                 mouseEvent->globalPosition().toPoint());
+        } else if (event->type() == QEvent::HoverMove) {
+            showHoverActionPopup(tr("Scroll to bottom"),
+                                 m_scrollToBottomButton,
+                                 m_scrollToBottomButton->mapToGlobal(
+                                     static_cast<QHoverEvent*>(event)->position().toPoint()));
         } else if (event->type() == QEvent::Leave || event->type() == QEvent::HoverLeave) {
             if (m_scrollToBottomButtonHovered) {
                 m_scrollToBottomButtonHovered = false;
                 updateScrollToBottomButtonStyle();
             }
+            hideHoverActionPopup();
+        } else if (event->type() == QEvent::Hide
+                   || event->type() == QEvent::MouseButtonPress
+                   || event->type() == QEvent::Wheel) {
+            hideHoverActionPopup();
         }
     }
 
@@ -940,13 +961,18 @@ void ResultDisplay::hideHoverActionPopup()
 
 void ResultDisplay::showHoverActionPopup(const QString& text)
 {
+    showHoverActionPopup(text, viewport(), QCursor::pos());
+}
+
+void ResultDisplay::showHoverActionPopup(const QString& text, QWidget* anchor, const QPoint& globalPos)
+{
     ensureHoverActionPopup();
     m_hoverActionPopupLabel->setText(text);
     m_hoverActionPopup->adjustSize();
     m_hoverActionPopup->resize(m_hoverActionPopup->sizeHint());
     updateHoverActionPopupMask();
-    m_hoverActionPopup->move(constrainedPopupPosition(viewport(),
-                                                      QCursor::pos(),
+    m_hoverActionPopup->move(constrainedPopupPosition(anchor,
+                                                      globalPos,
                                                       m_hoverActionPopup->size()));
     m_hoverActionPopup->show();
 }

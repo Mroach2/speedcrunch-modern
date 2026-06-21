@@ -173,6 +173,7 @@ private:
     void ensureHoverActionPopup();
     void hideHoverActionPopup();
     void showHoverActionPopup(const QString& text);
+    void showHoverActionPopup(const QString& text, QWidget* anchor, const QPoint& globalPos);
     void updateHoverActionPopupMask();
     QColor hoverActionBadgeFillColor() const;
     QColor hoverActionIconColor(HoveredActionBadge badge) const;

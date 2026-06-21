@@ -461,6 +461,7 @@ private slots:
     void result_display_insets_viewport_horizontally();
     void result_display_scrollbar_hover_keeps_viewport_width_stable();
     void result_display_hover_action_badges_use_hover_and_primary_colors();
+    void result_display_scroll_to_bottom_button_uses_custom_tooltip();
     void result_display_context_menu_hides_main_menu_when_menu_bar_visible();
     void bitfield_selected_bit_keeps_primary_fill_while_hovered();
     void bitfield_buttons_use_configured_generated_shades();
@@ -746,6 +747,59 @@ void TestDisplayUi::result_display_hover_action_badges_use_hover_and_primary_col
     QTest::mouseMove(display.viewport(), QPoint(18, copyRect.center().y()));
     QTRY_VERIFY(display.viewport()->cursor().shape() != Qt::PointingHandCursor);
     QCOMPARE(display.viewport()->toolTip(), QString());
+    QTRY_VERIFY(actionPopup == nullptr || !actionPopup->isVisible());
+}
+
+void TestDisplayUi::result_display_scroll_to_bottom_button_uses_custom_tooltip()
+{
+    ResultDisplay display;
+    const QColor popupBackground(QStringLiteral("#45465f"));
+    const QColor popupForeground(QStringLiteral("#f0ecff"));
+    const QColor popupOutline(QStringLiteral("#696a80"));
+    display.setThemeToolTipColors(popupBackground, popupForeground, popupOutline);
+    display.resize(360, 160);
+    display.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&display));
+
+    Quantity value;
+    for (int i = 0; i < 40; ++i)
+        display.append(QStringLiteral("123456789012345678901234567890"), value);
+
+    QScrollBar* scrollBar = display.verticalScrollBar();
+    QVERIFY(scrollBar->maximum() > scrollBar->minimum());
+    scrollBar->setValue(scrollBar->minimum());
+    QCoreApplication::processEvents();
+
+    QToolButton* scrollToBottomButton =
+        display.findChild<QToolButton*>(QStringLiteral("ScrollToBottomButton"));
+    QVERIFY(scrollToBottomButton != nullptr);
+    QTRY_VERIFY(scrollToBottomButton->isVisible());
+    QCOMPARE(scrollToBottomButton->toolTip(), QString());
+
+    const QPoint buttonCenter = scrollToBottomButton->rect().center();
+    QMouseEvent moveEvent(QEvent::MouseMove,
+                          QPointF(buttonCenter),
+                          QPointF(scrollToBottomButton->mapToGlobal(buttonCenter)),
+                          Qt::NoButton,
+                          Qt::NoButton,
+                          Qt::NoModifier);
+    QCoreApplication::sendEvent(scrollToBottomButton, &moveEvent);
+
+    QFrame* actionPopup = display.findChild<QFrame*>(QStringLiteral("resultActionPopup"));
+    QTRY_VERIFY(actionPopup != nullptr && actionPopup->isVisible());
+    QLabel* actionPopupLabel =
+        actionPopup->findChild<QLabel*>(QStringLiteral("resultActionPopupLabel"));
+    QVERIFY(actionPopupLabel != nullptr);
+    QCOMPARE(actionPopupLabel->text(), QStringLiteral("Scroll to bottom"));
+    QVERIFY(actionPopup->styleSheet().contains(popupBackground.name()));
+    QVERIFY(actionPopup->styleSheet().contains(popupForeground.name()));
+    QVERIFY(actionPopup->styleSheet().contains(QStringLiteral("border: %1px solid %2")
+                                                   .arg(UiConfig::PopupOutlineStrokeWidth)
+                                                   .arg(popupOutline.name())));
+    QVERIFY(!actionPopup->mask().isEmpty());
+
+    QEvent leaveEvent(QEvent::Leave);
+    QCoreApplication::sendEvent(scrollToBottomButton, &leaveEvent);
     QTRY_VERIFY(actionPopup == nullptr || !actionPopup->isVisible());
 }
 
