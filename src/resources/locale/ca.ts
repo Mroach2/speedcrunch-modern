@@ -52,7 +52,7 @@
     <message>
         <location filename="../../gui/aboutbox.cpp" line="120"/>
         <source>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</source>
-        <translation>Aquest programa es distribueix amb l'esperança que sigui útil, però SENSE CAP GARANTIA; ni tan sols la garantia implícita de COMERCIABILITAT o ADEQUACIÓ A UN PROPÒSIT PARTICULAR. Consulteu la Llicència Pública General de GNU per a més detalls.</translation>
+        <translation>Aquest programa es distribueix amb l&apos;esperança que sigui útil, però SENSE CAP GARANTIA; ni tan sols la garantia implícita de COMERCIABILITAT o ADEQUACIÓ A UN PROPÒSIT PARTICULAR. Consulteu la Llicència Pública General de GNU per a més detalls.</translation>
     </message>
 </context>
 <context>
@@ -130,7 +130,7 @@
         <location filename="../../core/book.cpp" line="88"/>
         <location filename="../../core/book.cpp" line="128"/>
         <source>Ohm&apos;s Law</source>
-        <translation>Llei d'Ohm</translation>
+        <translation>Llei d&apos;Ohm</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="89"/>
@@ -177,13 +177,13 @@
         <location filename="../../core/book.cpp" line="96"/>
         <location filename="../../core/book.cpp" line="367"/>
         <source>Standing Wave Ratio &amp; Return Loss</source>
-        <translation>Relació d'ona estacionària i pèrdua de retorn</translation>
+        <translation>Relació d&apos;ona estacionària i pèrdua de retorn</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="97"/>
         <location filename="../../core/book.cpp" line="393"/>
         <source>Free Space Wavelength</source>
-        <translation>Longitud d'ona en l'espai lliure</translation>
+        <translation>Longitud d&apos;ona en l&apos;espai lliure</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="133"/>
@@ -306,12 +306,12 @@
     <message>
         <location filename="../../core/book.cpp" line="256"/>
         <source>edge length</source>
-        <translation>longitud de l'aresta</translation>
+        <translation>longitud de l&apos;aresta</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="289"/>
         <source>arc length</source>
-        <translation>longitud d'arc</translation>
+        <translation>longitud d&apos;arc</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="291"/>
@@ -321,7 +321,7 @@
     <message>
         <location filename="../../core/book.cpp" line="377"/>
         <source>input power</source>
-        <translation>potència d'entrada</translation>
+        <translation>potència d&apos;entrada</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="378"/>
@@ -367,7 +367,7 @@
     <message>
         <location filename="../../core/book.cpp" line="382"/>
         <source>standing wave ratio</source>
-        <translation>relació d'ona estacionària</translation>
+        <translation>relació d&apos;ona estacionària</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="383"/>
@@ -493,7 +493,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="83"/>
         <source>Atomic &amp; Nuclear — Energy conversion relationships</source>
-        <translation>Atòmica i nuclear — Relacions de conversió d'energia</translation>
+        <translation>Atòmica i nuclear — Relacions de conversió d&apos;energia</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="85"/>
@@ -503,7 +503,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="87"/>
         <source>Atomic &amp; Nuclear — Magnetic shielding corrections</source>
-        <translation>Atòmica i nuclear — Correccions d'apantallament magnètic</translation>
+        <translation>Atòmica i nuclear — Correccions d&apos;apantallament magnètic</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="89"/>
@@ -528,7 +528,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="97"/>
         <source>Ionization Energy</source>
-        <translation>Energia d'ionització</translation>
+        <translation>Energia d&apos;ionització</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="99"/>
@@ -663,7 +663,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="178"/>
         <source>conventional value of ampere-90</source>
-        <translation>valor convencional d'ampere-90</translation>
+        <translation>valor convencional d&apos;ampere-90</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="179"/>
@@ -683,7 +683,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="182"/>
         <source>conventional value of ohm-90</source>
-        <translation>valor convencional d'ohm-90</translation>
+        <translation>valor convencional d&apos;ohm-90</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="183"/>
@@ -778,7 +778,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="203"/>
         <source>fine-structure constant (α)</source>
-        <translation>constant d'estructura fina (α)</translation>
+        <translation>constant d&apos;estructura fina (α)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="204"/>
@@ -953,7 +953,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="238"/>
         <source>inverse fine-structure constant (α⁻¹)</source>
-        <translation>inverse constant d'estructura fina (α⁻¹)</translation>
+        <translation>inverse constant d&apos;estructura fina (α⁻¹)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="239"/>
@@ -1108,22 +1108,22 @@
     <message>
         <location filename="../../core/constants.cpp" line="269"/>
         <source>natural unit of energy</source>
-        <translation>unitat natural d'energia</translation>
+        <translation>unitat natural d&apos;energia</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="270"/>
         <source>natural unit of energy in MeV</source>
-        <translation>unitat natural d'energia en MeV</translation>
+        <translation>unitat natural d&apos;energia en MeV</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="271"/>
         <source>natural unit of action (ℏ)</source>
-        <translation>unitat natural d'acció (ℏ)</translation>
+        <translation>unitat natural d&apos;acció (ℏ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="272"/>
         <source>natural unit of action in eV·s</source>
-        <translation>unitat natural d'acció en eV·s</translation>
+        <translation>unitat natural d&apos;acció en eV·s</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="273"/>
@@ -1173,7 +1173,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="284"/>
         <source>Fermi coupling constant</source>
-        <translation>constant d'acoblament de Fermi</translation>
+        <translation>constant d&apos;acoblament de Fermi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="285"/>
@@ -1213,17 +1213,17 @@
     <message>
         <location filename="../../core/constants.cpp" line="295"/>
         <source>reduced Compton wavelength</source>
-        <translation>longitud d'ona de Compton reduïda</translation>
+        <translation>longitud d&apos;ona de Compton reduïda</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="296"/>
         <source>classical electron radius (rₑ)</source>
-        <translation>radi clàssic de l'electró (rₑ)</translation>
+        <translation>radi clàssic de l&apos;electró (rₑ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="297"/>
         <source>electron charge to mass quotient</source>
-        <translation>quocient càrrega-massa de l'electró</translation>
+        <translation>quocient càrrega-massa de l&apos;electró</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="298"/>
@@ -1268,12 +1268,12 @@
     <message>
         <location filename="../../core/constants.cpp" line="306"/>
         <source>electron magnetic moment to Bohr magneton ratio</source>
-        <translation>relació entre el moment magnètic de l'electró i el magnetó de Bohr</translation>
+        <translation>relació entre el moment magnètic de l&apos;electró i el magnetó de Bohr</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="307"/>
         <source>electron magnetic moment to nuclear magneton ratio</source>
-        <translation>relació entre el moment magnètic de l'electró i el magnetó nuclear</translation>
+        <translation>relació entre el moment magnètic de l&apos;electró i el magnetó nuclear</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="308"/>
@@ -1323,17 +1323,17 @@
     <message>
         <location filename="../../core/constants.cpp" line="317"/>
         <source>electron to alpha particle mass ratio</source>
-        <translation>relació de masses entre l'electró i la partícula alfa</translation>
+        <translation>relació de masses entre l&apos;electró i la partícula alfa</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="318"/>
         <source>electron to shielded helion magnetic moment ratio</source>
-        <translation>relació entre el moment magnètic de l'electró i el de l'helió apantallat</translation>
+        <translation>relació entre el moment magnètic de l&apos;electró i el de l&apos;helió apantallat</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="319"/>
         <source>electron to shielded proton magnetic moment ratio</source>
-        <translation>relació entre el moment magnètic de l'electró i el del protó apantallat</translation>
+        <translation>relació entre el moment magnètic de l&apos;electró i el del protó apantallat</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="320"/>
@@ -1388,7 +1388,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="332"/>
         <source>muon Compton wavelength</source>
-        <translation>muó Compton longitud d'ona</translation>
+        <translation>muó Compton longitud d&apos;ona</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="333"/>
@@ -1468,17 +1468,17 @@
     <message>
         <location filename="../../core/constants.cpp" line="348"/>
         <source>reduced muon Compton wavelength</source>
-        <translation>longitud d'ona de Compton reduïda del muó</translation>
+        <translation>longitud d&apos;ona de Compton reduïda del muó</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="351"/>
         <source>reduced tau Compton wavelength</source>
-        <translation>longitud d'ona de Compton reduïda del tau</translation>
+        <translation>longitud d&apos;ona de Compton reduïda del tau</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="352"/>
         <source>tau Compton wavelength</source>
-        <translation>tau Compton longitud d'ona</translation>
+        <translation>tau Compton longitud d&apos;ona</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="353"/>
@@ -1528,7 +1528,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="364"/>
         <source>proton Compton wavelength</source>
-        <translation>protó Compton longitud d'ona</translation>
+        <translation>protó Compton longitud d&apos;ona</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="365"/>
@@ -1568,7 +1568,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="372"/>
         <source>proton magnetic shielding correction</source>
-        <translation>protó magnetic correcció d'apantallament</translation>
+        <translation>protó magnetic correcció d&apos;apantallament</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="373"/>
@@ -1628,7 +1628,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="384"/>
         <source>reduced proton Compton wavelength</source>
-        <translation>longitud d'ona de Compton reduïda del protó</translation>
+        <translation>longitud d&apos;ona de Compton reduïda del protó</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="385"/>
@@ -1658,7 +1658,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="392"/>
         <source>neutron Compton wavelength</source>
-        <translation>neutró Compton longitud d'ona</translation>
+        <translation>neutró Compton longitud d&apos;ona</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="393"/>
@@ -1778,7 +1778,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="416"/>
         <source>reduced neutron Compton wavelength</source>
-        <translation>longitud d'ona de Compton reduïda del neutró</translation>
+        <translation>longitud d&apos;ona de Compton reduïda del neutró</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="419"/>
@@ -1943,12 +1943,12 @@
     <message>
         <location filename="../../core/constants.cpp" line="455"/>
         <source>helion magnetic moment to Bohr magneton ratio</source>
-        <translation>relació entre el moment magnètic de l'helió i el magnetó de Bohr</translation>
+        <translation>relació entre el moment magnètic de l&apos;helió i el magnetó de Bohr</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="456"/>
         <source>helion magnetic moment to nuclear magneton ratio</source>
-        <translation>relació entre el moment magnètic de l'helió i el magnetó nuclear</translation>
+        <translation>relació entre el moment magnètic de l&apos;helió i el magnetó nuclear</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="457"/>
@@ -2008,22 +2008,22 @@
     <message>
         <location filename="../../core/constants.cpp" line="468"/>
         <source>shielded helion magnetic moment to Bohr magneton ratio</source>
-        <translation>relació entre el moment magnètic de l'helió apantallat i el magnetó de Bohr</translation>
+        <translation>relació entre el moment magnètic de l&apos;helió apantallat i el magnetó de Bohr</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="469"/>
         <source>shielded helion magnetic moment to nuclear magneton ratio</source>
-        <translation>relació entre el moment magnètic de l'helió apantallat i el magnetó nuclear</translation>
+        <translation>relació entre el moment magnètic de l&apos;helió apantallat i el magnetó nuclear</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="470"/>
         <source>shielded helion to proton magnetic moment ratio</source>
-        <translation>relació entre el moment magnètic de l'helió apantallat i el del protó</translation>
+        <translation>relació entre el moment magnètic de l&apos;helió apantallat i el del protó</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="471"/>
         <source>shielded helion to shielded proton magnetic moment ratio</source>
-        <translation>relació entre el moment magnètic de l'helió apantallat i el del protó apantallat</translation>
+        <translation>relació entre el moment magnètic de l&apos;helió apantallat i el del protó apantallat</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="474"/>
@@ -2078,7 +2078,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="486"/>
         <source>Avogadro constant</source>
-        <translation>constant d'Avogadro</translation>
+        <translation>constant d&apos;Avogadro</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="487"/>
@@ -2213,7 +2213,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="513"/>
         <source>Wien wavelength displacement law constant</source>
-        <translation>Wien longitud d'ona displacement law constant</translation>
+        <translation>Wien longitud d&apos;ona displacement law constant</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="514"/>
@@ -2223,7 +2223,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="515"/>
         <source>standard-state pressure (p°)</source>
-        <translation>pressió d'estat estàndard (p°)</translation>
+        <translation>pressió d&apos;estat estàndard (p°)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="518"/>
@@ -2298,18 +2298,18 @@
     <message>
         <location filename="../../core/constants.cpp" line="538"/>
         <source>shielding difference of d and p in HD</source>
-        <translation>diferència d'apantallament entre d i p en HD</translation>
+        <translation>diferència d&apos;apantallament entre d i p en HD</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="539"/>
         <source>shielding difference of t and p in HT</source>
-        <translation>diferència d'apantallament entre t i p en HT</translation>
+        <translation>diferència d&apos;apantallament entre t i p en HT</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="544"/>
         <location filename="../../gui/constantswidget.cpp" line="42"/>
         <source>Euler&apos;s number (e)</source>
-        <translation>nombre d'Euler (e)</translation>
+        <translation>nombre d&apos;Euler (e)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="545"/>
@@ -2319,7 +2319,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="546"/>
         <source>Euler-Mascheroni constant (γ)</source>
-        <translation>constant d'Euler-Mascheroni (γ)</translation>
+        <translation>constant d&apos;Euler-Mascheroni (γ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="550"/>
@@ -2379,7 +2379,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="562"/>
         <source>average value of one minus the rate of TCG relative to TCB</source>
-        <translation>valor mitjà d'u menys la taxa de TCG relativa a TCB</translation>
+        <translation>valor mitjà d&apos;u menys la taxa de TCG relativa a TCB</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="563"/>
@@ -2464,7 +2464,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="579"/>
         <source>ratio of the mass of the Sun to Uranus</source>
-        <translation>relació de la massa del Sol respecte a la d'Urà</translation>
+        <translation>relació de la massa del Sol respecte a la d&apos;Urà</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="580"/>
@@ -2499,7 +2499,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="586"/>
         <source>mean obliquity of the ecliptic at J2000.0</source>
-        <translation>obliqüitat mitjana de l'eclíptica a J2000.0</translation>
+        <translation>obliqüitat mitjana de l&apos;eclíptica a J2000.0</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="55"/>
@@ -2509,7 +2509,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="294"/>
         <source>Compton wavelength</source>
-        <translation>longitud d'ona de Compton</translation>
+        <translation>longitud d&apos;ona de Compton</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="42"/>
@@ -2532,7 +2532,7 @@
     <message>
         <location filename="../../gui/constantswidget.cpp" line="288"/>
         <source>No match found</source>
-        <translation>No s'han trobat coincidències</translation>
+        <translation>No s&apos;han trobat coincidències</translation>
     </message>
     <message>
         <location filename="../../gui/constantswidget.cpp" line="291"/>
@@ -2643,12 +2643,12 @@
     <message>
         <location filename="../../gui/editor.cpp" line="1905"/>
         <source>User unit</source>
-        <translation>Unitat de l'usuari</translation>
+        <translation>Unitat de l&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/editor.cpp" line="1960"/>
         <source>User function</source>
-        <translation>Funció de l'usuari</translation>
+        <translation>Funció de l&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/editor.cpp" line="2087"/>
@@ -2781,22 +2781,22 @@
     <message>
         <location filename="../../core/units.cpp" line="583"/>
         <source>arcminute</source>
-        <translation>minut d'arc</translation>
+        <translation>minut d&apos;arc</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="584"/>
         <source>arcsecond</source>
-        <translation>segon d'arc</translation>
+        <translation>segon d&apos;arc</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="585"/>
         <source>milliarcsecond</source>
-        <translation>mil·lisegon d'arc</translation>
+        <translation>mil·lisegon d&apos;arc</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="586"/>
         <source>microarcsecond</source>
-        <translation>microsegon d'arc</translation>
+        <translation>microsegon d&apos;arc</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="587"/>
@@ -2839,19 +2839,9 @@
         <translation>unitat de massa atòmica</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>bar</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>unitat tèrmica britànica</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>byte</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2929,11 +2919,6 @@
         <translation>peu cúbic</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="617"/>
         <source>gallon (Imperial)</source>
         <translation>galó (imperial)</translation>
@@ -3001,7 +2986,7 @@
     <message>
         <location filename="../../core/units.cpp" line="630"/>
         <source>karat</source>
-        <translation>quirat d'or</translation>
+        <translation>quirat d&apos;or</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="631"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>barril de cervesa (EUA)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>vara</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -3264,7 +3244,7 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="765"/>
         <source>too time consuming - computation was rejected</source>
-        <translation>massa costós en temps: s'ha rebutjat el càlcul</translation>
+        <translation>massa costós en temps: s&apos;ha rebutjat el càlcul</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="772"/>
@@ -3276,13 +3256,13 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="777"/>
         <source>invalid dimension - operation might require dimensionless arguments</source>
-        <translation>dimensió no vàlida: l'operació pot requerir arguments adimensionals</translation>
+        <translation>dimensió no vàlida: l&apos;operació pot requerir arguments adimensionals</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="784"/>
         <location filename="../../core/evaluator.cpp" line="827"/>
         <source>Computation aborted - encountered numerical instability</source>
-        <translation>S'ha interromput el càlcul: s'ha trobat inestabilitat numèrica</translation>
+        <translation>S&apos;ha interromput el càlcul: s&apos;ha trobat inestabilitat numèrica</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="837"/>
@@ -3314,7 +3294,7 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="7819"/>
         <source>recursion not supported</source>
-        <translation>no s'admet la recursió</translation>
+        <translation>no s&apos;admet la recursió</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="739"/>
@@ -3347,7 +3327,7 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="781"/>
         <source>operation is not defined for these arguments</source>
-        <translation>l'operació no està definida per a aquests arguments</translation>
+        <translation>l&apos;operació no està definida per a aquests arguments</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="803"/>
@@ -3356,7 +3336,7 @@
         <location filename="../../core/evaluator.cpp" line="7705"/>
         <location filename="../../core/evaluator.cpp" line="7813"/>
         <source>wrong number of arguments</source>
-        <translation>nombre d'arguments incorrecte</translation>
+        <translation>nombre d&apos;arguments incorrecte</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="806"/>
@@ -3373,7 +3353,7 @@
         <location filename="../../core/evaluator.cpp" line="7694"/>
         <location filename="../../core/evaluator.cpp" line="7710"/>
         <source>undefined for argument domain</source>
-        <translation>no definit per al domini de l'argument</translation>
+        <translation>no definit per al domini de l&apos;argument</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="834"/>
@@ -3394,7 +3374,7 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="7498"/>
         <source>conversion target must be a unit</source>
-        <translation>l'objectiu de conversió ha de ser una unitat</translation>
+        <translation>l&apos;objectiu de conversió ha de ser una unitat</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7604"/>
@@ -3412,27 +3392,27 @@
         <location filename="../../core/evaluator.cpp" line="7903"/>
         <location filename="../../core/evaluator.cpp" line="7908"/>
         <source>%1 is a global user definition and cannot be overridden in this session.</source>
-        <translation>%1 és una definició global de l'usuari i no es pot sobreescriure en aquesta sessió.</translation>
+        <translation>%1 és una definició global de l&apos;usuari i no es pot sobreescriure en aquesta sessió.</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7915"/>
         <source>%1 is a variable name, please choose another or delete the variable</source>
-        <translation>%1 és el nom d'una variable; trieu-ne un altre o suprimiu la variable</translation>
+        <translation>%1 és el nom d&apos;una variable; trieu-ne un altre o suprimiu la variable</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7925"/>
         <source>argument %1 is used more than once</source>
-        <translation>l'argument %1 s'utilitza més d'una vegada</translation>
+        <translation>l&apos;argument %1 s&apos;utilitza més d&apos;una vegada</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7967"/>
         <source>%1 is a built-in unit name, please choose another</source>
-        <translation>%1 és el nom d'una unitat integrada; trieu-ne un altre</translation>
+        <translation>%1 és el nom d&apos;una unitat integrada; trieu-ne un altre</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7980"/>
         <source>%1 is a user function name, please choose another or delete the function</source>
-        <translation>%1 és el nom d'una funció de l'usuari; trieu-ne un altre o suprimiu la funció</translation>
+        <translation>%1 és el nom d&apos;una funció de l&apos;usuari; trieu-ne un altre o suprimiu la funció</translation>
     </message>
 </context>
 <context>
@@ -3627,17 +3607,17 @@
     <message>
         <location filename="../../core/functions.cpp" line="2461"/>
         <source>Degrees of Arc</source>
-        <translation>Graus d'arc</translation>
+        <translation>Graus d&apos;arc</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2466"/>
         <source>Error Function</source>
-        <translation>Funció d'error</translation>
+        <translation>Funció d&apos;error</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2467"/>
         <source>Complementary Error Function</source>
-        <translation>Funció d'error complementària</translation>
+        <translation>Funció d&apos;error complementària</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2468"/>
@@ -3667,7 +3647,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2477"/>
         <source>Gradians of arc</source>
-        <translation>Gradians d'arc</translation>
+        <translation>Gradians d&apos;arc</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2480"/>
@@ -3882,7 +3862,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="43"/>
         <source>Integer arithmetic</source>
-        <translation>Aritmètica d'enters</translation>
+        <translation>Aritmètica d&apos;enters</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="44"/>
@@ -4032,7 +4012,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2465"/>
         <source>Convert to Engineering Notation</source>
-        <translation>Converteix a notació d'enginyeria</translation>
+        <translation>Converteix a notació d&apos;enginyeria</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2469"/>
@@ -4092,22 +4072,22 @@
     <message>
         <location filename="../../core/functions.cpp" line="2502"/>
         <source>Residual from 16-bit Half-Precision Rounding</source>
-        <translation>Residu de l'arrodoniment a mitja precisió de 16 bits</translation>
+        <translation>Residu de l&apos;arrodoniment a mitja precisió de 16 bits</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2503"/>
         <source>Residual from 32-bit Single-Precision Rounding</source>
-        <translation>Residu de l'arrodoniment a precisió simple de 32 bits</translation>
+        <translation>Residu de l&apos;arrodoniment a precisió simple de 32 bits</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2504"/>
         <source>Residual from 64-bit Double-Precision Rounding</source>
-        <translation>Residu de l'arrodoniment a doble precisió de 64 bits</translation>
+        <translation>Residu de l&apos;arrodoniment a doble precisió de 64 bits</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2505"/>
         <source>Residual from 128-bit Quad-Precision Rounding</source>
-        <translation>Residu de l'arrodoniment a precisió quàdruple de 128 bits</translation>
+        <translation>Residu de l&apos;arrodoniment a precisió quàdruple de 128 bits</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2510"/>
@@ -4307,7 +4287,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2550"/>
         <source>Arithmetic Shift Left</source>
-        <translation>Desplaçament aritmètic a l'esquerra</translation>
+        <translation>Desplaçament aritmètic a l&apos;esquerra</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2551"/>
@@ -4362,7 +4342,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2569"/>
         <source>Sign-extend a value</source>
-        <translation>Estén el signe d'un valor</translation>
+        <translation>Estén el signe d&apos;un valor</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2572"/>
@@ -4396,7 +4376,7 @@
     <message>
         <location filename="../../gui/functionswidget.cpp" line="180"/>
         <source>No match found</source>
-        <translation>No s'han trobat coincidències</translation>
+        <translation>No s&apos;han trobat coincidències</translation>
     </message>
     <message>
         <location filename="../../gui/functionswidget.cpp" line="168"/>
@@ -4447,7 +4427,7 @@
     <message>
         <location filename="../../gui/keypad.cpp" line="886"/>
         <source>Evaluate expression</source>
-        <translation>Avalua l'expressió</translation>
+        <translation>Avalua l&apos;expressió</translation>
     </message>
     <message>
         <location filename="../../gui/keypad.cpp" line="887"/>
@@ -4655,7 +4635,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3431"/>
         <source>Copy Last &amp;Result</source>
-        <translation>Copiar l'Últim &amp;Resultat</translation>
+        <translation>Copiar l&apos;Últim &amp;Resultat</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3432"/>
@@ -4700,7 +4680,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3450"/>
         <source>&amp;Status Bar</source>
-        <translation>Barra d'&amp;Estat</translation>
+        <translation>Barra d&apos;&amp;Estat</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3453"/>
@@ -4711,7 +4691,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3454"/>
         <source>Use&amp;r Functions</source>
-        <translation>Funcions d'&amp;usuari</translation>
+        <translation>Funcions d&apos;&amp;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3457"/>
@@ -4786,7 +4766,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3541"/>
         <source>User &amp;Manual</source>
-        <translation>&amp;Manual d'usuari</translation>
+        <translation>&amp;Manual d&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3549"/>
@@ -4811,7 +4791,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="6286"/>
         <source>User Functions</source>
-        <translation>Funcions d'usuari</translation>
+        <translation>Funcions d&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="6878"/>
@@ -4966,8 +4946,8 @@
         <location filename="../../gui/mainwindow.cpp" line="8713"/>
         <source>Merge session being loaded with current session?
 If no, current variables and display will be cleared.</source>
-        <translation>Voleu combinar la sessió que s'està carregant amb la sessió actual?
-Si no, s'esborraran les variables actuals i la visualització.</translation>
+        <translation>Voleu combinar la sessió que s&apos;està carregant amb la sessió actual?
+Si no, s&apos;esborraran les variables actuals i la visualització.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8831"/>
@@ -4984,13 +4964,13 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
         <location filename="../../gui/mainwindow.cpp" line="8843"/>
         <source>Merge session being imported with current session?
 If no, current variables and display will be cleared.</source>
-        <translation>Voleu combinar la sessió que s'està important amb la sessió actual?
-Si no, s'esborraran les variables actuals i la visualització.</translation>
+        <translation>Voleu combinar la sessió que s&apos;està important amb la sessió actual?
+Si no, s&apos;esborraran les variables actuals i la visualització.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8878"/>
         <source>Ignore error?</source>
-        <translation>Voleu ignorar l'error?</translation>
+        <translation>Voleu ignorar l&apos;error?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8795"/>
@@ -5052,7 +5032,7 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3424"/>
         <source>User &amp;Definitions...</source>
-        <translation>&amp;Definicions d'usuari...</translation>
+        <translation>&amp;Definicions d&apos;usuari...</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3442"/>
@@ -5083,12 +5063,12 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3452"/>
         <source>User &amp;Variables</source>
-        <translation>&amp;Variables d'usuari</translation>
+        <translation>&amp;Variables d&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3455"/>
         <source>User &amp;Units</source>
-        <translation>&amp;Unitats d'usuari</translation>
+        <translation>&amp;Unitats d&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3460"/>
@@ -5103,13 +5083,13 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Insereix automàticament "ans" en començar amb un operador</translation>
+        <translation>Insereix automàticament &quot;ans&quot; en començar amb un operador</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Si una expressió nova comença amb +, -, * o /, SpeedCrunch hi insereix "ans" al davant.</translation>
+        <translation>Si una expressió nova comença amb +, -, * o /, SpeedCrunch hi insereix &quot;ans&quot; al davant.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5129,23 +5109,23 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3470"/>
         <source>User &amp;functions</source>
-        <translation>Funcions d'&amp;usuari</translation>
+        <translation>Funcions d&apos;&amp;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3471"/>
         <source>User &amp;variables</source>
-        <translation>Variables d'&amp;usuari</translation>
+        <translation>Variables d&apos;&amp;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3472"/>
         <source>Show Empty History &amp;Hint</source>
-        <translation>Mostra el &amp;consell d'historial buit</translation>
+        <translation>Mostra el &amp;consell d&apos;historial buit</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3473"/>
         <location filename="../../gui/mainwindow.cpp" line="3474"/>
         <source>When history is empty, show a hint in the status area.</source>
-        <translation>Quan l'historial sigui buit, mostra un consell a l'àrea d'estat.</translation>
+        <translation>Quan l&apos;historial sigui buit, mostra un consell a l&apos;àrea d&apos;estat.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3475"/>
@@ -5170,7 +5150,7 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3484"/>
         <source>Keep Entered Expression After Evaluate</source>
-        <translation>Mantén l'expressió introduïda després d'avaluar</translation>
+        <translation>Mantén l&apos;expressió introduïda després d&apos;avaluar</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3485"/>
@@ -5186,7 +5166,7 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
         <location filename="../../gui/mainwindow.cpp" line="3487"/>
         <location filename="../../gui/mainwindow.cpp" line="3488"/>
         <source>After pressing Enter, keep the entered expression selected in the editor.</source>
-        <translation>Després de prémer Retorn, mantén seleccionada l'expressió introduïda a l'editor.</translation>
+        <translation>Després de prémer Retorn, mantén seleccionada l&apos;expressió introduïda a l&apos;editor.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3489"/>
@@ -5201,7 +5181,7 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3491"/>
         <source>Only for Single-Line Expressions</source>
-        <translation>Només per a expressions d'una sola línia</translation>
+        <translation>Només per a expressions d&apos;una sola línia</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3492"/>
@@ -5216,7 +5196,7 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3494"/>
         <source>History Size &amp;Limit...</source>
-        <translation>&amp;Límit de mida de l'historial...</translation>
+        <translation>&amp;Límit de mida de l&apos;historial...</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3507"/>
@@ -5296,7 +5276,7 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3544"/>
         <source>Issue Tracker</source>
-        <translation>Seguiment d'incidències</translation>
+        <translation>Seguiment d&apos;incidències</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3545"/>
@@ -5336,12 +5316,12 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3860"/>
         <source>Unit Notation</source>
-        <translation>Notació d'unitats</translation>
+        <translation>Notació d&apos;unitats</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3861"/>
         <source>Rounding Mode</source>
-        <translation>Mode d'arrodoniment</translation>
+        <translation>Mode d&apos;arrodoniment</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3862"/>
@@ -5422,7 +5402,7 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4184"/>
         <source>Split Left</source>
-        <translation>Divideix cap a l'esquerra</translation>
+        <translation>Divideix cap a l&apos;esquerra</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4185"/>
@@ -5480,24 +5460,24 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="6249"/>
         <source>User Variables</source>
-        <translation>Variables d'usuari</translation>
+        <translation>Variables d&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="6323"/>
         <source>User Units</source>
-        <translation>Unitats d'usuari</translation>
+        <translation>Unitats d&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="7466"/>
         <location filename="../../gui/mainwindow.cpp" line="7497"/>
         <source>Clear History</source>
-        <translation>Esborra l'historial</translation>
+        <translation>Esborra l&apos;historial</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="7467"/>
         <location filename="../../gui/mainwindow.cpp" line="7498"/>
         <source>Are you sure you want to clear the calculation history?</source>
-        <translation>Segur que voleu esborrar l'historial de càlculs?</translation>
+        <translation>Segur que voleu esborrar l&apos;historial de càlculs?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="7643"/>
@@ -5514,17 +5494,17 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="7667"/>
         <source>Could not create session file %1.</source>
-        <translation>No s'ha pogut crear el fitxer de sessió %1.</translation>
+        <translation>No s&apos;ha pogut crear el fitxer de sessió %1.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="7677"/>
         <source>Could not write session file %1.</source>
-        <translation>No s'ha pogut escriure el fitxer de sessió %1.</translation>
+        <translation>No s&apos;ha pogut escriure el fitxer de sessió %1.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="7731"/>
         <source>Could not rename session file %1.</source>
-        <translation>No s'ha pogut canviar el nom del fitxer de sessió %1.</translation>
+        <translation>No s&apos;ha pogut canviar el nom del fitxer de sessió %1.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8001"/>
@@ -5600,12 +5580,12 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>No es pot importar el tema "%1" perquè entra en conflicte amb un tema integrat.</translation>
+        <translation>No es pot importar el tema &quot;%1&quot; perquè entra en conflicte amb un tema integrat.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
         <source>Can&apos;t find a writable theme folder.</source>
-        <translation>No s'ha trobat cap carpeta de temes amb permís d'escriptura.</translation>
+        <translation>No s&apos;ha trobat cap carpeta de temes amb permís d&apos;escriptura.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8567"/>
@@ -5615,7 +5595,7 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Ja existeix un tema personalitzat anomenat "%1". El voleu sobreescriure?</translation>
+        <translation>Ja existeix un tema personalitzat anomenat &quot;%1&quot;. El voleu sobreescriure?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>No es pot exportar el tema com a "%1" perquè entra en conflicte amb un tema integrat.</translation>
+        <translation>No es pot exportar el tema com a &quot;%1&quot; perquè entra en conflicte amb un tema integrat.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5653,22 +5633,22 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8918"/>
         <source>Global User Variable</source>
-        <translation>Variable global de l'usuari</translation>
+        <translation>Variable global de l&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8919"/>
         <source>Global User Function</source>
-        <translation>Funció global de l'usuari</translation>
+        <translation>Funció global de l&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8920"/>
         <source>Global User Unit</source>
-        <translation>Unitat global de l'usuari</translation>
+        <translation>Unitat global de l&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9262"/>
         <source>User Definitions</source>
-        <translation>Definicions d'usuari</translation>
+        <translation>Definicions d&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9268"/>
@@ -5676,7 +5656,7 @@ Si no, s'esborraran les variables actuals i la visualització.</translation>
 They are immutable for sessions and override same-name definitions from the session editor.
 Enter one definition per line.</source>
         <translation>Aquestes definicions són globals i es carreguen en totes les sessions.
-Són immutables per a les sessions i sobreescriuen les definicions amb el mateix nom de l'editor de sessió.
+Són immutables per a les sessions i sobreescriuen les definicions amb el mateix nom de l&apos;editor de sessió.
 Introduïu una definició per línia.</translation>
     </message>
     <message>
@@ -5731,17 +5711,17 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9410"/>
         <source>User definitions saved.</source>
-        <translation>S'han desat les definicions d'usuari.</translation>
+        <translation>S&apos;han desat les definicions d&apos;usuari.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9444"/>
         <source>History Size Limit</source>
-        <translation>Límit de mida de l'historial</translation>
+        <translation>Límit de mida de l&apos;historial</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9445"/>
         <source>Maximum number of history entries for this session (0 = unlimited):</source>
-        <translation>Nombre màxim d'entrades d'historial per a aquesta sessió (0 = sense límit):</translation>
+        <translation>Nombre màxim d&apos;entrades d&apos;historial per a aquesta sessió (0 = sense límit):</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9674"/>
@@ -5757,22 +5737,22 @@ Números de línia amb errors: %4</translation>
         <location filename="../../gui/mainwindow.cpp" line="11475"/>
         <location filename="../../gui/mainwindow.cpp" line="11648"/>
         <source>Could not recalculate from calculation %1: %2</source>
-        <translation>No s'ha pogut recalcular a partir del càlcul %1: %2</translation>
+        <translation>No s&apos;ha pogut recalcular a partir del càlcul %1: %2</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="11564"/>
         <source>History Size Limit Reached</source>
-        <translation>S'ha assolit el límit de mida de l'historial</translation>
+        <translation>S&apos;ha assolit el límit de mida de l&apos;historial</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="11565"/>
         <source>This calculation fills the last available history slot. Future calculations will remove the oldest calculation from history. You can increase the limit from Session &gt; History Size Limit.</source>
-        <translation>Aquest càlcul omple l'últim espai disponible de l'historial. Els càlculs futurs eliminaran el càlcul més antic de l'historial. Podeu augmentar el límit des de Sessió &gt; Límit de mida de l'historial.</translation>
+        <translation>Aquest càlcul omple l&apos;últim espai disponible de l&apos;historial. Els càlculs futurs eliminaran el càlcul més antic de l&apos;historial. Podeu augmentar el límit des de Sessió &gt; Límit de mida de l&apos;historial.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="11588"/>
         <source>Editing calculation. Press Esc twice to cancel.</source>
-        <translation>S'està editant el càlcul. Premeu Esc dues vegades per cancel·lar.</translation>
+        <translation>S&apos;està editant el càlcul. Premeu Esc dues vegades per cancel·lar.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="11629"/>
@@ -5797,7 +5777,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="12256"/>
         <source>Select the language:</source>
-        <translation>Seleccioneu l'idioma:</translation>
+        <translation>Seleccioneu l&apos;idioma:</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="12286"/>
@@ -5886,7 +5866,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/numberformatdialog.cpp" line="21"/>
         <source>&lt;b&gt;Select the number format for display.&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;Note: for input numbers, obvious formats are accepted even when they differ from the selected display format.&lt;br/&gt;</source>
-        <translation>&lt;b&gt;Seleccioneu el format numèric de visualització.&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;Nota: per als nombres d'entrada, s'accepten els formats evidents encara que difereixin del format de visualització seleccionat.&lt;br/&gt;</translation>
+        <translation>&lt;b&gt;Seleccioneu el format numèric de visualització.&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;Nota: per als nombres d&apos;entrada, s&apos;accepten els formats evidents encara que difereixin del format de visualització seleccionat.&lt;br/&gt;</translation>
     </message>
 </context>
 <context>
@@ -5894,17 +5874,17 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../core/session.cpp" line="118"/>
         <source>Global User Variable</source>
-        <translation>Variable global de l'usuari</translation>
+        <translation>Variable global de l&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../core/session.cpp" line="119"/>
         <source>Global User Function</source>
-        <translation>Funció global de l'usuari</translation>
+        <translation>Funció global de l&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../core/session.cpp" line="120"/>
         <source>Global User Unit</source>
-        <translation>Unitat global de l'usuari</translation>
+        <translation>Unitat global de l&apos;usuari</translation>
     </message>
     <message>
         <location filename="../../gui/customkeypaddialog.cpp" line="32"/>
@@ -5919,7 +5899,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/customkeypaddialog.cpp" line="36"/>
         <source>Evaluate expression</source>
-        <translation>Avalua l'expressió</translation>
+        <translation>Avalua l&apos;expressió</translation>
     </message>
     <message>
         <location filename="../../gui/customkeypaddialog.cpp" line="39"/>
@@ -5979,7 +5959,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Hi ha disponible una versió més nova (%1).&lt;br/&gt;&lt;a href="%2"&gt;Visiteu el lloc web per descarregar-la.&lt;/a&gt;</translation>
+        <translation>Hi ha disponible una versió més nova (%1).&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visiteu el lloc web per descarregar-la.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>
@@ -6001,7 +5981,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="265"/>
         <source>Could not verify the latest available version.</source>
-        <translation>No s'ha pogut verificar l'última versió disponible.</translation>
+        <translation>No s&apos;ha pogut verificar l&apos;última versió disponible.</translation>
     </message>
 </context>
 <context>
@@ -6014,7 +5994,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1103"/>
         <source>Copy Expression</source>
-        <translation>Copia l'expressió</translation>
+        <translation>Copia l&apos;expressió</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1110"/>
@@ -6024,7 +6004,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1126"/>
         <source>Edit Expression</source>
-        <translation>Edita l'expressió</translation>
+        <translation>Edita l&apos;expressió</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1130"/>
@@ -6059,7 +6039,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1159"/>
         <source>Split Left</source>
-        <translation>Divideix cap a l'esquerra</translation>
+        <translation>Divideix cap a l&apos;esquerra</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1163"/>
@@ -6124,7 +6104,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1333"/>
         <source>Cancel editing</source>
-        <translation>Cancel·la l'edició</translation>
+        <translation>Cancel·la l&apos;edició</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1389"/>
@@ -6134,7 +6114,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1391"/>
         <source>Edit expression</source>
-        <translation>Edita l'expressió</translation>
+        <translation>Edita l&apos;expressió</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1393"/>
@@ -6230,7 +6210,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/userfunctionlistwidget.cpp" line="176"/>
         <source>No match found</source>
-        <translation>No s'han trobat coincidències</translation>
+        <translation>No s&apos;han trobat coincidències</translation>
     </message>
     <message>
         <location filename="../../gui/userfunctionlistwidget.cpp" line="178"/>
@@ -6278,7 +6258,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/userunitlistwidget.cpp" line="177"/>
         <source>No match found</source>
-        <translation>No s'han trobat coincidències</translation>
+        <translation>No s&apos;han trobat coincidències</translation>
     </message>
     <message>
         <location filename="../../gui/userunitlistwidget.cpp" line="179"/>
@@ -6326,7 +6306,7 @@ Números de línia amb errors: %4</translation>
     <message>
         <location filename="../../gui/variablelistwidget.cpp" line="188"/>
         <source>No match found</source>
-        <translation>No s'han trobat coincidències</translation>
+        <translation>No s&apos;han trobat coincidències</translation>
     </message>
     <message>
         <location filename="../../gui/variablelistwidget.cpp" line="190"/>

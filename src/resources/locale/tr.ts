@@ -663,37 +663,37 @@
     <message>
         <location filename="../../core/constants.cpp" line="178"/>
         <source>conventional value of ampere-90</source>
-        <translation>ampere-90'ın konvansiyonel değeri</translation>
+        <translation>ampere-90&apos;ın konvansiyonel değeri</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="179"/>
         <source>conventional value of coulomb-90</source>
-        <translation>coulomb-90'ın konvansiyonel değeri</translation>
+        <translation>coulomb-90&apos;ın konvansiyonel değeri</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="180"/>
         <source>conventional value of farad-90</source>
-        <translation>farad-90'ın konvansiyonel değeri</translation>
+        <translation>farad-90&apos;ın konvansiyonel değeri</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="181"/>
         <source>conventional value of henry-90</source>
-        <translation>henry-90'ın konvansiyonel değeri</translation>
+        <translation>henry-90&apos;ın konvansiyonel değeri</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="182"/>
         <source>conventional value of ohm-90</source>
-        <translation>ohm-90'ın konvansiyonel değeri</translation>
+        <translation>ohm-90&apos;ın konvansiyonel değeri</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="183"/>
         <source>conventional value of volt-90</source>
-        <translation>volt-90'ın konvansiyonel değeri</translation>
+        <translation>volt-90&apos;ın konvansiyonel değeri</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="184"/>
         <source>conventional value of watt-90</source>
-        <translation>watt-90'ın konvansiyonel değeri</translation>
+        <translation>watt-90&apos;ın konvansiyonel değeri</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="185"/>
@@ -948,7 +948,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="237"/>
         <source>hyperfine transition frequency of Cs-133</source>
-        <translation>Cs-133'ün aşırı ince geçiş frekansı</translation>
+        <translation>Cs-133&apos;ün aşırı ince geçiş frekansı</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="238"/>
@@ -2178,7 +2178,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="506"/>
         <source>molar mass of carbon-12</source>
-        <translation>karbon-12'nin molar kütlesi</translation>
+        <translation>karbon-12&apos;nin molar kütlesi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="507"/>
@@ -2298,12 +2298,12 @@
     <message>
         <location filename="../../core/constants.cpp" line="538"/>
         <source>shielding difference of d and p in HD</source>
-        <translation>HD'deki d ve p perdeleme farkı</translation>
+        <translation>HD&apos;deki d ve p perdeleme farkı</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="539"/>
         <source>shielding difference of t and p in HT</source>
-        <translation>HT'deki t ve p perdeleme farkı</translation>
+        <translation>HT&apos;deki t ve p perdeleme farkı</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="544"/>
@@ -2379,7 +2379,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="562"/>
         <source>average value of one minus the rate of TCG relative to TCB</source>
-        <translation>TCB'ye göre TCG hızının bir eksiğinin ortalama değeri</translation>
+        <translation>TCB&apos;ye göre TCG hızının bir eksiğinin ortalama değeri</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="563"/>
@@ -2394,17 +2394,17 @@
     <message>
         <location filename="../../core/constants.cpp" line="565"/>
         <source>equatorial radius of the Earth (TT-compatible)</source>
-        <translation>Dünya'nın ekvator yarıçapı (TT uyumlu)</translation>
+        <translation>Dünya&apos;nın ekvator yarıçapı (TT uyumlu)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="566"/>
         <source>dynamical form factor of the Earth</source>
-        <translation>Dünya'nın dinamik şekil faktörü</translation>
+        <translation>Dünya&apos;nın dinamik şekil faktörü</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="567"/>
         <source>time rate of change in the dynamical form factor of the Earth</source>
-        <translation>Dünya'nın dinamik şekil faktörünün zamana göre değişim hızı</translation>
+        <translation>Dünya&apos;nın dinamik şekil faktörünün zamana göre değişim hızı</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="568"/>
@@ -2429,7 +2429,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="572"/>
         <source>nominal mean angular velocity of the Earth (TT-compatible)</source>
-        <translation>Dünya'nın nominal ortalama açısal hızı (TT uyumlu)</translation>
+        <translation>Dünya&apos;nın nominal ortalama açısal hızı (TT uyumlu)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="573"/>
@@ -2499,7 +2499,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="586"/>
         <source>mean obliquity of the ecliptic at J2000.0</source>
-        <translation>J2000.0'da ekliptiğin ortalama eğikliği</translation>
+        <translation>J2000.0&apos;da ekliptiğin ortalama eğikliği</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="55"/>
@@ -2839,19 +2839,9 @@
         <translation>atomik kütle birimi</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>bar</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>İngiliz ısı birimi</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>bayt</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>fit küp</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>bira varili (ABD)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>rod</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -3927,7 +3907,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2395"/>
         <source>unix_timestamp; x hours offset to GMT</source>
-        <translation>unix_timestamp; GMT'den x saat farklı</translation>
+        <translation>unix_timestamp; GMT&apos;den x saat farklı</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2396"/>
@@ -5103,13 +5083,13 @@ Yanıtınız hayırsa geçerli değişkenler ve görüntü temizlenecek.</transl
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>İşleçle Başlarken "ans" Otomatik Eklensin</translation>
+        <translation>İşleçle Başlarken &quot;ans&quot; Otomatik Eklensin</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Yeni bir ifade +, -, * veya / ile başlarsa SpeedCrunch önce "ans" ekler.</translation>
+        <translation>Yeni bir ifade +, -, * veya / ile başlarsa SpeedCrunch önce &quot;ans&quot; ekler.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5600,7 +5580,7 @@ Yanıtınız hayırsa geçerli değişkenler ve görüntü temizlenecek.</transl
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>"%1" teması yerleşik bir temayla çakıştığı için içe aktarılamıyor.</translation>
+        <translation>&quot;%1&quot; teması yerleşik bir temayla çakıştığı için içe aktarılamıyor.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ Yanıtınız hayırsa geçerli değişkenler ve görüntü temizlenecek.</transl
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>"%1" adlı özel tema zaten var. Üzerine yazmak istiyor musunuz?</translation>
+        <translation>&quot;%1&quot; adlı özel tema zaten var. Üzerine yazmak istiyor musunuz?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ Yanıtınız hayırsa geçerli değişkenler ve görüntü temizlenecek.</transl
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Yerleşik bir temayla çakıştığı için tema "%1" olarak dışa aktarılamıyor.</translation>
+        <translation>Yerleşik bir temayla çakıştığı için tema &quot;%1&quot; olarak dışa aktarılamıyor.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5979,7 +5959,7 @@ Hatalı satır numaraları: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Yeni bir sürüm (%1) kullanılabilir.&lt;br/&gt;&lt;a href="%2"&gt;İndirmek için web sitesini ziyaret edin.&lt;/a&gt;</translation>
+        <translation>Yeni bir sürüm (%1) kullanılabilir.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;İndirmek için web sitesini ziyaret edin.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

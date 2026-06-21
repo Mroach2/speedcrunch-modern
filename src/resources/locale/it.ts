@@ -1193,22 +1193,22 @@
     <message>
         <location filename="../../core/constants.cpp" line="290"/>
         <source>electron mass (mₑ)</source>
-        <translation>massa dell'elettrone (mₑ)</translation>
+        <translation>massa dell&apos;elettrone (mₑ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="291"/>
         <source>electron mass in u</source>
-        <translation>massa dell'elettrone in u</translation>
+        <translation>massa dell&apos;elettrone in u</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="292"/>
         <source>electron mass energy equivalent (mₑ·c²)</source>
-        <translation>equivalente energetico della massa dell'elettrone (mₑ·c²)</translation>
+        <translation>equivalente energetico della massa dell&apos;elettrone (mₑ·c²)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="293"/>
         <source>electron mass energy equivalent in MeV</source>
-        <translation>equivalente energetico della massa dell'elettrone in MeV</translation>
+        <translation>equivalente energetico della massa dell&apos;elettrone in MeV</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="295"/>
@@ -1223,42 +1223,42 @@
     <message>
         <location filename="../../core/constants.cpp" line="297"/>
         <source>electron charge to mass quotient</source>
-        <translation>quoziente carica-massa dell'elettrone</translation>
+        <translation>quoziente carica-massa dell&apos;elettrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="298"/>
         <source>electron-deuteron magnetic moment ratio</source>
-        <translation>rapporto tra i momenti magnetici dell'elettrone e del deuterone</translation>
+        <translation>rapporto tra i momenti magnetici dell&apos;elettrone e del deuterone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="299"/>
         <source>electron-deuteron mass ratio</source>
-        <translation>rapporto tra la massa dell'elettrone e quella del deuterone</translation>
+        <translation>rapporto tra la massa dell&apos;elettrone e quella del deuterone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="300"/>
         <source>electron g factor (gₑ)</source>
-        <translation>fattore g dell'elettrone (gₑ)</translation>
+        <translation>fattore g dell&apos;elettrone (gₑ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="301"/>
         <source>electron gyromagnetic ratio (γₑ)</source>
-        <translation>rapporto giromagnetico dell'elettrone (γₑ)</translation>
+        <translation>rapporto giromagnetico dell&apos;elettrone (γₑ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="302"/>
         <source>electron gyromagnetic ratio in MHz/T</source>
-        <translation>rapporto giromagnetico dell'elettrone in MHz/T</translation>
+        <translation>rapporto giromagnetico dell&apos;elettrone in MHz/T</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="303"/>
         <source>electron-helion mass ratio</source>
-        <translation>rapporto tra la massa dell'elettrone e quella dell'elione</translation>
+        <translation>rapporto tra la massa dell&apos;elettrone e quella dell&apos;elione</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="304"/>
         <source>electron magnetic moment (μₑ)</source>
-        <translation>momento magnetico dell'elettrone (μₑ)</translation>
+        <translation>momento magnetico dell&apos;elettrone (μₑ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="305"/>
@@ -1268,77 +1268,77 @@
     <message>
         <location filename="../../core/constants.cpp" line="306"/>
         <source>electron magnetic moment to Bohr magneton ratio</source>
-        <translation>rapporto tra il momento magnetico dell'elettrone e il magnetone di Bohr</translation>
+        <translation>rapporto tra il momento magnetico dell&apos;elettrone e il magnetone di Bohr</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="307"/>
         <source>electron magnetic moment to nuclear magneton ratio</source>
-        <translation>rapporto tra il momento magnetico dell'elettrone e il magnetone nucleare</translation>
+        <translation>rapporto tra il momento magnetico dell&apos;elettrone e il magnetone nucleare</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="308"/>
         <source>electron molar mass (Mₑ)</source>
-        <translation>massa molare dell'elettrone (Mₑ)</translation>
+        <translation>massa molare dell&apos;elettrone (Mₑ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="309"/>
         <source>electron-muon magnetic moment ratio</source>
-        <translation>rapporto tra i momenti magnetici dell'elettrone e del muone</translation>
+        <translation>rapporto tra i momenti magnetici dell&apos;elettrone e del muone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="310"/>
         <source>electron-muon mass ratio</source>
-        <translation>rapporto tra la massa dell'elettrone e quella del muone</translation>
+        <translation>rapporto tra la massa dell&apos;elettrone e quella del muone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="311"/>
         <source>electron-neutron magnetic moment ratio</source>
-        <translation>rapporto tra i momenti magnetici dell'elettrone e del neutrone</translation>
+        <translation>rapporto tra i momenti magnetici dell&apos;elettrone e del neutrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="312"/>
         <source>electron-neutron mass ratio</source>
-        <translation>rapporto tra la massa dell'elettrone e quella del neutrone</translation>
+        <translation>rapporto tra la massa dell&apos;elettrone e quella del neutrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="313"/>
         <source>electron-proton magnetic moment ratio</source>
-        <translation>rapporto tra i momenti magnetici dell'elettrone e del protone</translation>
+        <translation>rapporto tra i momenti magnetici dell&apos;elettrone e del protone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="314"/>
         <source>electron-proton mass ratio</source>
-        <translation>rapporto tra la massa dell'elettrone e quella del protone</translation>
+        <translation>rapporto tra la massa dell&apos;elettrone e quella del protone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="315"/>
         <source>electron relative atomic mass (Ar(e))</source>
-        <translation>massa atomica relativa dell'elettrone (Ar(e))</translation>
+        <translation>massa atomica relativa dell&apos;elettrone (Ar(e))</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="316"/>
         <source>electron-tau mass ratio</source>
-        <translation>rapporto tra la massa dell'elettrone e quella del tau</translation>
+        <translation>rapporto tra la massa dell&apos;elettrone e quella del tau</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="317"/>
         <source>electron to alpha particle mass ratio</source>
-        <translation>rapporto tra la massa dell'elettrone e quella della particella alfa</translation>
+        <translation>rapporto tra la massa dell&apos;elettrone e quella della particella alfa</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="318"/>
         <source>electron to shielded helion magnetic moment ratio</source>
-        <translation>rapporto tra i momenti magnetici dell'elettrone e dell'elione schermato</translation>
+        <translation>rapporto tra i momenti magnetici dell&apos;elettrone e dell&apos;elione schermato</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="319"/>
         <source>electron to shielded proton magnetic moment ratio</source>
-        <translation>rapporto tra i momenti magnetici dell'elettrone e del protone schermato</translation>
+        <translation>rapporto tra i momenti magnetici dell&apos;elettrone e del protone schermato</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="320"/>
         <source>electron-triton mass ratio</source>
-        <translation>rapporto tra la massa dell'elettrone e quella del tritone</translation>
+        <translation>rapporto tra la massa dell&apos;elettrone e quella del tritone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="321"/>
@@ -1388,12 +1388,12 @@
     <message>
         <location filename="../../core/constants.cpp" line="332"/>
         <source>muon Compton wavelength</source>
-        <translation>lunghezza d'onda Compton del muone</translation>
+        <translation>lunghezza d&apos;onda Compton del muone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="333"/>
         <source>muon-electron mass ratio</source>
-        <translation>rapporto tra la massa del muone e quella dell'elettrone</translation>
+        <translation>rapporto tra la massa del muone e quella dell&apos;elettrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="334"/>
@@ -1468,22 +1468,22 @@
     <message>
         <location filename="../../core/constants.cpp" line="348"/>
         <source>reduced muon Compton wavelength</source>
-        <translation>lunghezza d'onda Compton ridotta del muone</translation>
+        <translation>lunghezza d&apos;onda Compton ridotta del muone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="351"/>
         <source>reduced tau Compton wavelength</source>
-        <translation>lunghezza d'onda Compton ridotta del tau</translation>
+        <translation>lunghezza d&apos;onda Compton ridotta del tau</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="352"/>
         <source>tau Compton wavelength</source>
-        <translation>lunghezza d'onda Compton del tau</translation>
+        <translation>lunghezza d&apos;onda Compton del tau</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="353"/>
         <source>tau-electron mass ratio</source>
-        <translation>rapporto tra la massa del tau e quella dell'elettrone</translation>
+        <translation>rapporto tra la massa del tau e quella dell&apos;elettrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="354"/>
@@ -1528,12 +1528,12 @@
     <message>
         <location filename="../../core/constants.cpp" line="364"/>
         <source>proton Compton wavelength</source>
-        <translation>lunghezza d'onda Compton del protone</translation>
+        <translation>lunghezza d&apos;onda Compton del protone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="365"/>
         <source>proton-electron mass ratio</source>
-        <translation>rapporto tra la massa del protone e quella dell'elettrone</translation>
+        <translation>rapporto tra la massa del protone e quella dell&apos;elettrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="366"/>
@@ -1628,7 +1628,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="384"/>
         <source>reduced proton Compton wavelength</source>
-        <translation>lunghezza d'onda Compton ridotta del protone</translation>
+        <translation>lunghezza d&apos;onda Compton ridotta del protone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="385"/>
@@ -1658,17 +1658,17 @@
     <message>
         <location filename="../../core/constants.cpp" line="392"/>
         <source>neutron Compton wavelength</source>
-        <translation>lunghezza d'onda Compton del neutrone</translation>
+        <translation>lunghezza d&apos;onda Compton del neutrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="393"/>
         <source>neutron-electron magnetic moment ratio</source>
-        <translation>rapporto tra i momenti magnetici del neutrone e dell'elettrone</translation>
+        <translation>rapporto tra i momenti magnetici del neutrone e dell&apos;elettrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="394"/>
         <source>neutron-electron mass ratio</source>
-        <translation>rapporto tra la massa del neutrone e quella dell'elettrone</translation>
+        <translation>rapporto tra la massa del neutrone e quella dell&apos;elettrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="395"/>
@@ -1778,17 +1778,17 @@
     <message>
         <location filename="../../core/constants.cpp" line="416"/>
         <source>reduced neutron Compton wavelength</source>
-        <translation>lunghezza d'onda Compton ridotta del neutrone</translation>
+        <translation>lunghezza d&apos;onda Compton ridotta del neutrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="419"/>
         <source>deuteron-electron magnetic moment ratio</source>
-        <translation>rapporto tra i momenti magnetici del deuterone e dell'elettrone</translation>
+        <translation>rapporto tra i momenti magnetici del deuterone e dell&apos;elettrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="420"/>
         <source>deuteron-electron mass ratio</source>
-        <translation>rapporto tra la massa del deuterone e quella dell'elettrone</translation>
+        <translation>rapporto tra la massa del deuterone e quella dell&apos;elettrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="421"/>
@@ -1863,7 +1863,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="437"/>
         <source>triton-electron mass ratio</source>
-        <translation>rapporto tra la massa del tritone e quella dell'elettrone</translation>
+        <translation>rapporto tra la massa del tritone e quella dell&apos;elettrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="438"/>
@@ -1928,102 +1928,102 @@
     <message>
         <location filename="../../core/constants.cpp" line="452"/>
         <source>helion-electron mass ratio</source>
-        <translation>rapporto tra la massa dell'elione e quella dell'elettrone</translation>
+        <translation>rapporto tra la massa dell&apos;elione e quella dell&apos;elettrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="453"/>
         <source>helion g factor (gₕ)</source>
-        <translation>fattore g dell'elione (gₕ)</translation>
+        <translation>fattore g dell&apos;elione (gₕ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="454"/>
         <source>helion magnetic moment (μₕ)</source>
-        <translation>momento magnetico dell'elione (μₕ)</translation>
+        <translation>momento magnetico dell&apos;elione (μₕ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="455"/>
         <source>helion magnetic moment to Bohr magneton ratio</source>
-        <translation>rapporto tra il momento magnetico dell'elione e il magnetone di Bohr</translation>
+        <translation>rapporto tra il momento magnetico dell&apos;elione e il magnetone di Bohr</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="456"/>
         <source>helion magnetic moment to nuclear magneton ratio</source>
-        <translation>rapporto tra il momento magnetico dell'elione e il magnetone nucleare</translation>
+        <translation>rapporto tra il momento magnetico dell&apos;elione e il magnetone nucleare</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="457"/>
         <source>helion mass (mₕ)</source>
-        <translation>massa dell'elione (mₕ)</translation>
+        <translation>massa dell&apos;elione (mₕ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="458"/>
         <source>helion mass energy equivalent</source>
-        <translation>equivalente energetico della massa dell'elione</translation>
+        <translation>equivalente energetico della massa dell&apos;elione</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="459"/>
         <source>helion mass energy equivalent in MeV</source>
-        <translation>equivalente energetico della massa dell'elione in MeV</translation>
+        <translation>equivalente energetico della massa dell&apos;elione in MeV</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="460"/>
         <source>helion mass in u</source>
-        <translation>massa dell'elione in u</translation>
+        <translation>massa dell&apos;elione in u</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="461"/>
         <source>helion molar mass (Mₕ)</source>
-        <translation>massa molare dell'elione (Mₕ)</translation>
+        <translation>massa molare dell&apos;elione (Mₕ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="462"/>
         <source>helion-proton mass ratio</source>
-        <translation>rapporto tra la massa dell'elione e quella del protone</translation>
+        <translation>rapporto tra la massa dell&apos;elione e quella del protone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="463"/>
         <source>helion relative atomic mass (Ar(h))</source>
-        <translation>massa atomica relativa dell'elione (Ar(h))</translation>
+        <translation>massa atomica relativa dell&apos;elione (Ar(h))</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="464"/>
         <source>helion shielding shift</source>
-        <translation>spostamento di schermatura dell'elione</translation>
+        <translation>spostamento di schermatura dell&apos;elione</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="465"/>
         <source>shielded helion gyromagnetic ratio</source>
-        <translation>rapporto giromagnetico dell'elione schermato</translation>
+        <translation>rapporto giromagnetico dell&apos;elione schermato</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="466"/>
         <source>shielded helion gyromagnetic ratio in MHz/T</source>
-        <translation>rapporto giromagnetico dell'elione schermato in MHz/T</translation>
+        <translation>rapporto giromagnetico dell&apos;elione schermato in MHz/T</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="467"/>
         <source>shielded helion magnetic moment</source>
-        <translation>momento magnetico dell'elione schermato</translation>
+        <translation>momento magnetico dell&apos;elione schermato</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="468"/>
         <source>shielded helion magnetic moment to Bohr magneton ratio</source>
-        <translation>rapporto tra il momento magnetico dell'elione schermato e il magnetone di Bohr</translation>
+        <translation>rapporto tra il momento magnetico dell&apos;elione schermato e il magnetone di Bohr</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="469"/>
         <source>shielded helion magnetic moment to nuclear magneton ratio</source>
-        <translation>rapporto tra il momento magnetico dell'elione schermato e il magnetone nucleare</translation>
+        <translation>rapporto tra il momento magnetico dell&apos;elione schermato e il magnetone nucleare</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="470"/>
         <source>shielded helion to proton magnetic moment ratio</source>
-        <translation>rapporto tra i momenti magnetici dell'elione schermato e del protone</translation>
+        <translation>rapporto tra i momenti magnetici dell&apos;elione schermato e del protone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="471"/>
         <source>shielded helion to shielded proton magnetic moment ratio</source>
-        <translation>rapporto tra i momenti magnetici dell'elione schermato e del protone schermato</translation>
+        <translation>rapporto tra i momenti magnetici dell&apos;elione schermato e del protone schermato</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="474"/>
@@ -2048,7 +2048,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="478"/>
         <source>alpha particle-electron mass ratio</source>
-        <translation>rapporto tra la massa della particella alfa e quella dell'elettrone</translation>
+        <translation>rapporto tra la massa della particella alfa e quella dell&apos;elettrone</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="479"/>
@@ -2499,7 +2499,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="586"/>
         <source>mean obliquity of the ecliptic at J2000.0</source>
-        <translation>obliquità media dell'eclittica a J2000.0</translation>
+        <translation>obliquità media dell&apos;eclittica a J2000.0</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="55"/>
@@ -2781,22 +2781,22 @@
     <message>
         <location filename="../../core/units.cpp" line="583"/>
         <source>arcminute</source>
-        <translation>minuto d'arco</translation>
+        <translation>minuto d&apos;arco</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="584"/>
         <source>arcsecond</source>
-        <translation>secondo d'arco</translation>
+        <translation>secondo d&apos;arco</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="585"/>
         <source>milliarcsecond</source>
-        <translation>millisecondo d'arco</translation>
+        <translation>millisecondo d&apos;arco</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="586"/>
         <source>microarcsecond</source>
-        <translation>microsecondo d'arco</translation>
+        <translation>microsecondo d&apos;arco</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="587"/>
@@ -2839,19 +2839,9 @@
         <translation>unità di massa atomica</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>bar</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>unità termica britannica</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>byte</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>piede cubo</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3046,12 +3031,12 @@
     <message>
         <location filename="../../core/units.cpp" line="639"/>
         <source>mile per hour</source>
-        <translation>miglia all'ora</translation>
+        <translation>miglia all&apos;ora</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="640"/>
         <source>kilometre per hour</source>
-        <translation>chilometri all'ora</translation>
+        <translation>chilometri all&apos;ora</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="642"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>barile di birra (USA)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>pertica</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -3394,7 +3374,7 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="7498"/>
         <source>conversion target must be a unit</source>
-        <translation>la destinazione della conversione deve essere un'unità</translation>
+        <translation>la destinazione della conversione deve essere un&apos;unità</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7604"/>
@@ -3427,7 +3407,7 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="7967"/>
         <source>%1 is a built-in unit name, please choose another</source>
-        <translation>%1 è il nome di un'unità integrata, sceglierne un altro</translation>
+        <translation>%1 è il nome di un&apos;unità integrata, sceglierne un altro</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7980"/>
@@ -4092,22 +4072,22 @@
     <message>
         <location filename="../../core/functions.cpp" line="2502"/>
         <source>Residual from 16-bit Half-Precision Rounding</source>
-        <translation>Residuo dell'arrotondamento a mezza precisione a 16 bit</translation>
+        <translation>Residuo dell&apos;arrotondamento a mezza precisione a 16 bit</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2503"/>
         <source>Residual from 32-bit Single-Precision Rounding</source>
-        <translation>Residuo dell'arrotondamento a precisione singola a 32 bit</translation>
+        <translation>Residuo dell&apos;arrotondamento a precisione singola a 32 bit</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2504"/>
         <source>Residual from 64-bit Double-Precision Rounding</source>
-        <translation>Residuo dell'arrotondamento a precisione doppia a 64 bit</translation>
+        <translation>Residuo dell&apos;arrotondamento a precisione doppia a 64 bit</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2505"/>
         <source>Residual from 128-bit Quad-Precision Rounding</source>
-        <translation>Residuo dell'arrotondamento a precisione quadrupla a 128 bit</translation>
+        <translation>Residuo dell&apos;arrotondamento a precisione quadrupla a 128 bit</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2510"/>
@@ -5103,13 +5083,13 @@ In caso di risposta negativa variabili e schermo saranno puliti.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Inserisci automaticamente "ans" quando si inizia con un operatore</translation>
+        <translation>Inserisci automaticamente &quot;ans&quot; quando si inizia con un operatore</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Se una nuova espressione inizia con +, -, * o /, SpeedCrunch inserisce prima "ans".</translation>
+        <translation>Se una nuova espressione inizia con +, -, * o /, SpeedCrunch inserisce prima &quot;ans&quot;.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5145,7 +5125,7 @@ In caso di risposta negativa variabili e schermo saranno puliti.</translation>
         <location filename="../../gui/mainwindow.cpp" line="3473"/>
         <location filename="../../gui/mainwindow.cpp" line="3474"/>
         <source>When history is empty, show a hint in the status area.</source>
-        <translation>Quando la cronologia è vuota, mostra un suggerimento nell'area di stato.</translation>
+        <translation>Quando la cronologia è vuota, mostra un suggerimento nell&apos;area di stato.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3475"/>
@@ -5155,7 +5135,7 @@ In caso di risposta negativa variabili e schermo saranno puliti.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3476"/>
         <source>Save &amp;Window Position on Exit</source>
-        <translation>Salva &amp;posizione della finestra all'uscita</translation>
+        <translation>Salva &amp;posizione della finestra all&apos;uscita</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3478"/>
@@ -5170,7 +5150,7 @@ In caso di risposta negativa variabili e schermo saranno puliti.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3484"/>
         <source>Keep Entered Expression After Evaluate</source>
-        <translation>Mantieni l'espressione inserita dopo il calcolo</translation>
+        <translation>Mantieni l&apos;espressione inserita dopo il calcolo</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3485"/>
@@ -5600,7 +5580,7 @@ In caso di risposta negativa variabili e schermo saranno puliti.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Impossibile importare il tema "%1" perché è in conflitto con un tema integrato.</translation>
+        <translation>Impossibile importare il tema &quot;%1&quot; perché è in conflitto con un tema integrato.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ In caso di risposta negativa variabili e schermo saranno puliti.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Esiste già un tema personalizzato chiamato "%1". Sovrascriverlo?</translation>
+        <translation>Esiste già un tema personalizzato chiamato &quot;%1&quot;. Sovrascriverlo?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ In caso di risposta negativa variabili e schermo saranno puliti.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Impossibile esportare il tema come "%1" perché è in conflitto con un tema integrato.</translation>
+        <translation>Impossibile esportare il tema come &quot;%1&quot; perché è in conflitto con un tema integrato.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5676,7 +5656,7 @@ In caso di risposta negativa variabili e schermo saranno puliti.</translation>
 They are immutable for sessions and override same-name definitions from the session editor.
 Enter one definition per line.</source>
         <translation>Queste definizioni sono globali e vengono caricate in ogni sessione.
-Sono immutabili nelle sessioni e sovrascrivono le definizioni con lo stesso nome presenti nell'editor della sessione.
+Sono immutabili nelle sessioni e sovrascrivono le definizioni con lo stesso nome presenti nell&apos;editor della sessione.
 Inserire una definizione per riga.</translation>
     </message>
     <message>
@@ -5767,7 +5747,7 @@ Numeri di riga con errori: %4</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="11565"/>
         <source>This calculation fills the last available history slot. Future calculations will remove the oldest calculation from history. You can increase the limit from Session &gt; History Size Limit.</source>
-        <translation>Questo calcolo occupa l'ultimo spazio disponibile nella cronologia. I calcoli futuri rimuoveranno dalla cronologia il calcolo più vecchio. È possibile aumentare il limite da Sessione &gt; Limite dimensione cronologia.</translation>
+        <translation>Questo calcolo occupa l&apos;ultimo spazio disponibile nella cronologia. I calcoli futuri rimuoveranno dalla cronologia il calcolo più vecchio. È possibile aumentare il limite da Sessione &gt; Limite dimensione cronologia.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="11588"/>
@@ -5979,7 +5959,7 @@ Numeri di riga con errori: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>È disponibile una versione più recente (%1).&lt;br/&gt;&lt;a href="%2"&gt;Visita il sito web per scaricarla.&lt;/a&gt;</translation>
+        <translation>È disponibile una versione più recente (%1).&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visita il sito web per scaricarla.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

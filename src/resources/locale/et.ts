@@ -2839,19 +2839,9 @@
         <translation>aatommassiühik</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>baar</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>Briti soojusühik</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>bait</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>kuupjalg</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>õllebarrel (USA)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>rod</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -3405,7 +3385,7 @@
         <location filename="../../core/evaluator.cpp" line="7891"/>
         <location filename="../../core/evaluator.cpp" line="7931"/>
         <source>%1 is a reserved name, please choose another</source>
-        <translation>"%1" on reserveeritud nimi, palun vali teistsugune</translation>
+        <translation>&quot;%1&quot; on reserveeritud nimi, palun vali teistsugune</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7898"/>
@@ -3417,7 +3397,7 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="7915"/>
         <source>%1 is a variable name, please choose another or delete the variable</source>
-        <translation>"%1" on muutuja nimi, palun vali teistsugune või kustuta muutuja</translation>
+        <translation>&quot;%1&quot; on muutuja nimi, palun vali teistsugune või kustuta muutuja</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7925"/>
@@ -3432,7 +3412,7 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="7980"/>
         <source>%1 is a user function name, please choose another or delete the function</source>
-        <translation>"%1" on kasutaja funktsiooni nimi, palun vali teistsugune või kustuta muutuja</translation>
+        <translation>&quot;%1&quot; on kasutaja funktsiooni nimi, palun vali teistsugune või kustuta muutuja</translation>
     </message>
 </context>
 <context>
@@ -4960,7 +4940,7 @@
         <location filename="../../gui/mainwindow.cpp" line="8540"/>
         <location filename="../../gui/mainwindow.cpp" line="8838"/>
         <source>Can&apos;t read from file %1</source>
-        <translation>Failist "%1" pole võimalik lugeda</translation>
+        <translation>Failist &quot;%1&quot; pole võimalik lugeda</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8713"/>
@@ -5103,13 +5083,13 @@ Kui ei, siis kustutatakse praegused muutujad ja ajalugu.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Lisa operaatoriga alustamisel automaatselt "ans"</translation>
+        <translation>Lisa operaatoriga alustamisel automaatselt &quot;ans&quot;</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Kui uus avaldis algab märgiga +, -, * või /, lisab SpeedCrunch ette "ans".</translation>
+        <translation>Kui uus avaldis algab märgiga +, -, * või /, lisab SpeedCrunch ette &quot;ans&quot;.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5301,7 +5281,7 @@ Kui ei, siis kustutatakse praegused muutujad ja ajalugu.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3545"/>
         <source>Google Group</source>
-        <translation>Google'i grupp</translation>
+        <translation>Google&apos;i grupp</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3546"/>
@@ -5600,7 +5580,7 @@ Kui ei, siis kustutatakse praegused muutujad ja ajalugu.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Teemat "%1" ei saa importida, sest see läheb vastuollu sisseehitatud teemaga.</translation>
+        <translation>Teemat &quot;%1&quot; ei saa importida, sest see läheb vastuollu sisseehitatud teemaga.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ Kui ei, siis kustutatakse praegused muutujad ja ajalugu.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Kohandatud teema nimega "%1" on juba olemas. Kas soovid selle üle kirjutada?</translation>
+        <translation>Kohandatud teema nimega &quot;%1&quot; on juba olemas. Kas soovid selle üle kirjutada?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ Kui ei, siis kustutatakse praegused muutujad ja ajalugu.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Teemat ei saa eksportida nimega "%1", sest see läheb vastuollu sisseehitatud teemaga.</translation>
+        <translation>Teemat ei saa eksportida nimega &quot;%1&quot;, sest see läheb vastuollu sisseehitatud teemaga.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5643,7 +5623,7 @@ Kui ei, siis kustutatakse praegused muutujad ja ajalugu.</translation>
         <location filename="../../gui/mainwindow.cpp" line="9661"/>
         <location filename="../../gui/mainwindow.cpp" line="9681"/>
         <source>Can&apos;t write to file %1</source>
-        <translation>Faili "%1" pole võimalik kirjutada</translation>
+        <translation>Faili &quot;%1&quot; pole võimalik kirjutada</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8740"/>
@@ -5979,7 +5959,7 @@ Vigadega ridade numbrid: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Saadaval on uuem versioon (%1).&lt;br/&gt;&lt;a href="%2"&gt;Allalaadimiseks ava veebisait.&lt;/a&gt;</translation>
+        <translation>Saadaval on uuem versioon (%1).&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Allalaadimiseks ava veebisait.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

@@ -274,7 +274,7 @@
         <location filename="../../core/book.cpp" line="270"/>
         <location filename="../../core/book.cpp" line="308"/>
         <source>volume</source>
-        <translation>об'єм</translation>
+        <translation>об&apos;єм</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="233"/>
@@ -2537,7 +2537,7 @@
     <message>
         <location filename="../../gui/constantswidget.cpp" line="291"/>
         <source>Name</source>
-        <translation>Ім'я</translation>
+        <translation>Ім&apos;я</translation>
     </message>
     <message>
         <location filename="../../gui/constantswidget.cpp" line="292"/>
@@ -2839,19 +2839,9 @@
         <translation>атомна одиниця маси</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>бар</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>британська теплова одиниця</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>байт</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>кубічний фут</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>фарлонг</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>пивний барель (США)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>род</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -3417,7 +3397,7 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="7915"/>
         <source>%1 is a variable name, please choose another or delete the variable</source>
-        <translation>%1 це ім'я змінної, виберіть інше або видаліть змінну</translation>
+        <translation>%1 це ім&apos;я змінної, виберіть інше або видаліть змінну</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7925"/>
@@ -4317,7 +4297,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2552"/>
         <source>Signum</source>
-        <translation>Знак (від'ємне чи додатне число)</translation>
+        <translation>Знак (від&apos;ємне чи додатне число)</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2556"/>
@@ -4367,7 +4347,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2572"/>
         <source>Logical XOR</source>
-        <translation>Логічна виключна диз'юнкція (XOR)</translation>
+        <translation>Логічна виключна диз&apos;юнкція (XOR)</translation>
     </message>
 </context>
 <context>
@@ -4386,7 +4366,7 @@
     <message>
         <location filename="../../gui/functionswidget.cpp" line="169"/>
         <source>Name</source>
-        <translation>Ім'я</translation>
+        <translation>Ім&apos;я</translation>
     </message>
     <message>
         <location filename="../../gui/functionswidget.cpp" line="173"/>
@@ -4966,7 +4946,7 @@
         <location filename="../../gui/mainwindow.cpp" line="8713"/>
         <source>Merge session being loaded with current session?
 If no, current variables and display will be cleared.</source>
-        <translation>Об'єднати сеанс що завантажується з поточним сеансом?
+        <translation>Об&apos;єднати сеанс що завантажується з поточним сеансом?
 Якщо ні, поточні змінні та дисплей буде очищено.</translation>
     </message>
     <message>
@@ -4984,7 +4964,7 @@ If no, current variables and display will be cleared.</source>
         <location filename="../../gui/mainwindow.cpp" line="8843"/>
         <source>Merge session being imported with current session?
 If no, current variables and display will be cleared.</source>
-        <translation>Об'єднати сеанс що імпортується з поточним сеансом?
+        <translation>Об&apos;єднати сеанс що імпортується з поточним сеансом?
 Якщо ні, поточні змінні та дисплей буде очищено.</translation>
     </message>
     <message>
@@ -5103,13 +5083,13 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Автоматично вставляти "ans" на початку з оператора</translation>
+        <translation>Автоматично вставляти &quot;ans&quot; на початку з оператора</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Якщо новий вираз починається з +, -, * або /, SpeedCrunch спочатку вставляє "ans".</translation>
+        <translation>Якщо новий вираз починається з +, -, * або /, SpeedCrunch спочатку вставляє &quot;ans&quot;.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5600,7 +5580,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Не можна імпортувати тему "%1", бо вона конфліктує з вбудованою темою.</translation>
+        <translation>Не можна імпортувати тему &quot;%1&quot;, бо вона конфліктує з вбудованою темою.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Власна тема з назвою "%1" уже існує. Перезаписати її?</translation>
+        <translation>Власна тема з назвою &quot;%1&quot; уже існує. Перезаписати її?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Не можна експортувати тему як "%1", бо вона конфліктує з вбудованою темою.</translation>
+        <translation>Не можна експортувати тему як &quot;%1&quot;, бо вона конфліктує з вбудованою темою.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5845,7 +5825,7 @@ Line numbers with errors: %4</source>
         <location filename="../../gui/mainwindow.cpp" line="8718"/>
         <location filename="../../gui/mainwindow.cpp" line="8849"/>
         <source>Merge?</source>
-        <translation>Об'єднати?</translation>
+        <translation>Об&apos;єднати?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9653"/>
@@ -5979,7 +5959,7 @@ Line numbers with errors: %4</source>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Доступна новіша версія (%1).&lt;br/&gt;&lt;a href="%2"&gt;Відвідайте сайт для завантаження.&lt;/a&gt;</translation>
+        <translation>Доступна новіша версія (%1).&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Відвідайте сайт для завантаження.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>
@@ -6210,7 +6190,7 @@ Line numbers with errors: %4</source>
     <message>
         <location filename="../../gui/userfunctionlistwidget.cpp" line="172"/>
         <source>Name</source>
-        <translation>Ім'я</translation>
+        <translation>Ім&apos;я</translation>
     </message>
     <message>
         <location filename="../../gui/userfunctionlistwidget.cpp" line="172"/>
@@ -6306,7 +6286,7 @@ Line numbers with errors: %4</source>
     <message>
         <location filename="../../gui/variablelistwidget.cpp" line="184"/>
         <source>Name</source>
-        <translation>Ім'я</translation>
+        <translation>Ім&apos;я</translation>
     </message>
     <message>
         <location filename="../../gui/variablelistwidget.cpp" line="184"/>

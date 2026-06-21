@@ -47,12 +47,12 @@
     <message>
         <location filename="../../gui/aboutbox.cpp" line="114"/>
         <source>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version</source>
-        <translation>SpeedCrunch est un logiciel libre ; vous pouvez le redistribuer et le modifier conformément à la licence « GNU General Public License » telle que publiée à la « Free Software Foundation » ; soit la version 2, soit (à votre convenance) n'importe quelle version ultérieure à cette dernière</translation>
+        <translation>SpeedCrunch est un logiciel libre ; vous pouvez le redistribuer et le modifier conformément à la licence « GNU General Public License » telle que publiée à la « Free Software Foundation » ; soit la version 2, soit (à votre convenance) n&apos;importe quelle version ultérieure à cette dernière</translation>
     </message>
     <message>
         <location filename="../../gui/aboutbox.cpp" line="120"/>
         <source>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</source>
-        <translation>Ce programme est distribué dans l'espoir qu'il sera utile, mais SANS GARANTIE AUCUNE ; même sans garantie implicite de VALEUR MARCHANDE ou d'ADÉQUATION à un USAGE PARTICULIER. Référez-vous pour plus de détails à la « GNU General Public License ».</translation>
+        <translation>Ce programme est distribué dans l&apos;espoir qu&apos;il sera utile, mais SANS GARANTIE AUCUNE ; même sans garantie implicite de VALEUR MARCHANDE ou d&apos;ADÉQUATION à un USAGE PARTICULIER. Référez-vous pour plus de détails à la « GNU General Public License ».</translation>
     </message>
 </context>
 <context>
@@ -130,7 +130,7 @@
         <location filename="../../core/book.cpp" line="88"/>
         <location filename="../../core/book.cpp" line="128"/>
         <source>Ohm&apos;s Law</source>
-        <translation>Loi d'Ohm</translation>
+        <translation>Loi d&apos;Ohm</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="89"/>
@@ -177,13 +177,13 @@
         <location filename="../../core/book.cpp" line="96"/>
         <location filename="../../core/book.cpp" line="367"/>
         <source>Standing Wave Ratio &amp; Return Loss</source>
-        <translation>Rapport d'onde stationnaire et perte de retour</translation>
+        <translation>Rapport d&apos;onde stationnaire et perte de retour</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="97"/>
         <location filename="../../core/book.cpp" line="393"/>
         <source>Free Space Wavelength</source>
-        <translation>Longueur d'onde dans le vide</translation>
+        <translation>Longueur d&apos;onde dans le vide</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="133"/>
@@ -296,7 +296,7 @@
     <message>
         <location filename="../../core/book.cpp" line="254"/>
         <source>face diagonal</source>
-        <translation>Diagonale d'une face</translation>
+        <translation>Diagonale d&apos;une face</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="255"/>
@@ -311,7 +311,7 @@
     <message>
         <location filename="../../core/book.cpp" line="289"/>
         <source>arc length</source>
-        <translation>Longueur d'arc</translation>
+        <translation>Longueur d&apos;arc</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="291"/>
@@ -321,7 +321,7 @@
     <message>
         <location filename="../../core/book.cpp" line="377"/>
         <source>input power</source>
-        <translation>puissance à l'entrée</translation>
+        <translation>puissance à l&apos;entrée</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="378"/>
@@ -352,7 +352,7 @@
     <message>
         <location filename="../../core/book.cpp" line="340"/>
         <source>inner conductor&apos;s outer diameter</source>
-        <translation>diamètre extérieur de l'âme</translation>
+        <translation>diamètre extérieur de l&apos;âme</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="356"/>
@@ -367,7 +367,7 @@
     <message>
         <location filename="../../core/book.cpp" line="382"/>
         <source>standing wave ratio</source>
-        <translation>rapport d'onde stationnaire</translation>
+        <translation>rapport d&apos;onde stationnaire</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="383"/>
@@ -2509,7 +2509,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="294"/>
         <source>Compton wavelength</source>
-        <translation>Longueur d'onde de Compton</translation>
+        <translation>Longueur d&apos;onde de Compton</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="42"/>
@@ -2839,19 +2839,9 @@
         <translation>unité de masse atomique</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>bar</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>unité thermique britannique</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>octet</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>pied cube</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3109,11 +3094,6 @@
         <translation>baril de bière (US)</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>perche</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="654"/>
         <source>square yard</source>
         <translation>yard carré</translation>
@@ -3276,13 +3256,13 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="777"/>
         <source>invalid dimension - operation might require dimensionless arguments</source>
-        <translation>Dimension invalide - l'opération pourrait requérir des arguments sans dimension</translation>
+        <translation>Dimension invalide - l&apos;opération pourrait requérir des arguments sans dimension</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="784"/>
         <location filename="../../core/evaluator.cpp" line="827"/>
         <source>Computation aborted - encountered numerical instability</source>
-        <translation>le calcul a été abandonné en raison d'une instabilité numérique</translation>
+        <translation>le calcul a été abandonné en raison d&apos;une instabilité numérique</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="837"/>
@@ -3298,7 +3278,7 @@
         <location filename="../../core/evaluator.cpp" line="7502"/>
         <location filename="../../core/evaluator.cpp" line="7972"/>
         <source>unit must not be zero</source>
-        <translation>L'unité ne doit pas être égale à zéro</translation>
+        <translation>L&apos;unité ne doit pas être égale à zéro</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7506"/>
@@ -3356,12 +3336,12 @@
         <location filename="../../core/evaluator.cpp" line="7705"/>
         <location filename="../../core/evaluator.cpp" line="7813"/>
         <source>wrong number of arguments</source>
-        <translation>nombre d'arguments incorrect</translation>
+        <translation>nombre d&apos;arguments incorrect</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="806"/>
         <source>does not take NaN as an argument</source>
-        <translation>l'argument ne doit pas être un NaN</translation>
+        <translation>l&apos;argument ne doit pas être un NaN</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="821"/>
@@ -3405,7 +3385,7 @@
         <location filename="../../core/evaluator.cpp" line="7891"/>
         <location filename="../../core/evaluator.cpp" line="7931"/>
         <source>%1 is a reserved name, please choose another</source>
-        <translation>%1 est un mot réservé, merci d'en choisir un autre</translation>
+        <translation>%1 est un mot réservé, merci d&apos;en choisir un autre</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7898"/>
@@ -3417,12 +3397,12 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="7915"/>
         <source>%1 is a variable name, please choose another or delete the variable</source>
-        <translation>%1 est un nom de variable, merci de choisir un autre nom ou d'effacer la variable</translation>
+        <translation>%1 est un nom de variable, merci de choisir un autre nom ou d&apos;effacer la variable</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7925"/>
         <source>argument %1 is used more than once</source>
-        <translation>l'argument %1 est utilisé plus d'une fois</translation>
+        <translation>l&apos;argument %1 est utilisé plus d&apos;une fois</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7967"/>
@@ -3432,7 +3412,7 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="7980"/>
         <source>%1 is a user function name, please choose another or delete the function</source>
-        <translation>%1 est le nom d'une fonction utilisateur, merci de choisir un autre nom et d'effacer la fonction</translation>
+        <translation>%1 est le nom d&apos;une fonction utilisateur, merci de choisir un autre nom et d&apos;effacer la fonction</translation>
     </message>
 </context>
 <context>
@@ -3577,17 +3557,17 @@
     <message>
         <location filename="../../core/functions.cpp" line="2439"/>
         <source>Binomial Distribution Mean</source>
-        <translation>Espérance d'une distribution binomiale</translation>
+        <translation>Espérance d&apos;une distribution binomiale</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2440"/>
         <source>Binomial Probability Mass Function</source>
-        <translation>Densité de probabilité d'une distribution binomiale</translation>
+        <translation>Densité de probabilité d&apos;une distribution binomiale</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2441"/>
         <source>Binomial Distribution Variance</source>
-        <translation>Variance d'une distribution binomiale</translation>
+        <translation>Variance d&apos;une distribution binomiale</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2442"/>
@@ -3622,22 +3602,22 @@
     <message>
         <location filename="../../core/functions.cpp" line="2458"/>
         <source>Convert Unix timestamp to Date</source>
-        <translation>Convertir l'heure Unix en date</translation>
+        <translation>Convertir l&apos;heure Unix en date</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2461"/>
         <source>Degrees of Arc</source>
-        <translation>Degrés d'arc</translation>
+        <translation>Degrés d&apos;arc</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2466"/>
         <source>Error Function</source>
-        <translation>Fonction d'erreur</translation>
+        <translation>Fonction d&apos;erreur</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2467"/>
         <source>Complementary Error Function</source>
-        <translation>Fonction d'erreur complémentaire</translation>
+        <translation>Fonction d&apos;erreur complémentaire</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2468"/>
@@ -3677,17 +3657,17 @@
     <message>
         <location filename="../../core/functions.cpp" line="2481"/>
         <source>Hypergeometric Distribution Mean</source>
-        <translation>Moyenne d'une distribution hypergéométrique</translation>
+        <translation>Moyenne d&apos;une distribution hypergéométrique</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2482"/>
         <source>Hypergeometric Probability Mass Function</source>
-        <translation>Densité de probabilité d'une distribution hypergéométrique</translation>
+        <translation>Densité de probabilité d&apos;une distribution hypergéométrique</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2483"/>
         <source>Hypergeometric Distribution Variance</source>
-        <translation>Variance d'une distribution hypergéométrique</translation>
+        <translation>Variance d&apos;une distribution hypergéométrique</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2484"/>
@@ -4182,7 +4162,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2535"/>
         <source>Phase of Complex Number</source>
-        <translation>Argument d'un nombre complexe</translation>
+        <translation>Argument d&apos;un nombre complexe</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2536"/>
@@ -4192,17 +4172,17 @@
     <message>
         <location filename="../../core/functions.cpp" line="2537"/>
         <source>Poissonian Distribution Mean</source>
-        <translation>Espérance d'une distribution de Poisson</translation>
+        <translation>Espérance d&apos;une distribution de Poisson</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2538"/>
         <source>Poissonian Probability Mass Function</source>
-        <translation>Densité de probabilité d'une loi de Poisson</translation>
+        <translation>Densité de probabilité d&apos;une loi de Poisson</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2539"/>
         <source>Poissonian Distribution Variance</source>
-        <translation>Variance d'une distribution de Poisson</translation>
+        <translation>Variance d&apos;une distribution de Poisson</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2540"/>
@@ -4472,7 +4452,7 @@
     <message>
         <location filename="../../gui/keypad.cpp" line="891"/>
         <source>Clear expression</source>
-        <translation>Effacer l'expression</translation>
+        <translation>Effacer l&apos;expression</translation>
     </message>
     <message>
         <location filename="../../gui/keypad.cpp" line="892"/>
@@ -4615,7 +4595,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3404"/>
         <source>Engineering decimal</source>
-        <translation>Décimal d'ingénierie</translation>
+        <translation>Décimal d&apos;ingénierie</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3405"/>
@@ -4645,12 +4625,12 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3429"/>
         <source>Clear E&amp;xpression</source>
-        <translation>Effacer l'e&amp;xpression</translation>
+        <translation>Effacer l&apos;e&amp;xpression</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3430"/>
         <source>Clear &amp;History</source>
-        <translation>Effacer l'&amp;historique</translation>
+        <translation>Effacer l&apos;&amp;historique</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3431"/>
@@ -4700,7 +4680,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3450"/>
         <source>&amp;Status Bar</source>
-        <translation>&amp;Barre d'état</translation>
+        <translation>&amp;Barre d&apos;état</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3453"/>
@@ -4967,7 +4947,7 @@
         <source>Merge session being loaded with current session?
 If no, current variables and display will be cleared.</source>
         <translation>Fusionner la session chargée avec la session courante?
-Sinon, l'affichage et les variables actuelles seront effacées.</translation>
+Sinon, l&apos;affichage et les variables actuelles seront effacées.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8831"/>
@@ -4984,12 +4964,12 @@ Sinon, l'affichage et les variables actuelles seront effacées.</translation>
         <location filename="../../gui/mainwindow.cpp" line="8843"/>
         <source>Merge session being imported with current session?
 If no, current variables and display will be cleared.</source>
-        <translation>Fusionner la session importée avec la session courante? Sinon, l'affichage et les variables actuelles seront effacées.</translation>
+        <translation>Fusionner la session importée avec la session courante? Sinon, l&apos;affichage et les variables actuelles seront effacées.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8878"/>
         <source>Ignore error?</source>
-        <translation>Ignorer l'erreur?</translation>
+        <translation>Ignorer l&apos;erreur?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8795"/>
@@ -5642,7 +5622,7 @@ If no, current variables and display will be cleared.</source>
         <location filename="../../gui/mainwindow.cpp" line="9661"/>
         <location filename="../../gui/mainwindow.cpp" line="9681"/>
         <source>Can&apos;t write to file %1</source>
-        <translation>Impossible d'écrire dans le fichier %1</translation>
+        <translation>Impossible d&apos;écrire dans le fichier %1</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8740"/>
@@ -5750,7 +5730,7 @@ Numéros de ligne avec erreurs : %4</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9711"/>
         <source>Display font</source>
-        <translation>Police d'affichage</translation>
+        <translation>Police d&apos;affichage</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="11475"/>
@@ -5978,7 +5958,7 @@ Numéros de ligne avec erreurs : %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Une version plus récente (%1) est disponible.&lt;br/&gt;&lt;a href="%2"&gt;Visitez le site web pour la télécharger.&lt;/a&gt;</translation>
+        <translation>Une version plus récente (%1) est disponible.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visitez le site web pour la télécharger.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

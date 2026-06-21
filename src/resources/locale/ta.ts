@@ -2839,19 +2839,9 @@
         <translation>அணு நிறை அலகு</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>பார்</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>பிரிட்டிஷ் வெப்ப அலகு</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>பைட்</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>கன அடி</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>ஃபர்லாங்</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>பீர் பீப்பாய் (அமெரிக்க)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>ராட்</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5103,13 +5083,13 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>செயற்குறியுடன் தொடங்கும்போது "ans"-ஐ தானாகச் செருகு</translation>
+        <translation>செயற்குறியுடன் தொடங்கும்போது &quot;ans&quot;-ஐ தானாகச் செருகு</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>புதிய கூற்று +, -, *, அல்லது / கொண்டு தொடங்கினால், SpeedCrunch முதலில் "ans"-ஐ செருகும்.</translation>
+        <translation>புதிய கூற்று +, -, *, அல்லது / கொண்டு தொடங்கினால், SpeedCrunch முதலில் &quot;ans&quot;-ஐ செருகும்.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5600,7 +5580,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>"%1" கருப்பொருளை இறக்குமதி செய்ய முடியவில்லை; அது உள்ளமைந்த கருப்பொருளுடன் முரண்படுகிறது.</translation>
+        <translation>&quot;%1&quot; கருப்பொருளை இறக்குமதி செய்ய முடியவில்லை; அது உள்ளமைந்த கருப்பொருளுடன் முரண்படுகிறது.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>"%1" என்ற தனிப்பயன் கருப்பொருள் ஏற்கனவே உள்ளது. அதை மேலெழுத வேண்டுமா?</translation>
+        <translation>&quot;%1&quot; என்ற தனிப்பயன் கருப்பொருள் ஏற்கனவே உள்ளது. அதை மேலெழுத வேண்டுமா?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>"%1" என கருப்பொருளை ஏற்றுமதி செய்ய முடியவில்லை; அது உள்ளமைந்த கருப்பொருளுடன் முரண்படுகிறது.</translation>
+        <translation>&quot;%1&quot; என கருப்பொருளை ஏற்றுமதி செய்ய முடியவில்லை; அது உள்ளமைந்த கருப்பொருளுடன் முரண்படுகிறது.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5979,7 +5959,7 @@ Line numbers with errors: %4</source>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>புதிய பதிப்பு (%1) உள்ளது.&lt;br/&gt;&lt;a href="%2"&gt;பதிவிறக்க இணையதளத்திற்குச் செல்லவும்.&lt;/a&gt;</translation>
+        <translation>புதிய பதிப்பு (%1) உள்ளது.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;பதிவிறக்க இணையதளத்திற்குச் செல்லவும்.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

@@ -2839,19 +2839,9 @@
         <translation>kipimo cha misa ya atomiki</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>baa</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>kipimo cha joto cha Uingereza</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>baiti</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>futi ya ujazo</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlongi</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>pipa la bia (Marekani)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>rodi</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5137,13 +5117,13 @@ Kama sivyo, vigeu na onyesho la sasa vitafutwa.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Ingiza "ans" kiotomatiki unapoanza na opereta</translation>
+        <translation>Ingiza &quot;ans&quot; kiotomatiki unapoanza na opereta</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Ikiwa usemi mpya unaanza na +, -, *, au /, SpeedCrunch huingiza "ans" kwanza.</translation>
+        <translation>Ikiwa usemi mpya unaanza na +, -, *, au /, SpeedCrunch huingiza &quot;ans&quot; kwanza.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5634,7 +5614,7 @@ Kama sivyo, vigeu na onyesho la sasa vitafutwa.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Haiwezi kuleta mandhari "%1" kwa sababu inakinzana na mandhari iliyojengwa ndani.</translation>
+        <translation>Haiwezi kuleta mandhari &quot;%1&quot; kwa sababu inakinzana na mandhari iliyojengwa ndani.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5649,7 +5629,7 @@ Kama sivyo, vigeu na onyesho la sasa vitafutwa.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Mandhari maalum inayoitwa "%1" tayari ipo. Unataka kuiandika juu yake?</translation>
+        <translation>Mandhari maalum inayoitwa &quot;%1&quot; tayari ipo. Unataka kuiandika juu yake?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5669,7 +5649,7 @@ Kama sivyo, vigeu na onyesho la sasa vitafutwa.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Haiwezi kuhamisha mandhari kama "%1" kwa sababu inakinzana na mandhari iliyojengwa ndani.</translation>
+        <translation>Haiwezi kuhamisha mandhari kama &quot;%1&quot; kwa sababu inakinzana na mandhari iliyojengwa ndani.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8740"/>
@@ -5979,7 +5959,7 @@ Namba za mistari zenye makosa: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Toleo jipya zaidi (%1) linapatikana.&lt;br/&gt;&lt;a href="%2"&gt;Tembelea tovuti ili kupakua.&lt;/a&gt;</translation>
+        <translation>Toleo jipya zaidi (%1) linapatikana.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Tembelea tovuti ili kupakua.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

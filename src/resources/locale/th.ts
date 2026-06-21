@@ -2839,19 +2839,9 @@
         <translation>หน่วยมวลอะตอม</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>บาร์</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>หน่วยความร้อนบริติช</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>ไบต์</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>ลูกบาศก์ฟุต</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>เฟอร์ลอง</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>บาร์เรลเบียร์ (สหรัฐฯ)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>รอด</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5137,13 +5117,13 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>แทรก "ans" อัตโนมัติเมื่อเริ่มด้วยตัวดำเนินการ</translation>
+        <translation>แทรก &quot;ans&quot; อัตโนมัติเมื่อเริ่มด้วยตัวดำเนินการ</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>ถ้านิพจน์ใหม่เริ่มด้วย +, -, *, หรือ / SpeedCrunch จะแทรก "ans" ก่อน</translation>
+        <translation>ถ้านิพจน์ใหม่เริ่มด้วย +, -, *, หรือ / SpeedCrunch จะแทรก &quot;ans&quot; ก่อน</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5634,7 +5614,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>ไม่สามารถนำเข้าธีม "%1" เพราะขัดแย้งกับธีมในตัว</translation>
+        <translation>ไม่สามารถนำเข้าธีม &quot;%1&quot; เพราะขัดแย้งกับธีมในตัว</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5649,7 +5629,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>มีธีมกำหนดเองชื่อ "%1" อยู่แล้ว คุณต้องการเขียนทับหรือไม่?</translation>
+        <translation>มีธีมกำหนดเองชื่อ &quot;%1&quot; อยู่แล้ว คุณต้องการเขียนทับหรือไม่?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5669,7 +5649,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>ไม่สามารถส่งออกธีมเป็น "%1" เพราะขัดแย้งกับธีมในตัว</translation>
+        <translation>ไม่สามารถส่งออกธีมเป็น &quot;%1&quot; เพราะขัดแย้งกับธีมในตัว</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8740"/>
@@ -5979,7 +5959,7 @@ Line numbers with errors: %4</source>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>มีเวอร์ชันใหม่กว่า (%1)&lt;br/&gt;&lt;a href="%2"&gt;ไปที่เว็บไซต์เพื่อดาวน์โหลด&lt;/a&gt;</translation>
+        <translation>มีเวอร์ชันใหม่กว่า (%1)&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;ไปที่เว็บไซต์เพื่อดาวน์โหลด&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

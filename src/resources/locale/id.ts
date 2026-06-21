@@ -2839,19 +2839,9 @@
         <translation>satuan massa atom</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>bar</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>satuan termal Britania</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>bita</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>kaki kubik</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>barel bir (AS)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>rod</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5103,13 +5083,13 @@ Jika tidak, variabel dan tampilan saat ini akan dibersihkan.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Sisipkan otomatis "ans" saat dimulai dengan operator</translation>
+        <translation>Sisipkan otomatis &quot;ans&quot; saat dimulai dengan operator</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Jika ekspresi baru dimulai dengan +, -, *, atau /, SpeedCrunch menyisipkan "ans" terlebih dahulu.</translation>
+        <translation>Jika ekspresi baru dimulai dengan +, -, *, atau /, SpeedCrunch menyisipkan &quot;ans&quot; terlebih dahulu.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5600,7 +5580,7 @@ Jika tidak, variabel dan tampilan saat ini akan dibersihkan.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Tidak dapat mengimpor tema "%1" karena bertentangan dengan tema bawaan.</translation>
+        <translation>Tidak dapat mengimpor tema &quot;%1&quot; karena bertentangan dengan tema bawaan.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ Jika tidak, variabel dan tampilan saat ini akan dibersihkan.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Tema kustom bernama "%1" sudah ada. Apakah Anda ingin menimpanya?</translation>
+        <translation>Tema kustom bernama &quot;%1&quot; sudah ada. Apakah Anda ingin menimpanya?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ Jika tidak, variabel dan tampilan saat ini akan dibersihkan.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Tidak dapat mengekspor tema sebagai "%1" karena bertentangan dengan tema bawaan.</translation>
+        <translation>Tidak dapat mengekspor tema sebagai &quot;%1&quot; karena bertentangan dengan tema bawaan.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5979,7 +5959,7 @@ Nomor baris dengan kesalahan: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Versi yang lebih baru (%1) tersedia.&lt;br/&gt;&lt;a href="%2"&gt;Kunjungi situs web untuk mengunduh.&lt;/a&gt;</translation>
+        <translation>Versi yang lebih baru (%1) tersedia.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Kunjungi situs web untuk mengunduh.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

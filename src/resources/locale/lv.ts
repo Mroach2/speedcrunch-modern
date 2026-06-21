@@ -2839,19 +2839,9 @@
         <translation>atommasas vienība</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>bārs</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>britu termiskā vienība</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>baits</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>kubikpēda</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlongs</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>alus barels (ASV)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>rods</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5101,13 +5081,13 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Automātiski ievietot "ans", sākot ar operatoru</translation>
+        <translation>Automātiski ievietot &quot;ans&quot;, sākot ar operatoru</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Ja jauna izteiksme sākas ar +, -, * vai /, SpeedCrunch sākumā ievieto "ans".</translation>
+        <translation>Ja jauna izteiksme sākas ar +, -, * vai /, SpeedCrunch sākumā ievieto &quot;ans&quot;.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5598,7 +5578,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Nevar importēt tēmu "%1", jo tā konfliktē ar iebūvētu tēmu.</translation>
+        <translation>Nevar importēt tēmu &quot;%1&quot;, jo tā konfliktē ar iebūvētu tēmu.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5613,7 +5593,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Pielāgota tēma ar nosaukumu "%1" jau pastāv. Vai vēlaties to pārrakstīt?</translation>
+        <translation>Pielāgota tēma ar nosaukumu &quot;%1&quot; jau pastāv. Vai vēlaties to pārrakstīt?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5633,7 +5613,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Nevar eksportēt tēmu kā "%1", jo tā konfliktē ar iebūvētu tēmu.</translation>
+        <translation>Nevar eksportēt tēmu kā &quot;%1&quot;, jo tā konfliktē ar iebūvētu tēmu.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5977,7 +5957,7 @@ Rindu numuri ar kļūdām: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Ir pieejama jaunāka versija (%1).&lt;br/&gt;&lt;a href="%2"&gt;Apmeklējiet tīmekļa vietni, lai lejupielādētu.&lt;/a&gt;</translation>
+        <translation>Ir pieejama jaunāka versija (%1).&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Apmeklējiet tīmekļa vietni, lai lejupielādētu.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

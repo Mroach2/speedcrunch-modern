@@ -129,7 +129,7 @@
     <message>
         <location filename="../../core/book.cpp" line="88"/>
         <location filename="../../core/book.cpp" line="128"/>
-        <source>Ohm's Law</source>
+        <source>Ohm&apos;s Law</source>
         <translation>ओम का नियम</translation>
     </message>
     <message>
@@ -326,12 +326,12 @@
     </message>
     <message>
         <location filename="../../core/book.cpp" line="339"/>
-        <source>outer conductor's inner diameter</source>
+        <source>outer conductor&apos;s inner diameter</source>
         <translation>बाहरी चालक का आंतरिक व्यास</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="340"/>
-        <source>inner conductor's outer diameter</source>
+        <source>inner conductor&apos;s outer diameter</source>
         <translation>भीतरी चालक का बाहरी व्यास</translation>
     </message>
     <message>
@@ -2308,7 +2308,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="544"/>
         <location filename="../../gui/constantswidget.cpp" line="42"/>
-        <source>Euler's number (e)</source>
+        <source>Euler&apos;s number (e)</source>
         <translation>यूलर संख्या (e)</translation>
     </message>
     <message>
@@ -2839,19 +2839,9 @@
         <translation>परमाणु द्रव्यमान इकाई</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>बार</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>ब्रिटिश तापीय इकाई</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>बाइट</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>घन फ़ुट</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>फर्लांग</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3109,11 +3094,6 @@
         <translation>बीयर बैरल (US)</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>रॉड</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="654"/>
         <source>square yard</source>
         <translation>वर्ग गज</translation>
@@ -3234,13 +3214,13 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="742"/>
         <location filename="../../core/evaluator.cpp" line="813"/>
-        <source>underflow - tiny result is out of SpeedCrunch's number range</source>
+        <source>underflow - tiny result is out of SpeedCrunch&apos;s number range</source>
         <translation>अंडरफ़्लो - बहुत छोटा परिणाम SpeedCrunch की संख्या सीमा से बाहर है</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="746"/>
         <location filename="../../core/evaluator.cpp" line="809"/>
-        <source>overflow - huge result is out of SpeedCrunch's number range</source>
+        <source>overflow - huge result is out of SpeedCrunch&apos;s number range</source>
         <translation>ओवरफ़्लो - बहुत बड़ा परिणाम SpeedCrunch की संख्या सीमा से बाहर है</translation>
     </message>
     <message>
@@ -4991,7 +4971,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8540"/>
         <location filename="../../gui/mainwindow.cpp" line="8838"/>
-        <source>Can't read from file %1</source>
+        <source>Can&apos;t read from file %1</source>
         <translation>फ़ाइल %1 से पढ़ा नहीं जा सकता</translation>
     </message>
     <message>
@@ -5017,7 +4997,7 @@ If no, current variables and display will be cleared.</source>
         <location filename="../../gui/mainwindow.cpp" line="8816"/>
         <location filename="../../gui/mainwindow.cpp" line="9661"/>
         <location filename="../../gui/mainwindow.cpp" line="9681"/>
-        <source>Can't write to file %1</source>
+        <source>Can&apos;t write to file %1</source>
         <translation>फ़ाइल %1 में लिखा नहीं जा सकता</translation>
     </message>
     <message>
@@ -5633,12 +5613,12 @@ If no, current variables and display will be cleared.</source>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
-        <source>Can't import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
+        <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>अंतर्निहित थीम से टकराव के कारण थीम &quot;%1&quot; आयात नहीं की जा सकती।</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
-        <source>Can't find a writable theme folder.</source>
+        <source>Can&apos;t find a writable theme folder.</source>
         <translation>लिखने योग्य थीम फ़ोल्डर नहीं मिल सका।</translation>
     </message>
     <message>
@@ -5653,12 +5633,12 @@ If no, current variables and display will be cleared.</source>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
-        <source>Can't overwrite theme file %1</source>
+        <source>Can&apos;t overwrite theme file %1</source>
         <translation>थीम फ़ाइल %1 अधिलेखित नहीं की जा सकती</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8582"/>
-        <source>Can't copy theme file to %1</source>
+        <source>Can&apos;t copy theme file to %1</source>
         <translation>थीम फ़ाइल को %1 में कॉपी नहीं किया जा सकता</translation>
     </message>
     <message>
@@ -5668,12 +5648,12 @@ If no, current variables and display will be cleared.</source>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
-        <source>Can't export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
+        <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>अंतर्निहित थीम से टकराव के कारण थीम को &quot;%1&quot; के रूप में निर्यात नहीं किया जा सकता।</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8740"/>
-        <source>Can't read the selected session file.</source>
+        <source>Can&apos;t read the selected session file.</source>
         <translation>चुनी गई सत्र फ़ाइल पढ़ी नहीं जा सकती।</translation>
     </message>
     <message>

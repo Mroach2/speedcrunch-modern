@@ -2839,19 +2839,9 @@
         <translation>وحدة الكتلة الذرية</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>بار</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>وحدة حرارية بريطانية</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>بايت</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>مكعب foot</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>فرلنغ</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>برميل بيرة (أمريكي)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>قصبة</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5104,13 +5084,13 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>إدراج "ans" تلقائيًا عند البدء بعامل</translation>
+        <translation>إدراج &quot;ans&quot; تلقائيًا عند البدء بعامل</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>إذا بدأ تعبير جديد بـ + أو - أو * أو /، يدرج SpeedCrunch "ans" أولًا.</translation>
+        <translation>إذا بدأ تعبير جديد بـ + أو - أو * أو /، يدرج SpeedCrunch &quot;ans&quot; أولًا.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5601,7 +5581,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>لا يمكن استيراد السمة "%1" لأنها تتعارض مع سمة مدمجة.</translation>
+        <translation>لا يمكن استيراد السمة &quot;%1&quot; لأنها تتعارض مع سمة مدمجة.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5616,7 +5596,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>توجد سمة مخصصة بالاسم "%1" بالفعل. هل تريد استبدالها؟</translation>
+        <translation>توجد سمة مخصصة بالاسم &quot;%1&quot; بالفعل. هل تريد استبدالها؟</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5636,7 +5616,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>لا يمكن تصدير السمة باسم "%1" لأنها تتعارض مع سمة مدمجة.</translation>
+        <translation>لا يمكن تصدير السمة باسم &quot;%1&quot; لأنها تتعارض مع سمة مدمجة.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5980,7 +5960,7 @@ Line numbers with errors: %4</source>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>يتوفر إصدار أحدث (%1).&lt;br/&gt;&lt;a href="%2"&gt;زر الموقع للتنزيل.&lt;/a&gt;</translation>
+        <translation>يتوفر إصدار أحدث (%1).&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;زر الموقع للتنزيل.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

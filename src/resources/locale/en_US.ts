@@ -2839,18 +2839,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2926,11 +2916,6 @@
     <message>
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3106,11 +3091,6 @@
     <message>
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

@@ -2839,19 +2839,9 @@
         <translation>atominės masės vienetas</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>baras</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>britų šiluminis vienetas</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>baitas</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>kubinė pėda</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlongas</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>alaus barelis (JAV)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>rodas</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5979,7 +5959,7 @@ Eilučių su klaidomis numeriai: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Yra naujesnė versija (%1).&lt;br/&gt;&lt;a href="%2"&gt;Apsilankykite svetainėje ir atsisiųskite.&lt;/a&gt;</translation>
+        <translation>Yra naujesnė versija (%1).&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Apsilankykite svetainėje ir atsisiųskite.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

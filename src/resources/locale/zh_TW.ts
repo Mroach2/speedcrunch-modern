@@ -2839,19 +2839,9 @@
         <translation>原子質量單位</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>巴</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>英制熱量單位</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>位元組</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>立方英尺</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>弗隆</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>啤酒桶（美制）</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>桿</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5103,13 +5083,13 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>以運算子開頭時自動插入 "ans"</translation>
+        <translation>以運算子開頭時自動插入 &quot;ans&quot;</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>如果新的表達式以 +、-、* 或 / 開頭，SpeedCrunch 會先插入 "ans"。</translation>
+        <translation>如果新的表達式以 +、-、* 或 / 開頭，SpeedCrunch 會先插入 &quot;ans&quot;。</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5979,7 +5959,7 @@ Line numbers with errors: %4</source>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>有較新版本（%1）可用。&lt;br/&gt;&lt;a href="%2"&gt;前往網站下載。&lt;/a&gt;</translation>
+        <translation>有較新版本（%1）可用。&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;前往網站下載。&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

@@ -2839,19 +2839,9 @@
         <translation>అణు ద్రవ్యరాశి యూనిట్</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>బార్</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>బ్రిటిష్ థర్మల్ యూనిట్</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>బైట్</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>ఘన అడుగు</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>ఫర్లాంగ్</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>బీర్ బ్యారెల్ (US)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>రాడ్</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5103,13 +5083,13 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>ఆపరేటర్‌తో ప్రారంభించినప్పుడు "ans" ను స్వయంగా చొప్పించు</translation>
+        <translation>ఆపరేటర్‌తో ప్రారంభించినప్పుడు &quot;ans&quot; ను స్వయంగా చొప్పించు</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>కొత్త వ్యక్తీకరణ +, -, *, లేదా / తో ప్రారంభమైతే, SpeedCrunch ముందుగా "ans" ను చొప్పిస్తుంది.</translation>
+        <translation>కొత్త వ్యక్తీకరణ +, -, *, లేదా / తో ప్రారంభమైతే, SpeedCrunch ముందుగా &quot;ans&quot; ను చొప్పిస్తుంది.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5600,7 +5580,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>"%1" థీమ్‌ను దిగుమతి చేయలేరు, ఎందుకంటే అది అంతర్నిర్మిత థీమ్‌తో విరుద్ధంగా ఉంది.</translation>
+        <translation>&quot;%1&quot; థీమ్‌ను దిగుమతి చేయలేరు, ఎందుకంటే అది అంతర్నిర్మిత థీమ్‌తో విరుద్ధంగా ఉంది.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>"%1" అనే అనుకూల థీమ్ ఇప్పటికే ఉంది. దానిని ఓవర్‌రైట్ చేయాలా?</translation>
+        <translation>&quot;%1&quot; అనే అనుకూల థీమ్ ఇప్పటికే ఉంది. దానిని ఓవర్‌రైట్ చేయాలా?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>"%1" గా థీమ్‌ను ఎగుమతి చేయలేరు, ఎందుకంటే అది అంతర్నిర్మిత థీమ్‌తో విరుద్ధంగా ఉంది.</translation>
+        <translation>&quot;%1&quot; గా థీమ్‌ను ఎగుమతి చేయలేరు, ఎందుకంటే అది అంతర్నిర్మిత థీమ్‌తో విరుద్ధంగా ఉంది.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5979,7 +5959,7 @@ Line numbers with errors: %4</source>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>కొత్త వెర్షన్ (%1) అందుబాటులో ఉంది.&lt;br/&gt;&lt;a href="%2"&gt;డౌన్‌లోడ్ చేయడానికి వెబ్‌సైట్‌ను సందర్శించండి.&lt;/a&gt;</translation>
+        <translation>కొత్త వెర్షన్ (%1) అందుబాటులో ఉంది.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;డౌన్‌లోడ్ చేయడానికి వెబ్‌సైట్‌ను సందర్శించండి.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

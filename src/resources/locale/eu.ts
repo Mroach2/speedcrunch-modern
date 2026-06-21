@@ -2839,19 +2839,9 @@
         <translation>masa atomikoaren unitate</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>bar</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>Britainiar unitate termiko</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>byte</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>oin kubiko</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>garagardo-upel (AEB)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>rod</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5102,13 +5082,13 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Txertatu "ans" automatikoki eragile batekin hastean</translation>
+        <translation>Txertatu &quot;ans&quot; automatikoki eragile batekin hastean</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Adierazpen berri bat +, -, * edo / ikurrarekin hasten bada, SpeedCrunch-ek "ans" txertatzen du lehenik.</translation>
+        <translation>Adierazpen berri bat +, -, * edo / ikurrarekin hasten bada, SpeedCrunch-ek &quot;ans&quot; txertatzen du lehenik.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5599,7 +5579,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Ezin da "%1" gaia inportatu, gai integratu batekin gatazkan dagoelako.</translation>
+        <translation>Ezin da &quot;%1&quot; gaia inportatu, gai integratu batekin gatazkan dagoelako.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5614,7 +5594,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>"%1" izeneko gai pertsonalizatua badago. Gainidatzi nahi duzu?</translation>
+        <translation>&quot;%1&quot; izeneko gai pertsonalizatua badago. Gainidatzi nahi duzu?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5634,7 +5614,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Ezin da gaia "%1" gisa esportatu, gai integratu batekin gatazkan dagoelako.</translation>
+        <translation>Ezin da gaia &quot;%1&quot; gisa esportatu, gai integratu batekin gatazkan dagoelako.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5978,7 +5958,7 @@ Erroreak dituzten lerro-zenbakiak: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Bertsio berriago bat (%1) eskuragarri dago.&lt;br/&gt;&lt;a href="%2"&gt;Bisitatu webgunea deskargatzeko.&lt;/a&gt;</translation>
+        <translation>Bertsio berriago bat (%1) eskuragarri dago.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Bisitatu webgunea deskargatzeko.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

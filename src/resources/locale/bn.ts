@@ -2309,7 +2309,7 @@
         <location filename="../../core/constants.cpp" line="544"/>
         <location filename="../../gui/constantswidget.cpp" line="42"/>
         <source>Euler&apos;s number (e)</source>
-        <translation>অয়লার's number (e)</translation>
+        <translation>অয়লার&apos;s number (e)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="545"/>
@@ -2839,19 +2839,9 @@
         <translation>পারমাণবিক ভর একক</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>বার</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>ব্রিটিশ তাপীয় একক</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>বাইট</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>ঘন ফুট</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>ফার্লং</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>বিয়ার ব্যারেল (মার্কিন)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>রড</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5137,13 +5117,13 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>অপারেটর দিয়ে শুরু হলে "ans" স্বয়ংক্রিয়ভাবে ঢোকান</translation>
+        <translation>অপারেটর দিয়ে শুরু হলে &quot;ans&quot; স্বয়ংক্রিয়ভাবে ঢোকান</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>নতুন এক্সপ্রেশন +, -, *, বা / দিয়ে শুরু হলে, SpeedCrunch প্রথমে "ans" ঢোকায়।</translation>
+        <translation>নতুন এক্সপ্রেশন +, -, *, বা / দিয়ে শুরু হলে, SpeedCrunch প্রথমে &quot;ans&quot; ঢোকায়।</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5634,7 +5614,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>থিম "%1" আমদানি করা যায়নি, কারণ এটি অন্তর্নির্মিত থিমের সাথে সংঘর্ষ করে।</translation>
+        <translation>থিম &quot;%1&quot; আমদানি করা যায়নি, কারণ এটি অন্তর্নির্মিত থিমের সাথে সংঘর্ষ করে।</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5649,7 +5629,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>"%1" নামের একটি কাস্টম থিম ইতিমধ্যেই আছে। এটি ওভাররাইট করবেন?</translation>
+        <translation>&quot;%1&quot; নামের একটি কাস্টম থিম ইতিমধ্যেই আছে। এটি ওভাররাইট করবেন?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5669,7 +5649,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>থিম "%1" হিসেবে রপ্তানি করা যায়নি, কারণ এটি অন্তর্নির্মিত থিমের সাথে সংঘর্ষ করে।</translation>
+        <translation>থিম &quot;%1&quot; হিসেবে রপ্তানি করা যায়নি, কারণ এটি অন্তর্নির্মিত থিমের সাথে সংঘর্ষ করে।</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8740"/>
@@ -5979,7 +5959,7 @@ Line numbers with errors: %4</source>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>নতুন সংস্করণ (%1) উপলব্ধ।&lt;br/&gt;&lt;a href="%2"&gt;ডাউনলোড করতে ওয়েবসাইটে যান।&lt;/a&gt;</translation>
+        <translation>নতুন সংস্করণ (%1) উপলব্ধ।&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;ডাউনলোড করতে ওয়েবসাইটে যান।&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

@@ -2839,19 +2839,9 @@
         <translation>атомна единица за маса</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>бар</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>британска термична единица</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>байт</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>кубичен фут</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>фърлонг</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>бирен барел (САЩ)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>род</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -4967,7 +4947,7 @@
         <source>Merge session being loaded with current session?
 If no, current variables and display will be cleared.</source>
         <translation>Сливане на зарежданата сесия с текущата?
-Ако изберете "Не", текущите променливи и показаното ще бъдат изчистени.</translation>
+Ако изберете &quot;Не&quot;, текущите променливи и показаното ще бъдат изчистени.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8831"/>
@@ -4985,7 +4965,7 @@ If no, current variables and display will be cleared.</source>
         <source>Merge session being imported with current session?
 If no, current variables and display will be cleared.</source>
         <translation>Сливане на импортираната сесия с текущата?
-Ако изберете "Не", текущите променливи и показаното ще бъдат изчистени.</translation>
+Ако изберете &quot;Не&quot;, текущите променливи и показаното ще бъдат изчистени.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8878"/>
@@ -5103,13 +5083,13 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Автоматично вмъкване на "ans" при започване с оператор</translation>
+        <translation>Автоматично вмъкване на &quot;ans&quot; при започване с оператор</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Ако нов израз започва с +, -, * или /, SpeedCrunch първо вмъква "ans".</translation>
+        <translation>Ако нов израз започва с +, -, * или /, SpeedCrunch първо вмъква &quot;ans&quot;.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5600,7 +5580,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Темата "%1" не може да се импортира, защото е в конфликт с вградена тема.</translation>
+        <translation>Темата &quot;%1&quot; не може да се импортира, защото е в конфликт с вградена тема.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Вече съществува потребителска тема с име "%1". Искате ли да я презапишете?</translation>
+        <translation>Вече съществува потребителска тема с име &quot;%1&quot;. Искате ли да я презапишете?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ If no, current variables and display will be cleared.</source>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Темата не може да се експортира като "%1", защото е в конфликт с вградена тема.</translation>
+        <translation>Темата не може да се експортира като &quot;%1&quot;, защото е в конфликт с вградена тема.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5979,7 +5959,7 @@ Line numbers with errors: %4</source>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Налична е по-нова версия (%1).&lt;br/&gt;&lt;a href="%2"&gt;Посетете сайта за изтегляне.&lt;/a&gt;</translation>
+        <translation>Налична е по-нова версия (%1).&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Посетете сайта за изтегляне.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

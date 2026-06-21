@@ -508,7 +508,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="89"/>
         <source>Masses</source>
-        <translation>Massa's</translation>
+        <translation>Massa&apos;s</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="91"/>
@@ -518,7 +518,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="93"/>
         <source>Molar Masses</source>
-        <translation>Molaire massa's</translation>
+        <translation>Molaire massa&apos;s</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="95"/>
@@ -2839,19 +2839,9 @@
         <translation>atomaire massa-eenheid</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>bar</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>Britse thermische eenheid</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>byte</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>kubieke voet</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>biervat (VS)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>roede</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5103,13 +5083,13 @@ Zoniet worden de huidige variabelen en weergave gewist.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Automatisch "ans" invoegen bij starten met een operator</translation>
+        <translation>Automatisch &quot;ans&quot; invoegen bij starten met een operator</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Als een nieuwe expressie begint met +, -, *, of /, voegt SpeedCrunch eerst "ans" in.</translation>
+        <translation>Als een nieuwe expressie begint met +, -, *, of /, voegt SpeedCrunch eerst &quot;ans&quot; in.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5549,12 +5529,12 @@ Zoniet worden de huidige variabelen en weergave gewist.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8203"/>
         <source>Light Themes</source>
-        <translation>Lichte thema's</translation>
+        <translation>Lichte thema&apos;s</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8210"/>
         <source>Dark Themes</source>
-        <translation>Donkere thema's</translation>
+        <translation>Donkere thema&apos;s</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8218"/>
@@ -5600,7 +5580,7 @@ Zoniet worden de huidige variabelen en weergave gewist.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Kan thema "%1" niet importeren omdat het conflicteert met een ingebouwd thema.</translation>
+        <translation>Kan thema &quot;%1&quot; niet importeren omdat het conflicteert met een ingebouwd thema.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ Zoniet worden de huidige variabelen en weergave gewist.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Er bestaat al een aangepast thema met de naam "%1". Wilt u het overschrijven?</translation>
+        <translation>Er bestaat al een aangepast thema met de naam &quot;%1&quot;. Wilt u het overschrijven?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ Zoniet worden de huidige variabelen en weergave gewist.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Kan thema niet als "%1" exporteren omdat het conflicteert met een ingebouwd thema.</translation>
+        <translation>Kan thema niet als &quot;%1&quot; exporteren omdat het conflicteert met een ingebouwd thema.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5979,7 +5959,7 @@ Regelnummers met fouten: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Er is een nieuwere versie (%1) beschikbaar.&lt;br/&gt;&lt;a href="%2"&gt;Bezoek de website om te downloaden.&lt;/a&gt;</translation>
+        <translation>Er is een nieuwere versie (%1) beschikbaar.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Bezoek de website om te downloaden.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

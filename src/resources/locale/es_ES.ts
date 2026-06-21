@@ -2839,19 +2839,9 @@
         <translation>unidad de masa atómica</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>bar</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>unidad térmica británica</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>byte</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>pie cúbico</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>barril de cerveza (EE. UU.)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>rod</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5103,13 +5083,13 @@ Si no es así, las variables actuales y la pantalla serán borradas.</translatio
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Insertar automáticamente "ans" al empezar con un operador</translation>
+        <translation>Insertar automáticamente &quot;ans&quot; al empezar con un operador</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Si una expresión nueva empieza por +, -, * o /, SpeedCrunch inserta primero "ans".</translation>
+        <translation>Si una expresión nueva empieza por +, -, * o /, SpeedCrunch inserta primero &quot;ans&quot;.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5600,7 +5580,7 @@ Si no es así, las variables actuales y la pantalla serán borradas.</translatio
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>No se puede importar el tema "%1" porque entra en conflicto con un tema integrado.</translation>
+        <translation>No se puede importar el tema &quot;%1&quot; porque entra en conflicto con un tema integrado.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ Si no es así, las variables actuales y la pantalla serán borradas.</translatio
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Ya existe un tema personalizado llamado "%1". ¿Quiere sobrescribirlo?</translation>
+        <translation>Ya existe un tema personalizado llamado &quot;%1&quot;. ¿Quiere sobrescribirlo?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ Si no es así, las variables actuales y la pantalla serán borradas.</translatio
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>No se puede exportar el tema como "%1" porque entra en conflicto con un tema integrado.</translation>
+        <translation>No se puede exportar el tema como &quot;%1&quot; porque entra en conflicto con un tema integrado.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5979,7 +5959,7 @@ Números de línea con errores: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Hay una versión más reciente (%1) disponible.&lt;br/&gt;&lt;a href="%2"&gt;Visite el sitio web para descargarla.&lt;/a&gt;</translation>
+        <translation>Hay una versión más reciente (%1) disponible.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visite el sitio web para descargarla.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

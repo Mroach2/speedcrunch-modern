@@ -2839,19 +2839,9 @@
         <translation>đơn vị khối lượng nguyên tử</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>bar</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>đơn vị nhiệt Anh</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>byte</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>foot khối</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>thùng bia (Mỹ)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>rod</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5103,13 +5083,13 @@ Nếu không, các biến và hiển thị hiện tại sẽ bị xóa.</transla
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Tự động chèn "ans" khi bắt đầu bằng toán tử</translation>
+        <translation>Tự động chèn &quot;ans&quot; khi bắt đầu bằng toán tử</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Nếu biểu thức mới bắt đầu bằng +, -, * hoặc /, SpeedCrunch sẽ chèn "ans" trước.</translation>
+        <translation>Nếu biểu thức mới bắt đầu bằng +, -, * hoặc /, SpeedCrunch sẽ chèn &quot;ans&quot; trước.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5600,7 +5580,7 @@ Nếu không, các biến và hiển thị hiện tại sẽ bị xóa.</transla
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Không thể nhập chủ đề "%1" vì xung đột với chủ đề có sẵn.</translation>
+        <translation>Không thể nhập chủ đề &quot;%1&quot; vì xung đột với chủ đề có sẵn.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ Nếu không, các biến và hiển thị hiện tại sẽ bị xóa.</transla
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Chủ đề tùy chỉnh tên "%1" đã tồn tại. Bạn có muốn ghi đè không?</translation>
+        <translation>Chủ đề tùy chỉnh tên &quot;%1&quot; đã tồn tại. Bạn có muốn ghi đè không?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ Nếu không, các biến và hiển thị hiện tại sẽ bị xóa.</transla
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Không thể xuất chủ đề thành "%1" vì xung đột với chủ đề có sẵn.</translation>
+        <translation>Không thể xuất chủ đề thành &quot;%1&quot; vì xung đột với chủ đề có sẵn.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5979,7 +5959,7 @@ Số dòng có lỗi: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Có phiên bản mới hơn (%1).&lt;br/&gt;&lt;a href="%2"&gt;Truy cập trang web để tải xuống.&lt;/a&gt;</translation>
+        <translation>Có phiên bản mới hơn (%1).&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Truy cập trang web để tải xuống.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>

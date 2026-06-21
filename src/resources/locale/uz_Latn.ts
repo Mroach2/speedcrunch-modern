@@ -32,7 +32,7 @@
     <message>
         <location filename="../../gui/aboutbox.cpp" line="30"/>
         <source>Main author | Logo | Maintainer</source>
-        <translation>Asosiy muallif | Logotip | Texnik xizmat ko'rsatuvchi</translation>
+        <translation>Asosiy muallif | Logotip | Texnik xizmat ko&apos;rsatuvchi</translation>
     </message>
     <message>
         <location filename="../../gui/aboutbox.cpp" line="43"/>
@@ -47,12 +47,12 @@
     <message>
         <location filename="../../gui/aboutbox.cpp" line="114"/>
         <source>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version</source>
-        <translation>Bu dastur erkin dasturiy ta'minot; uni Free Software Foundation tomonidan chop etilgan GNU General Public License shartlari asosida, litsenziyaning 2-versiyasi yoki (xohishingizga ko'ra) keyingi istalgan versiyasi bo'yicha qayta tarqatishingiz va/yoki o'zgartirishingiz mumkin</translation>
+        <translation>Bu dastur erkin dasturiy ta&apos;minot; uni Free Software Foundation tomonidan chop etilgan GNU General Public License shartlari asosida, litsenziyaning 2-versiyasi yoki (xohishingizga ko&apos;ra) keyingi istalgan versiyasi bo&apos;yicha qayta tarqatishingiz va/yoki o&apos;zgartirishingiz mumkin</translation>
     </message>
     <message>
         <location filename="../../gui/aboutbox.cpp" line="120"/>
         <source>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</source>
-        <translation>Bu dastur foydali bo'ladi degan umidda tarqatiladi, ammo HECH QANDAY KAFOLATSIZ; hatto SOTILISHGA YAROQLILIK yoki MUAYYAN MAQSADGA MUVOFIQLIK bo'yicha nazarda tutilgan kafolatsiz. Batafsil ma'lumot uchun GNU General Public License ga qarang.</translation>
+        <translation>Bu dastur foydali bo&apos;ladi degan umidda tarqatiladi, ammo HECH QANDAY KAFOLATSIZ; hatto SOTILISHGA YAROQLILIK yoki MUAYYAN MAQSADGA MUVOFIQLIK bo&apos;yicha nazarda tutilgan kafolatsiz. Batafsil ma&apos;lumot uchun GNU General Public License ga qarang.</translation>
     </message>
 </context>
 <context>
@@ -177,13 +177,13 @@
         <location filename="../../core/book.cpp" line="96"/>
         <location filename="../../core/book.cpp" line="367"/>
         <source>Standing Wave Ratio &amp; Return Loss</source>
-        <translation>Turg'un to'lqin nisbati &amp; qaytish yo'qotishi</translation>
+        <translation>Turg&apos;un to&apos;lqin nisbati &amp; qaytish yo&apos;qotishi</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="97"/>
         <location filename="../../core/book.cpp" line="393"/>
         <source>Free Space Wavelength</source>
-        <translation>Erkin fazodagi to'lqin uzunligi</translation>
+        <translation>Erkin fazodagi to&apos;lqin uzunligi</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="133"/>
@@ -216,7 +216,7 @@
     <message>
         <location filename="../../core/book.cpp" line="178"/>
         <source>capacitive reactance</source>
-        <translation>sig'imli reaktiv qarshilik</translation>
+        <translation>sig&apos;imli reaktiv qarshilik</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="179"/>
@@ -228,7 +228,7 @@
         <location filename="../../core/book.cpp" line="180"/>
         <location filename="../../core/book.cpp" line="198"/>
         <source>capacitance</source>
-        <translation>sig'im</translation>
+        <translation>sig&apos;im</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="181"/>
@@ -336,7 +336,7 @@
     <message>
         <location filename="../../core/book.cpp" line="380"/>
         <source>return loss</source>
-        <translation>qaytish yo'qotishi</translation>
+        <translation>qaytish yo&apos;qotishi</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="338"/>
@@ -347,17 +347,17 @@
     <message>
         <location filename="../../core/book.cpp" line="339"/>
         <source>outer conductor&apos;s inner diameter</source>
-        <translation>tashqi o'tkazgichning ichki diametri</translation>
+        <translation>tashqi o&apos;tkazgichning ichki diametri</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="340"/>
         <source>inner conductor&apos;s outer diameter</source>
-        <translation>ichki o'tkazgichning tashqi diametri</translation>
+        <translation>ichki o&apos;tkazgichning tashqi diametri</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="356"/>
         <source>speed of light</source>
-        <translation>yorug'lik tezligi</translation>
+        <translation>yorug&apos;lik tezligi</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="381"/>
@@ -367,7 +367,7 @@
     <message>
         <location filename="../../core/book.cpp" line="382"/>
         <source>standing wave ratio</source>
-        <translation>turg'un to'lqin nisbati</translation>
+        <translation>turg&apos;un to&apos;lqin nisbati</translation>
     </message>
     <message>
         <location filename="../../core/book.cpp" line="383"/>
@@ -573,7 +573,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="158"/>
         <source>speed of light in vacuum (c)</source>
-        <translation>vakuumdagi yorug'lik tezligi (c)</translation>
+        <translation>vakuumdagi yorug&apos;lik tezligi (c)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="159"/>
@@ -583,7 +583,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="160"/>
         <source>Newtonian constant of gravitation over h-bar c</source>
-        <translation>h-bar c ga bo'lingan Nyuton gravitatsiya konstantasi</translation>
+        <translation>h-bar c ga bo&apos;lingan Nyuton gravitatsiya konstantasi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="161"/>
@@ -623,7 +623,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="168"/>
         <source>reduced Planck constant times c in MeV·fm</source>
-        <translation>MeV·fm dagi keltirilgan Plank konstantasining c ga ko'paytmasi</translation>
+        <translation>MeV·fm dagi keltirilgan Plank konstantasining c ga ko&apos;paytmasi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="171"/>
@@ -633,7 +633,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="172"/>
         <source>conductance quantum (G₀)</source>
-        <translation>o'tkazuvchanlik kvanti (G₀)</translation>
+        <translation>o&apos;tkazuvchanlik kvanti (G₀)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="173"/>
@@ -648,12 +648,12 @@
     <message>
         <location filename="../../core/constants.cpp" line="175"/>
         <source>elementary charge over h-bar</source>
-        <translation>h-bar ga bo'lingan elementar zaryad</translation>
+        <translation>h-bar ga bo&apos;lingan elementar zaryad</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="176"/>
         <source>conventional value of Josephson constant</source>
-        <translation>Josephson konstantasi ning an'anaviy qiymati</translation>
+        <translation>Josephson konstantasi ning an&apos;anaviy qiymati</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="177"/>
@@ -663,37 +663,37 @@
     <message>
         <location filename="../../core/constants.cpp" line="178"/>
         <source>conventional value of ampere-90</source>
-        <translation>ampere-90 ning an'anaviy qiymati</translation>
+        <translation>ampere-90 ning an&apos;anaviy qiymati</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="179"/>
         <source>conventional value of coulomb-90</source>
-        <translation>coulomb-90 ning an'anaviy qiymati</translation>
+        <translation>coulomb-90 ning an&apos;anaviy qiymati</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="180"/>
         <source>conventional value of farad-90</source>
-        <translation>farad-90 ning an'anaviy qiymati</translation>
+        <translation>farad-90 ning an&apos;anaviy qiymati</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="181"/>
         <source>conventional value of henry-90</source>
-        <translation>henry-90 ning an'anaviy qiymati</translation>
+        <translation>henry-90 ning an&apos;anaviy qiymati</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="182"/>
         <source>conventional value of ohm-90</source>
-        <translation>ohm-90 ning an'anaviy qiymati</translation>
+        <translation>ohm-90 ning an&apos;anaviy qiymati</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="183"/>
         <source>conventional value of volt-90</source>
-        <translation>volt-90 ning an'anaviy qiymati</translation>
+        <translation>volt-90 ning an&apos;anaviy qiymati</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="184"/>
         <source>conventional value of watt-90</source>
-        <translation>watt-90 ning an'anaviy qiymati</translation>
+        <translation>watt-90 ning an&apos;anaviy qiymati</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="185"/>
@@ -708,12 +708,12 @@
     <message>
         <location filename="../../core/constants.cpp" line="187"/>
         <source>inverse of conductance quantum</source>
-        <translation>o'tkazuvchanlik kvantining teskarisi</translation>
+        <translation>o&apos;tkazuvchanlik kvantining teskarisi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="188"/>
         <source>conventional value of von Klitzing constant</source>
-        <translation>von Klitzing konstantasi ning an'anaviy qiymati</translation>
+        <translation>von Klitzing konstantasi ning an&apos;anaviy qiymati</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="189"/>
@@ -798,7 +798,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="207"/>
         <source>quantum of circulation times 2</source>
-        <translation>sirkulyatsiya kvantining 2 ga ko'paytmasi</translation>
+        <translation>sirkulyatsiya kvantining 2 ga ko&apos;paytmasi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="208"/>
@@ -893,7 +893,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="226"/>
         <source>atomic unit of action</source>
-        <translation>ta'sirning atom birligi</translation>
+        <translation>ta&apos;sirning atom birligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="227"/>
@@ -948,7 +948,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="237"/>
         <source>hyperfine transition frequency of Cs-133</source>
-        <translation>Cs-133 ning gipernafis o'tish chastotasi</translation>
+        <translation>Cs-133 ning gipernafis o&apos;tish chastotasi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="238"/>
@@ -1103,7 +1103,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="268"/>
         <source>luminous efficacy</source>
-        <translation>yorug'lik samaradorligi</translation>
+        <translation>yorug&apos;lik samaradorligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="269"/>
@@ -1118,12 +1118,12 @@
     <message>
         <location filename="../../core/constants.cpp" line="271"/>
         <source>natural unit of action (ℏ)</source>
-        <translation>ta'sirning tabiiy birligi (ℏ)</translation>
+        <translation>ta&apos;sirning tabiiy birligi (ℏ)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="272"/>
         <source>natural unit of action in eV·s</source>
-        <translation>eV·s dagi ta'sirning tabiiy birligi</translation>
+        <translation>eV·s dagi ta&apos;sirning tabiiy birligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="273"/>
@@ -1158,22 +1158,22 @@
     <message>
         <location filename="../../core/constants.cpp" line="279"/>
         <source>Rydberg constant times c in Hz</source>
-        <translation>Hz dagi Rydberg konstantasining c ga ko'paytmasi</translation>
+        <translation>Hz dagi Rydberg konstantasining c ga ko&apos;paytmasi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="280"/>
         <source>Rydberg constant times hc in eV</source>
-        <translation>eV dagi Rydberg konstantasining hc ga ko'paytmasi</translation>
+        <translation>eV dagi Rydberg konstantasining hc ga ko&apos;paytmasi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="281"/>
         <source>Rydberg constant times hc in J</source>
-        <translation>J dagi Rydberg konstantasining hc ga ko'paytmasi</translation>
+        <translation>J dagi Rydberg konstantasining hc ga ko&apos;paytmasi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="284"/>
         <source>Fermi coupling constant</source>
-        <translation>Fermi bog'lanish konstantasi</translation>
+        <translation>Fermi bog&apos;lanish konstantasi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="285"/>
@@ -1213,7 +1213,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="295"/>
         <source>reduced Compton wavelength</source>
-        <translation>reduced Kompton to'lqin uzunligi</translation>
+        <translation>reduced Kompton to&apos;lqin uzunligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="296"/>
@@ -1223,7 +1223,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="297"/>
         <source>electron charge to mass quotient</source>
-        <translation>elektron zaryad-massa bo'linmasi</translation>
+        <translation>elektron zaryad-massa bo&apos;linmasi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="298"/>
@@ -1388,7 +1388,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="332"/>
         <source>muon Compton wavelength</source>
-        <translation>myuon Kompton to'lqin uzunligi</translation>
+        <translation>myuon Kompton to&apos;lqin uzunligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="333"/>
@@ -1468,17 +1468,17 @@
     <message>
         <location filename="../../core/constants.cpp" line="348"/>
         <source>reduced muon Compton wavelength</source>
-        <translation>keltirilgan myuon Kompton to'lqin uzunligi</translation>
+        <translation>keltirilgan myuon Kompton to&apos;lqin uzunligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="351"/>
         <source>reduced tau Compton wavelength</source>
-        <translation>keltirilgan tau Kompton to'lqin uzunligi</translation>
+        <translation>keltirilgan tau Kompton to&apos;lqin uzunligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="352"/>
         <source>tau Compton wavelength</source>
-        <translation>tau Kompton to'lqin uzunligi</translation>
+        <translation>tau Kompton to&apos;lqin uzunligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="353"/>
@@ -1523,12 +1523,12 @@
     <message>
         <location filename="../../core/constants.cpp" line="363"/>
         <source>proton charge to mass quotient</source>
-        <translation>proton zaryad-massa bo'linmasi</translation>
+        <translation>proton zaryad-massa bo&apos;linmasi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="364"/>
         <source>proton Compton wavelength</source>
-        <translation>proton Kompton to'lqin uzunligi</translation>
+        <translation>proton Kompton to&apos;lqin uzunligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="365"/>
@@ -1618,7 +1618,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="382"/>
         <source>proton rms charge radius</source>
-        <translation>protonning o'rtacha kvadratik zaryad radiusi</translation>
+        <translation>protonning o&apos;rtacha kvadratik zaryad radiusi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="383"/>
@@ -1628,7 +1628,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="384"/>
         <source>reduced proton Compton wavelength</source>
-        <translation>keltirilgan proton Kompton to'lqin uzunligi</translation>
+        <translation>keltirilgan proton Kompton to&apos;lqin uzunligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="385"/>
@@ -1658,7 +1658,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="392"/>
         <source>neutron Compton wavelength</source>
-        <translation>neytron Kompton to'lqin uzunligi</translation>
+        <translation>neytron Kompton to&apos;lqin uzunligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="393"/>
@@ -1778,7 +1778,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="416"/>
         <source>reduced neutron Compton wavelength</source>
-        <translation>keltirilgan neytron Kompton to'lqin uzunligi</translation>
+        <translation>keltirilgan neytron Kompton to&apos;lqin uzunligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="419"/>
@@ -1858,7 +1858,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="434"/>
         <source>deuteron rms charge radius</source>
-        <translation>deytronning o'rtacha kvadratik zaryad radiusi</translation>
+        <translation>deytronning o&apos;rtacha kvadratik zaryad radiusi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="437"/>
@@ -2058,7 +2058,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="480"/>
         <source>alpha particle rms charge radius</source>
-        <translation>alfa zarrachaning o'rtacha kvadratik zaryad radiusi</translation>
+        <translation>alfa zarrachaning o&apos;rtacha kvadratik zaryad radiusi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="481"/>
@@ -2153,7 +2153,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="501"/>
         <source>lattice spacing of ideal Si (d₂₂₀)</source>
-        <translation>ideal Si panjara oralig'i (d₂₂₀)</translation>
+        <translation>ideal Si panjara oralig&apos;i (d₂₂₀)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="502"/>
@@ -2213,7 +2213,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="513"/>
         <source>Wien wavelength displacement law constant</source>
-        <translation>Wien to'lqin uzunligi siljishi qonuni konstantasi</translation>
+        <translation>Wien to&apos;lqin uzunligi siljishi qonuni konstantasi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="514"/>
@@ -2379,7 +2379,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="562"/>
         <source>average value of one minus the rate of TCG relative to TCB</source>
-        <translation>TCG ning TCB ga nisbatan tezligidan bir ayirilgan o'rtacha qiymat</translation>
+        <translation>TCG ning TCB ga nisbatan tezligidan bir ayirilgan o&apos;rtacha qiymat</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="563"/>
@@ -2404,7 +2404,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="567"/>
         <source>time rate of change in the dynamical form factor of the Earth</source>
-        <translation>Yerning dinamik shakl faktorining vaqt bo'yicha o'zgarish tezligi</translation>
+        <translation>Yerning dinamik shakl faktorining vaqt bo&apos;yicha o&apos;zgarish tezligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="568"/>
@@ -2429,7 +2429,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="572"/>
         <source>nominal mean angular velocity of the Earth (TT-compatible)</source>
-        <translation>Yerning nominal o'rtacha burchak tezligi (TT-mos)</translation>
+        <translation>Yerning nominal o&apos;rtacha burchak tezligi (TT-mos)</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="573"/>
@@ -2499,7 +2499,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="586"/>
         <source>mean obliquity of the ecliptic at J2000.0</source>
-        <translation>J2000.0 dagi ekliptikaning o'rtacha og'ishi</translation>
+        <translation>J2000.0 dagi ekliptikaning o&apos;rtacha og&apos;ishi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="55"/>
@@ -2509,7 +2509,7 @@
     <message>
         <location filename="../../core/constants.cpp" line="294"/>
         <source>Compton wavelength</source>
-        <translation>Kompton to'lqin uzunligi</translation>
+        <translation>Kompton to&apos;lqin uzunligi</translation>
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="42"/>
@@ -2605,7 +2605,7 @@
     <message>
         <location filename="../../gui/customkeypaddialog.cpp" line="110"/>
         <source>Apply</source>
-        <translation>Qo'llash</translation>
+        <translation>Qo&apos;llash</translation>
     </message>
     <message>
         <location filename="../../gui/customkeypaddialog.cpp" line="122"/>
@@ -2839,19 +2839,9 @@
         <translation>atom massa birligi</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>bar</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>Britaniya issiqlik birligi</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>bayt</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>kub fut</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3011,17 +2996,17 @@
     <message>
         <location filename="../../core/units.cpp" line="632"/>
         <source>lightminute</source>
-        <translation>yorug'lik daqiqasi</translation>
+        <translation>yorug&apos;lik daqiqasi</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="633"/>
         <source>lightsecond</source>
-        <translation>yorug'lik soniyasi</translation>
+        <translation>yorug&apos;lik soniyasi</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="634"/>
         <source>lightyear</source>
-        <translation>yorug'lik yili</translation>
+        <translation>yorug&apos;lik yili</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="635"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>pivo barreli (AQSH)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>rod</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -3259,35 +3239,35 @@
         <location filename="../../core/evaluator.cpp" line="750"/>
         <location filename="../../core/evaluator.cpp" line="824"/>
         <source>division by zero</source>
-        <translation>nolga bo'lish</translation>
+        <translation>nolga bo&apos;lish</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="765"/>
         <source>too time consuming - computation was rejected</source>
-        <translation>juda ko'p vaqt oladi - hisoblash rad etildi</translation>
+        <translation>juda ko&apos;p vaqt oladi - hisoblash rad etildi</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="772"/>
         <location filename="../../core/evaluator.cpp" line="841"/>
         <location filename="../../core/evaluator.cpp" line="7086"/>
         <source>dimension mismatch - quantities with different dimensions cannot be compared, added, etc.</source>
-        <translation>o'lchamlar mos kelmadi - turli o'lchamli kattaliklarni taqqoslash, qo'shish va hokazo mumkin emas</translation>
+        <translation>o&apos;lchamlar mos kelmadi - turli o&apos;lchamli kattaliklarni taqqoslash, qo&apos;shish va hokazo mumkin emas</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="777"/>
         <source>invalid dimension - operation might require dimensionless arguments</source>
-        <translation>o'lcham yaroqsiz - amal o'lchamsiz argumentlarni talab qilishi mumkin</translation>
+        <translation>o&apos;lcham yaroqsiz - amal o&apos;lchamsiz argumentlarni talab qilishi mumkin</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="784"/>
         <location filename="../../core/evaluator.cpp" line="827"/>
         <source>Computation aborted - encountered numerical instability</source>
-        <translation>Hisoblash to'xtatildi - sonli beqarorlikka duch kelindi</translation>
+        <translation>Hisoblash to&apos;xtatildi - sonli beqarorlikka duch kelindi</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="837"/>
         <source>invalid dimension - function might require dimensionless arguments</source>
-        <translation>o'lcham yaroqsiz - funksiya o'lchamsiz argumentlarni talab qilishi mumkin</translation>
+        <translation>o&apos;lcham yaroqsiz - funksiya o&apos;lchamsiz argumentlarni talab qilishi mumkin</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="852"/>
@@ -3298,51 +3278,51 @@
         <location filename="../../core/evaluator.cpp" line="7502"/>
         <location filename="../../core/evaluator.cpp" line="7972"/>
         <source>unit must not be zero</source>
-        <translation>birlik nol bo'lmasligi kerak</translation>
+        <translation>birlik nol bo&apos;lmasligi kerak</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7506"/>
         <source>Conversion failed - dimension mismatch</source>
-        <translation>Aylantirish bajarilmadi - o'lchamlar mos kelmadi</translation>
+        <translation>Aylantirish bajarilmadi - o&apos;lchamlar mos kelmadi</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7588"/>
         <location filename="../../core/evaluator.cpp" line="7626"/>
         <source>unknown function or variable</source>
-        <translation>noma'lum funksiya yoki o'zgaruvchi</translation>
+        <translation>noma&apos;lum funksiya yoki o&apos;zgaruvchi</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7819"/>
         <source>recursion not supported</source>
-        <translation>rekursiya qo'llab-quvvatlanmaydi</translation>
+        <translation>rekursiya qo&apos;llab-quvvatlanmaydi</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="739"/>
         <source>cannot operate on a NaN</source>
-        <translation>NaN ustida amal bajarib bo'lmaydi</translation>
+        <translation>NaN ustida amal bajarib bo&apos;lmaydi</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="742"/>
         <location filename="../../core/evaluator.cpp" line="813"/>
         <source>underflow - tiny result is out of SpeedCrunch&apos;s number range</source>
-        <translation>pastki to'lib ketish - juda kichik natija SpeedCrunch sonlar oralig'idan tashqarida</translation>
+        <translation>pastki to&apos;lib ketish - juda kichik natija SpeedCrunch sonlar oralig&apos;idan tashqarida</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="746"/>
         <location filename="../../core/evaluator.cpp" line="809"/>
         <source>overflow - huge result is out of SpeedCrunch&apos;s number range</source>
-        <translation>to'lib ketish - juda katta natija SpeedCrunch sonlar oralig'idan tashqarida</translation>
+        <translation>to&apos;lib ketish - juda katta natija SpeedCrunch sonlar oralig&apos;idan tashqarida</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="754"/>
         <location filename="../../core/evaluator.cpp" line="817"/>
         <source>overflow - logic result exceeds maximum of 256 bits</source>
-        <translation>to'lib ketish - mantiqiy natija 256 bitlik maksimumdan oshdi</translation>
+        <translation>to&apos;lib ketish - mantiqiy natija 256 bitlik maksimumdan oshdi</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="760"/>
         <source>overflow - integer result exceeds maximum limit for integers</source>
-        <translation>to'lib ketish - butun natija butun sonlar uchun maksimal chegaradan oshdi</translation>
+        <translation>to&apos;lib ketish - butun natija butun sonlar uchun maksimal chegaradan oshdi</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="781"/>
@@ -3356,7 +3336,7 @@
         <location filename="../../core/evaluator.cpp" line="7705"/>
         <location filename="../../core/evaluator.cpp" line="7813"/>
         <source>wrong number of arguments</source>
-        <translation>argumentlar soni noto'g'ri</translation>
+        <translation>argumentlar soni noto&apos;g&apos;ri</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="806"/>
@@ -3394,12 +3374,12 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="7498"/>
         <source>conversion target must be a unit</source>
-        <translation>aylantirish maqsadi birlik bo'lishi kerak</translation>
+        <translation>aylantirish maqsadi birlik bo&apos;lishi kerak</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7604"/>
         <source>unknown unit</source>
-        <translation>noma'lum birlik</translation>
+        <translation>noma&apos;lum birlik</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7891"/>
@@ -3412,12 +3392,12 @@
         <location filename="../../core/evaluator.cpp" line="7903"/>
         <location filename="../../core/evaluator.cpp" line="7908"/>
         <source>%1 is a global user definition and cannot be overridden in this session.</source>
-        <translation>%1 global foydalanuvchi ta'rifi va bu sessiyada qayta belgilab bo'lmaydi.</translation>
+        <translation>%1 global foydalanuvchi ta&apos;rifi va bu sessiyada qayta belgilab bo&apos;lmaydi.</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7915"/>
         <source>%1 is a variable name, please choose another or delete the variable</source>
-        <translation>%1 o'zgaruvchi nomi, boshqa nom tanlang yoki o'zgaruvchini o'chiring</translation>
+        <translation>%1 o&apos;zgaruvchi nomi, boshqa nom tanlang yoki o&apos;zgaruvchini o&apos;chiring</translation>
     </message>
     <message>
         <location filename="../../core/evaluator.cpp" line="7925"/>
@@ -3432,7 +3412,7 @@
     <message>
         <location filename="../../core/evaluator.cpp" line="7980"/>
         <source>%1 is a user function name, please choose another or delete the function</source>
-        <translation>%1 foydalanuvchi funksiyasi nomi, boshqa nom tanlang yoki funksiyani o'chiring</translation>
+        <translation>%1 foydalanuvchi funksiyasi nomi, boshqa nom tanlang yoki funksiyani o&apos;chiring</translation>
     </message>
 </context>
 <context>
@@ -3472,7 +3452,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2401"/>
         <source>dividend; divisor</source>
-        <translation>bo'linuvchi; bo'luvchi</translation>
+        <translation>bo&apos;linuvchi; bo&apos;luvchi</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2402"/>
@@ -3567,7 +3547,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2435"/>
         <source>Average (Arithmetic Mean)</source>
-        <translation>O'rtacha (arifmetik o'rtacha)</translation>
+        <translation>O&apos;rtacha (arifmetik o&apos;rtacha)</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2438"/>
@@ -3577,7 +3557,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2439"/>
         <source>Binomial Distribution Mean</source>
-        <translation>Binomial taqsimot o'rtachasi</translation>
+        <translation>Binomial taqsimot o&apos;rtachasi</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2440"/>
@@ -3597,7 +3577,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2446"/>
         <source>Complex Conjugate</source>
-        <translation>Kompleks qo'shma</translation>
+        <translation>Kompleks qo&apos;shma</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2447"/>
@@ -3637,7 +3617,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2467"/>
         <source>Complementary Error Function</source>
-        <translation>To'ldiruvchi xato funksiyasi</translation>
+        <translation>To&apos;ldiruvchi xato funksiyasi</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2468"/>
@@ -3657,12 +3637,12 @@
     <message>
         <location filename="../../core/functions.cpp" line="2474"/>
         <source>Greatest Common Divisor</source>
-        <translation>Eng katta umumiy bo'luvchi</translation>
+        <translation>Eng katta umumiy bo&apos;luvchi</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2476"/>
         <source>Geometric Mean</source>
-        <translation>Geometrik o'rtacha</translation>
+        <translation>Geometrik o&apos;rtacha</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2477"/>
@@ -3677,7 +3657,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2481"/>
         <source>Hypergeometric Distribution Mean</source>
-        <translation>Gipergeometrik taqsimot o'rtachasi</translation>
+        <translation>Gipergeometrik taqsimot o&apos;rtachasi</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2482"/>
@@ -3692,7 +3672,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2484"/>
         <source>Integer Quotient</source>
-        <translation>Butun bo'linma</translation>
+        <translation>Butun bo&apos;linma</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2485"/>
@@ -3747,12 +3727,12 @@
     <message>
         <location filename="../../core/functions.cpp" line="2496"/>
         <source>Decode 128-bit Quad-Precision Value</source>
-        <translation>128 bitli to'rt karra aniqlikdagi qiymatni dekodlash</translation>
+        <translation>128 bitli to&apos;rt karra aniqlikdagi qiymatni dekodlash</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2497"/>
         <source>Encode 128-bit Quad-Precision Value</source>
-        <translation>128 bitli to'rt karra aniqlikdagi qiymatni kodlash</translation>
+        <translation>128 bitli to&apos;rt karra aniqlikdagi qiymatni kodlash</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2506"/>
@@ -3762,7 +3742,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2507"/>
         <source>Common Logarithm</source>
-        <translation>O'nlik logarifm</translation>
+        <translation>O&apos;nlik logarifm</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2508"/>
@@ -3777,7 +3757,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2515"/>
         <source>Mask to a bit size</source>
-        <translation>Bit o'lchamiga maskalash</translation>
+        <translation>Bit o&apos;lchamiga maskalash</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2516"/>
@@ -3807,7 +3787,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2526"/>
         <source>Modular Exponentiation</source>
-        <translation>Modulyar darajaga ko'tarish</translation>
+        <translation>Modulyar darajaga ko&apos;tarish</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2527"/>
@@ -3827,7 +3807,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2436"/>
         <source>Convert to Binary Representation</source>
-        <translation>Ikkilik ko'rinishga aylantirish</translation>
+        <translation>Ikkilik ko&apos;rinishga aylantirish</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="33"/>
@@ -3947,12 +3927,12 @@
     <message>
         <location filename="../../core/functions.cpp" line="2426"/>
         <source>List Literal</source>
-        <translation>Ro'yxat literali</translation>
+        <translation>Ro&apos;yxat literali</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2437"/>
         <source>Convert to Padded Binary Representation</source>
-        <translation>To'ldirilgan ikkilik ko'rinishga aylantirish</translation>
+        <translation>To&apos;ldirilgan ikkilik ko&apos;rinishga aylantirish</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2443"/>
@@ -3962,7 +3942,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2444"/>
         <source>Cosine plus Imaginary Sine</source>
-        <translation>Kosinus va mavhum sinus yig'indisi</translation>
+        <translation>Kosinus va mavhum sinus yig&apos;indisi</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2445"/>
@@ -3977,7 +3957,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2450"/>
         <source>Population Correlation Matrix (n)</source>
-        <translation>Bosh to'plam korrelyatsiya matritsasi (n)</translation>
+        <translation>Bosh to&apos;plam korrelyatsiya matritsasi (n)</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2451"/>
@@ -3992,7 +3972,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2453"/>
         <source>Population Covariance Matrix (n)</source>
-        <translation>Bosh to'plam kovariatsiya matritsasi (n)</translation>
+        <translation>Bosh to&apos;plam kovariatsiya matritsasi (n)</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2454"/>
@@ -4002,7 +3982,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2455"/>
         <source>Cross Product</source>
-        <translation>Vektor ko'paytma</translation>
+        <translation>Vektor ko&apos;paytma</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2459"/>
@@ -4012,7 +3992,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2460"/>
         <source>Convert to Decimal Representation</source>
-        <translation>O'nlik ko'rinishga aylantirish</translation>
+        <translation>O&apos;nlik ko&apos;rinishga aylantirish</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2462"/>
@@ -4027,7 +4007,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2464"/>
         <source>Dot Product</source>
-        <translation>Skalyar ko'paytma</translation>
+        <translation>Skalyar ko&apos;paytma</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2465"/>
@@ -4057,12 +4037,12 @@
     <message>
         <location filename="../../core/functions.cpp" line="2478"/>
         <source>Convert to Hexadecimal Representation</source>
-        <translation>O'n oltilik ko'rinishga aylantirish</translation>
+        <translation>O&apos;n oltilik ko&apos;rinishga aylantirish</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2479"/>
         <source>Convert to Padded Hexadecimal Representation</source>
-        <translation>To'ldirilgan o'n oltilik ko'rinishga aylantirish</translation>
+        <translation>To&apos;ldirilgan o&apos;n oltilik ko&apos;rinishga aylantirish</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2487"/>
@@ -4087,27 +4067,27 @@
     <message>
         <location filename="../../core/functions.cpp" line="2501"/>
         <source>Round to 128-bit Quad-Precision Value</source>
-        <translation>128 bitli to'rt karra aniqlikdagi qiymatgacha yaxlitlash</translation>
+        <translation>128 bitli to&apos;rt karra aniqlikdagi qiymatgacha yaxlitlash</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2502"/>
         <source>Residual from 16-bit Half-Precision Rounding</source>
-        <translation>16 bitli yarim aniqlikdagi yaxlitlash qoldig'i</translation>
+        <translation>16 bitli yarim aniqlikdagi yaxlitlash qoldig&apos;i</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2503"/>
         <source>Residual from 32-bit Single-Precision Rounding</source>
-        <translation>32 bitli yakka aniqlikdagi yaxlitlash qoldig'i</translation>
+        <translation>32 bitli yakka aniqlikdagi yaxlitlash qoldig&apos;i</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2504"/>
         <source>Residual from 64-bit Double-Precision Rounding</source>
-        <translation>64 bitli ikki karra aniqlikdagi yaxlitlash qoldig'i</translation>
+        <translation>64 bitli ikki karra aniqlikdagi yaxlitlash qoldig&apos;i</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2505"/>
         <source>Residual from 128-bit Quad-Precision Rounding</source>
-        <translation>128 bitli to'rt karra aniqlikdagi yaxlitlash qoldig'i</translation>
+        <translation>128 bitli to&apos;rt karra aniqlikdagi yaxlitlash qoldig&apos;i</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2510"/>
@@ -4132,7 +4112,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2518"/>
         <source>Mean</source>
-        <translation>O'rtacha</translation>
+        <translation>O&apos;rtacha</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2520"/>
@@ -4142,7 +4122,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2521"/>
         <source>Random Decimal Number</source>
-        <translation>Tasodifiy o'nlik son</translation>
+        <translation>Tasodifiy o&apos;nlik son</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2522"/>
@@ -4152,17 +4132,17 @@
     <message>
         <location filename="../../core/functions.cpp" line="2523"/>
         <source>Convert to Rational Representation</source>
-        <translation>Ratsional ko'rinishga aylantirish</translation>
+        <translation>Ratsional ko&apos;rinishga aylantirish</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2530"/>
         <source>Convert to Octal Representation</source>
-        <translation>Sakkizlik ko'rinishga aylantirish</translation>
+        <translation>Sakkizlik ko&apos;rinishga aylantirish</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2531"/>
         <source>Convert to Padded Octal Representation</source>
-        <translation>To'ldirilgan sakkizlik ko'rinishga aylantirish</translation>
+        <translation>To&apos;ldirilgan sakkizlik ko&apos;rinishga aylantirish</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2532"/>
@@ -4177,7 +4157,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2534"/>
         <source>Population Count (Hamming Weight)</source>
-        <translation>Bir bitlar soni (Hamming og'irligi)</translation>
+        <translation>Bir bitlar soni (Hamming og&apos;irligi)</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2535"/>
@@ -4192,7 +4172,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2537"/>
         <source>Poissonian Distribution Mean</source>
-        <translation>Puasson taqsimot o'rtachasi</translation>
+        <translation>Puasson taqsimot o&apos;rtachasi</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2538"/>
@@ -4212,7 +4192,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2545"/>
         <source>Convert to Rectangular Complex Form</source>
-        <translation>To'g'ri burchakli kompleks shaklga aylantirish</translation>
+        <translation>To&apos;g&apos;ri burchakli kompleks shaklga aylantirish</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2546"/>
@@ -4237,22 +4217,22 @@
     <message>
         <location filename="../../core/functions.cpp" line="2554"/>
         <source>List or Matrix Shape</source>
-        <translation>Ro'yxat yoki matritsa shakli</translation>
+        <translation>Ro&apos;yxat yoki matritsa shakli</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2555"/>
         <source>Summation</source>
-        <translation>Yig'indi</translation>
+        <translation>Yig&apos;indi</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2559"/>
         <source>Population Standard Deviation (n)</source>
-        <translation>Bosh to'plam standart og'ishi (n)</translation>
+        <translation>Bosh to&apos;plam standart og&apos;ishi (n)</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2560"/>
         <source>Sample Standard Deviation (n-1)</source>
-        <translation>Tanlanma standart og'ishi (n-1)</translation>
+        <translation>Tanlanma standart og&apos;ishi (n-1)</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2566"/>
@@ -4272,7 +4252,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2570"/>
         <source>Population Variance (n)</source>
-        <translation>Bosh to'plam dispersiyasi (n)</translation>
+        <translation>Bosh to&apos;plam dispersiyasi (n)</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2571"/>
@@ -4282,7 +4262,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2541"/>
         <source>Product</source>
-        <translation>Ko'paytma</translation>
+        <translation>Ko&apos;paytma</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2542"/>
@@ -4312,7 +4292,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2551"/>
         <source>Arithmetic Shift Right</source>
-        <translation>Arifmetik o'ngga siljitish</translation>
+        <translation>Arifmetik o&apos;ngga siljitish</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2552"/>
@@ -4337,7 +4317,7 @@
     <message>
         <location filename="../../core/functions.cpp" line="2561"/>
         <source>Sum</source>
-        <translation>Yig'indi</translation>
+        <translation>Yig&apos;indi</translation>
     </message>
     <message>
         <location filename="../../core/functions.cpp" line="2562"/>
@@ -4452,12 +4432,12 @@
     <message>
         <location filename="../../gui/keypad.cpp" line="887"/>
         <source>Division</source>
-        <translation>Bo'lish</translation>
+        <translation>Bo&apos;lish</translation>
     </message>
     <message>
         <location filename="../../gui/keypad.cpp" line="888"/>
         <source>Multiplication</source>
-        <translation>Ko'paytirish</translation>
+        <translation>Ko&apos;paytirish</translation>
     </message>
     <message>
         <location filename="../../gui/keypad.cpp" line="889"/>
@@ -4467,7 +4447,7 @@
     <message>
         <location filename="../../gui/keypad.cpp" line="890"/>
         <source>Addition</source>
-        <translation>Qo'shish</translation>
+        <translation>Qo&apos;shish</translation>
     </message>
     <message>
         <location filename="../../gui/keypad.cpp" line="891"/>
@@ -4482,7 +4462,7 @@
     <message>
         <location filename="../../gui/keypad.cpp" line="893"/>
         <source>Backspace</source>
-        <translation>Orqaga o'chirish</translation>
+        <translation>Orqaga o&apos;chirish</translation>
     </message>
     <message>
         <location filename="../../gui/keypad.cpp" line="894"/>
@@ -4517,7 +4497,7 @@
     <message>
         <location filename="../../gui/keypad.cpp" line="900"/>
         <source>Common logarithm</source>
-        <translation>O'nlik logarifm</translation>
+        <translation>O&apos;nlik logarifm</translation>
     </message>
     <message>
         <location filename="../../gui/keypad.cpp" line="901"/>
@@ -4537,7 +4517,7 @@
     <message>
         <location filename="../../gui/keypad.cpp" line="904"/>
         <source>Right parenthesis</source>
-        <translation>O'ng qavs</translation>
+        <translation>O&apos;ng qavs</translation>
     </message>
     <message>
         <location filename="../../gui/keypad.cpp" line="905"/>
@@ -4562,17 +4542,17 @@
     <message>
         <location filename="../../gui/keypad.cpp" line="909"/>
         <source>Decimal separator</source>
-        <translation>O'nlik ajratgich</translation>
+        <translation>O&apos;nlik ajratgich</translation>
     </message>
     <message>
         <location filename="../../gui/keypad.cpp" line="910"/>
         <source>Assign variable x</source>
-        <translation>x o'zgaruvchisini tayinlash</translation>
+        <translation>x o&apos;zgaruvchisini tayinlash</translation>
     </message>
     <message>
         <location filename="../../gui/keypad.cpp" line="911"/>
         <source>The variable x</source>
-        <translation>x o'zgaruvchisi</translation>
+        <translation>x o&apos;zgaruvchisi</translation>
     </message>
 </context>
 <context>
@@ -4605,7 +4585,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3401"/>
         <source>Hexadecimal</source>
-        <translation>O'n oltilik</translation>
+        <translation>O&apos;n oltilik</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3402"/>
@@ -4615,12 +4595,12 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3404"/>
         <source>Engineering decimal</source>
-        <translation>Muhandislik o'nligi</translation>
+        <translation>Muhandislik o&apos;nligi</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3405"/>
         <source>Scientific decimal</source>
-        <translation>Ilmiy o'nlik</translation>
+        <translation>Ilmiy o&apos;nlik</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3423"/>
@@ -4665,7 +4645,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3433"/>
         <source>&amp;Paste</source>
-        <translation>&amp;Qo'yish</translation>
+        <translation>&amp;Qo&apos;yish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3434"/>
@@ -4675,7 +4655,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3435"/>
         <source>&amp;Wrap Selection in Parentheses</source>
-        <translation>Tanlovni qavslar bilan &amp;o'rash</translation>
+        <translation>Tanlovni qavslar bilan &amp;o&apos;rash</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3437"/>
@@ -4685,7 +4665,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3438"/>
         <source>F&amp;ull Screen Mode</source>
-        <translation>To'liq &amp;ekran rejimi</translation>
+        <translation>To&apos;liq &amp;ekran rejimi</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3439"/>
@@ -4731,12 +4711,12 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3466"/>
         <source>Automatic &amp;Completion</source>
-        <translation>Avtomatik &amp;to'ldirish</translation>
+        <translation>Avtomatik &amp;to&apos;ldirish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3477"/>
         <source>Syntax &amp;Highlighting</source>
-        <translation>Sintaksisni &amp;ajratib ko'rsatish</translation>
+        <translation>Sintaksisni &amp;ajratib ko&apos;rsatish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3495"/>
@@ -4771,7 +4751,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3523"/>
         <source>&amp;Hexadecimal</source>
-        <translation>O'n &amp;oltilik</translation>
+        <translation>O&apos;n &amp;oltilik</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3522"/>
@@ -4786,7 +4766,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3541"/>
         <source>User &amp;Manual</source>
-        <translation>Foydalanuvchi &amp;qo'llanmasi</translation>
+        <translation>Foydalanuvchi &amp;qo&apos;llanmasi</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3549"/>
@@ -4841,7 +4821,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3854"/>
         <source>&amp;View</source>
-        <translation>&amp;Ko'rinish</translation>
+        <translation>&amp;Ko&apos;rinish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3857"/>
@@ -4851,7 +4831,7 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3863"/>
         <source>&amp;Decimal</source>
-        <translation>&amp;O'nlik</translation>
+        <translation>&amp;O&apos;nlik</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3855"/>
@@ -4866,22 +4846,22 @@
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3479"/>
         <source>Disabled</source>
-        <translation>O'chirilgan</translation>
+        <translation>O&apos;chirilgan</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3480"/>
         <source>Small Space</source>
-        <translation>Kichik bo'shliq</translation>
+        <translation>Kichik bo&apos;shliq</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3481"/>
         <source>Medium Space</source>
-        <translation>O'rta bo'shliq</translation>
+        <translation>O&apos;rta bo&apos;shliq</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3482"/>
         <source>Large Space</source>
-        <translation>Katta bo'shliq</translation>
+        <translation>Katta bo&apos;shliq</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3499"/>
@@ -4960,14 +4940,14 @@
         <location filename="../../gui/mainwindow.cpp" line="8540"/>
         <location filename="../../gui/mainwindow.cpp" line="8838"/>
         <source>Can&apos;t read from file %1</source>
-        <translation>%1 faylidan o'qib bo'lmadi</translation>
+        <translation>%1 faylidan o&apos;qib bo&apos;lmadi</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8713"/>
         <source>Merge session being loaded with current session?
 If no, current variables and display will be cleared.</source>
         <translation>Yuklanayotgan sessiya joriy sessiya bilan birlashtirilsinmi?
-Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
+Yo&apos;q tanlansa, joriy o&apos;zgaruvchilar va displey tozalanadi.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8831"/>
@@ -4985,12 +4965,12 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
         <source>Merge session being imported with current session?
 If no, current variables and display will be cleared.</source>
         <translation>Import qilinayotgan sessiya joriy sessiya bilan birlashtirilsinmi?
-Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
+Yo&apos;q tanlansa, joriy o&apos;zgaruvchilar va displey tozalanadi.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8878"/>
         <source>Ignore error?</source>
-        <translation>Xato o'tkazib yuborilsinmi?</translation>
+        <translation>Xato o&apos;tkazib yuborilsinmi?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8795"/>
@@ -5031,7 +5011,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3403"/>
         <source>Fixed-point decimal</source>
-        <translation>Qo'zg'almas nuqtali o'nlik</translation>
+        <translation>Qo&apos;zg&apos;almas nuqtali o&apos;nlik</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3406"/>
@@ -5041,7 +5021,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3407"/>
         <source>Automatic decimal</source>
-        <translation>Avtomatik o'nlik</translation>
+        <translation>Avtomatik o&apos;nlik</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3415"/>
@@ -5052,7 +5032,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3424"/>
         <source>User &amp;Definitions...</source>
-        <translation>Foydalanuvchi &amp;ta'riflari...</translation>
+        <translation>Foydalanuvchi &amp;ta&apos;riflari...</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3442"/>
@@ -5083,7 +5063,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3452"/>
         <source>User &amp;Variables</source>
-        <translation>Foydalanuvchi &amp;o'zgaruvchilari</translation>
+        <translation>Foydalanuvchi &amp;o&apos;zgaruvchilari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3455"/>
@@ -5103,13 +5083,13 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Operator bilan boshlanganda "ans"ni avtomatik kiritish</translation>
+        <translation>Operator bilan boshlanganda &quot;ans&quot;ni avtomatik kiritish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Yangi ifoda +, -, * yoki / bilan boshlansa, SpeedCrunch avval "ans"ni kiritadi.</translation>
+        <translation>Yangi ifoda +, -, * yoki / bilan boshlansa, SpeedCrunch avval &quot;ans&quot;ni kiritadi.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5119,7 +5099,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3468"/>
         <source>Built-in &amp;variables</source>
-        <translation>Ichki &amp;o'zgaruvchilar</translation>
+        <translation>Ichki &amp;o&apos;zgaruvchilar</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3469"/>
@@ -5134,23 +5114,23 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3471"/>
         <source>User &amp;variables</source>
-        <translation>Foydalanuvchi &amp;o'zgaruvchilari</translation>
+        <translation>Foydalanuvchi &amp;o&apos;zgaruvchilari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3472"/>
         <source>Show Empty History &amp;Hint</source>
-        <translation>Bo'sh tarix &amp;maslahatini ko'rsatish</translation>
+        <translation>Bo&apos;sh tarix &amp;maslahatini ko&apos;rsatish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3473"/>
         <location filename="../../gui/mainwindow.cpp" line="3474"/>
         <source>When history is empty, show a hint in the status area.</source>
-        <translation>Tarix bo'sh bo'lsa, holat maydonida maslahat ko'rsatiladi.</translation>
+        <translation>Tarix bo&apos;sh bo&apos;lsa, holat maydonida maslahat ko&apos;rsatiladi.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3475"/>
         <source>Show Live Result &amp;Preview</source>
-        <translation>Jonli natija &amp;ko'rinishini ko'rsatish</translation>
+        <translation>Jonli natija &amp;ko&apos;rinishini ko&apos;rsatish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3476"/>
@@ -5211,7 +5191,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3493"/>
         <source>Simplify Displayed Expressions</source>
-        <translation>Ko'rsatilgan ifodalarni soddalashtirish</translation>
+        <translation>Ko&apos;rsatilgan ifodalarni soddalashtirish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3494"/>
@@ -5246,7 +5226,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3517"/>
         <source>&amp;Fixed-Point</source>
-        <translation>&amp;Qo'zg'almas nuqtali</translation>
+        <translation>&amp;Qo&apos;zg&apos;almas nuqtali</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3520"/>
@@ -5266,7 +5246,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3529"/>
         <source>&amp;Rectangular (a + bi)</source>
-        <translation>&amp;To'g'ri burchakli (a + bi)</translation>
+        <translation>&amp;To&apos;g&apos;ri burchakli (a + bi)</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3530"/>
@@ -5381,7 +5361,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3871"/>
         <source>A&amp;utocomplete</source>
-        <translation>A&amp;vtoto'ldirish</translation>
+        <translation>A&amp;vtoto&apos;ldirish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3872"/>
@@ -5391,22 +5371,22 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3873"/>
         <source>&amp;Appearance</source>
-        <translation>&amp;Ko'rinish</translation>
+        <translation>&amp;Ko&apos;rinish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3880"/>
         <source>&amp;Disabled</source>
-        <translation>&amp;O'chirilgan</translation>
+        <translation>&amp;O&apos;chirilgan</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3882"/>
         <source>&amp;Disable</source>
-        <translation>&amp;O'chirish</translation>
+        <translation>&amp;O&apos;chirish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4046"/>
         <source>Close preview</source>
-        <translation>Ko'rib chiqishni yopish</translation>
+        <translation>Ko&apos;rib chiqishni yopish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4181"/>
@@ -5422,22 +5402,22 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4184"/>
         <source>Split Left</source>
-        <translation>Chapga bo'lish</translation>
+        <translation>Chapga bo&apos;lish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4185"/>
         <source>Split Right</source>
-        <translation>O'ngga bo'lish</translation>
+        <translation>O&apos;ngga bo&apos;lish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4186"/>
         <source>Split Up</source>
-        <translation>Yuqoriga bo'lish</translation>
+        <translation>Yuqoriga bo&apos;lish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4187"/>
         <source>Split Down</source>
-        <translation>Pastga bo'lish</translation>
+        <translation>Pastga bo&apos;lish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4190"/>
@@ -5459,7 +5439,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
         <location filename="../../gui/mainwindow.cpp" line="7719"/>
         <location filename="../../gui/mainwindow.cpp" line="7730"/>
         <source>Rename Session</source>
-        <translation>Sessiya nomini o'zgartirish</translation>
+        <translation>Sessiya nomini o&apos;zgartirish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4194"/>
@@ -5470,7 +5450,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
         <location filename="../../gui/mainwindow.cpp" line="4195"/>
         <location filename="../../gui/mainwindow.cpp" line="8000"/>
         <source>Delete Session</source>
-        <translation>Sessiyani o'chirish</translation>
+        <translation>Sessiyani o&apos;chirish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4197"/>
@@ -5480,7 +5460,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="6249"/>
         <source>User Variables</source>
-        <translation>Foydalanuvchi o'zgaruvchilari</translation>
+        <translation>Foydalanuvchi o&apos;zgaruvchilari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="6323"/>
@@ -5514,22 +5494,22 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="7667"/>
         <source>Could not create session file %1.</source>
-        <translation>%1 sessiya faylini yaratib bo'lmadi.</translation>
+        <translation>%1 sessiya faylini yaratib bo&apos;lmadi.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="7677"/>
         <source>Could not write session file %1.</source>
-        <translation>%1 sessiya fayliga yozib bo'lmadi.</translation>
+        <translation>%1 sessiya fayliga yozib bo&apos;lmadi.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="7731"/>
         <source>Could not rename session file %1.</source>
-        <translation>%1 sessiya fayli nomini o'zgartirib bo'lmadi.</translation>
+        <translation>%1 sessiya fayli nomini o&apos;zgartirib bo&apos;lmadi.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8001"/>
         <source>Are you sure you want to delete this session?</source>
-        <translation>Bu sessiyani o'chirishni xohlaysizmi?</translation>
+        <translation>Bu sessiyani o&apos;chirishni xohlaysizmi?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8176"/>
@@ -5549,17 +5529,17 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8203"/>
         <source>Light Themes</source>
-        <translation>Yorug' mavzular</translation>
+        <translation>Yorug&apos; mavzular</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8210"/>
         <source>Dark Themes</source>
-        <translation>Qorong'i mavzular</translation>
+        <translation>Qorong&apos;i mavzular</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8218"/>
         <source>Preview</source>
-        <translation>Ko'rib chiqish</translation>
+        <translation>Ko&apos;rib chiqish</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8280"/>
@@ -5600,12 +5580,12 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>"%1" mavzusini import qilib bo'lmaydi, chunki u ichki mavzu bilan ziddiyatda.</translation>
+        <translation>&quot;%1&quot; mavzusini import qilib bo&apos;lmaydi, chunki u ichki mavzu bilan ziddiyatda.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
         <source>Can&apos;t find a writable theme folder.</source>
-        <translation>Yozish mumkin bo'lgan mavzu papkasi topilmadi.</translation>
+        <translation>Yozish mumkin bo&apos;lgan mavzu papkasi topilmadi.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8567"/>
@@ -5615,17 +5595,17 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>"%1" nomli maxsus mavzu allaqachon mavjud. Uni qayta yozishni xohlaysizmi?</translation>
+        <translation>&quot;%1&quot; nomli maxsus mavzu allaqachon mavjud. Uni qayta yozishni xohlaysizmi?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
         <source>Can&apos;t overwrite theme file %1</source>
-        <translation>%1 mavzu faylini qayta yozib bo'lmadi</translation>
+        <translation>%1 mavzu faylini qayta yozib bo&apos;lmadi</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8582"/>
         <source>Can&apos;t copy theme file to %1</source>
-        <translation>Mavzu faylini %1 ga nusxalab bo'lmadi</translation>
+        <translation>Mavzu faylini %1 ga nusxalab bo&apos;lmadi</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8623"/>
@@ -5635,7 +5615,7 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Mavzuni "%1" sifatida eksport qilib bo'lmaydi, chunki u ichki mavzu bilan ziddiyatda.</translation>
+        <translation>Mavzuni &quot;%1&quot; sifatida eksport qilib bo&apos;lmaydi, chunki u ichki mavzu bilan ziddiyatda.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5643,17 +5623,17 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
         <location filename="../../gui/mainwindow.cpp" line="9661"/>
         <location filename="../../gui/mainwindow.cpp" line="9681"/>
         <source>Can&apos;t write to file %1</source>
-        <translation>%1 fayliga yozib bo'lmadi</translation>
+        <translation>%1 fayliga yozib bo&apos;lmadi</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8740"/>
         <source>Can&apos;t read the selected session file.</source>
-        <translation>Tanlangan sessiya faylini o'qib bo'lmadi.</translation>
+        <translation>Tanlangan sessiya faylini o&apos;qib bo&apos;lmadi.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8918"/>
         <source>Global User Variable</source>
-        <translation>Global foydalanuvchi o'zgaruvchisi</translation>
+        <translation>Global foydalanuvchi o&apos;zgaruvchisi</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8919"/>
@@ -5668,16 +5648,16 @@ Yo'q tanlansa, joriy o'zgaruvchilar va displey tozalanadi.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9262"/>
         <source>User Definitions</source>
-        <translation>Foydalanuvchi ta'riflari</translation>
+        <translation>Foydalanuvchi ta&apos;riflari</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9268"/>
         <source>These definitions are global and are loaded into every session.
 They are immutable for sessions and override same-name definitions from the session editor.
 Enter one definition per line.</source>
-        <translation>Bu ta'riflar global va har bir sessiyaga yuklanadi.
-Ular sessiyalarda o'zgarmas va sessiya editoridagi bir xil nomli ta'riflarni ustiga yozadi.
-Har bir satrga bittadan ta'rif kiriting.</translation>
+        <translation>Bu ta&apos;riflar global va har bir sessiyaga yuklanadi.
+Ular sessiyalarda o&apos;zgarmas va sessiya editoridagi bir xil nomli ta&apos;riflarni ustiga yozadi.
+Har bir satrga bittadan ta&apos;rif kiriting.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9277"/>
@@ -5693,7 +5673,7 @@ f(x)=x^2+1
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9327"/>
         <source>Apply</source>
-        <translation>Qo'llash</translation>
+        <translation>Qo&apos;llash</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9328"/>
@@ -5712,7 +5692,7 @@ f(x)=x^2+1
 Imported functions: %2
 Imported units: %3
 Line numbers with errors: %4</source>
-        <translation>Import qilingan o'zgaruvchilar: %1
+        <translation>Import qilingan o&apos;zgaruvchilar: %1
 Import qilingan funksiyalar: %2
 Import qilingan birliklar: %3
 Xatoli satr raqamlari: %4</translation>
@@ -5721,17 +5701,17 @@ Xatoli satr raqamlari: %4</translation>
         <location filename="../../gui/mainwindow.cpp" line="9369"/>
         <location filename="../../gui/mainwindow.cpp" line="9401"/>
         <source>none</source>
-        <translation>yo'q</translation>
+        <translation>yo&apos;q</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9396"/>
         <source>Apply Results</source>
-        <translation>Natijalarni qo'llash</translation>
+        <translation>Natijalarni qo&apos;llash</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9410"/>
         <source>User definitions saved.</source>
-        <translation>Foydalanuvchi ta'riflari saqlandi.</translation>
+        <translation>Foydalanuvchi ta&apos;riflari saqlandi.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="9444"/>
@@ -5757,7 +5737,7 @@ Xatoli satr raqamlari: %4</translation>
         <location filename="../../gui/mainwindow.cpp" line="11475"/>
         <location filename="../../gui/mainwindow.cpp" line="11648"/>
         <source>Could not recalculate from calculation %1: %2</source>
-        <translation>%1 hisoblashidan qayta hisoblab bo'lmadi: %2</translation>
+        <translation>%1 hisoblashidan qayta hisoblab bo&apos;lmadi: %2</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="11564"/>
@@ -5767,7 +5747,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="11565"/>
         <source>This calculation fills the last available history slot. Future calculations will remove the oldest calculation from history. You can increase the limit from Session &gt; History Size Limit.</source>
-        <translation>Bu hisoblash tarixdagi oxirgi bo'sh joyni to'ldiradi. Keyingi hisoblashlar tarixdan eng eski hisoblashni olib tashlaydi. Chegarani Sessiya &gt; Tarix hajmi chegarasi orqali oshirishingiz mumkin.</translation>
+        <translation>Bu hisoblash tarixdagi oxirgi bo&apos;sh joyni to&apos;ldiradi. Keyingi hisoblashlar tarixdan eng eski hisoblashni olib tashlaydi. Chegarani Sessiya &gt; Tarix hajmi chegarasi orqali oshirishingiz mumkin.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="11588"/>
@@ -5807,7 +5787,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="12298"/>
         <source>Decimal places:</source>
-        <translation>O'nlik xonalar:</translation>
+        <translation>O&apos;nlik xonalar:</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3515"/>
@@ -5868,12 +5848,12 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/manualwindow.cpp" line="49"/>
         <source>SpeedCrunch Manual</source>
-        <translation>SpeedCrunch qo'llanmasi</translation>
+        <translation>SpeedCrunch qo&apos;llanmasi</translation>
     </message>
     <message>
         <location filename="../../gui/manualwindow.cpp" line="51"/>
         <source>%1 - SpeedCrunch Manual</source>
-        <translation>%1 - SpeedCrunch qo'llanmasi</translation>
+        <translation>%1 - SpeedCrunch qo&apos;llanmasi</translation>
     </message>
 </context>
 <context>
@@ -5886,7 +5866,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/numberformatdialog.cpp" line="21"/>
         <source>&lt;b&gt;Select the number format for display.&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;Note: for input numbers, obvious formats are accepted even when they differ from the selected display format.&lt;br/&gt;</source>
-        <translation>&lt;b&gt;Displey uchun son formatini tanlang.&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;Eslatma: kiritiladigan sonlar uchun, tanlangan ko'rsatish formatidan farq qilsa ham, aniq formatlar qabul qilinadi.&lt;br/&gt;</translation>
+        <translation>&lt;b&gt;Displey uchun son formatini tanlang.&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;Eslatma: kiritiladigan sonlar uchun, tanlangan ko&apos;rsatish formatidan farq qilsa ham, aniq formatlar qabul qilinadi.&lt;br/&gt;</translation>
     </message>
 </context>
 <context>
@@ -5894,7 +5874,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../core/session.cpp" line="118"/>
         <source>Global User Variable</source>
-        <translation>Global foydalanuvchi o'zgaruvchisi</translation>
+        <translation>Global foydalanuvchi o&apos;zgaruvchisi</translation>
     </message>
     <message>
         <location filename="../../core/session.cpp" line="119"/>
@@ -5909,7 +5889,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/customkeypaddialog.cpp" line="32"/>
         <source>Backspace</source>
-        <translation>Orqaga o'chirish</translation>
+        <translation>Orqaga o&apos;chirish</translation>
     </message>
     <message>
         <location filename="../../gui/customkeypaddialog.cpp" line="34"/>
@@ -5929,22 +5909,22 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="40"/>
         <source>Automatic decimal</source>
-        <translation>Avtomatik o'nlik</translation>
+        <translation>Avtomatik o&apos;nlik</translation>
     </message>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="41"/>
         <source>Fixed-point decimal</source>
-        <translation>Qo'zg'almas nuqtali o'nlik</translation>
+        <translation>Qo&apos;zg&apos;almas nuqtali o&apos;nlik</translation>
     </message>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="42"/>
         <source>Engineering decimal</source>
-        <translation>Muhandislik o'nligi</translation>
+        <translation>Muhandislik o&apos;nligi</translation>
     </message>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="43"/>
         <source>Scientific decimal</source>
-        <translation>Ilmiy o'nlik</translation>
+        <translation>Ilmiy o&apos;nlik</translation>
     </message>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="45"/>
@@ -5964,7 +5944,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="48"/>
         <source>Hexadecimal</source>
-        <translation>O'n oltilik</translation>
+        <translation>O&apos;n oltilik</translation>
     </message>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="49"/>
@@ -5979,7 +5959,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Yangi versiya (%1) mavjud.&lt;br/&gt;&lt;a href="%2"&gt;Yuklab olish uchun veb-saytga o'ting.&lt;/a&gt;</translation>
+        <translation>Yangi versiya (%1) mavjud.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Yuklab olish uchun veb-saytga o&apos;ting.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>
@@ -5991,17 +5971,17 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="227"/>
         <source>SpeedCrunch %1 is up to date.</source>
-        <translation>SpeedCrunch %1 eng so'nggi versiyada.</translation>
+        <translation>SpeedCrunch %1 eng so&apos;nggi versiyada.</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="246"/>
         <source>No connectivity. Please check your internet connection and try again.</source>
-        <translation>Ulanish yo'q. Internet aloqangizni tekshirib, qayta urinib ko'ring.</translation>
+        <translation>Ulanish yo&apos;q. Internet aloqangizni tekshirib, qayta urinib ko&apos;ring.</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="265"/>
         <source>Could not verify the latest available version.</source>
-        <translation>Eng so'nggi mavjud versiyani tekshirib bo'lmadi.</translation>
+        <translation>Eng so&apos;nggi mavjud versiyani tekshirib bo&apos;lmadi.</translation>
     </message>
 </context>
 <context>
@@ -6009,7 +5989,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="466"/>
         <source>Scroll to bottom</source>
-        <translation>Pastga o'tish</translation>
+        <translation>Pastga o&apos;tish</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1103"/>
@@ -6029,7 +6009,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1130"/>
         <source>Change Settings</source>
-        <translation>Sozlamalarni o'zgartirish</translation>
+        <translation>Sozlamalarni o&apos;zgartirish</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1134"/>
@@ -6059,22 +6039,22 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1159"/>
         <source>Split Left</source>
-        <translation>Chapga bo'lish</translation>
+        <translation>Chapga bo&apos;lish</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1163"/>
         <source>Split Right</source>
-        <translation>O'ngga bo'lish</translation>
+        <translation>O&apos;ngga bo&apos;lish</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1167"/>
         <source>Split Up</source>
-        <translation>Yuqoriga bo'lish</translation>
+        <translation>Yuqoriga bo&apos;lish</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1171"/>
         <source>Split Down</source>
-        <translation>Pastga bo'lish</translation>
+        <translation>Pastga bo&apos;lish</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1176"/>
@@ -6094,7 +6074,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1183"/>
         <source>Rename Session</source>
-        <translation>Sessiya nomini o'zgartirish</translation>
+        <translation>Sessiya nomini o&apos;zgartirish</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1187"/>
@@ -6104,7 +6084,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1191"/>
         <source>Delete Session</source>
-        <translation>Sessiyani o'chirish</translation>
+        <translation>Sessiyani o&apos;chirish</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1195"/>
@@ -6139,7 +6119,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1393"/>
         <source>Change settings</source>
-        <translation>Sozlamalarni o'zgartirish</translation>
+        <translation>Sozlamalarni o&apos;zgartirish</translation>
     </message>
     <message>
         <location filename="../../gui/resultdisplay.cpp" line="1395"/>
@@ -6172,7 +6152,7 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="116"/>
         <source>Decimal Places</source>
-        <translation>O'nlik xonalar</translation>
+        <translation>O&apos;nlik xonalar</translation>
     </message>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="119"/>
@@ -6182,22 +6162,22 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="120"/>
         <source>Extra Line #1</source>
-        <translation>Qo'shimcha satr #1</translation>
+        <translation>Qo&apos;shimcha satr #1</translation>
     </message>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="121"/>
         <source>Extra Line #2</source>
-        <translation>Qo'shimcha satr #2</translation>
+        <translation>Qo&apos;shimcha satr #2</translation>
     </message>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="122"/>
         <source>Extra Line #3</source>
-        <translation>Qo'shimcha satr #3</translation>
+        <translation>Qo&apos;shimcha satr #3</translation>
     </message>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="123"/>
         <source>Extra Line #4</source>
-        <translation>Qo'shimcha satr #4</translation>
+        <translation>Qo&apos;shimcha satr #4</translation>
     </message>
     <message>
         <location filename="../../gui/notationandprecisiondialog.cpp" line="142"/>
@@ -6245,12 +6225,12 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/userfunctionlistwidget.cpp" line="180"/>
         <source>Delete</source>
-        <translation>O'chirish</translation>
+        <translation>O&apos;chirish</translation>
     </message>
     <message>
         <location filename="../../gui/userfunctionlistwidget.cpp" line="181"/>
         <source>Delete All</source>
-        <translation>Hammasini o'chirish</translation>
+        <translation>Hammasini o&apos;chirish</translation>
     </message>
 </context>
 <context>
@@ -6293,12 +6273,12 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/userunitlistwidget.cpp" line="181"/>
         <source>Delete</source>
-        <translation>O'chirish</translation>
+        <translation>O&apos;chirish</translation>
     </message>
     <message>
         <location filename="../../gui/userunitlistwidget.cpp" line="182"/>
         <source>Delete All</source>
-        <translation>Hammasini o'chirish</translation>
+        <translation>Hammasini o&apos;chirish</translation>
     </message>
 </context>
 <context>
@@ -6341,12 +6321,12 @@ Xatoli satr raqamlari: %4</translation>
     <message>
         <location filename="../../gui/variablelistwidget.cpp" line="192"/>
         <source>Delete</source>
-        <translation>O'chirish</translation>
+        <translation>O&apos;chirish</translation>
     </message>
     <message>
         <location filename="../../gui/variablelistwidget.cpp" line="193"/>
         <source>Delete All</source>
-        <translation>Hammasini o'chirish</translation>
+        <translation>Hammasini o&apos;chirish</translation>
     </message>
 </context>
 </TS>

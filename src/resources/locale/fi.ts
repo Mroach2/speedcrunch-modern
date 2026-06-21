@@ -2839,19 +2839,9 @@
         <translation>atomimassayksikkö</translation>
     </message>
     <message>
-        <location filename="../../core/units.cpp" line="597"/>
-        <source>bar</source>
-        <translation>baari</translation>
-    </message>
-    <message>
         <location filename="../../core/units.cpp" line="599"/>
         <source>British thermal unit</source>
         <translation>brittiläinen lämpöyksikkö</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="600"/>
-        <source>byte</source>
-        <translation>tavu</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="601"/>
@@ -2927,11 +2917,6 @@
         <location filename="../../core/units.cpp" line="615"/>
         <source>cubic foot</source>
         <translation>kuutiojalka</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="616"/>
-        <source>furlong</source>
-        <translation>furlong</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="617"/>
@@ -3107,11 +3092,6 @@
         <location filename="../../core/units.cpp" line="652"/>
         <source>beer barrel (US)</source>
         <translation>oluttynnyri (US)</translation>
-    </message>
-    <message>
-        <location filename="../../core/units.cpp" line="653"/>
-        <source>rod</source>
-        <translation>rodi</translation>
     </message>
     <message>
         <location filename="../../core/units.cpp" line="654"/>
@@ -5103,13 +5083,13 @@ Jos ei, nykyiset muuttujat ja näyttö tyhjennetään.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
-        <translation>Lisää "ans" automaattisesti operaattorilla aloitettaessa</translation>
+        <translation>Lisää &quot;ans&quot; automaattisesti operaattorilla aloitettaessa</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3464"/>
         <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
-        <translation>Jos uusi lauseke alkaa merkillä +, -, * tai /, SpeedCrunch lisää alkuun "ans".</translation>
+        <translation>Jos uusi lauseke alkaa merkillä +, -, * tai /, SpeedCrunch lisää alkuun &quot;ans&quot;.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3467"/>
@@ -5600,7 +5580,7 @@ Jos ei, nykyiset muuttujat ja näyttö tyhjennetään.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8555"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Teemaa "%1" ei voi tuoda, koska se on ristiriidassa sisäänrakennetun teeman kanssa.</translation>
+        <translation>Teemaa &quot;%1&quot; ei voi tuoda, koska se on ristiriidassa sisäänrakennetun teeman kanssa.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8560"/>
@@ -5615,7 +5595,7 @@ Jos ei, nykyiset muuttujat ja näyttö tyhjennetään.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8568"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
-        <translation>Mukautettu teema nimeltä "%1" on jo olemassa. Haluatko korvata sen?</translation>
+        <translation>Mukautettu teema nimeltä &quot;%1&quot; on jo olemassa. Haluatko korvata sen?</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8576"/>
@@ -5635,7 +5615,7 @@ Jos ei, nykyiset muuttujat ja näyttö tyhjennetään.</translation>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8634"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
-        <translation>Teemaa ei voi viedä nimellä "%1", koska se on ristiriidassa sisäänrakennetun teeman kanssa.</translation>
+        <translation>Teemaa ei voi viedä nimellä &quot;%1&quot;, koska se on ristiriidassa sisäänrakennetun teeman kanssa.</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="8639"/>
@@ -5979,7 +5959,7 @@ Virheellisten rivien numerot: %4</translation>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="202"/>
         <source>A newer version (%1) is available.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Visit website to download.&lt;/a&gt;</source>
-        <translation>Uudempi versio (%1) on saatavilla.&lt;br/&gt;&lt;a href="%2"&gt;Siirry verkkosivulle lataamaan.&lt;/a&gt;</translation>
+        <translation>Uudempi versio (%1) on saatavilla.&lt;br/&gt;&lt;a href=&quot;%2&quot;&gt;Siirry verkkosivulle lataamaan.&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/versioncheck.cpp" line="223"/>
