@@ -23,6 +23,7 @@
 #include <QAbstractItemView>
 #include <QAbstractButton>
 #include <QApplication>
+#include <QClipboard>
 #include <QComboBox>
 #include <QCursor>
 #include <QDialog>
@@ -51,6 +52,7 @@
 #include <QPushButton>
 #include <QScrollBar>
 #include <QScopeGuard>
+#include <QSignalSpy>
 #include <QSplitter>
 #include <QSplitterHandle>
 #include <QStatusBar>
@@ -159,6 +161,16 @@ public:
     QRect editBadgeRect(int historyIndex) const
     {
         return editGlyphBadgeRectForHistoryIndex(historyIndex);
+    }
+
+    QRect settingsBadgeRect(int historyIndex) const
+    {
+        return settingsGlyphBadgeRectForHistoryIndex(historyIndex);
+    }
+
+    QRect removeBadgeRect(int historyIndex) const
+    {
+        return removeGlyphBadgeRectForHistoryIndex(historyIndex);
     }
 };
 
@@ -461,6 +473,7 @@ private slots:
     void result_display_insets_viewport_horizontally();
     void result_display_scrollbar_hover_keeps_viewport_width_stable();
     void result_display_hover_action_badges_use_hover_and_primary_colors();
+    void result_display_hover_action_badges_trigger_when_clicked();
     void result_display_scroll_to_bottom_button_uses_custom_tooltip();
     void result_display_context_menu_hides_main_menu_when_menu_bar_visible();
     void bitfield_selected_bit_keeps_primary_fill_while_hovered();
@@ -732,6 +745,7 @@ void TestDisplayUi::result_display_hover_action_badges_use_hover_and_primary_col
                                                    .arg(UiConfig::PopupOutlineStrokeWidth)
                                                    .arg(popupOutline.name())));
     QVERIFY(!actionPopup->mask().isEmpty());
+    QVERIFY(actionPopup->testAttribute(Qt::WA_TransparentForMouseEvents));
     QImage copyHoverImage = display.viewport()->grab().toImage();
     const QPoint primaryIconPixel =
         firstPixelMatchingColor(copyHoverImage, copyRect, primaryColor, 10);
@@ -748,6 +762,49 @@ void TestDisplayUi::result_display_hover_action_badges_use_hover_and_primary_col
     QTRY_VERIFY(display.viewport()->cursor().shape() != Qt::PointingHandCursor);
     QCOMPARE(display.viewport()->toolTip(), QString());
     QTRY_VERIFY(actionPopup == nullptr || !actionPopup->isVisible());
+}
+
+void TestDisplayUi::result_display_hover_action_badges_trigger_when_clicked()
+{
+    BadgeTestResultDisplay display;
+    Session session;
+    session.addHistoryEntry(HistoryEntry(QStringLiteral("120 / 8"), Quantity(15)));
+    display.setSession(&session);
+    display.resize(420, 120);
+    display.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&display));
+
+    const QRect copyRect = display.copyBadgeRect(0);
+    const QRect editRect = display.editBadgeRect(0);
+    const QRect settingsRect = display.settingsBadgeRect(0);
+    const QRect removeRect = display.removeBadgeRect(0);
+    QVERIFY(copyRect.isValid());
+    QVERIFY(editRect.isValid());
+    QVERIFY(settingsRect.isValid());
+    QVERIFY(removeRect.isValid());
+
+    QApplication::clipboard()->clear();
+    QTest::mouseMove(display.viewport(), copyRect.center());
+    QTest::mouseClick(display.viewport(), Qt::LeftButton, Qt::NoModifier, copyRect.center());
+    QCOMPARE(QApplication::clipboard()->text(), QStringLiteral("15"));
+
+    QSignalSpy editSpy(&display, &ResultDisplay::editHistoryEntryRequested);
+    QTest::mouseMove(display.viewport(), editRect.center());
+    QTest::mouseClick(display.viewport(), Qt::LeftButton, Qt::NoModifier, editRect.center());
+    QCOMPARE(editSpy.count(), 1);
+    QCOMPARE(editSpy.takeFirst().at(0).toInt(), 0);
+
+    QSignalSpy settingsSpy(&display, &ResultDisplay::editHistoryEntryContextRequested);
+    QTest::mouseMove(display.viewport(), settingsRect.center());
+    QTest::mouseClick(display.viewport(), Qt::LeftButton, Qt::NoModifier, settingsRect.center());
+    QCOMPARE(settingsSpy.count(), 1);
+    QCOMPARE(settingsSpy.takeFirst().at(0).toInt(), 0);
+
+    QSignalSpy removeSpy(&display, &ResultDisplay::removeHistoryEntryRequested);
+    QTest::mouseMove(display.viewport(), removeRect.center());
+    QTest::mouseClick(display.viewport(), Qt::LeftButton, Qt::NoModifier, removeRect.center());
+    QCOMPARE(removeSpy.count(), 1);
+    QCOMPARE(removeSpy.takeFirst().at(0).toInt(), 0);
 }
 
 void TestDisplayUi::result_display_scroll_to_bottom_button_uses_custom_tooltip()
@@ -797,6 +854,7 @@ void TestDisplayUi::result_display_scroll_to_bottom_button_uses_custom_tooltip()
                                                    .arg(UiConfig::PopupOutlineStrokeWidth)
                                                    .arg(popupOutline.name())));
     QVERIFY(!actionPopup->mask().isEmpty());
+    QVERIFY(actionPopup->testAttribute(Qt::WA_TransparentForMouseEvents));
 
     QEvent leaveEvent(QEvent::Leave);
     QCoreApplication::sendEvent(scrollToBottomButton, &leaveEvent);

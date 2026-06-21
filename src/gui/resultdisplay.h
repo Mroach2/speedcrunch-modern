@@ -167,6 +167,8 @@ private:
     };
 
     QRect actionBadgeRect(HoveredActionBadge badge) const;
+    HoveredActionBadge actionBadgeAtPosition(int historyIndex, const QPoint& pos) const;
+    int historyIndexForActionBadgeAtPosition(const QPoint& pos) const;
     void setHoveredActionBadge(HoveredActionBadge badge);
     void setHoverActionToolTip(const QString& text);
     void applyHoverActionPopupTheme();

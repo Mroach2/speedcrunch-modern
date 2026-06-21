@@ -853,6 +853,32 @@ QRect ResultDisplay::actionBadgeRect(HoveredActionBadge badge) const
     }
 }
 
+ResultDisplay::HoveredActionBadge ResultDisplay::actionBadgeAtPosition(int historyIndex, const QPoint& pos) const
+{
+    if (historyIndex < 0)
+        return NoActionBadge;
+    if (copyGlyphBadgeRectForHistoryIndex(historyIndex).contains(pos))
+        return CopyActionBadge;
+    if (editGlyphBadgeRectForHistoryIndex(historyIndex).contains(pos))
+        return EditActionBadge;
+    if (settingsGlyphBadgeRectForHistoryIndex(historyIndex).contains(pos))
+        return SettingsActionBadge;
+    if (removeGlyphBadgeRectForHistoryIndex(historyIndex).contains(pos))
+        return RemoveActionBadge;
+    return NoActionBadge;
+}
+
+int ResultDisplay::historyIndexForActionBadgeAtPosition(const QPoint& pos) const
+{
+    ensureHistoryBlockIndexCache();
+    const int historyCount = m_firstDisplayedHistoryIndex + m_historyBlockRanges.size();
+    for (int historyIndex = m_firstDisplayedHistoryIndex; historyIndex < historyCount; ++historyIndex) {
+        if (actionBadgeAtPosition(historyIndex, pos) != NoActionBadge)
+            return historyIndex;
+    }
+    return -1;
+}
+
 void ResultDisplay::setHoveredActionBadge(HoveredActionBadge badge)
 {
     if (m_hoveredActionBadge == badge)
@@ -936,6 +962,7 @@ void ResultDisplay::ensureHoverActionPopup()
     m_hoverActionPopup->setAutoFillBackground(true);
     m_hoverActionPopup->setAttribute(Qt::WA_ShowWithoutActivating, true);
     m_hoverActionPopup->setAttribute(Qt::WA_StyledBackground, true);
+    m_hoverActionPopup->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     m_hoverActionPopup->setFocusPolicy(Qt::NoFocus);
     m_hoverActionPopup->setFrameStyle(QFrame::NoFrame);
 
@@ -1329,12 +1356,17 @@ void ResultDisplay::mousePressEvent(QMouseEvent* event)
         return;
     }
 
-    if (event->button() == Qt::LeftButton && m_hoverHighlightEnabled && m_hoveredHistoryIndex >= 0) {
-        const QRect copyRect = copyGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
-        if (copyRect.contains(event->pos())) {
+    if (event->button() == Qt::LeftButton && m_hoverHighlightEnabled) {
+        const int actionHistoryIndex = m_hoveredHistoryIndex >= 0
+            && actionBadgeAtPosition(m_hoveredHistoryIndex, event->pos()) != NoActionBadge
+                ? m_hoveredHistoryIndex
+                : historyIndexForActionBadgeAtPosition(event->pos());
+        const HoveredActionBadge actionBadge = actionBadgeAtPosition(actionHistoryIndex, event->pos());
+
+        if (actionBadge == CopyActionBadge) {
             const Session* session = displaySession(this);
-            if (session != nullptr && m_hoveredHistoryIndex >= 0 && m_hoveredHistoryIndex < session->historySize()) {
-                const Quantity value = session->historyEntryAtRef(m_hoveredHistoryIndex).result();
+            if (session != nullptr && actionHistoryIndex >= 0 && actionHistoryIndex < session->historySize()) {
+                const Quantity value = session->historyEntryAtRef(actionHistoryIndex).result();
                 if (!value.isNan())
                     QApplication::clipboard()->setText(formatResultForClipboard(value), QClipboard::Clipboard);
             }
@@ -1342,23 +1374,20 @@ void ResultDisplay::mousePressEvent(QMouseEvent* event)
             return;
         }
 
-        const QRect editRect = editGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
-        if (editRect.contains(event->pos())) {
-            emit editHistoryEntryRequested(m_hoveredHistoryIndex);
+        if (actionBadge == EditActionBadge) {
+            emit editHistoryEntryRequested(actionHistoryIndex);
             event->accept();
             return;
         }
 
-        const QRect settingsRect = settingsGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
-        if (settingsRect.contains(event->pos())) {
-            emit editHistoryEntryContextRequested(m_hoveredHistoryIndex);
+        if (actionBadge == SettingsActionBadge) {
+            emit editHistoryEntryContextRequested(actionHistoryIndex);
             event->accept();
             return;
         }
 
-        const QRect removeRect = removeGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
-        if (removeRect.contains(event->pos())) {
-            emit removeHistoryEntryRequested(m_hoveredHistoryIndex);
+        if (actionBadge == RemoveActionBadge) {
+            emit removeHistoryEntryRequested(actionHistoryIndex);
             event->accept();
             return;
         }
@@ -1626,6 +1655,8 @@ void ResultDisplay::mouseMoveEvent(QMouseEvent* event)
     }
 
     int hoveredHistoryIndex = historyIndexAtPosition(event->pos());
+    if (hoveredHistoryIndex < 0)
+        hoveredHistoryIndex = historyIndexForActionBadgeAtPosition(event->pos());
     if (hoveredHistoryIndex >= 0
             && (historyBlockOverlapsSessionBadge(hoveredHistoryIndex)
                 || historyBlockOverlapsScrollToBottomButton(hoveredHistoryIndex))) {
@@ -1641,36 +1672,18 @@ void ResultDisplay::mouseMoveEvent(QMouseEvent* event)
             viewport()->update(hoverActionRectForHistoryIndex(m_hoveredHistoryIndex));
     }
 
-    QRect copyRect;
-    QRect editRect;
-    QRect settingsRect;
-    QRect removeRect;
-    if (m_hoveredHistoryIndex >= 0) {
-        copyRect = copyGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
-        editRect = editGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
-        settingsRect = settingsGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
-        removeRect = removeGlyphBadgeRectForHistoryIndex(m_hoveredHistoryIndex);
-    }
-
-    const bool overCopyGlyph = copyRect.contains(event->pos());
-    const bool overEditGlyph = editRect.contains(event->pos());
-    const bool overSettingsGlyph = settingsRect.contains(event->pos());
-    const bool overRemoveGlyph = removeRect.contains(event->pos());
-    const bool overActionGlyph = overCopyGlyph || overEditGlyph || overSettingsGlyph || overRemoveGlyph;
-    setHoveredActionBadge(overCopyGlyph ? CopyActionBadge
-        : overEditGlyph ? EditActionBadge
-        : overSettingsGlyph ? SettingsActionBadge
-        : overRemoveGlyph ? RemoveActionBadge
-        : NoActionBadge);
+    const HoveredActionBadge actionBadge = actionBadgeAtPosition(m_hoveredHistoryIndex, event->pos());
+    const bool overActionGlyph = actionBadge != NoActionBadge;
+    setHoveredActionBadge(actionBadge);
     if (overActionGlyph)
         viewport()->setCursor(Qt::PointingHandCursor);
     else
         viewport()->unsetCursor();
 
-    setHoverActionToolTip(overCopyGlyph ? tr("Copy result")
-        : overEditGlyph ? tr("Edit expression")
-        : overSettingsGlyph ? tr("Change settings")
-        : overRemoveGlyph ? tr("Remove calculation")
+    setHoverActionToolTip(actionBadge == CopyActionBadge ? tr("Copy result")
+        : actionBadge == EditActionBadge ? tr("Edit expression")
+        : actionBadge == SettingsActionBadge ? tr("Change settings")
+        : actionBadge == RemoveActionBadge ? tr("Remove calculation")
         : QString());
 }
 
