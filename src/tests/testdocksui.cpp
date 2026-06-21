@@ -5,23 +5,85 @@
 #include "core/evaluator.h"
 #include "core/session.h"
 #include "core/settings.h"
+#include "gui/constantswidget.h"
 #include "gui/splittertreeutils.h"
 #include "gui/userunitlistwidget.h"
 #include "gui/variablelistwidget.h"
 
+#include <QSignalSpy>
 #include <QTest>
 #include <QCoreApplication>
+#include <QTranslator>
 #include <QSplitter>
 #include <QTreeWidget>
+
+class ConstantsTestTranslator : public QTranslator {
+public:
+    QString translate(const char* context,
+                      const char* sourceText,
+                      const char* disambiguation = nullptr,
+                      int n = -1) const override
+    {
+        Q_UNUSED(disambiguation);
+        Q_UNUSED(n);
+
+        if (qstrcmp(context, "Constants") == 0
+            && qstrcmp(sourceText, "pi (π)") == 0) {
+            return QStringLiteral("translated pi");
+        }
+
+        return QString();
+    }
+};
+
+class TestableConstantsWidget : public ConstantsWidget {
+public:
+    using ConstantsWidget::handleItem;
+    using ConstantsWidget::updateList;
+};
 
 class TestDocksUi : public QObject {
     Q_OBJECT
 
 private slots:
+    void constants_dock_inserts_pi_symbol_with_translated_name();
     void user_units_dock_shows_rhs_and_description_after_definition();
     void user_variables_dock_keeps_existing_value_text_after_new_definition();
     void splitter_normalization_removes_single_child_nested_splitter_after_pane_close_shape();
 };
+
+void TestDocksUi::constants_dock_inserts_pi_symbol_with_translated_name()
+{
+    ConstantsTestTranslator translator;
+    QCoreApplication::installTranslator(&translator);
+
+    TestableConstantsWidget widget;
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    widget.updateList();
+
+    QTreeWidget* tree = widget.findChild<QTreeWidget*>();
+    QVERIFY(tree != nullptr);
+
+    QTreeWidgetItem* piItem = nullptr;
+    for (int i = 0; i < tree->topLevelItemCount(); ++i) {
+        QTreeWidgetItem* item = tree->topLevelItem(i);
+        if (item && item->text(0) == QStringLiteral("translated pi")) {
+            piItem = item;
+            break;
+        }
+    }
+
+    QVERIFY(piItem != nullptr);
+
+    QSignalSpy spy(&widget, &ConstantsWidget::constantSelected);
+    widget.handleItem(piItem);
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toString(), QString::fromUtf8("π"));
+
+    QCoreApplication::removeTranslator(&translator);
+}
 
 void TestDocksUi::user_units_dock_shows_rhs_and_description_after_definition()
 {

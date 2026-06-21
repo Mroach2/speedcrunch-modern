@@ -1,6 +1,7 @@
 include(common.pri)
 
-SOURCES += ../gui/dockliststyle.cpp \
+SOURCES += ../gui/constantswidget.cpp \
+           ../gui/dockliststyle.cpp \
            ../gui/editor.cpp \
            ../gui/oklchutils.cpp \
            ../gui/resultdisplay.cpp \
@@ -10,7 +11,8 @@ SOURCES += ../gui/dockliststyle.cpp \
            ../gui/userunitlistwidget.cpp \
            testdocksui.cpp
 
-HEADERS += ../gui/dockliststyle.h \
+HEADERS += ../gui/constantswidget.h \
+           ../gui/dockliststyle.h \
            ../gui/editor.h \
            ../gui/oklchutils.h \
            ../gui/resultdisplay.h \

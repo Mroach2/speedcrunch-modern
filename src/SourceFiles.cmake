@@ -376,6 +376,7 @@ core/sessionhistory.cpp
 core/variable.cpp
 core/numberformatter.cpp
 gui/displayformatutils.cpp
+gui/constantswidget.cpp
 gui/dockliststyle.cpp
 gui/functiontooltiputils.cpp
 gui/oklchutils.cpp

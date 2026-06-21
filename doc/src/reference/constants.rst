@@ -11,8 +11,9 @@ In the Constants widget, each entry has:
 * a numeric ``Value``
 * an optional ``Unit``
 
-Double-clicking a constant entry inserts its value into the editor
-(followed by unit, when present).
+Double-clicking a constant entry inserts the expression used for that constant:
+mathematical constants such as π use their symbolic form, while numeric
+scientific constants insert their value (followed by unit, when present).
 
 Constants in the widget can be filtered by category and subcategory.
 
