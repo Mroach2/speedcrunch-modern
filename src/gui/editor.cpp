@@ -208,7 +208,7 @@ static void applyCompletionPopupTreeTheme(QTreeWidget* popup,
              effectiveScrollbarThumb.name(),
              effectiveOutline.name())
         .arg(cornerRadius)
-        .arg(UiConfig::OutlineStrokeWidth));
+        .arg(UiConfig::PopupOutlineStrokeWidth));
 }
 
 class EditorCompletionPopup : public QTreeWidget

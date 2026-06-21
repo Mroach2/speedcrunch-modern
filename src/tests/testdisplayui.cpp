@@ -2228,7 +2228,7 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QVERIFY(summaryPopup->styleSheet().contains(completionPopupText.name()));
     QVERIFY(summaryPopup->styleSheet().contains(
         QStringLiteral("border: %1px solid %2")
-            .arg(UiConfig::OutlineStrokeWidth)
+            .arg(UiConfig::PopupOutlineStrokeWidth)
             .arg(completionPopupOutlineFill.name())));
     QVERIFY(summaryPopup->styleSheet().contains(
         QStringLiteral("border-radius: %1px")

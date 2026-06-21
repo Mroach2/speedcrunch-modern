@@ -605,7 +605,7 @@ void ConstantsWidget::applySummaryPopupTheme()
                                       .arg(background.name(),
                                            foreground.name(),
                                            outline.name())
-                                      .arg(UiConfig::OutlineStrokeWidth)
+                                      .arg(UiConfig::PopupOutlineStrokeWidth)
                                       .arg(cornerRadius));
     updateSummaryPopupMask();
 }

@@ -9595,7 +9595,7 @@ void MainWindow::showStateLabel(const QString& msg)
             tooltipSurface.foreground.name(),
             tooltipOutline.background.name())
        .arg(UiConfig::ResultTooltipCornerRadius)
-       .arg(UiConfig::OutlineStrokeWidth);
+       .arg(UiConfig::PopupOutlineStrokeWidth);
     m_widgets.state->setStyleSheet(tooltipStyle);
     m_widgets.stateCloseButton->setStyleSheet(QStringLiteral(R"(
         QPushButton {

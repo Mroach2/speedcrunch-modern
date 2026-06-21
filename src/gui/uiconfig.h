@@ -10,6 +10,7 @@ namespace UiConfig {
 constexpr int SessionPaneSplitterWidth = 1;
 constexpr int DockSplitterStrokeWidth = 2;
 constexpr int OutlineStrokeWidth = 2;
+constexpr int PopupOutlineStrokeWidth = 1;
 constexpr int ActiveSessionTabIndicatorStrokeWidth = 2;
 constexpr int KeypadButtonMargin = 3;
 constexpr int KeypadButtonPadding = 3;

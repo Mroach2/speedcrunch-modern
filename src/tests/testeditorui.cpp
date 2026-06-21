@@ -3879,7 +3879,7 @@ void TestEditorUi::completion_popup_uses_configured_surface_colors()
     QVERIFY(popup->styleSheet().contains(QStringLiteral("QScrollBar:horizontal")));
     QVERIFY(popup->styleSheet().contains(QStringLiteral("QScrollBar::handle:horizontal")));
     QVERIFY(popup->styleSheet().contains(QStringLiteral("border: %1px solid #778899")
-                                             .arg(UiConfig::OutlineStrokeWidth)));
+                                             .arg(UiConfig::PopupOutlineStrokeWidth)));
     QVERIFY(popup->styleSheet().contains(QStringLiteral("border-radius: 11px")));
     popup->hide();
 }
@@ -3924,7 +3924,7 @@ void TestEditorUi::constant_completion_popup_uses_configured_surface_colors()
         QVERIFY(popup->styleSheet().contains(QStringLiteral("QScrollBar:horizontal")));
         QVERIFY(popup->styleSheet().contains(QStringLiteral("QScrollBar::handle:horizontal")));
         QVERIFY(popup->styleSheet().contains(QStringLiteral("border: %1px solid #778899")
-                                                 .arg(UiConfig::OutlineStrokeWidth)));
+                                                 .arg(UiConfig::PopupOutlineStrokeWidth)));
         QVERIFY(popup->styleSheet().contains(QStringLiteral("border-radius: 11px")));
     }
 
