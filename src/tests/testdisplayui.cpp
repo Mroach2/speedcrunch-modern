@@ -788,6 +788,9 @@ void TestDisplayUi::bitfield_selected_bit_keeps_primary_fill_while_hovered()
     const QColor hoverForeground(QStringLiteral("#f8fafc"));
     const QColor primaryBackground(QStringLiteral("#2f80ed"));
     const QColor primaryForeground(QStringLiteral("#ffffff"));
+    const QColor popupBackground(QStringLiteral("#30384a"));
+    const QColor popupForeground(QStringLiteral("#f4f7ff"));
+    const QColor popupOutline(QStringLiteral("#596274"));
 
     BitWidget bit(3);
     bit.setThemeColors(background,
@@ -796,6 +799,7 @@ void TestDisplayUi::bitfield_selected_bit_keeps_primary_fill_while_hovered()
                        hoverForeground,
                        primaryBackground,
                        primaryForeground);
+    bit.setToolTipThemeColors(popupBackground, popupForeground, popupOutline, 8);
     bit.resize(48, 48);
     bit.show();
     QVERIFY(QTest::qWaitForWindowExposed(&bit));
@@ -803,6 +807,19 @@ void TestDisplayUi::bitfield_selected_bit_keeps_primary_fill_while_hovered()
     const QPoint sampledFill(4, 4);
     QTest::mouseMove(&bit, bit.rect().center());
     QTRY_VERIFY(bit.underMouse());
+    QCOMPARE(bit.toolTip(), QString());
+    QFrame* summaryPopup = bit.findChild<QFrame*>(QStringLiteral("bitSummaryPopup"));
+    QTRY_VERIFY(summaryPopup != nullptr && summaryPopup->isVisible());
+    QLabel* summaryPopupLabel =
+        summaryPopup->findChild<QLabel*>(QStringLiteral("bitSummaryPopupLabel"));
+    QVERIFY(summaryPopupLabel != nullptr);
+    QCOMPARE(summaryPopupLabel->text(), QStringLiteral("2<sup>3</sup> = 8"));
+    QVERIFY(summaryPopup->styleSheet().contains(popupBackground.name()));
+    QVERIFY(summaryPopup->styleSheet().contains(popupForeground.name()));
+    QVERIFY(summaryPopup->styleSheet().contains(QStringLiteral("border: %1px solid %2")
+                                                    .arg(UiConfig::PopupOutlineStrokeWidth)
+                                                    .arg(popupOutline.name())));
+    QVERIFY(!summaryPopup->mask().isEmpty());
     QTRY_COMPARE(bit.grab().toImage().pixelColor(sampledFill).name(),
                  hoverBackground.name());
 
@@ -2318,10 +2335,13 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     const QRect tooltipRect = table->visualItemRect(tooltipItem);
     QVERIFY(tooltipRect.isValid());
     const QPoint tooltipPos = tooltipRect.center();
-    QHelpEvent tooltipEvent(QEvent::ToolTip,
-                            tooltipPos,
-                            table->viewport()->mapToGlobal(tooltipPos));
-    QCoreApplication::sendEvent(table->viewport(), &tooltipEvent);
+    QMouseEvent tooltipMoveEvent(QEvent::MouseMove,
+                                 QPointF(tooltipPos),
+                                 QPointF(table->viewport()->mapToGlobal(tooltipPos)),
+                                 Qt::NoButton,
+                                 Qt::NoButton,
+                                 Qt::NoModifier);
+    QCoreApplication::sendEvent(table->viewport(), &tooltipMoveEvent);
     QFrame* summaryPopup =
         constantsWidget->findChild<QFrame*>(QStringLiteral("constantsSummaryPopup"));
     QTRY_VERIFY(summaryPopup != nullptr && summaryPopup->isVisible());

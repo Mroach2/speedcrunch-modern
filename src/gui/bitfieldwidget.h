@@ -10,6 +10,8 @@
 #include <QWidget>
 
 class Quantity;
+class QEnterEvent;
+class QFrame;
 class QPushButton;
 class QGridLayout;
 class QHBoxLayout;
@@ -28,15 +30,27 @@ public:
                         const QColor& hoverForeground,
                         const QColor& selectedBackground,
                         const QColor& selectedForeground);
+    void setToolTipThemeColors(const QColor& background,
+                               const QColor& foreground,
+                               const QColor& outline,
+                               int cornerRadius);
 
 signals:
     void stateChanged(bool);
 
 protected:
+    void enterEvent(QEnterEvent*) override;
+    void leaveEvent(QEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
     void mousePressEvent(QMouseEvent*) override;
     void mouseReleaseEvent(QMouseEvent*) override;
 
 private:
+    void applySummaryPopupTheme();
+    void ensureSummaryPopup();
+    void hideSummaryPopup();
+    void showSummaryPopup(const QPoint& globalPos);
+    void updateSummaryPopupMask();
     void updateStyle();
 
     enum {
@@ -48,6 +62,13 @@ private:
 
     bool m_state;
     bool m_pressed = false;
+    QString m_toolTipText;
+    QFrame* m_summaryPopup = nullptr;
+    QLabel* m_summaryPopupLabel = nullptr;
+    QColor m_summaryPopupBackgroundColor;
+    QColor m_summaryPopupForegroundColor;
+    QColor m_summaryPopupOutlineColor;
+    int m_summaryPopupCornerRadius = 0;
     QColor m_themeBackground;
     QColor m_themeForeground;
     QColor m_themeHoverBackground;
@@ -89,6 +110,10 @@ public slots:
                         const QColor& buttonHoverForeground = QColor(),
                         const QColor& buttonPressedBackground = QColor(),
                         const QColor& buttonPressedForeground = QColor());
+    void setToolTipThemeColors(const QColor& background,
+                               const QColor& foreground,
+                               const QColor& outline,
+                               int cornerRadius);
     void refreshTheme();
 
 private slots:
@@ -130,6 +155,10 @@ private:
     QColor m_themeButtonHoverForeground;
     QColor m_themeButtonPressedBackground;
     QColor m_themeButtonPressedForeground;
+    QColor m_summaryPopupBackgroundColor;
+    QColor m_summaryPopupForegroundColor;
+    QColor m_summaryPopupOutlineColor;
+    int m_summaryPopupCornerRadius = 0;
 };
 
 #endif // BITFIELDWIDGET_H

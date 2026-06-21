@@ -18,6 +18,8 @@
 #include <QFrame>
 #include <QGuiApplication>
 #include <QHelpEvent>
+#include <QHoverEvent>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPalette>
 #include <QResizeEvent>
@@ -182,6 +184,8 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
     m_list->setColumnCount(3);
     m_list->setRootIsDecorated(false);
     m_list->setMouseTracking(true);
+    m_list->viewport()->setMouseTracking(true);
+    m_list->viewport()->setAttribute(Qt::WA_Hover, true);
     m_list->setEditTriggers(QTreeWidget::NoEditTriggers);
     m_list->setSelectionBehavior(QTreeWidget::SelectRows);
     m_list->header()->setStretchLastSection(false);
@@ -497,15 +501,26 @@ bool ConstantsWidget::eventFilter(QObject* watched, QEvent* event)
             const QPoint viewportPos = watched == m_list->viewport()
                 ? helpEvent->pos()
                 : m_list->viewport()->mapFrom(m_list, helpEvent->pos());
-            const QModelIndex index = m_list->indexAt(viewportPos);
-            QTreeWidgetItem* item = index.isValid() ? m_list->itemAt(viewportPos) : nullptr;
-            if (item == nullptr) {
-                hideSummaryPopup();
-                return true;
-            }
-
-            showSummaryPopup(item, index.column(), helpEvent->globalPos());
+            updateSummaryPopupForViewportPosition(viewportPos, helpEvent->globalPos());
             return true;
+        }
+        case QEvent::MouseMove: {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            const QPoint viewportPos = watched == m_list->viewport()
+                ? mouseEvent->pos()
+                : m_list->viewport()->mapFrom(m_list, mouseEvent->pos());
+            updateSummaryPopupForViewportPosition(viewportPos,
+                                                  mouseEvent->globalPosition().toPoint());
+            break;
+        }
+        case QEvent::HoverMove: {
+            QHoverEvent* hoverEvent = static_cast<QHoverEvent*>(event);
+            const QPoint viewportPos = watched == m_list->viewport()
+                ? hoverEvent->position().toPoint()
+                : m_list->viewport()->mapFrom(m_list, hoverEvent->position().toPoint());
+            updateSummaryPopupForViewportPosition(viewportPos,
+                                                  m_list->viewport()->mapToGlobal(viewportPos));
+            break;
         }
         case QEvent::Hide:
         case QEvent::KeyPress:
@@ -640,6 +655,19 @@ void ConstantsWidget::showSummaryPopup(QTreeWidgetItem* item,
                                                   globalPos,
                                                   m_summaryPopup->size()));
     m_summaryPopup->show();
+}
+
+void ConstantsWidget::updateSummaryPopupForViewportPosition(const QPoint& viewportPos,
+                                                            const QPoint& globalPos)
+{
+    const QModelIndex index = m_list->indexAt(viewportPos);
+    QTreeWidgetItem* item = index.isValid() ? m_list->itemAt(viewportPos) : nullptr;
+    if (item == nullptr) {
+        hideSummaryPopup();
+        return;
+    }
+
+    showSummaryPopup(item, index.column(), globalPos);
 }
 
 void ConstantsWidget::updateSummaryPopupMask()

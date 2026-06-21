@@ -5,19 +5,74 @@
 #include "bitfieldwidget.h"
 
 #include "core/mathdsl.h"
+#include "gui/uiconfig.h"
 #include "math/quantity.h"
 
 #include <cmath>
 
+#include <QBitmap>
+#include <QEnterEvent>
+#include <QFrame>
 #include <QGridLayout>
+#include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QListIterator>
+#include <QMouseEvent>
+#include <QPainter>
 #include <QPaintEvent>
 #include <QPushButton>
 #include <QRegularExpression>
+#include <QScreen>
+#include <QVBoxLayout>
 
 namespace {
+
+void applyRoundedPopupMask(QWidget* popup, int cornerRadius)
+{
+    if (popup == nullptr)
+        return;
+
+    if (cornerRadius > 0) {
+        QBitmap mask(popup->size());
+        mask.fill(Qt::color0);
+        QPainter painter(&mask);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(Qt::color1);
+        painter.drawRoundedRect(QRectF(mask.rect()).adjusted(0, 0, -1, -1),
+                                cornerRadius,
+                                cornerRadius);
+        popup->setMask(mask);
+    } else {
+        popup->clearMask();
+    }
+}
+
+QPoint constrainedPopupPosition(QWidget* anchor,
+                                const QPoint& globalPos,
+                                const QSize& popupSize)
+{
+    constexpr int kPopupOffsetX = 12;
+    constexpr int kPopupOffsetY = 18;
+
+    QPoint pos = globalPos + QPoint(kPopupOffsetX, kPopupOffsetY);
+    QScreen* screen = anchor != nullptr ? anchor->screen() : QGuiApplication::primaryScreen();
+    if (screen == nullptr)
+        return pos;
+
+    const QRect available = screen->availableGeometry();
+    if (pos.x() + popupSize.width() > available.right())
+        pos.setX(globalPos.x() - popupSize.width() - kPopupOffsetX);
+    if (pos.y() + popupSize.height() > available.bottom())
+        pos.setY(globalPos.y() - popupSize.height() - kPopupOffsetY);
+
+    pos.setX(qBound(available.left(), pos.x(),
+                    qMax(available.left(), available.right() - popupSize.width())));
+    pos.setY(qBound(available.top(), pos.y(),
+                    qMax(available.top(), available.bottom() - popupSize.height())));
+    return pos;
+}
 
 QString bitFieldButtonStyleSheet(const QColor& background,
                                  const QColor& foreground,
@@ -59,13 +114,14 @@ BitWidget::BitWidget(int bitPosition, QWidget* parent)
     m_state(false)
 {
     HNumber number(HMath::raise(HNumber(2), bitPosition));
-    setToolTip(QString("2<sup>%1</sup> = %2")
+    m_toolTipText = QString("2<sup>%1</sup> = %2")
         .arg(bitPosition)
-        .arg(HMath::format(number, Quantity::Format::Decimal())));
+        .arg(HMath::format(number, Quantity::Format::Decimal()));
 
     setText(QString("%1").arg(bitPosition));
     setObjectName("BitWidget");
     setCursor(Qt::PointingHandCursor);
+    setMouseTracking(true);
     setAttribute(Qt::WA_Hover, true);
     updateStyle();
 }
@@ -138,8 +194,39 @@ void BitWidget::setThemeColors(const QColor& background,
     updateStyle();
 }
 
+void BitWidget::setToolTipThemeColors(const QColor& background,
+                                      const QColor& foreground,
+                                      const QColor& outline,
+                                      int cornerRadius)
+{
+    m_summaryPopupBackgroundColor = background;
+    m_summaryPopupForegroundColor = foreground;
+    m_summaryPopupOutlineColor = outline;
+    m_summaryPopupCornerRadius = qMax(0, cornerRadius);
+    applySummaryPopupTheme();
+}
+
+void BitWidget::enterEvent(QEnterEvent* event)
+{
+    QLabel::enterEvent(event);
+    showSummaryPopup(event->globalPosition().toPoint());
+}
+
+void BitWidget::leaveEvent(QEvent* event)
+{
+    QLabel::leaveEvent(event);
+    hideSummaryPopup();
+}
+
+void BitWidget::mouseMoveEvent(QMouseEvent* event)
+{
+    QLabel::mouseMoveEvent(event);
+    showSummaryPopup(event->globalPosition().toPoint());
+}
+
 void BitWidget::mousePressEvent(QMouseEvent*)
 {
+    hideSummaryPopup();
     m_pressed = true;
     updateStyle();
 }
@@ -149,6 +236,112 @@ void BitWidget::mouseReleaseEvent(QMouseEvent*)
     m_pressed = false;
     setState(!m_state);
     emit stateChanged(m_state);
+}
+
+void BitWidget::applySummaryPopupTheme()
+{
+    if (m_summaryPopup == nullptr)
+        return;
+
+    const QColor background = m_summaryPopupBackgroundColor.isValid()
+        ? m_summaryPopupBackgroundColor
+        : palette().color(QPalette::ToolTipBase);
+    const QColor foreground = m_summaryPopupForegroundColor.isValid()
+        ? m_summaryPopupForegroundColor
+        : palette().color(QPalette::ToolTipText);
+    const QColor outline = m_summaryPopupOutlineColor.isValid()
+        ? m_summaryPopupOutlineColor
+        : background;
+    const int cornerRadius = qMax(0, m_summaryPopupCornerRadius);
+
+    QPalette popupPalette = m_summaryPopup->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        popupPalette.setColor(group, QPalette::Window, background);
+        popupPalette.setColor(group, QPalette::WindowText, foreground);
+    }
+    m_summaryPopup->setPalette(popupPalette);
+
+    QPalette labelPalette = m_summaryPopupLabel->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        labelPalette.setColor(group, QPalette::WindowText, foreground);
+        labelPalette.setColor(group, QPalette::Text, foreground);
+    }
+    m_summaryPopupLabel->setPalette(labelPalette);
+
+    m_summaryPopup->setStyleSheet(QStringLiteral(
+        "QFrame#bitSummaryPopup {"
+        " background: %1; color: %2;"
+        " border: %4px solid %3;"
+        " border-radius: %5px;"
+        "}"
+        "QLabel#bitSummaryPopupLabel {"
+        " background: transparent; color: %2;"
+        "}")
+                                      .arg(background.name(),
+                                           foreground.name(),
+                                           outline.name())
+                                      .arg(UiConfig::PopupOutlineStrokeWidth)
+                                      .arg(cornerRadius));
+    updateSummaryPopupMask();
+}
+
+void BitWidget::ensureSummaryPopup()
+{
+    if (m_summaryPopup != nullptr)
+        return;
+
+    m_summaryPopup = new QFrame(this, Qt::ToolTip | Qt::FramelessWindowHint);
+    m_summaryPopup->setObjectName(QStringLiteral("bitSummaryPopup"));
+    m_summaryPopup->setAutoFillBackground(true);
+    m_summaryPopup->setAttribute(Qt::WA_ShowWithoutActivating, true);
+    m_summaryPopup->setAttribute(Qt::WA_StyledBackground, true);
+    m_summaryPopup->setFocusPolicy(Qt::NoFocus);
+    m_summaryPopup->setFrameStyle(QFrame::NoFrame);
+
+    QVBoxLayout* layout = new QVBoxLayout(m_summaryPopup);
+    layout->setContentsMargins(6, 4, 6, 4);
+    layout->setSpacing(0);
+
+    m_summaryPopupLabel = new QLabel(m_summaryPopup);
+    m_summaryPopupLabel->setObjectName(QStringLiteral("bitSummaryPopupLabel"));
+    m_summaryPopupLabel->setTextFormat(Qt::RichText);
+    m_summaryPopupLabel->setTextInteractionFlags(Qt::NoTextInteraction);
+    m_summaryPopupLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
+    layout->addWidget(m_summaryPopupLabel);
+
+    applySummaryPopupTheme();
+}
+
+void BitWidget::hideSummaryPopup()
+{
+    if (m_summaryPopup != nullptr)
+        m_summaryPopup->hide();
+}
+
+void BitWidget::showSummaryPopup(const QPoint& globalPos)
+{
+    if (m_toolTipText.isEmpty())
+        return;
+
+    ensureSummaryPopup();
+    m_summaryPopupLabel->setText(m_toolTipText);
+    m_summaryPopup->adjustSize();
+    m_summaryPopup->resize(m_summaryPopup->sizeHint());
+    updateSummaryPopupMask();
+    m_summaryPopup->move(constrainedPopupPosition(this, globalPos, m_summaryPopup->size()));
+    m_summaryPopup->show();
+}
+
+void BitWidget::updateSummaryPopupMask()
+{
+    if (m_summaryPopup == nullptr)
+        return;
+
+    applyRoundedPopupMask(m_summaryPopup, qMax(0, m_summaryPopupCornerRadius));
 }
 
 BitFieldWidget::BitFieldWidget(QWidget* parent) :
@@ -339,6 +532,11 @@ void BitFieldWidget::refreshTheme()
                                   hoverForeground,
                                   selectedBackground,
                                   selectedForeground);
+    for (BitWidget* bitWidget : m_bitWidgets)
+        bitWidget->setToolTipThemeColors(m_summaryPopupBackgroundColor,
+                                         m_summaryPopupForegroundColor,
+                                         m_summaryPopupOutlineColor,
+                                         m_summaryPopupCornerRadius);
 }
 
 void BitFieldWidget::setThemeColors(const QColor& background,
@@ -371,6 +569,22 @@ void BitFieldWidget::setThemeColors(const QColor& background,
     m_themeButtonPressedBackground = buttonPressedBackground;
     m_themeButtonPressedForeground = buttonPressedForeground;
     refreshTheme();
+}
+
+void BitFieldWidget::setToolTipThemeColors(const QColor& background,
+                                           const QColor& foreground,
+                                           const QColor& outline,
+                                           int cornerRadius)
+{
+    m_summaryPopupBackgroundColor = background;
+    m_summaryPopupForegroundColor = foreground;
+    m_summaryPopupOutlineColor = outline;
+    m_summaryPopupCornerRadius = qMax(0, cornerRadius);
+    for (BitWidget* bitWidget : m_bitWidgets)
+        bitWidget->setToolTipThemeColors(m_summaryPopupBackgroundColor,
+                                         m_summaryPopupForegroundColor,
+                                         m_summaryPopupOutlineColor,
+                                         m_summaryPopupCornerRadius);
 }
 
 QSize BitFieldWidget::minimumSizeHint() const

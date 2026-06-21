@@ -1430,6 +1430,14 @@ void applyGeneratedDockContentSurfaces(MainWindow* owner, QDockWidget* dock, con
             themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldButtonHoverFillShade);
         const ThemeSurfaceColors bitfieldButtonPressed =
             themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldButtonPressedFillShade);
+        const ThemeSurfaceColors bitfieldToolTip =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupBackgroundShade);
+        const ThemeSurfaceColors bitfieldToolTipOutline =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupOutlineShade);
+        bitField->setToolTipThemeColors(bitfieldToolTip.background,
+                                        bitfieldToolTip.foreground,
+                                        bitfieldToolTipOutline.background,
+                                        UiConfig::CompletionPopupCornerRadius);
         bitField->setThemeColors(dockBackground.background,
                                  dockBackground.foreground,
                                  dockHeader.background,
@@ -5776,10 +5784,18 @@ void MainWindow::applyThemeSurfacePalette()
             themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldButtonHoverFillShade);
         const ThemeSurfaceColors bitfieldButtonPressed =
             themeSurfaceForShadeIndex(surfaces, UiConfig::BitfieldButtonPressedFillShade);
+        const ThemeSurfaceColors bitfieldToolTip =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupBackgroundShade);
+        const ThemeSurfaceColors bitfieldToolTipOutline =
+            themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupOutlineShade);
         const QPalette bitFieldPalette =
             paletteForThemeSurface(m_widgets.bitField->palette(), bitfieldBackground);
         m_widgets.bitField->setPalette(bitFieldPalette);
         m_widgets.bitField->setAutoFillBackground(true);
+        m_widgets.bitField->setToolTipThemeColors(bitfieldToolTip.background,
+                                                  bitfieldToolTip.foreground,
+                                                  bitfieldToolTipOutline.background,
+                                                  UiConfig::CompletionPopupCornerRadius);
         m_widgets.bitField->setThemeColors(bitfieldBackground.background,
                                            bitfieldBackground.foreground,
                                            bitfieldHover.background,

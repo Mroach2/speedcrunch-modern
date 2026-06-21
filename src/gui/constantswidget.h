@@ -63,6 +63,8 @@ private:
     void hideSummaryPopup();
     void scheduleEmptyHeaderStretch();
     void showSummaryPopup(QTreeWidgetItem* item, int column, const QPoint& globalPos);
+    void updateSummaryPopupForViewportPosition(const QPoint& viewportPos,
+                                               const QPoint& globalPos);
     void updateSummaryPopupMask();
     void updateEmptyHeaderStretch();
     void updateDomainLayout();
