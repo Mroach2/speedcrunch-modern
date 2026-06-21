@@ -2306,6 +2306,11 @@
         <translation>HT&apos;deki t ve p perdeleme farkı</translation>
     </message>
     <message>
+        <location filename="../../core/constants.cpp" line="543"/>
+        <source>pi (π)</source>
+        <translation>pi (π)</translation>
+    </message>
+    <message>
         <location filename="../../core/constants.cpp" line="544"/>
         <location filename="../../gui/constantswidget.cpp" line="42"/>
         <source>Euler&apos;s number (e)</source>
@@ -4794,7 +4799,7 @@
         <translation>Kullanıcı İşlevleri</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6878"/>
+        <location filename="../../gui/mainwindow.cpp" line="6877"/>
         <source>Type an expression here</source>
         <translation>Bir ifade girin</translation>
     </message>
@@ -4914,66 +4919,66 @@
         <translation>&amp;Yardım</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8707"/>
+        <location filename="../../gui/mainwindow.cpp" line="8706"/>
         <source>Load Session</source>
         <translation>Oturumu Yükle</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8540"/>
-        <location filename="../../gui/mainwindow.cpp" line="8546"/>
-        <location filename="../../gui/mainwindow.cpp" line="8554"/>
-        <location filename="../../gui/mainwindow.cpp" line="8560"/>
-        <location filename="../../gui/mainwindow.cpp" line="8576"/>
-        <location filename="../../gui/mainwindow.cpp" line="8582"/>
-        <location filename="../../gui/mainwindow.cpp" line="8633"/>
-        <location filename="../../gui/mainwindow.cpp" line="8639"/>
-        <location filename="../../gui/mainwindow.cpp" line="8739"/>
-        <location filename="../../gui/mainwindow.cpp" line="8816"/>
-        <location filename="../../gui/mainwindow.cpp" line="8838"/>
-        <location filename="../../gui/mainwindow.cpp" line="8878"/>
-        <location filename="../../gui/mainwindow.cpp" line="9661"/>
-        <location filename="../../gui/mainwindow.cpp" line="9681"/>
+        <location filename="../../gui/mainwindow.cpp" line="8539"/>
+        <location filename="../../gui/mainwindow.cpp" line="8545"/>
+        <location filename="../../gui/mainwindow.cpp" line="8553"/>
+        <location filename="../../gui/mainwindow.cpp" line="8559"/>
+        <location filename="../../gui/mainwindow.cpp" line="8575"/>
+        <location filename="../../gui/mainwindow.cpp" line="8581"/>
+        <location filename="../../gui/mainwindow.cpp" line="8632"/>
+        <location filename="../../gui/mainwindow.cpp" line="8638"/>
+        <location filename="../../gui/mainwindow.cpp" line="8738"/>
+        <location filename="../../gui/mainwindow.cpp" line="8815"/>
+        <location filename="../../gui/mainwindow.cpp" line="8837"/>
+        <location filename="../../gui/mainwindow.cpp" line="8877"/>
+        <location filename="../../gui/mainwindow.cpp" line="9506"/>
+        <location filename="../../gui/mainwindow.cpp" line="9526"/>
         <source>Error</source>
         <translation>Hata</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8540"/>
-        <location filename="../../gui/mainwindow.cpp" line="8838"/>
+        <location filename="../../gui/mainwindow.cpp" line="8539"/>
+        <location filename="../../gui/mainwindow.cpp" line="8837"/>
         <source>Can&apos;t read from file %1</source>
         <translation>%1 dosyasından okunamadı</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8713"/>
+        <location filename="../../gui/mainwindow.cpp" line="8712"/>
         <source>Merge session being loaded with current session?
 If no, current variables and display will be cleared.</source>
         <translation>Geçerli oturum ile yüklenen oturum birleştirilsin mi?
 Yanıtınız hayırsa geçerli değişkenler ve görüntü temizlenecek.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8831"/>
+        <location filename="../../gui/mainwindow.cpp" line="8830"/>
         <source>All Files (*)</source>
         <translation>Tüm Dosyalar (*)</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4189"/>
-        <location filename="../../gui/mainwindow.cpp" line="8832"/>
+        <location filename="../../gui/mainwindow.cpp" line="8831"/>
         <source>Import Session</source>
         <translation>Oturumu İçe Aktar</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8843"/>
+        <location filename="../../gui/mainwindow.cpp" line="8842"/>
         <source>Merge session being imported with current session?
 If no, current variables and display will be cleared.</source>
         <translation>Geçerli oturum ile içe aktarılan oturum birleştirilsin mi?
 Yanıtınız hayırsa geçerli değişkenler ve görüntü temizlenecek.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8878"/>
+        <location filename="../../gui/mainwindow.cpp" line="8877"/>
         <source>Ignore error?</source>
         <translation>Hata yok sayılsın mı?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8795"/>
+        <location filename="../../gui/mainwindow.cpp" line="8794"/>
         <source>Save Session</source>
         <translation>Oturumu Kaydet</translation>
     </message>
@@ -5025,7 +5030,7 @@ Yanıtınız hayırsa geçerli değişkenler ve görüntü temizlenecek.</transl
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="3415"/>
-        <location filename="../../gui/mainwindow.cpp" line="12278"/>
+        <location filename="../../gui/mainwindow.cpp" line="12123"/>
         <source>Automatic</source>
         <translation>Otomatik</translation>
     </message>
@@ -5395,7 +5400,7 @@ Yanıtınız hayırsa geçerli değişkenler ve görüntü temizlenecek.</transl
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4182"/>
-        <location filename="../../gui/mainwindow.cpp" line="7561"/>
+        <location filename="../../gui/mainwindow.cpp" line="7560"/>
         <source>Open Session</source>
         <translation>Oturumu Aç</translation>
     </message>
@@ -5426,18 +5431,18 @@ Yanıtınız hayırsa geçerli değişkenler ve görüntü temizlenecek.</transl
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4192"/>
-        <location filename="../../gui/mainwindow.cpp" line="7642"/>
-        <location filename="../../gui/mainwindow.cpp" line="7653"/>
-        <location filename="../../gui/mainwindow.cpp" line="7666"/>
-        <location filename="../../gui/mainwindow.cpp" line="7676"/>
+        <location filename="../../gui/mainwindow.cpp" line="7641"/>
+        <location filename="../../gui/mainwindow.cpp" line="7652"/>
+        <location filename="../../gui/mainwindow.cpp" line="7665"/>
+        <location filename="../../gui/mainwindow.cpp" line="7675"/>
         <source>Duplicate Session</source>
         <translation>Oturumu Çoğalt</translation>
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4193"/>
-        <location filename="../../gui/mainwindow.cpp" line="7705"/>
-        <location filename="../../gui/mainwindow.cpp" line="7719"/>
-        <location filename="../../gui/mainwindow.cpp" line="7730"/>
+        <location filename="../../gui/mainwindow.cpp" line="7704"/>
+        <location filename="../../gui/mainwindow.cpp" line="7718"/>
+        <location filename="../../gui/mainwindow.cpp" line="7729"/>
         <source>Rename Session</source>
         <translation>Oturumu Yeniden Adlandır</translation>
     </message>
@@ -5448,7 +5453,7 @@ Yanıtınız hayırsa geçerli değişkenler ve görüntü temizlenecek.</transl
     </message>
     <message>
         <location filename="../../gui/mainwindow.cpp" line="4195"/>
-        <location filename="../../gui/mainwindow.cpp" line="8000"/>
+        <location filename="../../gui/mainwindow.cpp" line="7999"/>
         <source>Delete Session</source>
         <translation>Oturumu Sil</translation>
     </message>
@@ -5468,324 +5473,256 @@ Yanıtınız hayırsa geçerli değişkenler ve görüntü temizlenecek.</transl
         <translation>Kullanıcı Birimleri</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7466"/>
-        <location filename="../../gui/mainwindow.cpp" line="7497"/>
+        <location filename="../../gui/mainwindow.cpp" line="7465"/>
+        <location filename="../../gui/mainwindow.cpp" line="7496"/>
         <source>Clear History</source>
         <translation>Geçmişi Temizle</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7467"/>
-        <location filename="../../gui/mainwindow.cpp" line="7498"/>
+        <location filename="../../gui/mainwindow.cpp" line="7466"/>
+        <location filename="../../gui/mainwindow.cpp" line="7497"/>
         <source>Are you sure you want to clear the calculation history?</source>
         <translation>Hesaplama geçmişini temizlemek istediğinizden emin misiniz?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7643"/>
-        <location filename="../../gui/mainwindow.cpp" line="7706"/>
+        <location filename="../../gui/mainwindow.cpp" line="7642"/>
+        <location filename="../../gui/mainwindow.cpp" line="7705"/>
         <source>Session name:</source>
         <translation>Oturum adı:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7654"/>
-        <location filename="../../gui/mainwindow.cpp" line="7720"/>
+        <location filename="../../gui/mainwindow.cpp" line="7653"/>
+        <location filename="../../gui/mainwindow.cpp" line="7719"/>
         <source>A session named %1 already exists.</source>
         <translation>%1 adlı bir oturum zaten var.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7667"/>
+        <location filename="../../gui/mainwindow.cpp" line="7666"/>
         <source>Could not create session file %1.</source>
         <translation>%1 oturum dosyası oluşturulamadı.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7677"/>
+        <location filename="../../gui/mainwindow.cpp" line="7676"/>
         <source>Could not write session file %1.</source>
         <translation>%1 oturum dosyasına yazılamadı.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7731"/>
+        <location filename="../../gui/mainwindow.cpp" line="7730"/>
         <source>Could not rename session file %1.</source>
         <translation>%1 oturum dosyası yeniden adlandırılamadı.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8001"/>
+        <location filename="../../gui/mainwindow.cpp" line="8000"/>
         <source>Are you sure you want to delete this session?</source>
         <translation>Bu oturumu silmek istediğinizden emin misiniz?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8176"/>
+        <location filename="../../gui/mainwindow.cpp" line="8175"/>
         <source>Custom Precision</source>
         <translation>Özel Hassasiyet</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8177"/>
+        <location filename="../../gui/mainwindow.cpp" line="8176"/>
         <source>Fractional digits:</source>
         <translation>Kesir basamakları:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8194"/>
+        <location filename="../../gui/mainwindow.cpp" line="8193"/>
         <source>Theme</source>
         <translation>Tema</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8203"/>
+        <location filename="../../gui/mainwindow.cpp" line="8202"/>
         <source>Light Themes</source>
         <translation>Açık Temalar</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8210"/>
+        <location filename="../../gui/mainwindow.cpp" line="8209"/>
         <source>Dark Themes</source>
         <translation>Koyu Temalar</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8218"/>
+        <location filename="../../gui/mainwindow.cpp" line="8217"/>
         <source>Preview</source>
         <translation>Önizleme</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8280"/>
+        <location filename="../../gui/mainwindow.cpp" line="8279"/>
         <source>Colors</source>
         <translation>Renkler</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8456"/>
+        <location filename="../../gui/mainwindow.cpp" line="8455"/>
         <source>Select color for %1</source>
         <translation>%1 için renk seç</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8501"/>
+        <location filename="../../gui/mainwindow.cpp" line="8500"/>
         <source>Import...</source>
         <translation>İçe Aktar...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8502"/>
+        <location filename="../../gui/mainwindow.cpp" line="8501"/>
         <source>Export...</source>
         <translation>Dışa Aktar...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8534"/>
+        <location filename="../../gui/mainwindow.cpp" line="8533"/>
         <source>Import Theme</source>
         <translation>Temayı İçe Aktar</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8535"/>
-        <location filename="../../gui/mainwindow.cpp" line="8624"/>
+        <location filename="../../gui/mainwindow.cpp" line="8534"/>
+        <location filename="../../gui/mainwindow.cpp" line="8623"/>
         <source>Theme file (*.json);;All files (*)</source>
         <translation>Tema dosyası (*.json);;Tüm dosyalar (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8546"/>
+        <location filename="../../gui/mainwindow.cpp" line="8545"/>
         <source>Invalid theme file.</source>
         <translation>Geçersiz tema dosyası.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8555"/>
+        <location filename="../../gui/mainwindow.cpp" line="8554"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>&quot;%1&quot; teması yerleşik bir temayla çakıştığı için içe aktarılamıyor.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8560"/>
+        <location filename="../../gui/mainwindow.cpp" line="8559"/>
         <source>Can&apos;t find a writable theme folder.</source>
         <translation>Yazılabilir bir tema klasörü bulunamıyor.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8567"/>
+        <location filename="../../gui/mainwindow.cpp" line="8566"/>
         <source>Overwrite Theme</source>
         <translation>Temanın Üzerine Yaz</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8568"/>
+        <location filename="../../gui/mainwindow.cpp" line="8567"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
         <translation>&quot;%1&quot; adlı özel tema zaten var. Üzerine yazmak istiyor musunuz?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8576"/>
+        <location filename="../../gui/mainwindow.cpp" line="8575"/>
         <source>Can&apos;t overwrite theme file %1</source>
         <translation>%1 tema dosyasının üzerine yazılamıyor</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8582"/>
+        <location filename="../../gui/mainwindow.cpp" line="8581"/>
         <source>Can&apos;t copy theme file to %1</source>
         <translation>Tema dosyası %1 konumuna kopyalanamıyor</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8623"/>
+        <location filename="../../gui/mainwindow.cpp" line="8622"/>
         <source>Export Theme</source>
         <translation>Temayı Dışa Aktar</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8634"/>
+        <location filename="../../gui/mainwindow.cpp" line="8633"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>Yerleşik bir temayla çakıştığı için tema &quot;%1&quot; olarak dışa aktarılamıyor.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8639"/>
-        <location filename="../../gui/mainwindow.cpp" line="8816"/>
-        <location filename="../../gui/mainwindow.cpp" line="9661"/>
-        <location filename="../../gui/mainwindow.cpp" line="9681"/>
+        <location filename="../../gui/mainwindow.cpp" line="8638"/>
+        <location filename="../../gui/mainwindow.cpp" line="8815"/>
+        <location filename="../../gui/mainwindow.cpp" line="9506"/>
+        <location filename="../../gui/mainwindow.cpp" line="9526"/>
         <source>Can&apos;t write to file %1</source>
         <translation>%1 dosyasına yazılamıyor</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8740"/>
+        <location filename="../../gui/mainwindow.cpp" line="8739"/>
         <source>Can&apos;t read the selected session file.</source>
         <translation>Seçilen oturum dosyası okunamıyor.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8918"/>
+        <location filename="../../gui/mainwindow.cpp" line="8917"/>
         <source>Global User Variable</source>
         <translation>Genel Kullanıcı Değişkeni</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8919"/>
+        <location filename="../../gui/mainwindow.cpp" line="8918"/>
         <source>Global User Function</source>
         <translation>Genel Kullanıcı İşlevi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8920"/>
+        <location filename="../../gui/mainwindow.cpp" line="8919"/>
         <source>Global User Unit</source>
         <translation>Genel Kullanıcı Birimi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9262"/>
-        <source>User Definitions</source>
-        <translation>Kullanıcı Tanımları</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9268"/>
-        <source>These definitions are global and are loaded into every session.
-They are immutable for sessions and override same-name definitions from the session editor.
-Enter one definition per line.</source>
-        <translation>Bu tanımlar geneldir ve her oturuma yüklenir.
-Oturumlar için değiştirilemezler ve oturum düzenleyicisindeki aynı adlı tanımların yerine geçerler.
-Her satıra bir tanım girin.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9277"/>
-        <source>Examples:
-my_rate=1.25
-f(x)=x^2+1
-[cm_s]=[centimetre/second]</source>
-        <translation>Örnekler:
-my_rate=1.25
-f(x)=x^2+1
-[cm_s]=[centimetre/second]</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9327"/>
-        <source>Apply</source>
-        <translation>Uygula</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9328"/>
-        <source>Validate</source>
-        <translation>Doğrula</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9364"/>
-        <source>Test Results</source>
-        <translation>Test Sonuçları</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9365"/>
-        <location filename="../../gui/mainwindow.cpp" line="9397"/>
-        <source>Imported variables: %1
-Imported functions: %2
-Imported units: %3
-Line numbers with errors: %4</source>
-        <translation>İçe aktarılan değişkenler: %1
-İçe aktarılan işlevler: %2
-İçe aktarılan birimler: %3
-Hatalı satır numaraları: %4</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9369"/>
-        <location filename="../../gui/mainwindow.cpp" line="9401"/>
-        <source>none</source>
-        <translation>yok</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9396"/>
-        <source>Apply Results</source>
-        <translation>Sonuçları Uygula</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9410"/>
-        <source>User definitions saved.</source>
-        <translation>Kullanıcı tanımları kaydedildi.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9444"/>
+        <location filename="../../gui/mainwindow.cpp" line="9289"/>
         <source>History Size Limit</source>
         <translation>Geçmiş Boyutu Sınırı</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9445"/>
+        <location filename="../../gui/mainwindow.cpp" line="9290"/>
         <source>Maximum number of history entries for this session (0 = unlimited):</source>
         <translation>Bu oturum için en fazla geçmiş girdisi sayısı (0 = sınırsız):</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9674"/>
+        <location filename="../../gui/mainwindow.cpp" line="9519"/>
         <source>Text file (*.txt);;Any file (*.*)</source>
         <translation>Metin dosyası (*.txt);;Herhangi bir dosya (*.*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9711"/>
+        <location filename="../../gui/mainwindow.cpp" line="9556"/>
         <source>Display font</source>
         <translation>Görüntü yazı tipi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11475"/>
-        <location filename="../../gui/mainwindow.cpp" line="11648"/>
+        <location filename="../../gui/mainwindow.cpp" line="11320"/>
+        <location filename="../../gui/mainwindow.cpp" line="11493"/>
         <source>Could not recalculate from calculation %1: %2</source>
         <translation>%1 hesaplamasından yeniden hesaplanamadı: %2</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11564"/>
+        <location filename="../../gui/mainwindow.cpp" line="11409"/>
         <source>History Size Limit Reached</source>
         <translation>Geçmiş Boyutu Sınırına Ulaşıldı</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11565"/>
+        <location filename="../../gui/mainwindow.cpp" line="11410"/>
         <source>This calculation fills the last available history slot. Future calculations will remove the oldest calculation from history. You can increase the limit from Session &gt; History Size Limit.</source>
         <translation>Bu hesaplama son kullanılabilir geçmiş yuvasını doldurur. Gelecekteki hesaplamalar geçmişteki en eski hesaplamayı kaldırır. Sınırı Oturum &gt; Geçmiş Boyutu Sınırı bölümünden artırabilirsiniz.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11588"/>
+        <location filename="../../gui/mainwindow.cpp" line="11433"/>
         <source>Editing calculation. Press Esc twice to cancel.</source>
         <translation>Hesaplama düzenleniyor. İptal etmek için Esc tuşuna iki kez basın.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11629"/>
+        <location filename="../../gui/mainwindow.cpp" line="11474"/>
         <source>Calculation Settings</source>
         <translation>Hesaplama Ayarları</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11705"/>
+        <location filename="../../gui/mainwindow.cpp" line="11550"/>
         <source>Invalid recalculation start index</source>
         <translation>Geçersiz yeniden hesaplama başlangıç indeksi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12252"/>
+        <location filename="../../gui/mainwindow.cpp" line="12097"/>
         <source>System Default</source>
         <translation>Sistem Öntanımlı</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12256"/>
+        <location filename="../../gui/mainwindow.cpp" line="12101"/>
         <source>Language</source>
         <translation>Dil</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12256"/>
+        <location filename="../../gui/mainwindow.cpp" line="12101"/>
         <source>Select the language:</source>
         <translation>Dil seçin:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12286"/>
+        <location filename="../../gui/mainwindow.cpp" line="12131"/>
         <source>Custom</source>
         <translation>Özel</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12298"/>
+        <location filename="../../gui/mainwindow.cpp" line="12143"/>
         <source>Decimal places:</source>
         <translation>Ondalık basamaklar:</translation>
     </message>
@@ -5816,29 +5753,29 @@ Hatalı satır numaraları: %4</translation>
         <translation>&amp;Dışa Aktar</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8706"/>
-        <location filename="../../gui/mainwindow.cpp" line="8790"/>
+        <location filename="../../gui/mainwindow.cpp" line="8705"/>
+        <location filename="../../gui/mainwindow.cpp" line="8789"/>
         <source>SpeedCrunch Sessions (*.json);;All Files (*)</source>
         <translation>SpeedCrunch Oturumları (*.json);;Tüm Dosyalar (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8718"/>
-        <location filename="../../gui/mainwindow.cpp" line="8849"/>
+        <location filename="../../gui/mainwindow.cpp" line="8717"/>
+        <location filename="../../gui/mainwindow.cpp" line="8848"/>
         <source>Merge?</source>
         <translation>Birleştirilsin mi?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9653"/>
+        <location filename="../../gui/mainwindow.cpp" line="9498"/>
         <source>Export session as HTML</source>
         <translation>Oturumu HTML olarak dışa aktar</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9654"/>
+        <location filename="../../gui/mainwindow.cpp" line="9499"/>
         <source>HTML file (*.html)</source>
         <translation>HTML dosyası (*.html)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9673"/>
+        <location filename="../../gui/mainwindow.cpp" line="9518"/>
         <source>Export session as plain text</source>
         <translation>Oturumu düz metin olarak dışa aktar</translation>
     </message>
