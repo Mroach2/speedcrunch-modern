@@ -848,18 +848,26 @@ void TestDisplayUi::bitfield_buttons_use_configured_generated_shades()
     const QColor buttonPressedFill = shades.at(UiConfig::BitfieldButtonPressedFillShade);
     const QColor buttonPressedForeground =
         foregrounds.at(UiConfig::BitfieldButtonPressedFillShade);
+    const QColor popupBackground = shades.at(UiConfig::CompletionPopupBackgroundShade);
+    const QColor popupForeground = foregrounds.at(UiConfig::CompletionPopupBackgroundShade);
+    const QColor popupOutline = shades.at(UiConfig::CompletionPopupOutlineShade);
 
     MainWindow window;
     window.show();
-    QCoreApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
 
     BitFieldWidget* bitfield = window.findChild<BitFieldWidget*>();
     QVERIFY(bitfield != nullptr);
     const QList<QPushButton*> buttons = bitfield->findChildren<QPushButton*>();
     QCOMPARE(buttons.size(), 4);
+    QPushButton* shiftLeftButton = nullptr;
 
     for (QPushButton* button : buttons) {
+        if (button->text() == QLatin1String("<<"))
+            shiftLeftButton = button;
+
         const QString style = button->styleSheet();
+        QCOMPARE(button->toolTip(), QString());
         QCOMPARE(button->palette().color(QPalette::Button).name(), buttonFill.name());
         QCOMPARE(button->palette().color(QPalette::ButtonText).name(),
                  buttonForeground.name());
@@ -874,6 +882,29 @@ void TestDisplayUi::bitfield_buttons_use_configured_generated_shades()
         QVERIFY(style.contains(QStringLiteral("color: %1")
                                    .arg(buttonPressedForeground.name())));
     }
+
+    QVERIFY(shiftLeftButton != nullptr);
+    const QPoint buttonCenter = shiftLeftButton->rect().center();
+    QMouseEvent moveEvent(QEvent::MouseMove,
+                          QPointF(buttonCenter),
+                          QPointF(shiftLeftButton->mapToGlobal(buttonCenter)),
+                          Qt::NoButton,
+                          Qt::NoButton,
+                          Qt::NoModifier);
+    QCoreApplication::sendEvent(shiftLeftButton, &moveEvent);
+    QFrame* summaryPopup =
+        bitfield->findChild<QFrame*>(QStringLiteral("bitfieldButtonSummaryPopup"));
+    QTRY_VERIFY(summaryPopup != nullptr && summaryPopup->isVisible());
+    QLabel* summaryPopupLabel =
+        summaryPopup->findChild<QLabel*>(QStringLiteral("bitfieldButtonSummaryPopupLabel"));
+    QVERIFY(summaryPopupLabel != nullptr);
+    QCOMPARE(summaryPopupLabel->text(), QStringLiteral("Shift bits left"));
+    QVERIFY(summaryPopup->styleSheet().contains(popupBackground.name()));
+    QVERIFY(summaryPopup->styleSheet().contains(popupForeground.name()));
+    QVERIFY(summaryPopup->styleSheet().contains(QStringLiteral("border: %1px solid %2")
+                                                    .arg(UiConfig::PopupOutlineStrokeWidth)
+                                                    .arg(popupOutline.name())));
+    QVERIFY(!summaryPopup->mask().isEmpty());
 }
 
 void TestDisplayUi::dock_list_selected_row_keeps_primary_fill_while_hovered()

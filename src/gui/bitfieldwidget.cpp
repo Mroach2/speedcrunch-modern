@@ -16,6 +16,7 @@
 #include <QGridLayout>
 #include <QGuiApplication>
 #include <QHBoxLayout>
+#include <QHoverEvent>
 #include <QLabel>
 #include <QListIterator>
 #include <QMouseEvent>
@@ -392,23 +393,19 @@ BitFieldWidget::BitFieldWidget(QWidget* parent) :
     }
 
     m_resetButton = new QPushButton("0");
-    m_resetButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_resetButton->setCursor(Qt::PointingHandCursor);
+    setupButton(m_resetButton);
     connect(m_resetButton, SIGNAL(clicked()), this, SLOT(resetBits()));
 
     m_invertButton = new QPushButton("~");
-    m_invertButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_invertButton->setCursor(Qt::PointingHandCursor);
+    setupButton(m_invertButton);
     connect(m_invertButton, SIGNAL(clicked()), this, SLOT(invertBits()));
 
     m_shiftLeftButton = new QPushButton("<<");
-    m_shiftLeftButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_shiftLeftButton->setCursor(Qt::PointingHandCursor);
+    setupButton(m_shiftLeftButton);
     connect(m_shiftLeftButton, SIGNAL(clicked()), this, SLOT(shiftBitsLeft()));
 
     m_shiftRightButton = new QPushButton(">>");
-    m_shiftRightButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_shiftRightButton->setCursor(Qt::PointingHandCursor);
+    setupButton(m_shiftRightButton);
     connect(m_shiftRightButton, SIGNAL(clicked()), this, SLOT(shiftBitsRight()));
 
     m_buttonsLayout = new QGridLayout;
@@ -537,6 +534,7 @@ void BitFieldWidget::refreshTheme()
                                          m_summaryPopupForegroundColor,
                                          m_summaryPopupOutlineColor,
                                          m_summaryPopupCornerRadius);
+    applyButtonSummaryPopupTheme();
 }
 
 void BitFieldWidget::setThemeColors(const QColor& background,
@@ -585,6 +583,7 @@ void BitFieldWidget::setToolTipThemeColors(const QColor& background,
                                          m_summaryPopupForegroundColor,
                                          m_summaryPopupOutlineColor,
                                          m_summaryPopupCornerRadius);
+    applyButtonSummaryPopupTheme();
 }
 
 QSize BitFieldWidget::minimumSizeHint() const
@@ -688,6 +687,179 @@ void BitFieldWidget::wheelEvent(QWheelEvent* we)
 void BitFieldWidget::resizeEvent(QResizeEvent*)
 {
   this->updateFieldLayout();
+}
+
+bool BitFieldWidget::eventFilter(QObject* watched, QEvent* event)
+{
+    const QString summaryText = buttonSummaryText(watched);
+    if (!summaryText.isEmpty()) {
+        QWidget* button = qobject_cast<QWidget*>(watched);
+        switch (event->type()) {
+        case QEvent::Enter:
+            if (button != nullptr)
+                showButtonSummaryPopup(summaryText,
+                                       button,
+                                       button->mapToGlobal(button->rect().center()));
+            break;
+        case QEvent::MouseMove: {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            showButtonSummaryPopup(summaryText, button, mouseEvent->globalPosition().toPoint());
+            break;
+        }
+        case QEvent::HoverMove: {
+            QHoverEvent* hoverEvent = static_cast<QHoverEvent*>(event);
+            if (button != nullptr)
+                showButtonSummaryPopup(summaryText,
+                                       button,
+                                       button->mapToGlobal(hoverEvent->position().toPoint()));
+            break;
+        }
+        case QEvent::Hide:
+        case QEvent::KeyPress:
+        case QEvent::Leave:
+        case QEvent::MouseButtonPress:
+        case QEvent::Wheel:
+            hideButtonSummaryPopup();
+            break;
+        default:
+            break;
+        }
+    }
+
+    return QWidget::eventFilter(watched, event);
+}
+
+void BitFieldWidget::setupButton(QPushButton* button)
+{
+    button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    button->setCursor(Qt::PointingHandCursor);
+    button->setMouseTracking(true);
+    button->setAttribute(Qt::WA_Hover, true);
+    button->setToolTip(QString());
+    button->installEventFilter(this);
+}
+
+QString BitFieldWidget::buttonSummaryText(const QObject* watched) const
+{
+    if (watched == m_resetButton)
+        return tr("Reset bits to zero");
+    if (watched == m_invertButton)
+        return tr("Invert bits");
+    if (watched == m_shiftLeftButton)
+        return tr("Shift bits left");
+    if (watched == m_shiftRightButton)
+        return tr("Shift bits right");
+    return QString();
+}
+
+void BitFieldWidget::applyButtonSummaryPopupTheme()
+{
+    if (m_buttonSummaryPopup == nullptr)
+        return;
+
+    const QColor background = m_summaryPopupBackgroundColor.isValid()
+        ? m_summaryPopupBackgroundColor
+        : palette().color(QPalette::ToolTipBase);
+    const QColor foreground = m_summaryPopupForegroundColor.isValid()
+        ? m_summaryPopupForegroundColor
+        : palette().color(QPalette::ToolTipText);
+    const QColor outline = m_summaryPopupOutlineColor.isValid()
+        ? m_summaryPopupOutlineColor
+        : background;
+    const int cornerRadius = qMax(0, m_summaryPopupCornerRadius);
+
+    QPalette popupPalette = m_buttonSummaryPopup->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        popupPalette.setColor(group, QPalette::Window, background);
+        popupPalette.setColor(group, QPalette::WindowText, foreground);
+    }
+    m_buttonSummaryPopup->setPalette(popupPalette);
+
+    QPalette labelPalette = m_buttonSummaryPopupLabel->palette();
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        labelPalette.setColor(group, QPalette::WindowText, foreground);
+        labelPalette.setColor(group, QPalette::Text, foreground);
+    }
+    m_buttonSummaryPopupLabel->setPalette(labelPalette);
+
+    m_buttonSummaryPopup->setStyleSheet(QStringLiteral(
+        "QFrame#bitfieldButtonSummaryPopup {"
+        " background: %1; color: %2;"
+        " border: %4px solid %3;"
+        " border-radius: %5px;"
+        "}"
+        "QLabel#bitfieldButtonSummaryPopupLabel {"
+        " background: transparent; color: %2;"
+        "}")
+                                            .arg(background.name(),
+                                                 foreground.name(),
+                                                 outline.name())
+                                            .arg(UiConfig::PopupOutlineStrokeWidth)
+                                            .arg(cornerRadius));
+    updateButtonSummaryPopupMask();
+}
+
+void BitFieldWidget::ensureButtonSummaryPopup()
+{
+    if (m_buttonSummaryPopup != nullptr)
+        return;
+
+    m_buttonSummaryPopup = new QFrame(this, Qt::ToolTip | Qt::FramelessWindowHint);
+    m_buttonSummaryPopup->setObjectName(QStringLiteral("bitfieldButtonSummaryPopup"));
+    m_buttonSummaryPopup->setAutoFillBackground(true);
+    m_buttonSummaryPopup->setAttribute(Qt::WA_ShowWithoutActivating, true);
+    m_buttonSummaryPopup->setAttribute(Qt::WA_StyledBackground, true);
+    m_buttonSummaryPopup->setFocusPolicy(Qt::NoFocus);
+    m_buttonSummaryPopup->setFrameStyle(QFrame::NoFrame);
+
+    QVBoxLayout* layout = new QVBoxLayout(m_buttonSummaryPopup);
+    layout->setContentsMargins(6, 4, 6, 4);
+    layout->setSpacing(0);
+
+    m_buttonSummaryPopupLabel = new QLabel(m_buttonSummaryPopup);
+    m_buttonSummaryPopupLabel->setObjectName(QStringLiteral("bitfieldButtonSummaryPopupLabel"));
+    m_buttonSummaryPopupLabel->setTextFormat(Qt::PlainText);
+    m_buttonSummaryPopupLabel->setTextInteractionFlags(Qt::NoTextInteraction);
+    m_buttonSummaryPopupLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
+    layout->addWidget(m_buttonSummaryPopupLabel);
+
+    applyButtonSummaryPopupTheme();
+}
+
+void BitFieldWidget::hideButtonSummaryPopup()
+{
+    if (m_buttonSummaryPopup != nullptr)
+        m_buttonSummaryPopup->hide();
+}
+
+void BitFieldWidget::showButtonSummaryPopup(const QString& text,
+                                            QWidget* anchor,
+                                            const QPoint& globalPos)
+{
+    if (text.isEmpty() || anchor == nullptr)
+        return;
+
+    ensureButtonSummaryPopup();
+    m_buttonSummaryPopupLabel->setText(text);
+    m_buttonSummaryPopup->adjustSize();
+    m_buttonSummaryPopup->resize(m_buttonSummaryPopup->sizeHint());
+    updateButtonSummaryPopupMask();
+    m_buttonSummaryPopup->move(constrainedPopupPosition(anchor,
+                                                        globalPos,
+                                                        m_buttonSummaryPopup->size()));
+    m_buttonSummaryPopup->show();
+}
+
+void BitFieldWidget::updateButtonSummaryPopupMask()
+{
+    if (m_buttonSummaryPopup == nullptr)
+        return;
+
+    applyRoundedPopupMask(m_buttonSummaryPopup, qMax(0, m_summaryPopupCornerRadius));
 }
 
 void BitFieldWidget::updateBits(const Quantity& number)

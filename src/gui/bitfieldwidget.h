@@ -88,6 +88,7 @@ signals:
     void bitsChanged(const QString&);
 
 protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
     void wheelEvent(QWheelEvent*) override;
     void resizeEvent(QResizeEvent*) override;
 
@@ -124,6 +125,16 @@ private slots:
     void resetBits();
 
 private:
+    void applyButtonSummaryPopupTheme();
+    QString buttonSummaryText(const QObject* watched) const;
+    void ensureButtonSummaryPopup();
+    void hideButtonSummaryPopup();
+    void setupButton(QPushButton* button);
+    void showButtonSummaryPopup(const QString& text,
+                                QWidget* anchor,
+                                const QPoint& globalPos);
+    void updateButtonSummaryPopupMask();
+
     enum {
         NumberOfBits = 64
     };
@@ -137,10 +148,12 @@ private:
     QGridLayout* m_buttonsLayout;
     QHBoxLayout* m_mainLayout;
 
-    QPushButton* m_resetButton;
-    QPushButton* m_invertButton;
-    QPushButton* m_shiftLeftButton;
-    QPushButton* m_shiftRightButton;
+    QPushButton* m_resetButton = nullptr;
+    QPushButton* m_invertButton = nullptr;
+    QPushButton* m_shiftLeftButton = nullptr;
+    QPushButton* m_shiftRightButton = nullptr;
+    QFrame* m_buttonSummaryPopup = nullptr;
+    QLabel* m_buttonSummaryPopupLabel = nullptr;
     QColor m_themeBackground;
     QColor m_themeForeground;
     QColor m_themeHoverBackground;
