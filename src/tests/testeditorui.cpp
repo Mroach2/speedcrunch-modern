@@ -144,6 +144,7 @@ private slots:
     void matching_parentheses_use_parens_and_generated_foreground_colors();
     void keeps_wrapped_cursor_line_visible_at_height_cap();
     void editor_height_adds_only_one_line_height_per_visible_line();
+    void editor_keeps_unit_descenders_inside_viewport();
     void adding_second_wrapped_character_keeps_first_line_visible();
     void editor_fill_color_is_15_percent_lighter_for_dark_background_role();
     void editor_fill_color_is_15_percent_darker_for_light_background_role();
@@ -4205,6 +4206,19 @@ void TestEditorUi::editor_height_adds_only_one_line_height_per_visible_line()
 
     editor.setText(QStringLiteral("1\n2\n3\n4\n5"));
     QCOMPARE(editor.height() - singleLineHeight, 4 * editor.fontMetrics().lineSpacing());
+}
+
+void TestEditorUi::editor_keeps_unit_descenders_inside_viewport()
+{
+    Editor editor;
+    editor.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&editor));
+    editor.setFocus();
+
+    editor.setText(QStringLiteral("2 [gypq]"));
+    editor.setCursorPosition(editor.text().size());
+
+    QVERIFY(editor.cursorRect().bottom() < editor.viewport()->rect().bottom());
 }
 
 void TestEditorUi::adding_second_wrapped_character_keeps_first_line_visible()

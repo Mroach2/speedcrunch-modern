@@ -59,12 +59,14 @@ constexpr int kEditorHorizontalPadding = 18;
 constexpr int kEditorVerticalPadding = 10;
 constexpr int kEditorRadius = 13;
 constexpr int kEditorCursorWidth = 2;
+constexpr int kEditorDocumentMargin = 2;
 
 static QPointer<Editor> s_completionMouseSelectionOwner;
 
 static int editorVerticalDecorationHeight()
 {
-    return kEditorOuterTop + kEditorOuterBottom + 2 * kEditorVerticalPadding + 2;
+    return kEditorOuterTop + kEditorOuterBottom + 2 * kEditorVerticalPadding
+           + 2 * kEditorDocumentMargin + 2;
 }
 
 static QColor editorFillColorForThemeBackground(const QColor& background)
@@ -1392,7 +1394,7 @@ Editor::Editor(QWidget* parent)
     setCursorWidth(kEditorCursorWidth);
     setAttribute(Qt::WA_StyledBackground, true);
     viewport()->setAutoFillBackground(false);
-    document()->setDocumentMargin(0);
+    document()->setDocumentMargin(kEditorDocumentMargin);
 
     m_cursorBlinkTimer->setSingleShot(false);
     connect(m_cursorBlinkTimer, &QTimer::timeout, this, [this]() {
@@ -4026,7 +4028,7 @@ void Editor::rehighlight()
        .arg(kEditorHorizontalPadding)
        .arg(UiConfig::OutlineStrokeWidth));
     setPalette(pal);
-    document()->setDocumentMargin(0);
+    document()->setDocumentMargin(kEditorDocumentMargin);
     viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
     viewport()->setPalette(viewportPalette);
     clearMask();
