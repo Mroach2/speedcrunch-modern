@@ -24,6 +24,7 @@ FunctionsWidget::FunctionsWidget(QWidget* parent)
     : QWidget(parent)
     , m_filterTimer(new QTimer(this))
     , m_domain(new QComboBox(this))
+    , m_domainLabel(new QLabel(this))
     , m_functions(new QTreeWidget(this))
     , m_noMatchLabel(new QLabel(m_functions))
     , m_searchFilter(new ThemedLineEdit(this))
@@ -55,7 +56,7 @@ FunctionsWidget::FunctionsWidget(QWidget* parent)
 
     QWidget* domainBox = new QWidget(this);
     QHBoxLayout* domainLayout = new QHBoxLayout;
-    domainLayout->addWidget(new QLabel(tr("Domain"), this));
+    domainLayout->addWidget(m_domainLabel);
     domainLayout->addWidget(m_domain);
     domainLayout->setContentsMargins(kControlRowHorizontalPadding,
                                      kControlRowVerticalPadding,
@@ -171,6 +172,7 @@ void FunctionsWidget::retranslateText()
     m_functions->setHeaderLabels(titles);
 
     m_searchLabel->setText(tr("Search"));
+    m_domainLabel->setText(tr("Domain"));
     const QString selectedDomain = m_domain->currentText();
     m_domain->clear();
     m_domain->addItem(tr("All"));

@@ -8,6 +8,7 @@
 #include "gui/constantswidget.h"
 #include "gui/dockliststyle.h"
 #include "gui/editor.h"
+#include "gui/functionswidget.h"
 #include "gui/keypad.h"
 #include "gui/mainwindow.h"
 #include "gui/notationandprecisiondialog.h"
@@ -58,6 +59,7 @@
 #include <QTest>
 #include <QTextBrowser>
 #include <QToolButton>
+#include <QTranslator>
 #include <QTimer>
 #include <QTreeWidget>
 
@@ -173,6 +175,25 @@ bool colorsAreClose(const QColor& actual, const QColor& expected, int tolerance 
         && qAbs(actual.green() - expected.green()) <= tolerance
         && qAbs(actual.blue() - expected.blue()) <= tolerance;
 }
+
+class FunctionsTestTranslator : public QTranslator {
+public:
+    QString translate(const char* context,
+                      const char* sourceText,
+                      const char* disambiguation = nullptr,
+                      int n = -1) const override
+    {
+        Q_UNUSED(disambiguation);
+        Q_UNUSED(n);
+
+        if (qstrcmp(context, "FunctionsWidget") == 0
+            && qstrcmp(sourceText, "Domain") == 0) {
+            return QStringLiteral("Translated Domain");
+        }
+
+        return QString();
+    }
+};
 
 QPushButton* keypadButtonWithText(Keypad* keypad, const QString& text)
 {
@@ -414,6 +435,7 @@ private slots:
     void dock_list_selected_row_keeps_primary_fill_while_hovered();
     void custom_keypad_action_stays_checked_after_dialog_accepts();
     void keypad_power_button_uses_exponent_label_but_inserts_caret();
+    void functions_dock_retranslates_domain_label_after_language_change();
     void main_window_applies_primary_role_to_active_editor_and_dock_selection();
     void current_result_tooltip_stays_hidden_after_escape_and_arrow_caret_move();
     void current_result_tooltip_stays_hidden_after_escape_and_mouse_caret_move();
@@ -909,6 +931,31 @@ void TestDisplayUi::keypad_power_button_uses_exponent_label_but_inserts_caret()
 
     QTest::mouseClick(powerButton, Qt::LeftButton);
     QTRY_COMPARE(editor->text(), QStringLiteral("2^"));
+}
+
+void TestDisplayUi::functions_dock_retranslates_domain_label_after_language_change()
+{
+    FunctionsWidget widget;
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    QLabel* domainLabel = nullptr;
+    for (QLabel* label : widget.findChildren<QLabel*>()) {
+        if (label->text() == QStringLiteral("Domain")) {
+            domainLabel = label;
+            break;
+        }
+    }
+    QVERIFY(domainLabel != nullptr);
+
+    FunctionsTestTranslator translator;
+    QCoreApplication::installTranslator(&translator);
+    QEvent languageChange(QEvent::LanguageChange);
+    QCoreApplication::sendEvent(&widget, &languageChange);
+
+    QCOMPARE(domainLabel->text(), QStringLiteral("Translated Domain"));
+
+    QCoreApplication::removeTranslator(&translator);
 }
 
 void TestDisplayUi::main_window_applies_primary_role_to_active_editor_and_dock_selection()

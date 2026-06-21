@@ -45,6 +45,7 @@ private:
 
     QTimer* m_filterTimer;
     QComboBox* m_domain;
+    QLabel* m_domainLabel;
     QTreeWidget* m_functions;
     bool m_insertAllItems;
     QLabel* m_noMatchLabel;
