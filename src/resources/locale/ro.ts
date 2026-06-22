@@ -56,6 +56,29 @@
     </message>
 </context>
 <context>
+    <name>BitFieldWidget</name>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="745"/>
+        <source>Reset bits to zero</source>
+        <translation>Resetează biții la zero</translation>
+    </message>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="747"/>
+        <source>Invert bits</source>
+        <translation>Inversează biții</translation>
+    </message>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="749"/>
+        <source>Shift bits left</source>
+        <translation>Deplasează biții la stânga</translation>
+    </message>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="751"/>
+        <source>Shift bits right</source>
+        <translation>Deplasează biții la dreapta</translation>
+    </message>
+</context>
+<context>
     <name>Book</name>
     <message>
         <location filename="../../core/book.cpp" line="53"/>
@@ -391,9 +414,9 @@
 <context>
     <name>ConstantCompletion</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="4626"/>
-        <location filename="../../gui/editor.cpp" line="4636"/>
-        <location filename="../../gui/editor.cpp" line="4756"/>
+        <location filename="../../gui/editor.cpp" line="4628"/>
+        <location filename="../../gui/editor.cpp" line="4638"/>
+        <location filename="../../gui/editor.cpp" line="4758"/>
         <source>All</source>
         <translation>Toate</translation>
     </message>
@@ -2312,7 +2335,6 @@
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="544"/>
-        <location filename="../../gui/constantswidget.cpp" line="42"/>
         <source>Euler&apos;s number (e)</source>
         <translation>numărul lui Euler (e)</translation>
     </message>
@@ -2525,47 +2547,47 @@
 <context>
     <name>ConstantsWidget</name>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="285"/>
+        <location filename="../../gui/constantswidget.cpp" line="293"/>
         <source>Domain</source>
         <translation>Domeniu</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="286"/>
+        <location filename="../../gui/constantswidget.cpp" line="294"/>
         <source>Subdomain</source>
         <translation>Subdomeniu</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="288"/>
+        <location filename="../../gui/constantswidget.cpp" line="296"/>
         <source>No match found</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="291"/>
+        <location filename="../../gui/constantswidget.cpp" line="299"/>
         <source>Name</source>
         <translation>Denumire</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="292"/>
+        <location filename="../../gui/constantswidget.cpp" line="300"/>
         <source>Value</source>
         <translation>Valoare</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="293"/>
+        <location filename="../../gui/constantswidget.cpp" line="301"/>
         <source>Unit</source>
         <translation>Unitate</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="287"/>
+        <location filename="../../gui/constantswidget.cpp" line="295"/>
         <source>Search</source>
         <translation>Cauta</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="338"/>
-        <location filename="../../gui/constantswidget.cpp" line="340"/>
-        <location filename="../../gui/constantswidget.cpp" line="419"/>
-        <location filename="../../gui/constantswidget.cpp" line="459"/>
-        <location filename="../../gui/constantswidget.cpp" line="460"/>
-        <location filename="../../gui/constantswidget.cpp" line="469"/>
+        <location filename="../../gui/constantswidget.cpp" line="346"/>
+        <location filename="../../gui/constantswidget.cpp" line="348"/>
+        <location filename="../../gui/constantswidget.cpp" line="427"/>
+        <location filename="../../gui/constantswidget.cpp" line="467"/>
+        <location filename="../../gui/constantswidget.cpp" line="468"/>
+        <location filename="../../gui/constantswidget.cpp" line="477"/>
         <source>All</source>
         <translation>Toate</translation>
     </message>
@@ -2641,45 +2663,45 @@
 <context>
     <name>Editor</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="1901"/>
+        <location filename="../../gui/editor.cpp" line="1903"/>
         <source>Unit</source>
         <translation>Unitate</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1905"/>
+        <location filename="../../gui/editor.cpp" line="1907"/>
         <source>User unit</source>
         <translation>Unitate utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1960"/>
+        <location filename="../../gui/editor.cpp" line="1962"/>
         <source>User function</source>
         <translation>Functie utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2087"/>
+        <location filename="../../gui/editor.cpp" line="2089"/>
         <source>Argument</source>
         <translation>Argument</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2263"/>
-        <location filename="../../gui/editor.cpp" line="2297"/>
+        <location filename="../../gui/editor.cpp" line="2265"/>
+        <location filename="../../gui/editor.cpp" line="2299"/>
         <source>Current result:&lt;br/&gt;%1</source>
         <translation>Rezultat curent:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2369"/>
-        <location filename="../../gui/editor.cpp" line="2397"/>
+        <location filename="../../gui/editor.cpp" line="2371"/>
+        <location filename="../../gui/editor.cpp" line="2399"/>
         <source>Selection result:&lt;br/&gt;%1</source>
         <translation>Rezultat selecție:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2363"/>
-        <location filename="../../gui/editor.cpp" line="2391"/>
+        <location filename="../../gui/editor.cpp" line="2365"/>
+        <location filename="../../gui/editor.cpp" line="2393"/>
         <source>Selection result: n/a</source>
         <translation>Rezultate regasite: n/a</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2404"/>
+        <location filename="../../gui/editor.cpp" line="2406"/>
         <source>Selection result: %1</source>
         <translation>Rezultatele selecției: %1</translation>
     </message>
@@ -4358,33 +4380,33 @@
 <context>
     <name>FunctionsWidget</name>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="58"/>
+        <location filename="../../gui/functionswidget.cpp" line="175"/>
         <source>Domain</source>
         <translation>Domeniu</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="134"/>
-        <location filename="../../gui/functionswidget.cpp" line="176"/>
+        <location filename="../../gui/functionswidget.cpp" line="135"/>
+        <location filename="../../gui/functionswidget.cpp" line="178"/>
         <source>All</source>
         <translation>Toate</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="169"/>
+        <location filename="../../gui/functionswidget.cpp" line="170"/>
         <source>Name</source>
         <translation>Denumire</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="173"/>
+        <location filename="../../gui/functionswidget.cpp" line="174"/>
         <source>Search</source>
         <translation>Caută</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="180"/>
+        <location filename="../../gui/functionswidget.cpp" line="182"/>
         <source>No match found</source>
         <translation>Niciun rezultat găsit</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="168"/>
+        <location filename="../../gui/functionswidget.cpp" line="169"/>
         <source>Identifier</source>
         <translation>Identificator</translation>
     </message>
@@ -4563,1219 +4585,1219 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3389"/>
+        <location filename="../../gui/mainwindow.cpp" line="3397"/>
         <source>Radian</source>
         <translation>Radian</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3393"/>
+        <location filename="../../gui/mainwindow.cpp" line="3401"/>
         <source>Degree</source>
         <translation>Grad</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3390"/>
+        <location filename="../../gui/mainwindow.cpp" line="3398"/>
         <source>Gradian</source>
         <translation>Gradian</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3399"/>
+        <location filename="../../gui/mainwindow.cpp" line="3407"/>
         <source>Binary</source>
         <translation>Binar</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3400"/>
+        <location filename="../../gui/mainwindow.cpp" line="3408"/>
         <source>Octal</source>
         <translation>Octal</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3401"/>
+        <location filename="../../gui/mainwindow.cpp" line="3409"/>
         <source>Hexadecimal</source>
         <translation>Hexazecimal</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3402"/>
+        <location filename="../../gui/mainwindow.cpp" line="3410"/>
         <source>Sexagesimal</source>
         <translation>Sexagesimal</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3404"/>
+        <location filename="../../gui/mainwindow.cpp" line="3412"/>
         <source>Engineering decimal</source>
         <translation>Zecimal ingineresc</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3405"/>
+        <location filename="../../gui/mainwindow.cpp" line="3413"/>
         <source>Scientific decimal</source>
         <translation>Zecimal științific</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3423"/>
+        <location filename="../../gui/mainwindow.cpp" line="3431"/>
         <source>&amp;Import...</source>
         <translation>&amp;Importă...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3425"/>
+        <location filename="../../gui/mainwindow.cpp" line="3433"/>
         <source>&amp;Load...</source>
         <translation>&amp;Încarcă...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3426"/>
+        <location filename="../../gui/mainwindow.cpp" line="3434"/>
         <source>&amp;Quit</source>
         <translation>&amp;Ieșire</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3427"/>
+        <location filename="../../gui/mainwindow.cpp" line="3435"/>
         <source>&amp;Save...</source>
         <translation>&amp;Salvează...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3429"/>
+        <location filename="../../gui/mainwindow.cpp" line="3437"/>
         <source>Clear E&amp;xpression</source>
         <translation>Șterge E&amp;xpresia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3430"/>
+        <location filename="../../gui/mainwindow.cpp" line="3438"/>
         <source>Clear &amp;History</source>
         <translation>Șterge &amp;Istoricul</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3431"/>
+        <location filename="../../gui/mainwindow.cpp" line="3439"/>
         <source>Copy Last &amp;Result</source>
         <translation>Copiază ultimul &amp;rezultat</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3432"/>
+        <location filename="../../gui/mainwindow.cpp" line="3440"/>
         <source>&amp;Copy</source>
         <translation>&amp;Copiază</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3433"/>
+        <location filename="../../gui/mainwindow.cpp" line="3441"/>
         <source>&amp;Paste</source>
         <translation>&amp;Lipește</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3434"/>
+        <location filename="../../gui/mainwindow.cpp" line="3442"/>
         <source>&amp;Select Expression</source>
         <translation>&amp;Selectează expresia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3435"/>
+        <location filename="../../gui/mainwindow.cpp" line="3443"/>
         <source>&amp;Wrap Selection in Parentheses</source>
         <translation>&amp;Închide selecția în paranteze</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3437"/>
+        <location filename="../../gui/mainwindow.cpp" line="3445"/>
         <source>&amp;Constants</source>
         <translation>&amp;Constante</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3438"/>
+        <location filename="../../gui/mainwindow.cpp" line="3446"/>
         <source>F&amp;ull Screen Mode</source>
         <translation>M&amp;od ecran complet</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3439"/>
+        <location filename="../../gui/mainwindow.cpp" line="3447"/>
         <source>&amp;Functions</source>
         <translation>&amp;Funcții</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3440"/>
+        <location filename="../../gui/mainwindow.cpp" line="3448"/>
         <source>&amp;History</source>
         <translation>&amp;Istoric</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3450"/>
+        <location filename="../../gui/mainwindow.cpp" line="3458"/>
         <source>&amp;Status Bar</source>
         <translation>&amp;Bară de stare</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3453"/>
-        <location filename="../../gui/mainwindow.cpp" line="6057"/>
+        <location filename="../../gui/mainwindow.cpp" line="3461"/>
+        <location filename="../../gui/mainwindow.cpp" line="6089"/>
         <source>Bitfield</source>
         <translation>Câmp de biți</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3454"/>
+        <location filename="../../gui/mainwindow.cpp" line="3462"/>
         <source>Use&amp;r Functions</source>
         <translation>Funcții &amp;utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3457"/>
+        <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>&amp;Degree</source>
         <translation>&amp;Grad</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3458"/>
+        <location filename="../../gui/mainwindow.cpp" line="3466"/>
         <source>&amp;Radian</source>
         <translation>&amp;Radian</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3459"/>
+        <location filename="../../gui/mainwindow.cpp" line="3467"/>
         <source>&amp;Gradian</source>
         <translation>&amp;Gradian</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3466"/>
+        <location filename="../../gui/mainwindow.cpp" line="3474"/>
         <source>Automatic &amp;Completion</source>
         <translation>Completare &amp;automată</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3477"/>
+        <location filename="../../gui/mainwindow.cpp" line="3485"/>
         <source>Syntax &amp;Highlighting</source>
         <translation>E&amp;vidențiere sintaxă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3495"/>
+        <location filename="../../gui/mainwindow.cpp" line="3503"/>
         <source>&amp;Comma</source>
         <translation>&amp;Virgulă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3496"/>
+        <location filename="../../gui/mainwindow.cpp" line="3504"/>
         <source>&amp;System Default</source>
         <translation>&amp;Setare implicită de sistem</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3497"/>
+        <location filename="../../gui/mainwindow.cpp" line="3505"/>
         <source>&amp;Dot</source>
         <translation>&amp;Punct</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3498"/>
+        <location filename="../../gui/mainwindow.cpp" line="3506"/>
         <source>Dot &amp;And Comma</source>
         <translation>Punct &amp;și virgulă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3521"/>
+        <location filename="../../gui/mainwindow.cpp" line="3529"/>
         <source>&amp;Binary</source>
         <translation>&amp;Binar</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3518"/>
+        <location filename="../../gui/mainwindow.cpp" line="3526"/>
         <source>&amp;Engineering</source>
         <translation>&amp;Ingineresc</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3523"/>
+        <location filename="../../gui/mainwindow.cpp" line="3531"/>
         <source>&amp;Hexadecimal</source>
         <translation>&amp;Hexazecimal</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3522"/>
+        <location filename="../../gui/mainwindow.cpp" line="3530"/>
         <source>&amp;Octal</source>
         <translation>&amp;Octal</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3519"/>
+        <location filename="../../gui/mainwindow.cpp" line="3527"/>
         <source>&amp;Scientific</source>
         <translation>&amp;Științific</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3541"/>
+        <location filename="../../gui/mainwindow.cpp" line="3549"/>
         <source>User &amp;Manual</source>
         <translation>&amp;Manual de utilizare</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3549"/>
+        <location filename="../../gui/mainwindow.cpp" line="3557"/>
         <source>&amp;Donate</source>
         <translation>&amp;Donează</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6163"/>
+        <location filename="../../gui/mainwindow.cpp" line="6195"/>
         <source>Constants</source>
         <translation>Constante</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6193"/>
+        <location filename="../../gui/mainwindow.cpp" line="6225"/>
         <source>Functions</source>
         <translation>Funcții</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6216"/>
+        <location filename="../../gui/mainwindow.cpp" line="6248"/>
         <source>History</source>
         <translation>Istoric</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6286"/>
+        <location filename="../../gui/mainwindow.cpp" line="6318"/>
         <source>User Functions</source>
         <translation>Funcții utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6877"/>
+        <location filename="../../gui/mainwindow.cpp" line="6909"/>
         <source>Type an expression here</source>
         <translation>Introduce o expresie aici</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3537"/>
+        <location filename="../../gui/mainwindow.cpp" line="3545"/>
         <source>&amp;Font...</source>
         <translation>&amp;Font...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3539"/>
+        <location filename="../../gui/mainwindow.cpp" line="3547"/>
         <source>&amp;Language...</source>
         <translation>&amp;Limbă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3851"/>
+        <location filename="../../gui/mainwindow.cpp" line="3859"/>
         <source>&amp;Session</source>
         <translation>&amp;Sesiune</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3853"/>
+        <location filename="../../gui/mainwindow.cpp" line="3861"/>
         <source>&amp;Edit</source>
         <translation>&amp;Editează</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3854"/>
+        <location filename="../../gui/mainwindow.cpp" line="3862"/>
         <source>&amp;View</source>
         <translation>&amp;Vizualizare</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3857"/>
+        <location filename="../../gui/mainwindow.cpp" line="3865"/>
         <source>Se&amp;ttings</source>
         <translation>Se&amp;tări</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3863"/>
+        <location filename="../../gui/mainwindow.cpp" line="3871"/>
         <source>&amp;Decimal</source>
         <translation>&amp;Zecimal</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3855"/>
+        <location filename="../../gui/mainwindow.cpp" line="3863"/>
         <source>&amp;Keypad</source>
         <translation>&amp;Tastatură numerică</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3462"/>
+        <location filename="../../gui/mainwindow.cpp" line="3470"/>
         <source>Always on &amp;Top</source>
         <translation>Mereu &amp;deasupra</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3479"/>
+        <location filename="../../gui/mainwindow.cpp" line="3487"/>
         <source>Disabled</source>
         <translation>Dezactivat</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3480"/>
+        <location filename="../../gui/mainwindow.cpp" line="3488"/>
         <source>Small Space</source>
         <translation>Spațiu mic</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3481"/>
+        <location filename="../../gui/mainwindow.cpp" line="3489"/>
         <source>Medium Space</source>
         <translation>Spațiu mediu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3482"/>
+        <location filename="../../gui/mainwindow.cpp" line="3490"/>
         <source>Large Space</source>
         <translation>Spațiu mare</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3499"/>
+        <location filename="../../gui/mainwindow.cpp" line="3507"/>
         <source>&amp;0 Digits</source>
         <translation>&amp;0 zecimale</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3500"/>
+        <location filename="../../gui/mainwindow.cpp" line="3508"/>
         <source>&amp;15 Digits</source>
         <translation>&amp;15 zecimale</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3501"/>
+        <location filename="../../gui/mainwindow.cpp" line="3509"/>
         <source>&amp;2 Digits</source>
         <translation>&amp;2 zecimale</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3502"/>
+        <location filename="../../gui/mainwindow.cpp" line="3510"/>
         <source>&amp;3 Digits</source>
         <translation>&amp;3 zecimale</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3503"/>
+        <location filename="../../gui/mainwindow.cpp" line="3511"/>
         <source>&amp;50 Digits</source>
         <translation>&amp;50 zecimale</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3504"/>
+        <location filename="../../gui/mainwindow.cpp" line="3512"/>
         <source>&amp;8 Digits</source>
         <translation>&amp;8 zecimale</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3524"/>
+        <location filename="../../gui/mainwindow.cpp" line="3532"/>
         <source>&amp;Sexagesimal</source>
         <translation>&amp;Sexagesimal</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3542"/>
+        <location filename="../../gui/mainwindow.cpp" line="3550"/>
         <source>Context Help</source>
         <translation>Ajutor contextual</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3550"/>
+        <location filename="../../gui/mainwindow.cpp" line="3558"/>
         <source>About &amp;SpeedCrunch</source>
         <translation>Despre &amp;SpeedCrunch</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3874"/>
+        <location filename="../../gui/mainwindow.cpp" line="3882"/>
         <source>&amp;Help</source>
         <translation>&amp;Ajutor</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8706"/>
+        <location filename="../../gui/mainwindow.cpp" line="8738"/>
         <source>Load Session</source>
         <translation>Încărcare sesiune</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8539"/>
-        <location filename="../../gui/mainwindow.cpp" line="8545"/>
-        <location filename="../../gui/mainwindow.cpp" line="8553"/>
-        <location filename="../../gui/mainwindow.cpp" line="8559"/>
-        <location filename="../../gui/mainwindow.cpp" line="8575"/>
-        <location filename="../../gui/mainwindow.cpp" line="8581"/>
-        <location filename="../../gui/mainwindow.cpp" line="8632"/>
-        <location filename="../../gui/mainwindow.cpp" line="8638"/>
-        <location filename="../../gui/mainwindow.cpp" line="8738"/>
-        <location filename="../../gui/mainwindow.cpp" line="8815"/>
-        <location filename="../../gui/mainwindow.cpp" line="8837"/>
-        <location filename="../../gui/mainwindow.cpp" line="8877"/>
-        <location filename="../../gui/mainwindow.cpp" line="9506"/>
-        <location filename="../../gui/mainwindow.cpp" line="9526"/>
+        <location filename="../../gui/mainwindow.cpp" line="8571"/>
+        <location filename="../../gui/mainwindow.cpp" line="8577"/>
+        <location filename="../../gui/mainwindow.cpp" line="8585"/>
+        <location filename="../../gui/mainwindow.cpp" line="8591"/>
+        <location filename="../../gui/mainwindow.cpp" line="8607"/>
+        <location filename="../../gui/mainwindow.cpp" line="8613"/>
+        <location filename="../../gui/mainwindow.cpp" line="8664"/>
+        <location filename="../../gui/mainwindow.cpp" line="8670"/>
+        <location filename="../../gui/mainwindow.cpp" line="8770"/>
+        <location filename="../../gui/mainwindow.cpp" line="8847"/>
+        <location filename="../../gui/mainwindow.cpp" line="8869"/>
+        <location filename="../../gui/mainwindow.cpp" line="8909"/>
+        <location filename="../../gui/mainwindow.cpp" line="9538"/>
+        <location filename="../../gui/mainwindow.cpp" line="9558"/>
         <source>Error</source>
         <translation>Eroare</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8539"/>
-        <location filename="../../gui/mainwindow.cpp" line="8837"/>
+        <location filename="../../gui/mainwindow.cpp" line="8571"/>
+        <location filename="../../gui/mainwindow.cpp" line="8869"/>
         <source>Can&apos;t read from file %1</source>
         <translation>Nu se poate citi din fișierul %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8712"/>
+        <location filename="../../gui/mainwindow.cpp" line="8744"/>
         <source>Merge session being loaded with current session?
 If no, current variables and display will be cleared.</source>
         <translation>Îmbinați sesiunea încărcată cu sesiunea curentă?
 Dacă nu, variabilele curente și afișajul vor fi șterse.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8830"/>
+        <location filename="../../gui/mainwindow.cpp" line="8862"/>
         <source>All Files (*)</source>
         <translation>Toate fișierele (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4189"/>
-        <location filename="../../gui/mainwindow.cpp" line="8831"/>
+        <location filename="../../gui/mainwindow.cpp" line="4205"/>
+        <location filename="../../gui/mainwindow.cpp" line="8863"/>
         <source>Import Session</source>
         <translation>Importă sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8842"/>
+        <location filename="../../gui/mainwindow.cpp" line="8874"/>
         <source>Merge session being imported with current session?
 If no, current variables and display will be cleared.</source>
         <translation>Îmbinați sesiunea importată cu sesiunea curentă?
 Dacă nu, variabilele curente și afișajul vor fi șterse.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8877"/>
+        <location filename="../../gui/mainwindow.cpp" line="8909"/>
         <source>Ignore error?</source>
         <translation>Ignorați eroarea?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8794"/>
+        <location filename="../../gui/mainwindow.cpp" line="8826"/>
         <source>Save Session</source>
         <translation>Salvează sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="2139"/>
-        <location filename="../../gui/mainwindow.cpp" line="4196"/>
+        <location filename="../../gui/mainwindow.cpp" line="2147"/>
+        <location filename="../../gui/mainwindow.cpp" line="4212"/>
         <source>Close Session</source>
         <translation>Închide sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3324"/>
+        <location filename="../../gui/mainwindow.cpp" line="3332"/>
         <source>Angle Mode:</source>
         <translation>Mod unghi:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3325"/>
+        <location filename="../../gui/mainwindow.cpp" line="3333"/>
         <source>Notation:</source>
         <translation>Notație:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3326"/>
+        <location filename="../../gui/mainwindow.cpp" line="3334"/>
         <source>Precision:</source>
         <translation>Precizie:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3391"/>
+        <location filename="../../gui/mainwindow.cpp" line="3399"/>
         <source>Turn</source>
         <translation>Rotație</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3392"/>
+        <location filename="../../gui/mainwindow.cpp" line="3400"/>
         <source>Revolution</source>
         <translation>Revoluție</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3403"/>
+        <location filename="../../gui/mainwindow.cpp" line="3411"/>
         <source>Fixed-point decimal</source>
         <translation>Zecimal cu punct fix</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3406"/>
+        <location filename="../../gui/mainwindow.cpp" line="3414"/>
         <source>Rational</source>
         <translation>Rațional</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3407"/>
+        <location filename="../../gui/mainwindow.cpp" line="3415"/>
         <source>Automatic decimal</source>
         <translation>Zecimal automat</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3415"/>
-        <location filename="../../gui/mainwindow.cpp" line="12123"/>
+        <location filename="../../gui/mainwindow.cpp" line="3423"/>
+        <location filename="../../gui/mainwindow.cpp" line="12155"/>
         <source>Automatic</source>
         <translation>Automat</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3424"/>
+        <location filename="../../gui/mainwindow.cpp" line="3432"/>
         <source>User &amp;Definitions...</source>
         <translation>&amp;Definiții utilizator...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3442"/>
+        <location filename="../../gui/mainwindow.cpp" line="3450"/>
         <source>&amp;Basic</source>
         <translation>&amp;De bază</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3443"/>
+        <location filename="../../gui/mainwindow.cpp" line="3451"/>
         <source>&amp;Scientific (wide)</source>
         <translation>&amp;Științifică (lată)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3444"/>
+        <location filename="../../gui/mainwindow.cpp" line="3452"/>
         <source>Scientific (narrow)</source>
         <translation>Științifică (îngustă)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3445"/>
-        <location filename="../../gui/mainwindow.cpp" line="3505"/>
+        <location filename="../../gui/mainwindow.cpp" line="3453"/>
+        <location filename="../../gui/mainwindow.cpp" line="3513"/>
         <source>&amp;Custom...</source>
         <translation>&amp;Personalizat...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3451"/>
+        <location filename="../../gui/mainwindow.cpp" line="3459"/>
         <source>Main &amp;Menu</source>
         <translation>&amp;Meniu principal</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3452"/>
+        <location filename="../../gui/mainwindow.cpp" line="3460"/>
         <source>User &amp;Variables</source>
         <translation>&amp;Variabile utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3455"/>
+        <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>User &amp;Units</source>
         <translation>&amp;Unități utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3460"/>
+        <location filename="../../gui/mainwindow.cpp" line="3468"/>
         <source>&amp;Turn</source>
         <translation>&amp;Rotație</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3461"/>
+        <location filename="../../gui/mainwindow.cpp" line="3469"/>
         <source>&amp;Revolution</source>
         <translation>&amp;Revoluție</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3463"/>
+        <location filename="../../gui/mainwindow.cpp" line="3471"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
         <translation>Inserează automat „ans” la începerea cu un operator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3464"/>
-        <location filename="../../gui/mainwindow.cpp" line="3465"/>
+        <location filename="../../gui/mainwindow.cpp" line="3472"/>
+        <location filename="../../gui/mainwindow.cpp" line="3473"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
         <translation>Dacă o expresie nouă începe cu +, -, * sau /, SpeedCrunch inserează mai întâi „ans”.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3467"/>
+        <location filename="../../gui/mainwindow.cpp" line="3475"/>
         <source>Built-in &amp;functions</source>
         <translation>&amp;Funcții încorporate</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3468"/>
+        <location filename="../../gui/mainwindow.cpp" line="3476"/>
         <source>Built-in &amp;variables</source>
         <translation>&amp;Variabile încorporate</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3469"/>
+        <location filename="../../gui/mainwindow.cpp" line="3477"/>
         <source>&amp;Units</source>
         <translation>&amp;Unități</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3470"/>
+        <location filename="../../gui/mainwindow.cpp" line="3478"/>
         <source>User &amp;functions</source>
         <translation>&amp;Funcții utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3471"/>
+        <location filename="../../gui/mainwindow.cpp" line="3479"/>
         <source>User &amp;variables</source>
         <translation>&amp;Variabile utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3472"/>
+        <location filename="../../gui/mainwindow.cpp" line="3480"/>
         <source>Show Empty History &amp;Hint</source>
         <translation>Afișează &amp;indiciul pentru istoric gol</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3473"/>
-        <location filename="../../gui/mainwindow.cpp" line="3474"/>
+        <location filename="../../gui/mainwindow.cpp" line="3481"/>
+        <location filename="../../gui/mainwindow.cpp" line="3482"/>
         <source>When history is empty, show a hint in the status area.</source>
         <translation>Când istoricul este gol, afișează un indiciu în zona de stare.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3475"/>
+        <location filename="../../gui/mainwindow.cpp" line="3483"/>
         <source>Show Live Result &amp;Preview</source>
         <translation>Afișează &amp;previzualizarea live a rezultatului</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3476"/>
+        <location filename="../../gui/mainwindow.cpp" line="3484"/>
         <source>Save &amp;Window Position on Exit</source>
         <translation>Salvează poziția &amp;ferestrei la ieșire</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3478"/>
+        <location filename="../../gui/mainwindow.cpp" line="3486"/>
         <source>Hover Highlighting</source>
         <translation>Evidențiere la trecerea cursorului</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3483"/>
+        <location filename="../../gui/mainwindow.cpp" line="3491"/>
         <source>Group Integer Part Only</source>
         <translation>Grupează doar partea întreagă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3484"/>
+        <location filename="../../gui/mainwindow.cpp" line="3492"/>
         <source>Keep Entered Expression After Evaluate</source>
         <translation>Păstrează expresia introdusă după evaluare</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3485"/>
+        <location filename="../../gui/mainwindow.cpp" line="3493"/>
         <source>Number Format...</source>
         <translation>Format număr...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3486"/>
+        <location filename="../../gui/mainwindow.cpp" line="3494"/>
         <source>Notation &amp;&amp; Precision...</source>
         <translation>Notație și precizie...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3487"/>
-        <location filename="../../gui/mainwindow.cpp" line="3488"/>
+        <location filename="../../gui/mainwindow.cpp" line="3495"/>
+        <location filename="../../gui/mainwindow.cpp" line="3496"/>
         <source>After pressing Enter, keep the entered expression selected in the editor.</source>
         <translation>După apăsarea Enter, păstrează expresia introdusă selectată în editor.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3489"/>
+        <location filename="../../gui/mainwindow.cpp" line="3497"/>
         <source>Never</source>
         <translation>Niciodată</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3490"/>
+        <location filename="../../gui/mainwindow.cpp" line="3498"/>
         <source>Always</source>
         <translation>Întotdeauna</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3491"/>
+        <location filename="../../gui/mainwindow.cpp" line="3499"/>
         <source>Only for Single-Line Expressions</source>
         <translation>Doar pentru expresii pe o singură linie</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3492"/>
+        <location filename="../../gui/mainwindow.cpp" line="3500"/>
         <source>Automatically Copy New Results to Clipboard</source>
         <translation>Copiază automat rezultatele noi în clipboard</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3493"/>
+        <location filename="../../gui/mainwindow.cpp" line="3501"/>
         <source>Simplify Displayed Expressions</source>
         <translation>Simplifică expresiile afișate</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3494"/>
+        <location filename="../../gui/mainwindow.cpp" line="3502"/>
         <source>History Size &amp;Limit...</source>
         <translation>&amp;Limită dimensiune istoric...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3507"/>
+        <location filename="../../gui/mainwindow.cpp" line="3515"/>
         <source>Nearest, Half &amp;Away (round)</source>
         <translation>Cel mai apropiat, jumătate &amp;departe (round)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3509"/>
+        <location filename="../../gui/mainwindow.cpp" line="3517"/>
         <source>Nearest, Half &amp;Even (roundeven)</source>
         <translation>Cel mai apropiat, jumătate &amp;par (roundeven)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3510"/>
+        <location filename="../../gui/mainwindow.cpp" line="3518"/>
         <source>Toward &amp;Zero (trunc)</source>
         <translation>Spre &amp;zero (trunc)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3512"/>
+        <location filename="../../gui/mainwindow.cpp" line="3520"/>
         <source>Toward +&amp;∞ (ceil)</source>
         <translation>Spre +&amp;∞ (ceil)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3514"/>
+        <location filename="../../gui/mainwindow.cpp" line="3522"/>
         <source>Toward −&amp;∞ (floor)</source>
         <translation>Spre −&amp;∞ (floor)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3517"/>
+        <location filename="../../gui/mainwindow.cpp" line="3525"/>
         <source>&amp;Fixed-Point</source>
         <translation>Punct &amp;fix</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3520"/>
+        <location filename="../../gui/mainwindow.cpp" line="3528"/>
         <source>&amp;Rational</source>
         <translation>&amp;Rațional</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3526"/>
+        <location filename="../../gui/mainwindow.cpp" line="3534"/>
         <source>&amp;Exponential (m·s⁻¹)</source>
         <translation>&amp;Exponențial (m·s⁻¹)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3528"/>
+        <location filename="../../gui/mainwindow.cpp" line="3536"/>
         <source>&amp;Fractional (m/s)</source>
         <translation>&amp;Fracționar (m/s)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3529"/>
+        <location filename="../../gui/mainwindow.cpp" line="3537"/>
         <source>&amp;Rectangular (a + bi)</source>
         <translation>&amp;Dreptunghiulară (a + bi)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3530"/>
+        <location filename="../../gui/mainwindow.cpp" line="3538"/>
         <source>Exponential (reⁱᶿ)</source>
         <translation>Exponențial (reⁱᶿ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3532"/>
+        <location filename="../../gui/mainwindow.cpp" line="3540"/>
         <source>Trigonometric (r(cos θ + i·sin θ))</source>
         <translation>Trigonometrică (r(cos θ + i·sin θ))</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3534"/>
+        <location filename="../../gui/mainwindow.cpp" line="3542"/>
         <source>Phasor (r∠θ)</source>
         <translation>Fazor (r∠θ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3538"/>
+        <location filename="../../gui/mainwindow.cpp" line="3546"/>
         <source>&amp;Theme...</source>
         <translation>&amp;Temă...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3543"/>
+        <location filename="../../gui/mainwindow.cpp" line="3551"/>
         <source>Check for &amp;Updates</source>
         <translation>Verifică &amp;actualizări</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3544"/>
+        <location filename="../../gui/mainwindow.cpp" line="3552"/>
         <source>Issue Tracker</source>
         <translation>Sistem de urmărire probleme</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3545"/>
+        <location filename="../../gui/mainwindow.cpp" line="3553"/>
         <source>Google Group</source>
         <translation>Grup Google</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3546"/>
+        <location filename="../../gui/mainwindow.cpp" line="3554"/>
         <source>Facebook &amp;Group</source>
         <translation>&amp;Grup Facebook</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3547"/>
+        <location filename="../../gui/mainwindow.cpp" line="3555"/>
         <source>&amp;Blogspot</source>
         <translation>&amp;Blogspot</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3548"/>
+        <location filename="../../gui/mainwindow.cpp" line="3556"/>
         <source>Source Code</source>
         <translation>Cod sursă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3856"/>
+        <location filename="../../gui/mainwindow.cpp" line="3864"/>
         <source>&amp;Zoom</source>
         <translation>&amp;Zoom</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3858"/>
+        <location filename="../../gui/mainwindow.cpp" line="3866"/>
         <source>&amp;Results</source>
         <translation>&amp;Rezultate</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3859"/>
+        <location filename="../../gui/mainwindow.cpp" line="3867"/>
         <source>&amp;Symbols</source>
         <translation>&amp;Simboluri</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3860"/>
+        <location filename="../../gui/mainwindow.cpp" line="3868"/>
         <source>Unit Notation</source>
         <translation>Notație pentru unități</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3861"/>
+        <location filename="../../gui/mainwindow.cpp" line="3869"/>
         <source>Rounding Mode</source>
         <translation>Mod de rotunjire</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3862"/>
+        <location filename="../../gui/mainwindow.cpp" line="3870"/>
         <source>&amp;Notation</source>
         <translation>&amp;Notație</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3865"/>
+        <location filename="../../gui/mainwindow.cpp" line="3873"/>
         <source>&amp;Angle Mode</source>
         <translation>Mod &amp;unghi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3866"/>
+        <location filename="../../gui/mainwindow.cpp" line="3874"/>
         <source>Complex &amp;Numbers</source>
         <translation>Numere &amp;complexe</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3867"/>
+        <location filename="../../gui/mainwindow.cpp" line="3875"/>
         <source>&amp;Form</source>
         <translation>&amp;Formă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3868"/>
+        <location filename="../../gui/mainwindow.cpp" line="3876"/>
         <source>&amp;Imaginary Unit</source>
         <translation>Unitate &amp;imaginară</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3869"/>
+        <location filename="../../gui/mainwindow.cpp" line="3877"/>
         <source>&amp;Window</source>
         <translation>&amp;Fereastră</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3870"/>
+        <location filename="../../gui/mainwindow.cpp" line="3878"/>
         <source>&amp;Editing</source>
         <translation>&amp;Editare</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3871"/>
+        <location filename="../../gui/mainwindow.cpp" line="3879"/>
         <source>A&amp;utocomplete</source>
         <translation>Completare a&amp;utomată</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3872"/>
+        <location filename="../../gui/mainwindow.cpp" line="3880"/>
         <source>Up/Down Arrow History</source>
         <translation>Istoric cu săgețile sus/jos</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3873"/>
+        <location filename="../../gui/mainwindow.cpp" line="3881"/>
         <source>&amp;Appearance</source>
         <translation>&amp;Aspect</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3880"/>
+        <location filename="../../gui/mainwindow.cpp" line="3888"/>
         <source>&amp;Disabled</source>
         <translation>&amp;Dezactivat</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3882"/>
+        <location filename="../../gui/mainwindow.cpp" line="3890"/>
         <source>&amp;Disable</source>
         <translation>&amp;Dezactivează</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4046"/>
+        <location filename="../../gui/mainwindow.cpp" line="4054"/>
         <source>Close preview</source>
         <translation>Închide previzualizarea</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4181"/>
+        <location filename="../../gui/mainwindow.cpp" line="4197"/>
         <source>New Session</source>
         <translation>Sesiune nouă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4182"/>
-        <location filename="../../gui/mainwindow.cpp" line="7560"/>
+        <location filename="../../gui/mainwindow.cpp" line="4198"/>
+        <location filename="../../gui/mainwindow.cpp" line="7592"/>
         <source>Open Session</source>
         <translation>Deschide sesiune</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4184"/>
+        <location filename="../../gui/mainwindow.cpp" line="4200"/>
         <source>Split Left</source>
         <translation>Împarte la stânga</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4185"/>
+        <location filename="../../gui/mainwindow.cpp" line="4201"/>
         <source>Split Right</source>
         <translation>Împarte la dreapta</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4186"/>
+        <location filename="../../gui/mainwindow.cpp" line="4202"/>
         <source>Split Up</source>
         <translation>Împarte în sus</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4187"/>
+        <location filename="../../gui/mainwindow.cpp" line="4203"/>
         <source>Split Down</source>
         <translation>Împarte în jos</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4190"/>
+        <location filename="../../gui/mainwindow.cpp" line="4206"/>
         <source>Export Session</source>
         <translation>Exportă sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4192"/>
-        <location filename="../../gui/mainwindow.cpp" line="7641"/>
-        <location filename="../../gui/mainwindow.cpp" line="7652"/>
-        <location filename="../../gui/mainwindow.cpp" line="7665"/>
-        <location filename="../../gui/mainwindow.cpp" line="7675"/>
+        <location filename="../../gui/mainwindow.cpp" line="4208"/>
+        <location filename="../../gui/mainwindow.cpp" line="7673"/>
+        <location filename="../../gui/mainwindow.cpp" line="7684"/>
+        <location filename="../../gui/mainwindow.cpp" line="7697"/>
+        <location filename="../../gui/mainwindow.cpp" line="7707"/>
         <source>Duplicate Session</source>
         <translation>Duplică sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4193"/>
-        <location filename="../../gui/mainwindow.cpp" line="7704"/>
-        <location filename="../../gui/mainwindow.cpp" line="7718"/>
-        <location filename="../../gui/mainwindow.cpp" line="7729"/>
+        <location filename="../../gui/mainwindow.cpp" line="4209"/>
+        <location filename="../../gui/mainwindow.cpp" line="7736"/>
+        <location filename="../../gui/mainwindow.cpp" line="7750"/>
+        <location filename="../../gui/mainwindow.cpp" line="7761"/>
         <source>Rename Session</source>
         <translation>Redenumește sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4194"/>
+        <location filename="../../gui/mainwindow.cpp" line="4210"/>
         <source>Clear Session</source>
         <translation>Golește sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4195"/>
-        <location filename="../../gui/mainwindow.cpp" line="7999"/>
+        <location filename="../../gui/mainwindow.cpp" line="4211"/>
+        <location filename="../../gui/mainwindow.cpp" line="8031"/>
         <source>Delete Session</source>
         <translation>Șterge sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4197"/>
+        <location filename="../../gui/mainwindow.cpp" line="4213"/>
         <source>Close Pane</source>
         <translation>Închide panoul</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6249"/>
+        <location filename="../../gui/mainwindow.cpp" line="6281"/>
         <source>User Variables</source>
         <translation>Variabile utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6323"/>
+        <location filename="../../gui/mainwindow.cpp" line="6355"/>
         <source>User Units</source>
         <translation>Unități utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7465"/>
-        <location filename="../../gui/mainwindow.cpp" line="7496"/>
+        <location filename="../../gui/mainwindow.cpp" line="7497"/>
+        <location filename="../../gui/mainwindow.cpp" line="7528"/>
         <source>Clear History</source>
         <translation>Șterge istoricul</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7466"/>
-        <location filename="../../gui/mainwindow.cpp" line="7497"/>
+        <location filename="../../gui/mainwindow.cpp" line="7498"/>
+        <location filename="../../gui/mainwindow.cpp" line="7529"/>
         <source>Are you sure you want to clear the calculation history?</source>
         <translation>Sigur doriți să ștergeți istoricul calculelor?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7642"/>
-        <location filename="../../gui/mainwindow.cpp" line="7705"/>
+        <location filename="../../gui/mainwindow.cpp" line="7674"/>
+        <location filename="../../gui/mainwindow.cpp" line="7737"/>
         <source>Session name:</source>
         <translation>Numele sesiunii:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7653"/>
-        <location filename="../../gui/mainwindow.cpp" line="7719"/>
+        <location filename="../../gui/mainwindow.cpp" line="7685"/>
+        <location filename="../../gui/mainwindow.cpp" line="7751"/>
         <source>A session named %1 already exists.</source>
         <translation>Există deja o sesiune numită %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7666"/>
+        <location filename="../../gui/mainwindow.cpp" line="7698"/>
         <source>Could not create session file %1.</source>
         <translation>Nu s-a putut crea fișierul sesiunii %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7676"/>
+        <location filename="../../gui/mainwindow.cpp" line="7708"/>
         <source>Could not write session file %1.</source>
         <translation>Nu s-a putut scrie fișierul sesiunii %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7730"/>
+        <location filename="../../gui/mainwindow.cpp" line="7762"/>
         <source>Could not rename session file %1.</source>
         <translation>Nu s-a putut redenumi fișierul sesiunii %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8000"/>
+        <location filename="../../gui/mainwindow.cpp" line="8032"/>
         <source>Are you sure you want to delete this session?</source>
         <translation>Sigur doriți să ștergeți această sesiune?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8175"/>
+        <location filename="../../gui/mainwindow.cpp" line="8207"/>
         <source>Custom Precision</source>
         <translation>Precizie personalizată</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8176"/>
+        <location filename="../../gui/mainwindow.cpp" line="8208"/>
         <source>Fractional digits:</source>
         <translation>Cifre fracționare:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8193"/>
+        <location filename="../../gui/mainwindow.cpp" line="8225"/>
         <source>Theme</source>
         <translation>Temă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8202"/>
+        <location filename="../../gui/mainwindow.cpp" line="8234"/>
         <source>Light Themes</source>
         <translation>Teme luminoase</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8209"/>
+        <location filename="../../gui/mainwindow.cpp" line="8241"/>
         <source>Dark Themes</source>
         <translation>Teme întunecate</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8217"/>
+        <location filename="../../gui/mainwindow.cpp" line="8249"/>
         <source>Preview</source>
         <translation>Previzualizare</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8279"/>
+        <location filename="../../gui/mainwindow.cpp" line="8311"/>
         <source>Colors</source>
         <translation>Culori</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8455"/>
+        <location filename="../../gui/mainwindow.cpp" line="8487"/>
         <source>Select color for %1</source>
         <translation>Selectează culoarea pentru %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8500"/>
+        <location filename="../../gui/mainwindow.cpp" line="8532"/>
         <source>Import...</source>
         <translation>Importă...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8501"/>
+        <location filename="../../gui/mainwindow.cpp" line="8533"/>
         <source>Export...</source>
         <translation>Exportă...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8533"/>
+        <location filename="../../gui/mainwindow.cpp" line="8565"/>
         <source>Import Theme</source>
         <translation>Importă tema</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8534"/>
-        <location filename="../../gui/mainwindow.cpp" line="8623"/>
+        <location filename="../../gui/mainwindow.cpp" line="8566"/>
+        <location filename="../../gui/mainwindow.cpp" line="8655"/>
         <source>Theme file (*.json);;All files (*)</source>
         <translation>Fișier temă (*.json);;Toate fișierele (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8545"/>
+        <location filename="../../gui/mainwindow.cpp" line="8577"/>
         <source>Invalid theme file.</source>
         <translation>Fișier temă nevalid.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8554"/>
+        <location filename="../../gui/mainwindow.cpp" line="8586"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>Nu se poate importa tema „%1” deoarece intră în conflict cu o temă încorporată.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8559"/>
+        <location filename="../../gui/mainwindow.cpp" line="8591"/>
         <source>Can&apos;t find a writable theme folder.</source>
         <translation>Nu se poate găsi un folder de teme inscriptibil.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8566"/>
+        <location filename="../../gui/mainwindow.cpp" line="8598"/>
         <source>Overwrite Theme</source>
         <translation>Suprascrie tema</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8567"/>
+        <location filename="../../gui/mainwindow.cpp" line="8599"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
         <translation>Există deja o temă personalizată numită „%1”. Doriți să o suprascrieți?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8575"/>
+        <location filename="../../gui/mainwindow.cpp" line="8607"/>
         <source>Can&apos;t overwrite theme file %1</source>
         <translation>Nu se poate suprascrie fișierul temei %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8581"/>
+        <location filename="../../gui/mainwindow.cpp" line="8613"/>
         <source>Can&apos;t copy theme file to %1</source>
         <translation>Nu se poate copia fișierul temei în %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8622"/>
+        <location filename="../../gui/mainwindow.cpp" line="8654"/>
         <source>Export Theme</source>
         <translation>Exportă tema</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8633"/>
+        <location filename="../../gui/mainwindow.cpp" line="8665"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>Nu se poate exporta tema ca „%1” deoarece intră în conflict cu o temă încorporată.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8638"/>
-        <location filename="../../gui/mainwindow.cpp" line="8815"/>
-        <location filename="../../gui/mainwindow.cpp" line="9506"/>
-        <location filename="../../gui/mainwindow.cpp" line="9526"/>
+        <location filename="../../gui/mainwindow.cpp" line="8670"/>
+        <location filename="../../gui/mainwindow.cpp" line="8847"/>
+        <location filename="../../gui/mainwindow.cpp" line="9538"/>
+        <location filename="../../gui/mainwindow.cpp" line="9558"/>
         <source>Can&apos;t write to file %1</source>
         <translation>Nu se poate scrie în fișierul %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8739"/>
+        <location filename="../../gui/mainwindow.cpp" line="8771"/>
         <source>Can&apos;t read the selected session file.</source>
         <translation>Nu se poate citi fișierul de sesiune selectat.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8917"/>
+        <location filename="../../gui/mainwindow.cpp" line="8949"/>
         <source>Global User Variable</source>
         <translation>Variabilă globală utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8918"/>
+        <location filename="../../gui/mainwindow.cpp" line="8950"/>
         <source>Global User Function</source>
         <translation>Funcție globală utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8919"/>
+        <location filename="../../gui/mainwindow.cpp" line="8951"/>
         <source>Global User Unit</source>
         <translation>Unitate globală utilizator</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9289"/>
+        <location filename="../../gui/mainwindow.cpp" line="9321"/>
         <source>History Size Limit</source>
         <translation>Limită dimensiune istoric</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9290"/>
+        <location filename="../../gui/mainwindow.cpp" line="9322"/>
         <source>Maximum number of history entries for this session (0 = unlimited):</source>
         <translation>Numărul maxim de intrări de istoric pentru această sesiune (0 = nelimitat):</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9519"/>
+        <location filename="../../gui/mainwindow.cpp" line="9551"/>
         <source>Text file (*.txt);;Any file (*.*)</source>
         <translation>Fișier text (*.txt);;Orice fișier (*.*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9556"/>
+        <location filename="../../gui/mainwindow.cpp" line="9588"/>
         <source>Display font</source>
         <translation>Font de afișare</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11320"/>
-        <location filename="../../gui/mainwindow.cpp" line="11493"/>
+        <location filename="../../gui/mainwindow.cpp" line="11352"/>
+        <location filename="../../gui/mainwindow.cpp" line="11525"/>
         <source>Could not recalculate from calculation %1: %2</source>
         <translation>Nu s-a putut recalcula de la calculul %1: %2</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11409"/>
+        <location filename="../../gui/mainwindow.cpp" line="11441"/>
         <source>History Size Limit Reached</source>
         <translation>Limita dimensiunii istoricului a fost atinsă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11410"/>
+        <location filename="../../gui/mainwindow.cpp" line="11442"/>
         <source>This calculation fills the last available history slot. Future calculations will remove the oldest calculation from history. You can increase the limit from Session &gt; History Size Limit.</source>
         <translation>Acest calcul ocupă ultimul loc disponibil din istoric. Calculele viitoare vor elimina cel mai vechi calcul din istoric. Puteți mări limita din Sesiune &gt; Limită dimensiune istoric.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11433"/>
+        <location filename="../../gui/mainwindow.cpp" line="11465"/>
         <source>Editing calculation. Press Esc twice to cancel.</source>
         <translation>Se editează calculul. Apăsați Esc de două ori pentru anulare.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11474"/>
+        <location filename="../../gui/mainwindow.cpp" line="11506"/>
         <source>Calculation Settings</source>
         <translation>Setări calcul</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11550"/>
+        <location filename="../../gui/mainwindow.cpp" line="11582"/>
         <source>Invalid recalculation start index</source>
         <translation>Index de pornire recalculare nevalid</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12097"/>
+        <location filename="../../gui/mainwindow.cpp" line="12129"/>
         <source>System Default</source>
         <translation>Setare implicită de sistem</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12101"/>
+        <location filename="../../gui/mainwindow.cpp" line="12133"/>
         <source>Language</source>
         <translation>Limbă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12101"/>
+        <location filename="../../gui/mainwindow.cpp" line="12133"/>
         <source>Select the language:</source>
         <translation>Selectați limba:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12131"/>
+        <location filename="../../gui/mainwindow.cpp" line="12163"/>
         <source>Custom</source>
         <translation>Personalizat</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12143"/>
+        <location filename="../../gui/mainwindow.cpp" line="12175"/>
         <source>Decimal places:</source>
         <translation>Zecimale:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3515"/>
-        <location filename="../../gui/mainwindow.cpp" line="3516"/>
+        <location filename="../../gui/mainwindow.cpp" line="3523"/>
+        <location filename="../../gui/mainwindow.cpp" line="3524"/>
         <source>&amp;Automatic</source>
         <translation>&amp;Automat</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3864"/>
+        <location filename="../../gui/mainwindow.cpp" line="3872"/>
         <source>&amp;Precision</source>
         <translation>&amp;Precizie</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3422"/>
+        <location filename="../../gui/mainwindow.cpp" line="3430"/>
         <source>Plain &amp;text</source>
         <translation>&amp;Text simplu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3449"/>
+        <location filename="../../gui/mainwindow.cpp" line="3457"/>
         <source>Formula &amp;Book</source>
         <translation>Carte de &amp;formule</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3852"/>
+        <location filename="../../gui/mainwindow.cpp" line="3860"/>
         <source>&amp;Export</source>
         <translation>&amp;Exportă</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8705"/>
-        <location filename="../../gui/mainwindow.cpp" line="8789"/>
+        <location filename="../../gui/mainwindow.cpp" line="8737"/>
+        <location filename="../../gui/mainwindow.cpp" line="8821"/>
         <source>SpeedCrunch Sessions (*.json);;All Files (*)</source>
         <translation>Sesiuni SpeedCrunch (*.json);;Toate fișierele (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8717"/>
-        <location filename="../../gui/mainwindow.cpp" line="8848"/>
+        <location filename="../../gui/mainwindow.cpp" line="8749"/>
+        <location filename="../../gui/mainwindow.cpp" line="8880"/>
         <source>Merge?</source>
         <translation>Îmbinare?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9498"/>
+        <location filename="../../gui/mainwindow.cpp" line="9530"/>
         <source>Export session as HTML</source>
         <translation>Exportă sesiune în HTML</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9499"/>
+        <location filename="../../gui/mainwindow.cpp" line="9531"/>
         <source>HTML file (*.html)</source>
         <translation>Fișier HTML (*.html)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9518"/>
+        <location filename="../../gui/mainwindow.cpp" line="9550"/>
         <source>Export session as plain text</source>
         <translation>Exportă sesiune în text simplu</translation>
     </message>
@@ -5924,142 +5946,144 @@ Dacă nu, variabilele curente și afișajul vor fi șterse.</translation>
 <context>
     <name>ResultDisplay</name>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="466"/>
+        <location filename="../../gui/resultdisplay.cpp" line="563"/>
+        <location filename="../../gui/resultdisplay.cpp" line="569"/>
+        <location filename="../../gui/resultdisplay.cpp" line="573"/>
         <source>Scroll to bottom</source>
         <translation>Derulează la sfârșit</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1103"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1408"/>
         <source>Copy Expression</source>
         <translation>Copiază expresia</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1110"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1415"/>
         <source>Copy Result</source>
         <translation>Copiază rezultatul</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1126"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1431"/>
         <source>Edit Expression</source>
         <translation>Editează expresia</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1130"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1435"/>
         <source>Change Settings</source>
         <translation>Schimbă setările</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1134"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1439"/>
         <source>Remove Calculation</source>
         <translation>Elimină calculul</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1139"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1444"/>
         <source>Remove All Calculations Above</source>
         <translation>Elimină toate calculele de deasupra</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1143"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1448"/>
         <source>Remove All Calculations Below</source>
         <translation>Elimină toate calculele de dedesubt</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1150"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1455"/>
         <source>New Session</source>
         <translation>Sesiune nouă</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1154"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1459"/>
         <source>Open Session</source>
         <translation>Deschide sesiune</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1159"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1464"/>
         <source>Split Left</source>
         <translation>Împarte la stânga</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1163"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1468"/>
         <source>Split Right</source>
         <translation>Împarte la dreapta</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1167"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1472"/>
         <source>Split Up</source>
         <translation>Împarte în sus</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1171"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1476"/>
         <source>Split Down</source>
         <translation>Împarte în jos</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1176"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1481"/>
         <source>Import Session</source>
         <translation>Importă sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1177"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1482"/>
         <source>Export Session</source>
         <translation>Exportă sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1179"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1484"/>
         <source>Duplicate Session</source>
         <translation>Duplică sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1183"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1488"/>
         <source>Rename Session</source>
         <translation>Redenumește sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1187"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1492"/>
         <source>Clear Session</source>
         <translation>Golește sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1191"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1496"/>
         <source>Delete Session</source>
         <translation>Șterge sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1195"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1500"/>
         <source>Close Session</source>
         <translation>Închide sesiunea</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1199"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1504"/>
         <source>Close Pane</source>
         <translation>Închide panoul</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1207"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1512"/>
         <source>Main Menu</source>
         <translation>Meniu principal</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1333"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1636"/>
         <source>Cancel editing</source>
         <translation>Anulează editarea</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1389"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1683"/>
         <source>Copy result</source>
         <translation>Copiază rezultatul</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1391"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1684"/>
         <source>Edit expression</source>
         <translation>Editează expresia</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1393"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1685"/>
         <source>Change settings</source>
         <translation>Schimbă setările</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1395"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1686"/>
         <source>Remove calculation</source>
         <translation>Elimină calculul</translation>
     </message>

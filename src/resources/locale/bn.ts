@@ -56,6 +56,29 @@
     </message>
 </context>
 <context>
+    <name>BitFieldWidget</name>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="745"/>
+        <source>Reset bits to zero</source>
+        <translation>বিটগুলো শূন্যে রিসেট করুন</translation>
+    </message>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="747"/>
+        <source>Invert bits</source>
+        <translation>বিটগুলো উল্টে দিন</translation>
+    </message>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="749"/>
+        <source>Shift bits left</source>
+        <translation>বিটগুলো বামে সরান</translation>
+    </message>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="751"/>
+        <source>Shift bits right</source>
+        <translation>বিটগুলো ডানে সরান</translation>
+    </message>
+</context>
+<context>
     <name>Book</name>
     <message>
         <location filename="../../core/book.cpp" line="53"/>
@@ -391,9 +414,9 @@
 <context>
     <name>ConstantCompletion</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="4626"/>
-        <location filename="../../gui/editor.cpp" line="4636"/>
-        <location filename="../../gui/editor.cpp" line="4756"/>
+        <location filename="../../gui/editor.cpp" line="4628"/>
+        <location filename="../../gui/editor.cpp" line="4638"/>
+        <location filename="../../gui/editor.cpp" line="4758"/>
         <source>All</source>
         <translation>সব</translation>
     </message>
@@ -2312,7 +2335,6 @@
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="544"/>
-        <location filename="../../gui/constantswidget.cpp" line="42"/>
         <source>Euler&apos;s number (e)</source>
         <translation>অয়লার&apos;s number (e)</translation>
     </message>
@@ -2525,47 +2547,47 @@
 <context>
     <name>ConstantsWidget</name>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="285"/>
+        <location filename="../../gui/constantswidget.cpp" line="293"/>
         <source>Domain</source>
         <translation>ক্ষেত্র</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="286"/>
+        <location filename="../../gui/constantswidget.cpp" line="294"/>
         <source>Subdomain</source>
         <translation>উপক্ষেত্র</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="287"/>
+        <location filename="../../gui/constantswidget.cpp" line="295"/>
         <source>Search</source>
         <translation>অনুসন্ধান</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="288"/>
+        <location filename="../../gui/constantswidget.cpp" line="296"/>
         <source>No match found</source>
         <translation>কোনও মিল পাওয়া যায়নি</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="291"/>
+        <location filename="../../gui/constantswidget.cpp" line="299"/>
         <source>Name</source>
         <translation>নাম</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="292"/>
+        <location filename="../../gui/constantswidget.cpp" line="300"/>
         <source>Value</source>
         <translation>মান</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="293"/>
+        <location filename="../../gui/constantswidget.cpp" line="301"/>
         <source>Unit</source>
         <translation>একক</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="338"/>
-        <location filename="../../gui/constantswidget.cpp" line="340"/>
-        <location filename="../../gui/constantswidget.cpp" line="419"/>
-        <location filename="../../gui/constantswidget.cpp" line="459"/>
-        <location filename="../../gui/constantswidget.cpp" line="460"/>
-        <location filename="../../gui/constantswidget.cpp" line="469"/>
+        <location filename="../../gui/constantswidget.cpp" line="346"/>
+        <location filename="../../gui/constantswidget.cpp" line="348"/>
+        <location filename="../../gui/constantswidget.cpp" line="427"/>
+        <location filename="../../gui/constantswidget.cpp" line="467"/>
+        <location filename="../../gui/constantswidget.cpp" line="468"/>
+        <location filename="../../gui/constantswidget.cpp" line="477"/>
         <source>All</source>
         <translation>সব</translation>
     </message>
@@ -2641,45 +2663,45 @@
 <context>
     <name>Editor</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="1901"/>
+        <location filename="../../gui/editor.cpp" line="1903"/>
         <source>Unit</source>
         <translation>একক</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1905"/>
+        <location filename="../../gui/editor.cpp" line="1907"/>
         <source>User unit</source>
         <translation>ব্যবহারকারী একক</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1960"/>
+        <location filename="../../gui/editor.cpp" line="1962"/>
         <source>User function</source>
         <translation>ব্যবহারকারী ফাংশন</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2087"/>
+        <location filename="../../gui/editor.cpp" line="2089"/>
         <source>Argument</source>
         <translation>আর্গুমেন্ট</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2263"/>
-        <location filename="../../gui/editor.cpp" line="2297"/>
+        <location filename="../../gui/editor.cpp" line="2265"/>
+        <location filename="../../gui/editor.cpp" line="2299"/>
         <source>Current result:&lt;br/&gt;%1</source>
         <translation>বর্তমান ফলাফল:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2369"/>
-        <location filename="../../gui/editor.cpp" line="2397"/>
+        <location filename="../../gui/editor.cpp" line="2371"/>
+        <location filename="../../gui/editor.cpp" line="2399"/>
         <source>Selection result:&lt;br/&gt;%1</source>
         <translation>নির্বাচনের ফলাফল:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2363"/>
-        <location filename="../../gui/editor.cpp" line="2391"/>
+        <location filename="../../gui/editor.cpp" line="2365"/>
+        <location filename="../../gui/editor.cpp" line="2393"/>
         <source>Selection result: n/a</source>
         <translation>নির্বাচিত ফলাফল: প্রযোজ্য নয়</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2404"/>
+        <location filename="../../gui/editor.cpp" line="2406"/>
         <source>Selection result: %1</source>
         <translation>নির্বাচিত ফলাফল: %1</translation>
     </message>
@@ -4358,33 +4380,33 @@
 <context>
     <name>FunctionsWidget</name>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="58"/>
+        <location filename="../../gui/functionswidget.cpp" line="175"/>
         <source>Domain</source>
         <translation>ক্ষেত্র</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="134"/>
-        <location filename="../../gui/functionswidget.cpp" line="176"/>
+        <location filename="../../gui/functionswidget.cpp" line="135"/>
+        <location filename="../../gui/functionswidget.cpp" line="178"/>
         <source>All</source>
         <translation>সব</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="168"/>
+        <location filename="../../gui/functionswidget.cpp" line="169"/>
         <source>Identifier</source>
         <translation>সনাক্তকারী</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="169"/>
+        <location filename="../../gui/functionswidget.cpp" line="170"/>
         <source>Name</source>
         <translation>নাম</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="173"/>
+        <location filename="../../gui/functionswidget.cpp" line="174"/>
         <source>Search</source>
         <translation>অনুসন্ধান</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="180"/>
+        <location filename="../../gui/functionswidget.cpp" line="182"/>
         <source>No match found</source>
         <translation>কোনও মিল পাওয়া যায়নি</translation>
     </message>
@@ -4563,1219 +4585,1219 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3389"/>
+        <location filename="../../gui/mainwindow.cpp" line="3397"/>
         <source>Radian</source>
         <translation>রেডিয়ান</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3390"/>
+        <location filename="../../gui/mainwindow.cpp" line="3398"/>
         <source>Gradian</source>
         <translation>গ্রেডিয়ান</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3393"/>
+        <location filename="../../gui/mainwindow.cpp" line="3401"/>
         <source>Degree</source>
         <translation>ডিগ্রি</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3399"/>
+        <location filename="../../gui/mainwindow.cpp" line="3407"/>
         <source>Binary</source>
         <translation>বাইনারি</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3400"/>
+        <location filename="../../gui/mainwindow.cpp" line="3408"/>
         <source>Octal</source>
         <translation>অক্টাল</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3401"/>
+        <location filename="../../gui/mainwindow.cpp" line="3409"/>
         <source>Hexadecimal</source>
         <translation>হেক্সাডেসিমাল</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3402"/>
+        <location filename="../../gui/mainwindow.cpp" line="3410"/>
         <source>Sexagesimal</source>
         <translation>সেক্সাজেসিমাল</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3404"/>
+        <location filename="../../gui/mainwindow.cpp" line="3412"/>
         <source>Engineering decimal</source>
         <translation>ইঞ্জিনিয়ারিং দশমিক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3405"/>
+        <location filename="../../gui/mainwindow.cpp" line="3413"/>
         <source>Scientific decimal</source>
         <translation>বৈজ্ঞানিক দশমিক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3422"/>
+        <location filename="../../gui/mainwindow.cpp" line="3430"/>
         <source>Plain &amp;text</source>
         <translation>সাধারণ &amp;পাঠ্য</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3423"/>
+        <location filename="../../gui/mainwindow.cpp" line="3431"/>
         <source>&amp;Import...</source>
         <translation>&amp;আমদানি...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3425"/>
+        <location filename="../../gui/mainwindow.cpp" line="3433"/>
         <source>&amp;Load...</source>
         <translation>&amp;লোড...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3426"/>
+        <location filename="../../gui/mainwindow.cpp" line="3434"/>
         <source>&amp;Quit</source>
         <translation>&amp;প্রস্থান</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3427"/>
+        <location filename="../../gui/mainwindow.cpp" line="3435"/>
         <source>&amp;Save...</source>
         <translation>&amp;সংরক্ষণ...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3429"/>
+        <location filename="../../gui/mainwindow.cpp" line="3437"/>
         <source>Clear E&amp;xpression</source>
         <translation>অ&amp;ভিব্যক্তি পরিষ্কার করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3430"/>
+        <location filename="../../gui/mainwindow.cpp" line="3438"/>
         <source>Clear &amp;History</source>
         <translation>&amp;ইতিহাস পরিষ্কার করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3431"/>
+        <location filename="../../gui/mainwindow.cpp" line="3439"/>
         <source>Copy Last &amp;Result</source>
         <translation>সর্বশেষ &amp;ফলাফল কপি করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3432"/>
+        <location filename="../../gui/mainwindow.cpp" line="3440"/>
         <source>&amp;Copy</source>
         <translation>&amp;কপি</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3433"/>
+        <location filename="../../gui/mainwindow.cpp" line="3441"/>
         <source>&amp;Paste</source>
         <translation>&amp;পেস্ট</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3434"/>
+        <location filename="../../gui/mainwindow.cpp" line="3442"/>
         <source>&amp;Select Expression</source>
         <translation>&amp;অভিব্যক্তি নির্বাচন করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3435"/>
+        <location filename="../../gui/mainwindow.cpp" line="3443"/>
         <source>&amp;Wrap Selection in Parentheses</source>
         <translation>নির্বাচিত অংশকে &amp;বন্ধনীর মধ্যে নিন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3437"/>
+        <location filename="../../gui/mainwindow.cpp" line="3445"/>
         <source>&amp;Constants</source>
         <translation>&amp;ধ্রুবকসমূহ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3438"/>
+        <location filename="../../gui/mainwindow.cpp" line="3446"/>
         <source>F&amp;ull Screen Mode</source>
         <translation>পূ&amp;র্ণ পর্দা মোড</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3439"/>
+        <location filename="../../gui/mainwindow.cpp" line="3447"/>
         <source>&amp;Functions</source>
         <translation>&amp;ফাংশনসমূহ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3440"/>
+        <location filename="../../gui/mainwindow.cpp" line="3448"/>
         <source>&amp;History</source>
         <translation>&amp;ইতিহাস</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3855"/>
+        <location filename="../../gui/mainwindow.cpp" line="3863"/>
         <source>&amp;Keypad</source>
         <translation>&amp;কীপ্যাড</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3449"/>
+        <location filename="../../gui/mainwindow.cpp" line="3457"/>
         <source>Formula &amp;Book</source>
         <translation>সূত্র &amp;বই</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3450"/>
+        <location filename="../../gui/mainwindow.cpp" line="3458"/>
         <source>&amp;Status Bar</source>
         <translation>&amp;স্ট্যাটাস বার</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3453"/>
-        <location filename="../../gui/mainwindow.cpp" line="6057"/>
+        <location filename="../../gui/mainwindow.cpp" line="3461"/>
+        <location filename="../../gui/mainwindow.cpp" line="6089"/>
         <source>Bitfield</source>
         <translation>বিটফিল্ড</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3454"/>
+        <location filename="../../gui/mainwindow.cpp" line="3462"/>
         <source>Use&amp;r Functions</source>
         <translation>ব্যবহা&amp;রকারী ফাংশন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3457"/>
+        <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>&amp;Degree</source>
         <translation>&amp;ডিগ্রি</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3458"/>
+        <location filename="../../gui/mainwindow.cpp" line="3466"/>
         <source>&amp;Radian</source>
         <translation>&amp;রেডিয়ান</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3459"/>
+        <location filename="../../gui/mainwindow.cpp" line="3467"/>
         <source>&amp;Gradian</source>
         <translation>&amp;গ্রেডিয়ান</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3462"/>
+        <location filename="../../gui/mainwindow.cpp" line="3470"/>
         <source>Always on &amp;Top</source>
         <translation>সবসময় &amp;উপরে</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3466"/>
+        <location filename="../../gui/mainwindow.cpp" line="3474"/>
         <source>Automatic &amp;Completion</source>
         <translation>স্বয়ংক্রিয় &amp;সম্পূর্ণতা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3477"/>
+        <location filename="../../gui/mainwindow.cpp" line="3485"/>
         <source>Syntax &amp;Highlighting</source>
         <translation>সিনট্যাক্স &amp;হাইলাইটিং</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3479"/>
+        <location filename="../../gui/mainwindow.cpp" line="3487"/>
         <source>Disabled</source>
         <translation>নিষ্ক্রিয়</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3480"/>
+        <location filename="../../gui/mainwindow.cpp" line="3488"/>
         <source>Small Space</source>
         <translation>ছোট ফাঁক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3481"/>
+        <location filename="../../gui/mainwindow.cpp" line="3489"/>
         <source>Medium Space</source>
         <translation>মাঝারি ফাঁক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3482"/>
+        <location filename="../../gui/mainwindow.cpp" line="3490"/>
         <source>Large Space</source>
         <translation>বড় ফাঁক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3495"/>
+        <location filename="../../gui/mainwindow.cpp" line="3503"/>
         <source>&amp;Comma</source>
         <translation>&amp;কমা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3496"/>
+        <location filename="../../gui/mainwindow.cpp" line="3504"/>
         <source>&amp;System Default</source>
         <translation>&amp;সিস্টেম ডিফল্ট</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3497"/>
+        <location filename="../../gui/mainwindow.cpp" line="3505"/>
         <source>&amp;Dot</source>
         <translation>&amp;ডট</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3498"/>
+        <location filename="../../gui/mainwindow.cpp" line="3506"/>
         <source>Dot &amp;And Comma</source>
         <translation>ডট &amp;এবং কমা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3499"/>
+        <location filename="../../gui/mainwindow.cpp" line="3507"/>
         <source>&amp;0 Digits</source>
         <translation>&amp;0 অঙ্ক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3500"/>
+        <location filename="../../gui/mainwindow.cpp" line="3508"/>
         <source>&amp;15 Digits</source>
         <translation>&amp;15 অঙ্ক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3501"/>
+        <location filename="../../gui/mainwindow.cpp" line="3509"/>
         <source>&amp;2 Digits</source>
         <translation>&amp;2 অঙ্ক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3502"/>
+        <location filename="../../gui/mainwindow.cpp" line="3510"/>
         <source>&amp;3 Digits</source>
         <translation>&amp;3 অঙ্ক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3503"/>
+        <location filename="../../gui/mainwindow.cpp" line="3511"/>
         <source>&amp;50 Digits</source>
         <translation>&amp;50 অঙ্ক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3504"/>
+        <location filename="../../gui/mainwindow.cpp" line="3512"/>
         <source>&amp;8 Digits</source>
         <translation>&amp;8 অঙ্ক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3515"/>
-        <location filename="../../gui/mainwindow.cpp" line="3516"/>
+        <location filename="../../gui/mainwindow.cpp" line="3523"/>
+        <location filename="../../gui/mainwindow.cpp" line="3524"/>
         <source>&amp;Automatic</source>
         <translation>&amp;স্বয়ংক্রিয়</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3518"/>
+        <location filename="../../gui/mainwindow.cpp" line="3526"/>
         <source>&amp;Engineering</source>
         <translation>&amp;ইঞ্জিনিয়ারিং</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3519"/>
+        <location filename="../../gui/mainwindow.cpp" line="3527"/>
         <source>&amp;Scientific</source>
         <translation>&amp;বৈজ্ঞানিক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3521"/>
+        <location filename="../../gui/mainwindow.cpp" line="3529"/>
         <source>&amp;Binary</source>
         <translation>&amp;বাইনারি</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3522"/>
+        <location filename="../../gui/mainwindow.cpp" line="3530"/>
         <source>&amp;Octal</source>
         <translation>&amp;অক্টাল</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3523"/>
+        <location filename="../../gui/mainwindow.cpp" line="3531"/>
         <source>&amp;Hexadecimal</source>
         <translation>&amp;হেক্সাডেসিমাল</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3524"/>
+        <location filename="../../gui/mainwindow.cpp" line="3532"/>
         <source>&amp;Sexagesimal</source>
         <translation>&amp;সেক্সাজেসিমাল</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3537"/>
+        <location filename="../../gui/mainwindow.cpp" line="3545"/>
         <source>&amp;Font...</source>
         <translation>&amp;ফন্ট...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3539"/>
+        <location filename="../../gui/mainwindow.cpp" line="3547"/>
         <source>&amp;Language...</source>
         <translation>&amp;ভাষা...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3541"/>
+        <location filename="../../gui/mainwindow.cpp" line="3549"/>
         <source>User &amp;Manual</source>
         <translation>ব্যবহারকারী &amp;ম্যানুয়াল</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3542"/>
+        <location filename="../../gui/mainwindow.cpp" line="3550"/>
         <source>Context Help</source>
         <translation>প্রসঙ্গভিত্তিক সাহায্য</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3549"/>
+        <location filename="../../gui/mainwindow.cpp" line="3557"/>
         <source>&amp;Donate</source>
         <translation>&amp;অনুদান দিন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3550"/>
+        <location filename="../../gui/mainwindow.cpp" line="3558"/>
         <source>About &amp;SpeedCrunch</source>
         <translation>&amp;স্পিডক্রাঞ্চ সম্পর্কে</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3851"/>
+        <location filename="../../gui/mainwindow.cpp" line="3859"/>
         <source>&amp;Session</source>
         <translation>&amp;সেশন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3852"/>
+        <location filename="../../gui/mainwindow.cpp" line="3860"/>
         <source>&amp;Export</source>
         <translation>&amp;রপ্তানি</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3853"/>
+        <location filename="../../gui/mainwindow.cpp" line="3861"/>
         <source>&amp;Edit</source>
         <translation>&amp;সম্পাদনা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3854"/>
+        <location filename="../../gui/mainwindow.cpp" line="3862"/>
         <source>&amp;View</source>
         <translation>&amp;দেখুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3857"/>
+        <location filename="../../gui/mainwindow.cpp" line="3865"/>
         <source>Se&amp;ttings</source>
         <translation>সে&amp;টিংস</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3863"/>
+        <location filename="../../gui/mainwindow.cpp" line="3871"/>
         <source>&amp;Decimal</source>
         <translation>&amp;দশমিক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3864"/>
+        <location filename="../../gui/mainwindow.cpp" line="3872"/>
         <source>&amp;Precision</source>
         <translation>&amp;নির্ভুলতা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3874"/>
+        <location filename="../../gui/mainwindow.cpp" line="3882"/>
         <source>&amp;Help</source>
         <translation>&amp;সহায়তা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6163"/>
+        <location filename="../../gui/mainwindow.cpp" line="6195"/>
         <source>Constants</source>
         <translation>ধ্রুবকসমূহ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6193"/>
+        <location filename="../../gui/mainwindow.cpp" line="6225"/>
         <source>Functions</source>
         <translation>ফাংশনসমূহ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6216"/>
+        <location filename="../../gui/mainwindow.cpp" line="6248"/>
         <source>History</source>
         <translation>ইতিহাস</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6286"/>
+        <location filename="../../gui/mainwindow.cpp" line="6318"/>
         <source>User Functions</source>
         <translation>ব্যবহারকারী ফাংশনসমূহ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6877"/>
+        <location filename="../../gui/mainwindow.cpp" line="6909"/>
         <source>Type an expression here</source>
         <translation>এখানে একটি অভিব্যক্তি লিখুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8705"/>
-        <location filename="../../gui/mainwindow.cpp" line="8789"/>
+        <location filename="../../gui/mainwindow.cpp" line="8737"/>
+        <location filename="../../gui/mainwindow.cpp" line="8821"/>
         <source>SpeedCrunch Sessions (*.json);;All Files (*)</source>
         <translation>SpeedCrunch সেশন (*.json);;সমস্ত ফাইল (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8706"/>
+        <location filename="../../gui/mainwindow.cpp" line="8738"/>
         <source>Load Session</source>
         <translation>সেশন লোড করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8539"/>
-        <location filename="../../gui/mainwindow.cpp" line="8545"/>
-        <location filename="../../gui/mainwindow.cpp" line="8553"/>
-        <location filename="../../gui/mainwindow.cpp" line="8559"/>
-        <location filename="../../gui/mainwindow.cpp" line="8575"/>
-        <location filename="../../gui/mainwindow.cpp" line="8581"/>
-        <location filename="../../gui/mainwindow.cpp" line="8632"/>
-        <location filename="../../gui/mainwindow.cpp" line="8638"/>
-        <location filename="../../gui/mainwindow.cpp" line="8738"/>
-        <location filename="../../gui/mainwindow.cpp" line="8815"/>
-        <location filename="../../gui/mainwindow.cpp" line="8837"/>
-        <location filename="../../gui/mainwindow.cpp" line="8877"/>
-        <location filename="../../gui/mainwindow.cpp" line="9506"/>
-        <location filename="../../gui/mainwindow.cpp" line="9526"/>
+        <location filename="../../gui/mainwindow.cpp" line="8571"/>
+        <location filename="../../gui/mainwindow.cpp" line="8577"/>
+        <location filename="../../gui/mainwindow.cpp" line="8585"/>
+        <location filename="../../gui/mainwindow.cpp" line="8591"/>
+        <location filename="../../gui/mainwindow.cpp" line="8607"/>
+        <location filename="../../gui/mainwindow.cpp" line="8613"/>
+        <location filename="../../gui/mainwindow.cpp" line="8664"/>
+        <location filename="../../gui/mainwindow.cpp" line="8670"/>
+        <location filename="../../gui/mainwindow.cpp" line="8770"/>
+        <location filename="../../gui/mainwindow.cpp" line="8847"/>
+        <location filename="../../gui/mainwindow.cpp" line="8869"/>
+        <location filename="../../gui/mainwindow.cpp" line="8909"/>
+        <location filename="../../gui/mainwindow.cpp" line="9538"/>
+        <location filename="../../gui/mainwindow.cpp" line="9558"/>
         <source>Error</source>
         <translation>ত্রুটি</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8539"/>
-        <location filename="../../gui/mainwindow.cpp" line="8837"/>
+        <location filename="../../gui/mainwindow.cpp" line="8571"/>
+        <location filename="../../gui/mainwindow.cpp" line="8869"/>
         <source>Can&apos;t read from file %1</source>
         <translation>ফাইল %1 থেকে পড়া যাচ্ছে না</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8712"/>
+        <location filename="../../gui/mainwindow.cpp" line="8744"/>
         <source>Merge session being loaded with current session?
 If no, current variables and display will be cleared.</source>
         <translation>লোড হওয়া সেশনটি বর্তমান সেশনের সাথে একীভূত করবেন?
 না হলে, বর্তমান ভেরিয়েবল ও প্রদর্শন মুছে যাবে।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8717"/>
-        <location filename="../../gui/mainwindow.cpp" line="8848"/>
+        <location filename="../../gui/mainwindow.cpp" line="8749"/>
+        <location filename="../../gui/mainwindow.cpp" line="8880"/>
         <source>Merge?</source>
         <translation>একীভূত করবেন?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8794"/>
+        <location filename="../../gui/mainwindow.cpp" line="8826"/>
         <source>Save Session</source>
         <translation>সেশন সংরক্ষণ করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8638"/>
-        <location filename="../../gui/mainwindow.cpp" line="8815"/>
-        <location filename="../../gui/mainwindow.cpp" line="9506"/>
-        <location filename="../../gui/mainwindow.cpp" line="9526"/>
+        <location filename="../../gui/mainwindow.cpp" line="8670"/>
+        <location filename="../../gui/mainwindow.cpp" line="8847"/>
+        <location filename="../../gui/mainwindow.cpp" line="9538"/>
+        <location filename="../../gui/mainwindow.cpp" line="9558"/>
         <source>Can&apos;t write to file %1</source>
         <translation>ফাইল %1-এ লেখা যাচ্ছে না</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8830"/>
+        <location filename="../../gui/mainwindow.cpp" line="8862"/>
         <source>All Files (*)</source>
         <translation>সমস্ত ফাইল (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4189"/>
-        <location filename="../../gui/mainwindow.cpp" line="8831"/>
+        <location filename="../../gui/mainwindow.cpp" line="4205"/>
+        <location filename="../../gui/mainwindow.cpp" line="8863"/>
         <source>Import Session</source>
         <translation>সেশন আমদানি করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="2139"/>
-        <location filename="../../gui/mainwindow.cpp" line="4196"/>
+        <location filename="../../gui/mainwindow.cpp" line="2147"/>
+        <location filename="../../gui/mainwindow.cpp" line="4212"/>
         <source>Close Session</source>
         <translation>সেশন বন্ধ করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3324"/>
+        <location filename="../../gui/mainwindow.cpp" line="3332"/>
         <source>Angle Mode:</source>
         <translation>কোণ মোড:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3325"/>
+        <location filename="../../gui/mainwindow.cpp" line="3333"/>
         <source>Notation:</source>
         <translation>নোটেশন:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3326"/>
+        <location filename="../../gui/mainwindow.cpp" line="3334"/>
         <source>Precision:</source>
         <translation>নির্ভুলতা:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3391"/>
+        <location filename="../../gui/mainwindow.cpp" line="3399"/>
         <source>Turn</source>
         <translation>টার্ন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3392"/>
+        <location filename="../../gui/mainwindow.cpp" line="3400"/>
         <source>Revolution</source>
         <translation>আবর্তন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3403"/>
+        <location filename="../../gui/mainwindow.cpp" line="3411"/>
         <source>Fixed-point decimal</source>
         <translation>স্থির-বিন্দু দশমিক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3406"/>
+        <location filename="../../gui/mainwindow.cpp" line="3414"/>
         <source>Rational</source>
         <translation>মূলদ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3407"/>
+        <location filename="../../gui/mainwindow.cpp" line="3415"/>
         <source>Automatic decimal</source>
         <translation>স্বয়ংক্রিয় দশমিক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3415"/>
-        <location filename="../../gui/mainwindow.cpp" line="12123"/>
+        <location filename="../../gui/mainwindow.cpp" line="3423"/>
+        <location filename="../../gui/mainwindow.cpp" line="12155"/>
         <source>Automatic</source>
         <translation>স্বয়ংক্রিয়</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3424"/>
+        <location filename="../../gui/mainwindow.cpp" line="3432"/>
         <source>User &amp;Definitions...</source>
         <translation>ব্যবহারকারী &amp;সংজ্ঞা...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3442"/>
+        <location filename="../../gui/mainwindow.cpp" line="3450"/>
         <source>&amp;Basic</source>
         <translation>&amp;মৌলিক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3443"/>
+        <location filename="../../gui/mainwindow.cpp" line="3451"/>
         <source>&amp;Scientific (wide)</source>
         <translation>&amp;বৈজ্ঞানিক (প্রশস্ত)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3444"/>
+        <location filename="../../gui/mainwindow.cpp" line="3452"/>
         <source>Scientific (narrow)</source>
         <translation>বৈজ্ঞানিক (সংকীর্ণ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3445"/>
-        <location filename="../../gui/mainwindow.cpp" line="3505"/>
+        <location filename="../../gui/mainwindow.cpp" line="3453"/>
+        <location filename="../../gui/mainwindow.cpp" line="3513"/>
         <source>&amp;Custom...</source>
         <translation>&amp;কাস্টম...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3451"/>
+        <location filename="../../gui/mainwindow.cpp" line="3459"/>
         <source>Main &amp;Menu</source>
         <translation>প্রধান &amp;মেনু</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3452"/>
+        <location filename="../../gui/mainwindow.cpp" line="3460"/>
         <source>User &amp;Variables</source>
         <translation>ব্যবহারকারী &amp;চলক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3455"/>
+        <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>User &amp;Units</source>
         <translation>ব্যবহারকারী &amp;একক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3460"/>
+        <location filename="../../gui/mainwindow.cpp" line="3468"/>
         <source>&amp;Turn</source>
         <translation>&amp;টার্ন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3461"/>
+        <location filename="../../gui/mainwindow.cpp" line="3469"/>
         <source>&amp;Revolution</source>
         <translation>&amp;আবর্তন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3463"/>
+        <location filename="../../gui/mainwindow.cpp" line="3471"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
         <translation>অপারেটর দিয়ে শুরু হলে &quot;ans&quot; স্বয়ংক্রিয়ভাবে ঢোকান</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3464"/>
-        <location filename="../../gui/mainwindow.cpp" line="3465"/>
+        <location filename="../../gui/mainwindow.cpp" line="3472"/>
+        <location filename="../../gui/mainwindow.cpp" line="3473"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
         <translation>নতুন এক্সপ্রেশন +, -, *, বা / দিয়ে শুরু হলে, SpeedCrunch প্রথমে &quot;ans&quot; ঢোকায়।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3467"/>
+        <location filename="../../gui/mainwindow.cpp" line="3475"/>
         <source>Built-in &amp;functions</source>
         <translation>অন্তর্নির্মিত &amp;ফাংশন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3468"/>
+        <location filename="../../gui/mainwindow.cpp" line="3476"/>
         <source>Built-in &amp;variables</source>
         <translation>অন্তর্নির্মিত &amp;চলক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3469"/>
+        <location filename="../../gui/mainwindow.cpp" line="3477"/>
         <source>&amp;Units</source>
         <translation>&amp;একক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3470"/>
+        <location filename="../../gui/mainwindow.cpp" line="3478"/>
         <source>User &amp;functions</source>
         <translation>ব্যবহারকারী &amp;ফাংশন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3471"/>
+        <location filename="../../gui/mainwindow.cpp" line="3479"/>
         <source>User &amp;variables</source>
         <translation>ব্যবহারকারী &amp;চলক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3472"/>
+        <location filename="../../gui/mainwindow.cpp" line="3480"/>
         <source>Show Empty History &amp;Hint</source>
         <translation>খালি ইতিহাসের &amp;ইঙ্গিত দেখান</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3473"/>
-        <location filename="../../gui/mainwindow.cpp" line="3474"/>
+        <location filename="../../gui/mainwindow.cpp" line="3481"/>
+        <location filename="../../gui/mainwindow.cpp" line="3482"/>
         <source>When history is empty, show a hint in the status area.</source>
         <translation>ইতিহাস খালি হলে স্ট্যাটাস এলাকায় একটি ইঙ্গিত দেখান।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3475"/>
+        <location filename="../../gui/mainwindow.cpp" line="3483"/>
         <source>Show Live Result &amp;Preview</source>
         <translation>লাইভ ফলাফলের &amp;পূর্বরূপ দেখান</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3476"/>
+        <location filename="../../gui/mainwindow.cpp" line="3484"/>
         <source>Save &amp;Window Position on Exit</source>
         <translation>প্রস্থানকালে &amp;উইন্ডোর অবস্থান সংরক্ষণ করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3478"/>
+        <location filename="../../gui/mainwindow.cpp" line="3486"/>
         <source>Hover Highlighting</source>
         <translation>হোভার হাইলাইটিং</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3483"/>
+        <location filename="../../gui/mainwindow.cpp" line="3491"/>
         <source>Group Integer Part Only</source>
         <translation>শুধু পূর্ণসংখ্যা অংশ গ্রুপ করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3484"/>
+        <location filename="../../gui/mainwindow.cpp" line="3492"/>
         <source>Keep Entered Expression After Evaluate</source>
         <translation>মূল্যায়নের পর প্রবেশ করানো এক্সপ্রেশন রাখুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3485"/>
+        <location filename="../../gui/mainwindow.cpp" line="3493"/>
         <source>Number Format...</source>
         <translation>সংখ্যা বিন্যাস...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3486"/>
+        <location filename="../../gui/mainwindow.cpp" line="3494"/>
         <source>Notation &amp;&amp; Precision...</source>
         <translation>নোটেশন &amp;&amp; নির্ভুলতা...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3487"/>
-        <location filename="../../gui/mainwindow.cpp" line="3488"/>
+        <location filename="../../gui/mainwindow.cpp" line="3495"/>
+        <location filename="../../gui/mainwindow.cpp" line="3496"/>
         <source>After pressing Enter, keep the entered expression selected in the editor.</source>
         <translation>Enter চাপার পর প্রবেশ করানো এক্সপ্রেশনটি এডিটরে নির্বাচিত রাখুন।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3489"/>
+        <location filename="../../gui/mainwindow.cpp" line="3497"/>
         <source>Never</source>
         <translation>কখনও নয়</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3490"/>
+        <location filename="../../gui/mainwindow.cpp" line="3498"/>
         <source>Always</source>
         <translation>সবসময়</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3491"/>
+        <location filename="../../gui/mainwindow.cpp" line="3499"/>
         <source>Only for Single-Line Expressions</source>
         <translation>শুধু এক-লাইন এক্সপ্রেশনের জন্য</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3492"/>
+        <location filename="../../gui/mainwindow.cpp" line="3500"/>
         <source>Automatically Copy New Results to Clipboard</source>
         <translation>নতুন ফলাফল স্বয়ংক্রিয়ভাবে ক্লিপবোর্ডে কপি করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3493"/>
+        <location filename="../../gui/mainwindow.cpp" line="3501"/>
         <source>Simplify Displayed Expressions</source>
         <translation>প্রদর্শিত এক্সপ্রেশন সরলীকরণ করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3494"/>
+        <location filename="../../gui/mainwindow.cpp" line="3502"/>
         <source>History Size &amp;Limit...</source>
         <translation>ইতিহাস আকারের &amp;সীমা...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3507"/>
+        <location filename="../../gui/mainwindow.cpp" line="3515"/>
         <source>Nearest, Half &amp;Away (round)</source>
         <translation>নিকটতম, অর্ধেক &amp;দূরে (round)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3509"/>
+        <location filename="../../gui/mainwindow.cpp" line="3517"/>
         <source>Nearest, Half &amp;Even (roundeven)</source>
         <translation>নিকটতম, অর্ধেক &amp;জোড় (roundeven)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3510"/>
+        <location filename="../../gui/mainwindow.cpp" line="3518"/>
         <source>Toward &amp;Zero (trunc)</source>
         <translation>&amp;শূন্যের দিকে (trunc)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3512"/>
+        <location filename="../../gui/mainwindow.cpp" line="3520"/>
         <source>Toward +&amp;∞ (ceil)</source>
         <translation>+&amp;∞-এর দিকে (ceil)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3514"/>
+        <location filename="../../gui/mainwindow.cpp" line="3522"/>
         <source>Toward −&amp;∞ (floor)</source>
         <translation>−&amp;∞-এর দিকে (floor)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3517"/>
+        <location filename="../../gui/mainwindow.cpp" line="3525"/>
         <source>&amp;Fixed-Point</source>
         <translation>&amp;স্থির-বিন্দু</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3520"/>
+        <location filename="../../gui/mainwindow.cpp" line="3528"/>
         <source>&amp;Rational</source>
         <translation>&amp;মূলদ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3526"/>
+        <location filename="../../gui/mainwindow.cpp" line="3534"/>
         <source>&amp;Exponential (m·s⁻¹)</source>
         <translation>&amp;সূচকীয় (m·s⁻¹)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3528"/>
+        <location filename="../../gui/mainwindow.cpp" line="3536"/>
         <source>&amp;Fractional (m/s)</source>
         <translation>&amp;ভগ্নাংশীয় (m/s)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3529"/>
+        <location filename="../../gui/mainwindow.cpp" line="3537"/>
         <source>&amp;Rectangular (a + bi)</source>
         <translation>&amp;আয়তাকার (a + bi)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3530"/>
+        <location filename="../../gui/mainwindow.cpp" line="3538"/>
         <source>Exponential (reⁱᶿ)</source>
         <translation>সূচকীয় (reⁱᶿ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3532"/>
+        <location filename="../../gui/mainwindow.cpp" line="3540"/>
         <source>Trigonometric (r(cos θ + i·sin θ))</source>
         <translation>ত্রিকোণমিতিক (r(cos θ + i·sin θ))</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3534"/>
+        <location filename="../../gui/mainwindow.cpp" line="3542"/>
         <source>Phasor (r∠θ)</source>
         <translation>ফেজর (r∠θ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3538"/>
+        <location filename="../../gui/mainwindow.cpp" line="3546"/>
         <source>&amp;Theme...</source>
         <translation>&amp;থিম...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3543"/>
+        <location filename="../../gui/mainwindow.cpp" line="3551"/>
         <source>Check for &amp;Updates</source>
         <translation>&amp;আপডেট পরীক্ষা করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3544"/>
+        <location filename="../../gui/mainwindow.cpp" line="3552"/>
         <source>Issue Tracker</source>
         <translation>ইস্যু ট্র্যাকার</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3545"/>
+        <location filename="../../gui/mainwindow.cpp" line="3553"/>
         <source>Google Group</source>
         <translation>গুগল গ্রুপ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3546"/>
+        <location filename="../../gui/mainwindow.cpp" line="3554"/>
         <source>Facebook &amp;Group</source>
         <translation>ফেসবুক &amp;গ্রুপ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3547"/>
+        <location filename="../../gui/mainwindow.cpp" line="3555"/>
         <source>&amp;Blogspot</source>
         <translation>&amp;ব্লগস্পট</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3548"/>
+        <location filename="../../gui/mainwindow.cpp" line="3556"/>
         <source>Source Code</source>
         <translation>সোর্স কোড</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3856"/>
+        <location filename="../../gui/mainwindow.cpp" line="3864"/>
         <source>&amp;Zoom</source>
         <translation>&amp;জুম</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3858"/>
+        <location filename="../../gui/mainwindow.cpp" line="3866"/>
         <source>&amp;Results</source>
         <translation>&amp;ফলাফল</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3859"/>
+        <location filename="../../gui/mainwindow.cpp" line="3867"/>
         <source>&amp;Symbols</source>
         <translation>&amp;প্রতীক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3860"/>
+        <location filename="../../gui/mainwindow.cpp" line="3868"/>
         <source>Unit Notation</source>
         <translation>একক নোটেশন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3861"/>
+        <location filename="../../gui/mainwindow.cpp" line="3869"/>
         <source>Rounding Mode</source>
         <translation>রাউন্ডিং মোড</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3862"/>
+        <location filename="../../gui/mainwindow.cpp" line="3870"/>
         <source>&amp;Notation</source>
         <translation>&amp;নোটেশন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3865"/>
+        <location filename="../../gui/mainwindow.cpp" line="3873"/>
         <source>&amp;Angle Mode</source>
         <translation>&amp;কোণ মোড</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3866"/>
+        <location filename="../../gui/mainwindow.cpp" line="3874"/>
         <source>Complex &amp;Numbers</source>
         <translation>জটিল &amp;সংখ্যা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3867"/>
+        <location filename="../../gui/mainwindow.cpp" line="3875"/>
         <source>&amp;Form</source>
         <translation>&amp;রূপ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3868"/>
+        <location filename="../../gui/mainwindow.cpp" line="3876"/>
         <source>&amp;Imaginary Unit</source>
         <translation>&amp;কাল্পনিক একক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3869"/>
+        <location filename="../../gui/mainwindow.cpp" line="3877"/>
         <source>&amp;Window</source>
         <translation>&amp;উইন্ডো</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3870"/>
+        <location filename="../../gui/mainwindow.cpp" line="3878"/>
         <source>&amp;Editing</source>
         <translation>&amp;সম্পাদনা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3871"/>
+        <location filename="../../gui/mainwindow.cpp" line="3879"/>
         <source>A&amp;utocomplete</source>
         <translation>স্বয়ংসম্পূ&amp;রণ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3872"/>
+        <location filename="../../gui/mainwindow.cpp" line="3880"/>
         <source>Up/Down Arrow History</source>
         <translation>উপর/নিচ তীর ইতিহাস</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3873"/>
+        <location filename="../../gui/mainwindow.cpp" line="3881"/>
         <source>&amp;Appearance</source>
         <translation>&amp;চেহারা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3880"/>
+        <location filename="../../gui/mainwindow.cpp" line="3888"/>
         <source>&amp;Disabled</source>
         <translation>&amp;নিষ্ক্রিয়</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3882"/>
+        <location filename="../../gui/mainwindow.cpp" line="3890"/>
         <source>&amp;Disable</source>
         <translation>&amp;নিষ্ক্রিয় করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4046"/>
+        <location filename="../../gui/mainwindow.cpp" line="4054"/>
         <source>Close preview</source>
         <translation>প্রিভিউ বন্ধ করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4181"/>
+        <location filename="../../gui/mainwindow.cpp" line="4197"/>
         <source>New Session</source>
         <translation>নতুন সেশন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4182"/>
-        <location filename="../../gui/mainwindow.cpp" line="7560"/>
+        <location filename="../../gui/mainwindow.cpp" line="4198"/>
+        <location filename="../../gui/mainwindow.cpp" line="7592"/>
         <source>Open Session</source>
         <translation>সেশন খুলুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4184"/>
+        <location filename="../../gui/mainwindow.cpp" line="4200"/>
         <source>Split Left</source>
         <translation>বামে বিভক্ত করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4185"/>
+        <location filename="../../gui/mainwindow.cpp" line="4201"/>
         <source>Split Right</source>
         <translation>ডানে বিভক্ত করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4186"/>
+        <location filename="../../gui/mainwindow.cpp" line="4202"/>
         <source>Split Up</source>
         <translation>উপরে বিভক্ত করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4187"/>
+        <location filename="../../gui/mainwindow.cpp" line="4203"/>
         <source>Split Down</source>
         <translation>নিচে বিভক্ত করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4190"/>
+        <location filename="../../gui/mainwindow.cpp" line="4206"/>
         <source>Export Session</source>
         <translation>সেশন রপ্তানি করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4192"/>
-        <location filename="../../gui/mainwindow.cpp" line="7641"/>
-        <location filename="../../gui/mainwindow.cpp" line="7652"/>
-        <location filename="../../gui/mainwindow.cpp" line="7665"/>
-        <location filename="../../gui/mainwindow.cpp" line="7675"/>
+        <location filename="../../gui/mainwindow.cpp" line="4208"/>
+        <location filename="../../gui/mainwindow.cpp" line="7673"/>
+        <location filename="../../gui/mainwindow.cpp" line="7684"/>
+        <location filename="../../gui/mainwindow.cpp" line="7697"/>
+        <location filename="../../gui/mainwindow.cpp" line="7707"/>
         <source>Duplicate Session</source>
         <translation>সেশন নকল করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4193"/>
-        <location filename="../../gui/mainwindow.cpp" line="7704"/>
-        <location filename="../../gui/mainwindow.cpp" line="7718"/>
-        <location filename="../../gui/mainwindow.cpp" line="7729"/>
+        <location filename="../../gui/mainwindow.cpp" line="4209"/>
+        <location filename="../../gui/mainwindow.cpp" line="7736"/>
+        <location filename="../../gui/mainwindow.cpp" line="7750"/>
+        <location filename="../../gui/mainwindow.cpp" line="7761"/>
         <source>Rename Session</source>
         <translation>সেশনের নাম বদলান</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4194"/>
+        <location filename="../../gui/mainwindow.cpp" line="4210"/>
         <source>Clear Session</source>
         <translation>সেশন পরিষ্কার করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4195"/>
-        <location filename="../../gui/mainwindow.cpp" line="7999"/>
+        <location filename="../../gui/mainwindow.cpp" line="4211"/>
+        <location filename="../../gui/mainwindow.cpp" line="8031"/>
         <source>Delete Session</source>
         <translation>সেশন মুছুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4197"/>
+        <location filename="../../gui/mainwindow.cpp" line="4213"/>
         <source>Close Pane</source>
         <translation>প্যান বন্ধ করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6249"/>
+        <location filename="../../gui/mainwindow.cpp" line="6281"/>
         <source>User Variables</source>
         <translation>ব্যবহারকারী চলক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6323"/>
+        <location filename="../../gui/mainwindow.cpp" line="6355"/>
         <source>User Units</source>
         <translation>ব্যবহারকারী একক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7465"/>
-        <location filename="../../gui/mainwindow.cpp" line="7496"/>
+        <location filename="../../gui/mainwindow.cpp" line="7497"/>
+        <location filename="../../gui/mainwindow.cpp" line="7528"/>
         <source>Clear History</source>
         <translation>ইতিহাস পরিষ্কার করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7466"/>
-        <location filename="../../gui/mainwindow.cpp" line="7497"/>
+        <location filename="../../gui/mainwindow.cpp" line="7498"/>
+        <location filename="../../gui/mainwindow.cpp" line="7529"/>
         <source>Are you sure you want to clear the calculation history?</source>
         <translation>আপনি কি গণনার ইতিহাস পরিষ্কার করতে নিশ্চিত?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7642"/>
-        <location filename="../../gui/mainwindow.cpp" line="7705"/>
+        <location filename="../../gui/mainwindow.cpp" line="7674"/>
+        <location filename="../../gui/mainwindow.cpp" line="7737"/>
         <source>Session name:</source>
         <translation>সেশনের নাম:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7653"/>
-        <location filename="../../gui/mainwindow.cpp" line="7719"/>
+        <location filename="../../gui/mainwindow.cpp" line="7685"/>
+        <location filename="../../gui/mainwindow.cpp" line="7751"/>
         <source>A session named %1 already exists.</source>
         <translation>%1 নামের একটি সেশন ইতিমধ্যেই আছে।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7666"/>
+        <location filename="../../gui/mainwindow.cpp" line="7698"/>
         <source>Could not create session file %1.</source>
         <translation>সেশন ফাইল %1 তৈরি করা যায়নি।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7676"/>
+        <location filename="../../gui/mainwindow.cpp" line="7708"/>
         <source>Could not write session file %1.</source>
         <translation>সেশন ফাইল %1 লেখা যায়নি।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7730"/>
+        <location filename="../../gui/mainwindow.cpp" line="7762"/>
         <source>Could not rename session file %1.</source>
         <translation>সেশন ফাইল %1-এর নাম বদলানো যায়নি।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8000"/>
+        <location filename="../../gui/mainwindow.cpp" line="8032"/>
         <source>Are you sure you want to delete this session?</source>
         <translation>আপনি কি এই সেশন মুছতে নিশ্চিত?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8175"/>
+        <location filename="../../gui/mainwindow.cpp" line="8207"/>
         <source>Custom Precision</source>
         <translation>কাস্টম নির্ভুলতা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8176"/>
+        <location filename="../../gui/mainwindow.cpp" line="8208"/>
         <source>Fractional digits:</source>
         <translation>ভগ্নাংশ অঙ্ক:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8193"/>
+        <location filename="../../gui/mainwindow.cpp" line="8225"/>
         <source>Theme</source>
         <translation>থিম</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8202"/>
+        <location filename="../../gui/mainwindow.cpp" line="8234"/>
         <source>Light Themes</source>
         <translation>হালকা থিম</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8209"/>
+        <location filename="../../gui/mainwindow.cpp" line="8241"/>
         <source>Dark Themes</source>
         <translation>গাঢ় থিম</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8217"/>
+        <location filename="../../gui/mainwindow.cpp" line="8249"/>
         <source>Preview</source>
         <translation>প্রিভিউ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8279"/>
+        <location filename="../../gui/mainwindow.cpp" line="8311"/>
         <source>Colors</source>
         <translation>রং</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8455"/>
+        <location filename="../../gui/mainwindow.cpp" line="8487"/>
         <source>Select color for %1</source>
         <translation>%1-এর জন্য রং নির্বাচন করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8500"/>
+        <location filename="../../gui/mainwindow.cpp" line="8532"/>
         <source>Import...</source>
         <translation>আমদানি...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8501"/>
+        <location filename="../../gui/mainwindow.cpp" line="8533"/>
         <source>Export...</source>
         <translation>রপ্তানি...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8533"/>
+        <location filename="../../gui/mainwindow.cpp" line="8565"/>
         <source>Import Theme</source>
         <translation>থিম আমদানি</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8534"/>
-        <location filename="../../gui/mainwindow.cpp" line="8623"/>
+        <location filename="../../gui/mainwindow.cpp" line="8566"/>
+        <location filename="../../gui/mainwindow.cpp" line="8655"/>
         <source>Theme file (*.json);;All files (*)</source>
         <translation>থিম ফাইল (*.json);;সব ফাইল (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8545"/>
+        <location filename="../../gui/mainwindow.cpp" line="8577"/>
         <source>Invalid theme file.</source>
         <translation>অবৈধ থিম ফাইল।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8554"/>
+        <location filename="../../gui/mainwindow.cpp" line="8586"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>থিম &quot;%1&quot; আমদানি করা যায়নি, কারণ এটি অন্তর্নির্মিত থিমের সাথে সংঘর্ষ করে।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8559"/>
+        <location filename="../../gui/mainwindow.cpp" line="8591"/>
         <source>Can&apos;t find a writable theme folder.</source>
         <translation>লেখারযোগ্য থিম ফোল্ডার খুঁজে পাওয়া যায়নি।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8566"/>
+        <location filename="../../gui/mainwindow.cpp" line="8598"/>
         <source>Overwrite Theme</source>
         <translation>থিম ওভাররাইট করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8567"/>
+        <location filename="../../gui/mainwindow.cpp" line="8599"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
         <translation>&quot;%1&quot; নামের একটি কাস্টম থিম ইতিমধ্যেই আছে। এটি ওভাররাইট করবেন?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8575"/>
+        <location filename="../../gui/mainwindow.cpp" line="8607"/>
         <source>Can&apos;t overwrite theme file %1</source>
         <translation>থিম ফাইল %1 ওভাররাইট করা যায়নি</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8581"/>
+        <location filename="../../gui/mainwindow.cpp" line="8613"/>
         <source>Can&apos;t copy theme file to %1</source>
         <translation>থিম ফাইল %1-এ কপি করা যায়নি</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8622"/>
+        <location filename="../../gui/mainwindow.cpp" line="8654"/>
         <source>Export Theme</source>
         <translation>থিম রপ্তানি</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8633"/>
+        <location filename="../../gui/mainwindow.cpp" line="8665"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>থিম &quot;%1&quot; হিসেবে রপ্তানি করা যায়নি, কারণ এটি অন্তর্নির্মিত থিমের সাথে সংঘর্ষ করে।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8739"/>
+        <location filename="../../gui/mainwindow.cpp" line="8771"/>
         <source>Can&apos;t read the selected session file.</source>
         <translation>নির্বাচিত সেশন ফাইল পড়া যায়নি।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8842"/>
+        <location filename="../../gui/mainwindow.cpp" line="8874"/>
         <source>Merge session being imported with current session?
 If no, current variables and display will be cleared.</source>
         <translation>আমদানি হওয়া সেশনটি বর্তমান সেশনের সাথে একীভূত করবেন?
 না হলে, বর্তমান ভেরিয়েবল ও প্রদর্শন মুছে যাবে।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8877"/>
+        <location filename="../../gui/mainwindow.cpp" line="8909"/>
         <source>Ignore error?</source>
         <translation>ত্রুটি উপেক্ষা করবেন?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8917"/>
+        <location filename="../../gui/mainwindow.cpp" line="8949"/>
         <source>Global User Variable</source>
         <translation>বৈশ্বিক ব্যবহারকারী চলক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8918"/>
+        <location filename="../../gui/mainwindow.cpp" line="8950"/>
         <source>Global User Function</source>
         <translation>বৈশ্বিক ব্যবহারকারী ফাংশন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8919"/>
+        <location filename="../../gui/mainwindow.cpp" line="8951"/>
         <source>Global User Unit</source>
         <translation>বৈশ্বিক ব্যবহারকারী একক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9289"/>
+        <location filename="../../gui/mainwindow.cpp" line="9321"/>
         <source>History Size Limit</source>
         <translation>ইতিহাস আকারের সীমা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9290"/>
+        <location filename="../../gui/mainwindow.cpp" line="9322"/>
         <source>Maximum number of history entries for this session (0 = unlimited):</source>
         <translation>এই সেশনের জন্য ইতিহাস এন্ট্রির সর্বোচ্চ সংখ্যা (0 = অসীম):</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9498"/>
+        <location filename="../../gui/mainwindow.cpp" line="9530"/>
         <source>Export session as HTML</source>
         <translation>সেশন HTML হিসেবে রপ্তানি করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9499"/>
+        <location filename="../../gui/mainwindow.cpp" line="9531"/>
         <source>HTML file (*.html)</source>
         <translation>HTML ফাইল (*.html)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9518"/>
+        <location filename="../../gui/mainwindow.cpp" line="9550"/>
         <source>Export session as plain text</source>
         <translation>সেশন সাধারণ পাঠ্য হিসেবে রপ্তানি করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9519"/>
+        <location filename="../../gui/mainwindow.cpp" line="9551"/>
         <source>Text file (*.txt);;Any file (*.*)</source>
         <translation>পাঠ্য ফাইল (*.txt);;যেকোনো ফাইল (*.*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9556"/>
+        <location filename="../../gui/mainwindow.cpp" line="9588"/>
         <source>Display font</source>
         <translation>প্রদর্শনের ফন্ট</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11320"/>
-        <location filename="../../gui/mainwindow.cpp" line="11493"/>
+        <location filename="../../gui/mainwindow.cpp" line="11352"/>
+        <location filename="../../gui/mainwindow.cpp" line="11525"/>
         <source>Could not recalculate from calculation %1: %2</source>
         <translation>গণনা %1 থেকে পুনর্গণনা করা যায়নি: %2</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11409"/>
+        <location filename="../../gui/mainwindow.cpp" line="11441"/>
         <source>History Size Limit Reached</source>
         <translation>ইতিহাস আকারের সীমা পৌঁছেছে</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11410"/>
+        <location filename="../../gui/mainwindow.cpp" line="11442"/>
         <source>This calculation fills the last available history slot. Future calculations will remove the oldest calculation from history. You can increase the limit from Session &gt; History Size Limit.</source>
         <translation>এই গণনাটি ইতিহাসের শেষ উপলব্ধ স্থান পূরণ করছে। ভবিষ্যতের গণনাগুলি ইতিহাস থেকে সবচেয়ে পুরোনো গণনা সরিয়ে দেবে। সেশন &gt; ইতিহাস আকারের সীমা থেকে সীমাটি বাড়াতে পারেন।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11433"/>
+        <location filename="../../gui/mainwindow.cpp" line="11465"/>
         <source>Editing calculation. Press Esc twice to cancel.</source>
         <translation>গণনা সম্পাদনা হচ্ছে। বাতিল করতে Esc দুবার চাপুন।</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11474"/>
+        <location filename="../../gui/mainwindow.cpp" line="11506"/>
         <source>Calculation Settings</source>
         <translation>গণনা সেটিংস</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11550"/>
+        <location filename="../../gui/mainwindow.cpp" line="11582"/>
         <source>Invalid recalculation start index</source>
         <translation>অবৈধ পুনর্গণনা শুরু সূচক</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12097"/>
+        <location filename="../../gui/mainwindow.cpp" line="12129"/>
         <source>System Default</source>
         <translation>সিস্টেম ডিফল্ট</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12101"/>
+        <location filename="../../gui/mainwindow.cpp" line="12133"/>
         <source>Language</source>
         <translation>ভাষা</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12101"/>
+        <location filename="../../gui/mainwindow.cpp" line="12133"/>
         <source>Select the language:</source>
         <translation>ভাষা নির্বাচন করুন:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12131"/>
+        <location filename="../../gui/mainwindow.cpp" line="12163"/>
         <source>Custom</source>
         <translation>কাস্টম</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12143"/>
+        <location filename="../../gui/mainwindow.cpp" line="12175"/>
         <source>Decimal places:</source>
         <translation>দশমিক স্থান:</translation>
     </message>
@@ -5924,142 +5946,144 @@ If no, current variables and display will be cleared.</source>
 <context>
     <name>ResultDisplay</name>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="466"/>
+        <location filename="../../gui/resultdisplay.cpp" line="563"/>
+        <location filename="../../gui/resultdisplay.cpp" line="569"/>
+        <location filename="../../gui/resultdisplay.cpp" line="573"/>
         <source>Scroll to bottom</source>
         <translation>নিচে স্ক্রল করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1103"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1408"/>
         <source>Copy Expression</source>
         <translation>এক্সপ্রেশন কপি করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1110"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1415"/>
         <source>Copy Result</source>
         <translation>ফলাফল কপি করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1126"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1431"/>
         <source>Edit Expression</source>
         <translation>এক্সপ্রেশন সম্পাদনা করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1130"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1435"/>
         <source>Change Settings</source>
         <translation>সেটিংস পরিবর্তন করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1134"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1439"/>
         <source>Remove Calculation</source>
         <translation>গণনা সরান</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1139"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1444"/>
         <source>Remove All Calculations Above</source>
         <translation>উপরের সব গণনা সরান</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1143"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1448"/>
         <source>Remove All Calculations Below</source>
         <translation>নিচের সব গণনা সরান</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1150"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1455"/>
         <source>New Session</source>
         <translation>নতুন সেশন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1154"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1459"/>
         <source>Open Session</source>
         <translation>সেশন খুলুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1159"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1464"/>
         <source>Split Left</source>
         <translation>বামে বিভক্ত করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1163"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1468"/>
         <source>Split Right</source>
         <translation>ডানে বিভক্ত করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1167"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1472"/>
         <source>Split Up</source>
         <translation>উপরে বিভক্ত করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1171"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1476"/>
         <source>Split Down</source>
         <translation>নিচে বিভক্ত করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1176"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1481"/>
         <source>Import Session</source>
         <translation>সেশন আমদানি করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1177"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1482"/>
         <source>Export Session</source>
         <translation>সেশন রপ্তানি করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1179"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1484"/>
         <source>Duplicate Session</source>
         <translation>সেশন নকল করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1183"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1488"/>
         <source>Rename Session</source>
         <translation>সেশনের নাম বদলান</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1187"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1492"/>
         <source>Clear Session</source>
         <translation>সেশন পরিষ্কার করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1191"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1496"/>
         <source>Delete Session</source>
         <translation>সেশন মুছুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1195"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1500"/>
         <source>Close Session</source>
         <translation>সেশন বন্ধ করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1199"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1504"/>
         <source>Close Pane</source>
         <translation>প্যান বন্ধ করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1207"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1512"/>
         <source>Main Menu</source>
         <translation>প্রধান মেনু</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1333"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1636"/>
         <source>Cancel editing</source>
         <translation>সম্পাদনা বাতিল</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1389"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1683"/>
         <source>Copy result</source>
         <translation>ফলাফল কপি করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1391"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1684"/>
         <source>Edit expression</source>
         <translation>এক্সপ্রেশন সম্পাদনা করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1393"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1685"/>
         <source>Change settings</source>
         <translation>সেটিংস পরিবর্তন করুন</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1395"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1686"/>
         <source>Remove calculation</source>
         <translation>গণনা সরান</translation>
     </message>

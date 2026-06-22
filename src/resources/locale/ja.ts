@@ -56,6 +56,29 @@
     </message>
 </context>
 <context>
+    <name>BitFieldWidget</name>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="745"/>
+        <source>Reset bits to zero</source>
+        <translation>ビットをゼロにリセット</translation>
+    </message>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="747"/>
+        <source>Invert bits</source>
+        <translation>ビットを反転</translation>
+    </message>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="749"/>
+        <source>Shift bits left</source>
+        <translation>ビットを左にシフト</translation>
+    </message>
+    <message>
+        <location filename="../../gui/bitfieldwidget.cpp" line="751"/>
+        <source>Shift bits right</source>
+        <translation>ビットを右にシフト</translation>
+    </message>
+</context>
+<context>
     <name>Book</name>
     <message>
         <location filename="../../core/book.cpp" line="53"/>
@@ -391,9 +414,9 @@
 <context>
     <name>ConstantCompletion</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="4626"/>
-        <location filename="../../gui/editor.cpp" line="4636"/>
-        <location filename="../../gui/editor.cpp" line="4756"/>
+        <location filename="../../gui/editor.cpp" line="4628"/>
+        <location filename="../../gui/editor.cpp" line="4638"/>
+        <location filename="../../gui/editor.cpp" line="4758"/>
         <source>All</source>
         <translation>すべて</translation>
     </message>
@@ -2312,7 +2335,6 @@
     </message>
     <message>
         <location filename="../../core/constants.cpp" line="544"/>
-        <location filename="../../gui/constantswidget.cpp" line="42"/>
         <source>Euler&apos;s number (e)</source>
         <translation>ネイピア数 (e)</translation>
     </message>
@@ -2525,47 +2547,47 @@
 <context>
     <name>ConstantsWidget</name>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="285"/>
+        <location filename="../../gui/constantswidget.cpp" line="293"/>
         <source>Domain</source>
         <translation>分野</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="286"/>
+        <location filename="../../gui/constantswidget.cpp" line="294"/>
         <source>Subdomain</source>
         <translation>サブ分野</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="288"/>
+        <location filename="../../gui/constantswidget.cpp" line="296"/>
         <source>No match found</source>
         <translation>見つかりませんでした</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="291"/>
+        <location filename="../../gui/constantswidget.cpp" line="299"/>
         <source>Name</source>
         <translation>名前</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="292"/>
+        <location filename="../../gui/constantswidget.cpp" line="300"/>
         <source>Value</source>
         <translation>値</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="293"/>
+        <location filename="../../gui/constantswidget.cpp" line="301"/>
         <source>Unit</source>
         <translation>単位</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="287"/>
+        <location filename="../../gui/constantswidget.cpp" line="295"/>
         <source>Search</source>
         <translation>検索</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="338"/>
-        <location filename="../../gui/constantswidget.cpp" line="340"/>
-        <location filename="../../gui/constantswidget.cpp" line="419"/>
-        <location filename="../../gui/constantswidget.cpp" line="459"/>
-        <location filename="../../gui/constantswidget.cpp" line="460"/>
-        <location filename="../../gui/constantswidget.cpp" line="469"/>
+        <location filename="../../gui/constantswidget.cpp" line="346"/>
+        <location filename="../../gui/constantswidget.cpp" line="348"/>
+        <location filename="../../gui/constantswidget.cpp" line="427"/>
+        <location filename="../../gui/constantswidget.cpp" line="467"/>
+        <location filename="../../gui/constantswidget.cpp" line="468"/>
+        <location filename="../../gui/constantswidget.cpp" line="477"/>
         <source>All</source>
         <translation>すべて</translation>
     </message>
@@ -2641,45 +2663,45 @@
 <context>
     <name>Editor</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="1901"/>
+        <location filename="../../gui/editor.cpp" line="1903"/>
         <source>Unit</source>
         <translation>単位</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1905"/>
+        <location filename="../../gui/editor.cpp" line="1907"/>
         <source>User unit</source>
         <translation>ユーザー単位</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1960"/>
+        <location filename="../../gui/editor.cpp" line="1962"/>
         <source>User function</source>
         <translation>ユーザー関数</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2087"/>
+        <location filename="../../gui/editor.cpp" line="2089"/>
         <source>Argument</source>
         <translation>引数</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2263"/>
-        <location filename="../../gui/editor.cpp" line="2297"/>
+        <location filename="../../gui/editor.cpp" line="2265"/>
+        <location filename="../../gui/editor.cpp" line="2299"/>
         <source>Current result:&lt;br/&gt;%1</source>
         <translation>現在の結果:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2369"/>
-        <location filename="../../gui/editor.cpp" line="2397"/>
+        <location filename="../../gui/editor.cpp" line="2371"/>
+        <location filename="../../gui/editor.cpp" line="2399"/>
         <source>Selection result:&lt;br/&gt;%1</source>
         <translation>選択範囲の結果:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2363"/>
-        <location filename="../../gui/editor.cpp" line="2391"/>
+        <location filename="../../gui/editor.cpp" line="2365"/>
+        <location filename="../../gui/editor.cpp" line="2393"/>
         <source>Selection result: n/a</source>
         <translation>選択結果: 該当なし</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2404"/>
+        <location filename="../../gui/editor.cpp" line="2406"/>
         <source>Selection result: %1</source>
         <translation>選択結果: %1</translation>
     </message>
@@ -4358,33 +4380,33 @@
 <context>
     <name>FunctionsWidget</name>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="58"/>
+        <location filename="../../gui/functionswidget.cpp" line="175"/>
         <source>Domain</source>
         <translation>分野</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="134"/>
-        <location filename="../../gui/functionswidget.cpp" line="176"/>
+        <location filename="../../gui/functionswidget.cpp" line="135"/>
+        <location filename="../../gui/functionswidget.cpp" line="178"/>
         <source>All</source>
         <translation>すべて</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="169"/>
+        <location filename="../../gui/functionswidget.cpp" line="170"/>
         <source>Name</source>
         <translation>名前</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="173"/>
+        <location filename="../../gui/functionswidget.cpp" line="174"/>
         <source>Search</source>
         <translation>検索</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="180"/>
+        <location filename="../../gui/functionswidget.cpp" line="182"/>
         <source>No match found</source>
         <translation>見つかりませんでした</translation>
     </message>
     <message>
-        <location filename="../../gui/functionswidget.cpp" line="168"/>
+        <location filename="../../gui/functionswidget.cpp" line="169"/>
         <source>Identifier</source>
         <translation>識別子</translation>
     </message>
@@ -4563,1219 +4585,1219 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3389"/>
+        <location filename="../../gui/mainwindow.cpp" line="3397"/>
         <source>Radian</source>
         <translation>ラジアン</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3393"/>
+        <location filename="../../gui/mainwindow.cpp" line="3401"/>
         <source>Degree</source>
         <translation>度</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3390"/>
+        <location filename="../../gui/mainwindow.cpp" line="3398"/>
         <source>Gradian</source>
         <translation>グラード</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3399"/>
+        <location filename="../../gui/mainwindow.cpp" line="3407"/>
         <source>Binary</source>
         <translation>2進数</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3400"/>
+        <location filename="../../gui/mainwindow.cpp" line="3408"/>
         <source>Octal</source>
         <translation>8進数</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3401"/>
+        <location filename="../../gui/mainwindow.cpp" line="3409"/>
         <source>Hexadecimal</source>
         <translation>16進数</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3402"/>
+        <location filename="../../gui/mainwindow.cpp" line="3410"/>
         <source>Sexagesimal</source>
         <translation>六十進法</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3404"/>
+        <location filename="../../gui/mainwindow.cpp" line="3412"/>
         <source>Engineering decimal</source>
         <translation>工学的10進表記</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3405"/>
+        <location filename="../../gui/mainwindow.cpp" line="3413"/>
         <source>Scientific decimal</source>
         <translation>科学技術10進数</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3423"/>
+        <location filename="../../gui/mainwindow.cpp" line="3431"/>
         <source>&amp;Import...</source>
         <translation>インポート(&amp;I)...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3425"/>
+        <location filename="../../gui/mainwindow.cpp" line="3433"/>
         <source>&amp;Load...</source>
         <translation>読み込み(&amp;L)...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3426"/>
+        <location filename="../../gui/mainwindow.cpp" line="3434"/>
         <source>&amp;Quit</source>
         <translation>終了(&amp;Q)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3427"/>
+        <location filename="../../gui/mainwindow.cpp" line="3435"/>
         <source>&amp;Save...</source>
         <translation>保存(&amp;S)...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3429"/>
+        <location filename="../../gui/mainwindow.cpp" line="3437"/>
         <source>Clear E&amp;xpression</source>
         <translation>式の削除(&amp;x)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3430"/>
+        <location filename="../../gui/mainwindow.cpp" line="3438"/>
         <source>Clear &amp;History</source>
         <translation>履歴の削除(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3431"/>
+        <location filename="../../gui/mainwindow.cpp" line="3439"/>
         <source>Copy Last &amp;Result</source>
         <translation>最後の結果をコピーする(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3432"/>
+        <location filename="../../gui/mainwindow.cpp" line="3440"/>
         <source>&amp;Copy</source>
         <translation>コピー(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3433"/>
+        <location filename="../../gui/mainwindow.cpp" line="3441"/>
         <source>&amp;Paste</source>
         <translation>貼り付け(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3434"/>
+        <location filename="../../gui/mainwindow.cpp" line="3442"/>
         <source>&amp;Select Expression</source>
         <translation>式の選択(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3435"/>
+        <location filename="../../gui/mainwindow.cpp" line="3443"/>
         <source>&amp;Wrap Selection in Parentheses</source>
         <translation>選択範囲を括弧で囲む(&amp;W)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3437"/>
+        <location filename="../../gui/mainwindow.cpp" line="3445"/>
         <source>&amp;Constants</source>
         <translation>定数(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3438"/>
+        <location filename="../../gui/mainwindow.cpp" line="3446"/>
         <source>F&amp;ull Screen Mode</source>
         <translation>全画面表示(&amp;n)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3439"/>
+        <location filename="../../gui/mainwindow.cpp" line="3447"/>
         <source>&amp;Functions</source>
         <translation>関数(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3440"/>
+        <location filename="../../gui/mainwindow.cpp" line="3448"/>
         <source>&amp;History</source>
         <translation>履歴(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3450"/>
+        <location filename="../../gui/mainwindow.cpp" line="3458"/>
         <source>&amp;Status Bar</source>
         <translation>ステータスバー(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3453"/>
-        <location filename="../../gui/mainwindow.cpp" line="6057"/>
+        <location filename="../../gui/mainwindow.cpp" line="3461"/>
+        <location filename="../../gui/mainwindow.cpp" line="6089"/>
         <source>Bitfield</source>
         <translation>ビットフィールド</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3454"/>
+        <location filename="../../gui/mainwindow.cpp" line="3462"/>
         <source>Use&amp;r Functions</source>
         <translation>ユーザー関数(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3457"/>
+        <location filename="../../gui/mainwindow.cpp" line="3465"/>
         <source>&amp;Degree</source>
         <translation>度(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3458"/>
+        <location filename="../../gui/mainwindow.cpp" line="3466"/>
         <source>&amp;Radian</source>
         <translation>ラジアン(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3459"/>
+        <location filename="../../gui/mainwindow.cpp" line="3467"/>
         <source>&amp;Gradian</source>
         <translation>グラード(&amp;G)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3466"/>
+        <location filename="../../gui/mainwindow.cpp" line="3474"/>
         <source>Automatic &amp;Completion</source>
         <translation>自動補完(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3477"/>
+        <location filename="../../gui/mainwindow.cpp" line="3485"/>
         <source>Syntax &amp;Highlighting</source>
         <translation>構文強調表示(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3495"/>
+        <location filename="../../gui/mainwindow.cpp" line="3503"/>
         <source>&amp;Comma</source>
         <translation>カンマ(&amp;C)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3496"/>
+        <location filename="../../gui/mainwindow.cpp" line="3504"/>
         <source>&amp;System Default</source>
         <translation>既定の設定(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3497"/>
+        <location filename="../../gui/mainwindow.cpp" line="3505"/>
         <source>&amp;Dot</source>
         <translation>ドット(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3498"/>
+        <location filename="../../gui/mainwindow.cpp" line="3506"/>
         <source>Dot &amp;And Comma</source>
         <translation>ドットとカンマ(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3521"/>
+        <location filename="../../gui/mainwindow.cpp" line="3529"/>
         <source>&amp;Binary</source>
         <translation>2進数(B&amp;)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3518"/>
+        <location filename="../../gui/mainwindow.cpp" line="3526"/>
         <source>&amp;Engineering</source>
         <translation>工学(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3523"/>
+        <location filename="../../gui/mainwindow.cpp" line="3531"/>
         <source>&amp;Hexadecimal</source>
         <translation>16進数(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3522"/>
+        <location filename="../../gui/mainwindow.cpp" line="3530"/>
         <source>&amp;Octal</source>
         <translation>8進数(&amp;O)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3519"/>
+        <location filename="../../gui/mainwindow.cpp" line="3527"/>
         <source>&amp;Scientific</source>
         <translation>科学(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3541"/>
+        <location filename="../../gui/mainwindow.cpp" line="3549"/>
         <source>User &amp;Manual</source>
         <translation>ユーザーマニュアル(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3549"/>
+        <location filename="../../gui/mainwindow.cpp" line="3557"/>
         <source>&amp;Donate</source>
         <translation>寄付する(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6163"/>
+        <location filename="../../gui/mainwindow.cpp" line="6195"/>
         <source>Constants</source>
         <translation>定数</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6193"/>
+        <location filename="../../gui/mainwindow.cpp" line="6225"/>
         <source>Functions</source>
         <translation>関数</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6216"/>
+        <location filename="../../gui/mainwindow.cpp" line="6248"/>
         <source>History</source>
         <translation>履歴</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6286"/>
+        <location filename="../../gui/mainwindow.cpp" line="6318"/>
         <source>User Functions</source>
         <translation>ユーザー関数</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6877"/>
+        <location filename="../../gui/mainwindow.cpp" line="6909"/>
         <source>Type an expression here</source>
         <translation>ここに式を入力してください</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3537"/>
+        <location filename="../../gui/mainwindow.cpp" line="3545"/>
         <source>&amp;Font...</source>
         <translation>フォント (&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3539"/>
+        <location filename="../../gui/mainwindow.cpp" line="3547"/>
         <source>&amp;Language...</source>
         <translation>言語(&amp;L)...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3851"/>
+        <location filename="../../gui/mainwindow.cpp" line="3859"/>
         <source>&amp;Session</source>
         <translation>セッション(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3853"/>
+        <location filename="../../gui/mainwindow.cpp" line="3861"/>
         <source>&amp;Edit</source>
         <translation>編集(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3854"/>
+        <location filename="../../gui/mainwindow.cpp" line="3862"/>
         <source>&amp;View</source>
         <translation>表示(&amp;V)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3857"/>
+        <location filename="../../gui/mainwindow.cpp" line="3865"/>
         <source>Se&amp;ttings</source>
         <translation>設定(&amp;t)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3863"/>
+        <location filename="../../gui/mainwindow.cpp" line="3871"/>
         <source>&amp;Decimal</source>
         <translation>10進数(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3855"/>
+        <location filename="../../gui/mainwindow.cpp" line="3863"/>
         <source>&amp;Keypad</source>
         <translation>キーパッド(&amp;K)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3462"/>
+        <location filename="../../gui/mainwindow.cpp" line="3470"/>
         <source>Always on &amp;Top</source>
         <translation>常に最前面に表示（&amp;T）</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3479"/>
+        <location filename="../../gui/mainwindow.cpp" line="3487"/>
         <source>Disabled</source>
         <translation>なし</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3480"/>
+        <location filename="../../gui/mainwindow.cpp" line="3488"/>
         <source>Small Space</source>
         <translation>空白（狭）</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3481"/>
+        <location filename="../../gui/mainwindow.cpp" line="3489"/>
         <source>Medium Space</source>
         <translation>空白（中）</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3482"/>
+        <location filename="../../gui/mainwindow.cpp" line="3490"/>
         <source>Large Space</source>
         <translation>空白（広い）</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3499"/>
+        <location filename="../../gui/mainwindow.cpp" line="3507"/>
         <source>&amp;0 Digits</source>
         <translation>0桁(&amp;0)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3500"/>
+        <location filename="../../gui/mainwindow.cpp" line="3508"/>
         <source>&amp;15 Digits</source>
         <translation>15桁(&amp;1)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3501"/>
+        <location filename="../../gui/mainwindow.cpp" line="3509"/>
         <source>&amp;2 Digits</source>
         <translation>2桁(&amp;2)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3502"/>
+        <location filename="../../gui/mainwindow.cpp" line="3510"/>
         <source>&amp;3 Digits</source>
         <translation>3桁(&amp;3)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3503"/>
+        <location filename="../../gui/mainwindow.cpp" line="3511"/>
         <source>&amp;50 Digits</source>
         <translation>50桁(&amp;5)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3504"/>
+        <location filename="../../gui/mainwindow.cpp" line="3512"/>
         <source>&amp;8 Digits</source>
         <translation>8桁(&amp;8)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3524"/>
+        <location filename="../../gui/mainwindow.cpp" line="3532"/>
         <source>&amp;Sexagesimal</source>
         <translation>六十進法(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3542"/>
+        <location filename="../../gui/mainwindow.cpp" line="3550"/>
         <source>Context Help</source>
         <translation>コンテキストヘルプ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3550"/>
+        <location filename="../../gui/mainwindow.cpp" line="3558"/>
         <source>About &amp;SpeedCrunch</source>
         <translation>SpeedCrunchについて (&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3874"/>
+        <location filename="../../gui/mainwindow.cpp" line="3882"/>
         <source>&amp;Help</source>
         <translation>ヘルプ(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8706"/>
+        <location filename="../../gui/mainwindow.cpp" line="8738"/>
         <source>Load Session</source>
         <translation>セッションを読み込む</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8539"/>
-        <location filename="../../gui/mainwindow.cpp" line="8545"/>
-        <location filename="../../gui/mainwindow.cpp" line="8553"/>
-        <location filename="../../gui/mainwindow.cpp" line="8559"/>
-        <location filename="../../gui/mainwindow.cpp" line="8575"/>
-        <location filename="../../gui/mainwindow.cpp" line="8581"/>
-        <location filename="../../gui/mainwindow.cpp" line="8632"/>
-        <location filename="../../gui/mainwindow.cpp" line="8638"/>
-        <location filename="../../gui/mainwindow.cpp" line="8738"/>
-        <location filename="../../gui/mainwindow.cpp" line="8815"/>
-        <location filename="../../gui/mainwindow.cpp" line="8837"/>
-        <location filename="../../gui/mainwindow.cpp" line="8877"/>
-        <location filename="../../gui/mainwindow.cpp" line="9506"/>
-        <location filename="../../gui/mainwindow.cpp" line="9526"/>
+        <location filename="../../gui/mainwindow.cpp" line="8571"/>
+        <location filename="../../gui/mainwindow.cpp" line="8577"/>
+        <location filename="../../gui/mainwindow.cpp" line="8585"/>
+        <location filename="../../gui/mainwindow.cpp" line="8591"/>
+        <location filename="../../gui/mainwindow.cpp" line="8607"/>
+        <location filename="../../gui/mainwindow.cpp" line="8613"/>
+        <location filename="../../gui/mainwindow.cpp" line="8664"/>
+        <location filename="../../gui/mainwindow.cpp" line="8670"/>
+        <location filename="../../gui/mainwindow.cpp" line="8770"/>
+        <location filename="../../gui/mainwindow.cpp" line="8847"/>
+        <location filename="../../gui/mainwindow.cpp" line="8869"/>
+        <location filename="../../gui/mainwindow.cpp" line="8909"/>
+        <location filename="../../gui/mainwindow.cpp" line="9538"/>
+        <location filename="../../gui/mainwindow.cpp" line="9558"/>
         <source>Error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8539"/>
-        <location filename="../../gui/mainwindow.cpp" line="8837"/>
+        <location filename="../../gui/mainwindow.cpp" line="8571"/>
+        <location filename="../../gui/mainwindow.cpp" line="8869"/>
         <source>Can&apos;t read from file %1</source>
         <translation>%1 を読み込むことができません</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8712"/>
+        <location filename="../../gui/mainwindow.cpp" line="8744"/>
         <source>Merge session being loaded with current session?
 If no, current variables and display will be cleared.</source>
         <translation>現在のセッションに読み込んだセッションを加えますか?
 加えない場合、現在の変数と示されている履歴は消去されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8830"/>
+        <location filename="../../gui/mainwindow.cpp" line="8862"/>
         <source>All Files (*)</source>
         <translation>すべてのファイル (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4189"/>
-        <location filename="../../gui/mainwindow.cpp" line="8831"/>
+        <location filename="../../gui/mainwindow.cpp" line="4205"/>
+        <location filename="../../gui/mainwindow.cpp" line="8863"/>
         <source>Import Session</source>
         <translation>セッションのインポート</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8842"/>
+        <location filename="../../gui/mainwindow.cpp" line="8874"/>
         <source>Merge session being imported with current session?
 If no, current variables and display will be cleared.</source>
         <translation>現在のセッションにインポートされたセッションを加えますか？
 もし加えないのならば，現在の変数と表示されている履歴は消去されます。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8877"/>
+        <location filename="../../gui/mainwindow.cpp" line="8909"/>
         <source>Ignore error?</source>
         <translation>エラーを無視しますか？</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8794"/>
+        <location filename="../../gui/mainwindow.cpp" line="8826"/>
         <source>Save Session</source>
         <translation>セッションを保存する</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="2139"/>
-        <location filename="../../gui/mainwindow.cpp" line="4196"/>
+        <location filename="../../gui/mainwindow.cpp" line="2147"/>
+        <location filename="../../gui/mainwindow.cpp" line="4212"/>
         <source>Close Session</source>
         <translation>セッションを閉じる</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3324"/>
+        <location filename="../../gui/mainwindow.cpp" line="3332"/>
         <source>Angle Mode:</source>
         <translation>角度モード:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3325"/>
+        <location filename="../../gui/mainwindow.cpp" line="3333"/>
         <source>Notation:</source>
         <translation>表記:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3326"/>
+        <location filename="../../gui/mainwindow.cpp" line="3334"/>
         <source>Precision:</source>
         <translation>精度:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3391"/>
+        <location filename="../../gui/mainwindow.cpp" line="3399"/>
         <source>Turn</source>
         <translation>ターン</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3392"/>
+        <location filename="../../gui/mainwindow.cpp" line="3400"/>
         <source>Revolution</source>
         <translation>回転</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3403"/>
+        <location filename="../../gui/mainwindow.cpp" line="3411"/>
         <source>Fixed-point decimal</source>
         <translation>固定小数点10進表記</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3406"/>
+        <location filename="../../gui/mainwindow.cpp" line="3414"/>
         <source>Rational</source>
         <translation>有理数</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3407"/>
+        <location filename="../../gui/mainwindow.cpp" line="3415"/>
         <source>Automatic decimal</source>
         <translation>自動10進表記</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3415"/>
-        <location filename="../../gui/mainwindow.cpp" line="12123"/>
+        <location filename="../../gui/mainwindow.cpp" line="3423"/>
+        <location filename="../../gui/mainwindow.cpp" line="12155"/>
         <source>Automatic</source>
         <translation>自動</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3424"/>
+        <location filename="../../gui/mainwindow.cpp" line="3432"/>
         <source>User &amp;Definitions...</source>
         <translation>ユーザー定義(&amp;D)...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3442"/>
+        <location filename="../../gui/mainwindow.cpp" line="3450"/>
         <source>&amp;Basic</source>
         <translation>基本(&amp;B)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3443"/>
+        <location filename="../../gui/mainwindow.cpp" line="3451"/>
         <source>&amp;Scientific (wide)</source>
         <translation>科学 (広い)(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3444"/>
+        <location filename="../../gui/mainwindow.cpp" line="3452"/>
         <source>Scientific (narrow)</source>
         <translation>科学 (狭い)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3445"/>
-        <location filename="../../gui/mainwindow.cpp" line="3505"/>
+        <location filename="../../gui/mainwindow.cpp" line="3453"/>
+        <location filename="../../gui/mainwindow.cpp" line="3513"/>
         <source>&amp;Custom...</source>
         <translation>カスタム(&amp;C)...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3451"/>
+        <location filename="../../gui/mainwindow.cpp" line="3459"/>
         <source>Main &amp;Menu</source>
         <translation>メインメニュー(&amp;M)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3452"/>
+        <location filename="../../gui/mainwindow.cpp" line="3460"/>
         <source>User &amp;Variables</source>
         <translation>ユーザー変数(&amp;V)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3455"/>
+        <location filename="../../gui/mainwindow.cpp" line="3463"/>
         <source>User &amp;Units</source>
         <translation>ユーザー単位(&amp;U)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3460"/>
+        <location filename="../../gui/mainwindow.cpp" line="3468"/>
         <source>&amp;Turn</source>
         <translation>ターン(&amp;T)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3461"/>
+        <location filename="../../gui/mainwindow.cpp" line="3469"/>
         <source>&amp;Revolution</source>
         <translation>回転(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3463"/>
+        <location filename="../../gui/mainwindow.cpp" line="3471"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
         <translation>演算子で始まるときに &quot;ans&quot; を自動挿入</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3464"/>
-        <location filename="../../gui/mainwindow.cpp" line="3465"/>
+        <location filename="../../gui/mainwindow.cpp" line="3472"/>
+        <location filename="../../gui/mainwindow.cpp" line="3473"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
         <translation>新しい式が +、-、*、/ で始まる場合、SpeedCrunch は先頭に &quot;ans&quot; を挿入します。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3467"/>
+        <location filename="../../gui/mainwindow.cpp" line="3475"/>
         <source>Built-in &amp;functions</source>
         <translation>組み込み関数(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3468"/>
+        <location filename="../../gui/mainwindow.cpp" line="3476"/>
         <source>Built-in &amp;variables</source>
         <translation>組み込み変数(&amp;V)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3469"/>
+        <location filename="../../gui/mainwindow.cpp" line="3477"/>
         <source>&amp;Units</source>
         <translation>単位(&amp;U)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3470"/>
+        <location filename="../../gui/mainwindow.cpp" line="3478"/>
         <source>User &amp;functions</source>
         <translation>ユーザー関数(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3471"/>
+        <location filename="../../gui/mainwindow.cpp" line="3479"/>
         <source>User &amp;variables</source>
         <translation>ユーザー変数(&amp;V)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3472"/>
+        <location filename="../../gui/mainwindow.cpp" line="3480"/>
         <source>Show Empty History &amp;Hint</source>
         <translation>空の履歴ヒントを表示(&amp;H)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3473"/>
-        <location filename="../../gui/mainwindow.cpp" line="3474"/>
+        <location filename="../../gui/mainwindow.cpp" line="3481"/>
+        <location filename="../../gui/mainwindow.cpp" line="3482"/>
         <source>When history is empty, show a hint in the status area.</source>
         <translation>履歴が空の場合、ステータス領域にヒントを表示します。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3475"/>
+        <location filename="../../gui/mainwindow.cpp" line="3483"/>
         <source>Show Live Result &amp;Preview</source>
         <translation>ライブ結果プレビューを表示(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3476"/>
+        <location filename="../../gui/mainwindow.cpp" line="3484"/>
         <source>Save &amp;Window Position on Exit</source>
         <translation>終了時にウィンドウ位置を保存(&amp;W)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3478"/>
+        <location filename="../../gui/mainwindow.cpp" line="3486"/>
         <source>Hover Highlighting</source>
         <translation>ホバー強調表示</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3483"/>
+        <location filename="../../gui/mainwindow.cpp" line="3491"/>
         <source>Group Integer Part Only</source>
         <translation>整数部のみグループ化</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3484"/>
+        <location filename="../../gui/mainwindow.cpp" line="3492"/>
         <source>Keep Entered Expression After Evaluate</source>
         <translation>評価後に入力式を保持</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3485"/>
+        <location filename="../../gui/mainwindow.cpp" line="3493"/>
         <source>Number Format...</source>
         <translation>数値形式...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3486"/>
+        <location filename="../../gui/mainwindow.cpp" line="3494"/>
         <source>Notation &amp;&amp; Precision...</source>
         <translation>表記と精度...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3487"/>
-        <location filename="../../gui/mainwindow.cpp" line="3488"/>
+        <location filename="../../gui/mainwindow.cpp" line="3495"/>
+        <location filename="../../gui/mainwindow.cpp" line="3496"/>
         <source>After pressing Enter, keep the entered expression selected in the editor.</source>
         <translation>Enter キーを押した後、入力した式をエディター内で選択したままにします。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3489"/>
+        <location filename="../../gui/mainwindow.cpp" line="3497"/>
         <source>Never</source>
         <translation>しない</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3490"/>
+        <location filename="../../gui/mainwindow.cpp" line="3498"/>
         <source>Always</source>
         <translation>常に</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3491"/>
+        <location filename="../../gui/mainwindow.cpp" line="3499"/>
         <source>Only for Single-Line Expressions</source>
         <translation>単一行の式のみ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3492"/>
+        <location filename="../../gui/mainwindow.cpp" line="3500"/>
         <source>Automatically Copy New Results to Clipboard</source>
         <translation>新しい結果を自動的にクリップボードへコピー</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3493"/>
+        <location filename="../../gui/mainwindow.cpp" line="3501"/>
         <source>Simplify Displayed Expressions</source>
         <translation>表示される式を簡略化</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3494"/>
+        <location filename="../../gui/mainwindow.cpp" line="3502"/>
         <source>History Size &amp;Limit...</source>
         <translation>履歴サイズ制限(&amp;L)...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3507"/>
+        <location filename="../../gui/mainwindow.cpp" line="3515"/>
         <source>Nearest, Half &amp;Away (round)</source>
         <translation>最近接、半分はゼロから遠い方(&amp;A) (round)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3509"/>
+        <location filename="../../gui/mainwindow.cpp" line="3517"/>
         <source>Nearest, Half &amp;Even (roundeven)</source>
         <translation>最近接、半分は偶数(&amp;E) (roundeven)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3510"/>
+        <location filename="../../gui/mainwindow.cpp" line="3518"/>
         <source>Toward &amp;Zero (trunc)</source>
         <translation>ゼロ方向(&amp;Z) (trunc)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3512"/>
+        <location filename="../../gui/mainwindow.cpp" line="3520"/>
         <source>Toward +&amp;∞ (ceil)</source>
         <translation>＋∞方向(&amp;∞) (ceil)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3514"/>
+        <location filename="../../gui/mainwindow.cpp" line="3522"/>
         <source>Toward −&amp;∞ (floor)</source>
         <translation>−∞方向(&amp;∞) (floor)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3517"/>
+        <location filename="../../gui/mainwindow.cpp" line="3525"/>
         <source>&amp;Fixed-Point</source>
         <translation>固定小数点(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3520"/>
+        <location filename="../../gui/mainwindow.cpp" line="3528"/>
         <source>&amp;Rational</source>
         <translation>有理数(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3526"/>
+        <location filename="../../gui/mainwindow.cpp" line="3534"/>
         <source>&amp;Exponential (m·s⁻¹)</source>
         <translation>指数表記(&amp;E) (m·s⁻¹)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3528"/>
+        <location filename="../../gui/mainwindow.cpp" line="3536"/>
         <source>&amp;Fractional (m/s)</source>
         <translation>分数表記(&amp;F) (m/s)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3529"/>
+        <location filename="../../gui/mainwindow.cpp" line="3537"/>
         <source>&amp;Rectangular (a + bi)</source>
         <translation>直交形式(&amp;R) (a + bi)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3530"/>
+        <location filename="../../gui/mainwindow.cpp" line="3538"/>
         <source>Exponential (reⁱᶿ)</source>
         <translation>指数形式 (reⁱᶿ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3532"/>
+        <location filename="../../gui/mainwindow.cpp" line="3540"/>
         <source>Trigonometric (r(cos θ + i·sin θ))</source>
         <translation>三角形式 (r(cos θ + i·sin θ))</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3534"/>
+        <location filename="../../gui/mainwindow.cpp" line="3542"/>
         <source>Phasor (r∠θ)</source>
         <translation>フェーザ形式 (r∠θ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3538"/>
+        <location filename="../../gui/mainwindow.cpp" line="3546"/>
         <source>&amp;Theme...</source>
         <translation>テーマ(&amp;T)...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3543"/>
+        <location filename="../../gui/mainwindow.cpp" line="3551"/>
         <source>Check for &amp;Updates</source>
         <translation>更新を確認(&amp;U)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3544"/>
+        <location filename="../../gui/mainwindow.cpp" line="3552"/>
         <source>Issue Tracker</source>
         <translation>課題トラッカー</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3545"/>
+        <location filename="../../gui/mainwindow.cpp" line="3553"/>
         <source>Google Group</source>
         <translation>Google グループ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3546"/>
+        <location filename="../../gui/mainwindow.cpp" line="3554"/>
         <source>Facebook &amp;Group</source>
         <translation>Facebook グループ(&amp;G)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3547"/>
+        <location filename="../../gui/mainwindow.cpp" line="3555"/>
         <source>&amp;Blogspot</source>
         <translation>Blogspot(&amp;B)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3548"/>
+        <location filename="../../gui/mainwindow.cpp" line="3556"/>
         <source>Source Code</source>
         <translation>ソースコード</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3856"/>
+        <location filename="../../gui/mainwindow.cpp" line="3864"/>
         <source>&amp;Zoom</source>
         <translation>ズーム(&amp;Z)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3858"/>
+        <location filename="../../gui/mainwindow.cpp" line="3866"/>
         <source>&amp;Results</source>
         <translation>結果(&amp;R)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3859"/>
+        <location filename="../../gui/mainwindow.cpp" line="3867"/>
         <source>&amp;Symbols</source>
         <translation>記号(&amp;S)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3860"/>
+        <location filename="../../gui/mainwindow.cpp" line="3868"/>
         <source>Unit Notation</source>
         <translation>単位表記</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3861"/>
+        <location filename="../../gui/mainwindow.cpp" line="3869"/>
         <source>Rounding Mode</source>
         <translation>丸めモード</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3862"/>
+        <location filename="../../gui/mainwindow.cpp" line="3870"/>
         <source>&amp;Notation</source>
         <translation>表記(&amp;N)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3865"/>
+        <location filename="../../gui/mainwindow.cpp" line="3873"/>
         <source>&amp;Angle Mode</source>
         <translation>角度モード(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3866"/>
+        <location filename="../../gui/mainwindow.cpp" line="3874"/>
         <source>Complex &amp;Numbers</source>
         <translation>複素数(&amp;N)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3867"/>
+        <location filename="../../gui/mainwindow.cpp" line="3875"/>
         <source>&amp;Form</source>
         <translation>形式(&amp;F)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3868"/>
+        <location filename="../../gui/mainwindow.cpp" line="3876"/>
         <source>&amp;Imaginary Unit</source>
         <translation>虚数単位(&amp;I)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3869"/>
+        <location filename="../../gui/mainwindow.cpp" line="3877"/>
         <source>&amp;Window</source>
         <translation>ウィンドウ(&amp;W)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3870"/>
+        <location filename="../../gui/mainwindow.cpp" line="3878"/>
         <source>&amp;Editing</source>
         <translation>編集(&amp;E)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3871"/>
+        <location filename="../../gui/mainwindow.cpp" line="3879"/>
         <source>A&amp;utocomplete</source>
         <translation>自動補完(&amp;U)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3872"/>
+        <location filename="../../gui/mainwindow.cpp" line="3880"/>
         <source>Up/Down Arrow History</source>
         <translation>上下矢印で履歴</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3873"/>
+        <location filename="../../gui/mainwindow.cpp" line="3881"/>
         <source>&amp;Appearance</source>
         <translation>外観(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3880"/>
+        <location filename="../../gui/mainwindow.cpp" line="3888"/>
         <source>&amp;Disabled</source>
         <translation>無効(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3882"/>
+        <location filename="../../gui/mainwindow.cpp" line="3890"/>
         <source>&amp;Disable</source>
         <translation>無効化(&amp;D)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4046"/>
+        <location filename="../../gui/mainwindow.cpp" line="4054"/>
         <source>Close preview</source>
         <translation>プレビューを閉じる</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4181"/>
+        <location filename="../../gui/mainwindow.cpp" line="4197"/>
         <source>New Session</source>
         <translation>新規セッション</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4182"/>
-        <location filename="../../gui/mainwindow.cpp" line="7560"/>
+        <location filename="../../gui/mainwindow.cpp" line="4198"/>
+        <location filename="../../gui/mainwindow.cpp" line="7592"/>
         <source>Open Session</source>
         <translation>セッションを開く</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4184"/>
+        <location filename="../../gui/mainwindow.cpp" line="4200"/>
         <source>Split Left</source>
         <translation>左に分割</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4185"/>
+        <location filename="../../gui/mainwindow.cpp" line="4201"/>
         <source>Split Right</source>
         <translation>右に分割</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4186"/>
+        <location filename="../../gui/mainwindow.cpp" line="4202"/>
         <source>Split Up</source>
         <translation>上に分割</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4187"/>
+        <location filename="../../gui/mainwindow.cpp" line="4203"/>
         <source>Split Down</source>
         <translation>下に分割</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4190"/>
+        <location filename="../../gui/mainwindow.cpp" line="4206"/>
         <source>Export Session</source>
         <translation>セッションをエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4192"/>
-        <location filename="../../gui/mainwindow.cpp" line="7641"/>
-        <location filename="../../gui/mainwindow.cpp" line="7652"/>
-        <location filename="../../gui/mainwindow.cpp" line="7665"/>
-        <location filename="../../gui/mainwindow.cpp" line="7675"/>
+        <location filename="../../gui/mainwindow.cpp" line="4208"/>
+        <location filename="../../gui/mainwindow.cpp" line="7673"/>
+        <location filename="../../gui/mainwindow.cpp" line="7684"/>
+        <location filename="../../gui/mainwindow.cpp" line="7697"/>
+        <location filename="../../gui/mainwindow.cpp" line="7707"/>
         <source>Duplicate Session</source>
         <translation>セッションを複製</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4193"/>
-        <location filename="../../gui/mainwindow.cpp" line="7704"/>
-        <location filename="../../gui/mainwindow.cpp" line="7718"/>
-        <location filename="../../gui/mainwindow.cpp" line="7729"/>
+        <location filename="../../gui/mainwindow.cpp" line="4209"/>
+        <location filename="../../gui/mainwindow.cpp" line="7736"/>
+        <location filename="../../gui/mainwindow.cpp" line="7750"/>
+        <location filename="../../gui/mainwindow.cpp" line="7761"/>
         <source>Rename Session</source>
         <translation>セッション名を変更</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4194"/>
+        <location filename="../../gui/mainwindow.cpp" line="4210"/>
         <source>Clear Session</source>
         <translation>セッションをクリア</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4195"/>
-        <location filename="../../gui/mainwindow.cpp" line="7999"/>
+        <location filename="../../gui/mainwindow.cpp" line="4211"/>
+        <location filename="../../gui/mainwindow.cpp" line="8031"/>
         <source>Delete Session</source>
         <translation>セッションを削除</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4197"/>
+        <location filename="../../gui/mainwindow.cpp" line="4213"/>
         <source>Close Pane</source>
         <translation>ペインを閉じる</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6249"/>
+        <location filename="../../gui/mainwindow.cpp" line="6281"/>
         <source>User Variables</source>
         <translation>ユーザー変数</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6323"/>
+        <location filename="../../gui/mainwindow.cpp" line="6355"/>
         <source>User Units</source>
         <translation>ユーザー単位</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7465"/>
-        <location filename="../../gui/mainwindow.cpp" line="7496"/>
+        <location filename="../../gui/mainwindow.cpp" line="7497"/>
+        <location filename="../../gui/mainwindow.cpp" line="7528"/>
         <source>Clear History</source>
         <translation>履歴をクリア</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7466"/>
-        <location filename="../../gui/mainwindow.cpp" line="7497"/>
+        <location filename="../../gui/mainwindow.cpp" line="7498"/>
+        <location filename="../../gui/mainwindow.cpp" line="7529"/>
         <source>Are you sure you want to clear the calculation history?</source>
         <translation>計算履歴をクリアしてもよろしいですか?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7642"/>
-        <location filename="../../gui/mainwindow.cpp" line="7705"/>
+        <location filename="../../gui/mainwindow.cpp" line="7674"/>
+        <location filename="../../gui/mainwindow.cpp" line="7737"/>
         <source>Session name:</source>
         <translation>セッション名:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7653"/>
-        <location filename="../../gui/mainwindow.cpp" line="7719"/>
+        <location filename="../../gui/mainwindow.cpp" line="7685"/>
+        <location filename="../../gui/mainwindow.cpp" line="7751"/>
         <source>A session named %1 already exists.</source>
         <translation>%1 という名前のセッションは既に存在します。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7666"/>
+        <location filename="../../gui/mainwindow.cpp" line="7698"/>
         <source>Could not create session file %1.</source>
         <translation>セッションファイル %1 を作成できませんでした。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7676"/>
+        <location filename="../../gui/mainwindow.cpp" line="7708"/>
         <source>Could not write session file %1.</source>
         <translation>セッションファイル %1 に書き込めませんでした。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7730"/>
+        <location filename="../../gui/mainwindow.cpp" line="7762"/>
         <source>Could not rename session file %1.</source>
         <translation>セッションファイル %1 の名前を変更できませんでした。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8000"/>
+        <location filename="../../gui/mainwindow.cpp" line="8032"/>
         <source>Are you sure you want to delete this session?</source>
         <translation>このセッションを削除してもよろしいですか?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8175"/>
+        <location filename="../../gui/mainwindow.cpp" line="8207"/>
         <source>Custom Precision</source>
         <translation>カスタム精度</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8176"/>
+        <location filename="../../gui/mainwindow.cpp" line="8208"/>
         <source>Fractional digits:</source>
         <translation>小数桁数:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8193"/>
+        <location filename="../../gui/mainwindow.cpp" line="8225"/>
         <source>Theme</source>
         <translation>テーマ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8202"/>
+        <location filename="../../gui/mainwindow.cpp" line="8234"/>
         <source>Light Themes</source>
         <translation>ライトテーマ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8209"/>
+        <location filename="../../gui/mainwindow.cpp" line="8241"/>
         <source>Dark Themes</source>
         <translation>ダークテーマ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8217"/>
+        <location filename="../../gui/mainwindow.cpp" line="8249"/>
         <source>Preview</source>
         <translation>プレビュー</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8279"/>
+        <location filename="../../gui/mainwindow.cpp" line="8311"/>
         <source>Colors</source>
         <translation>色</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8455"/>
+        <location filename="../../gui/mainwindow.cpp" line="8487"/>
         <source>Select color for %1</source>
         <translation>%1 の色を選択</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8500"/>
+        <location filename="../../gui/mainwindow.cpp" line="8532"/>
         <source>Import...</source>
         <translation>インポート...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8501"/>
+        <location filename="../../gui/mainwindow.cpp" line="8533"/>
         <source>Export...</source>
         <translation>エクスポート...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8533"/>
+        <location filename="../../gui/mainwindow.cpp" line="8565"/>
         <source>Import Theme</source>
         <translation>テーマをインポート</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8534"/>
-        <location filename="../../gui/mainwindow.cpp" line="8623"/>
+        <location filename="../../gui/mainwindow.cpp" line="8566"/>
+        <location filename="../../gui/mainwindow.cpp" line="8655"/>
         <source>Theme file (*.json);;All files (*)</source>
         <translation>テーマファイル (*.json);;すべてのファイル (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8545"/>
+        <location filename="../../gui/mainwindow.cpp" line="8577"/>
         <source>Invalid theme file.</source>
         <translation>無効なテーマファイルです。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8554"/>
+        <location filename="../../gui/mainwindow.cpp" line="8586"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>組み込みテーマと競合するため、テーマ &quot;%1&quot; をインポートできません。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8559"/>
+        <location filename="../../gui/mainwindow.cpp" line="8591"/>
         <source>Can&apos;t find a writable theme folder.</source>
         <translation>書き込み可能なテーマフォルダーが見つかりません。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8566"/>
+        <location filename="../../gui/mainwindow.cpp" line="8598"/>
         <source>Overwrite Theme</source>
         <translation>テーマを上書き</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8567"/>
+        <location filename="../../gui/mainwindow.cpp" line="8599"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
         <translation>&quot;%1&quot; という名前のカスタムテーマは既に存在します。上書きしますか?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8575"/>
+        <location filename="../../gui/mainwindow.cpp" line="8607"/>
         <source>Can&apos;t overwrite theme file %1</source>
         <translation>テーマファイル %1 を上書きできません。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8581"/>
+        <location filename="../../gui/mainwindow.cpp" line="8613"/>
         <source>Can&apos;t copy theme file to %1</source>
         <translation>テーマファイルを %1 にコピーできません。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8622"/>
+        <location filename="../../gui/mainwindow.cpp" line="8654"/>
         <source>Export Theme</source>
         <translation>テーマをエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8633"/>
+        <location filename="../../gui/mainwindow.cpp" line="8665"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>組み込みテーマと競合するため、テーマを &quot;%1&quot; としてエクスポートできません。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8638"/>
-        <location filename="../../gui/mainwindow.cpp" line="8815"/>
-        <location filename="../../gui/mainwindow.cpp" line="9506"/>
-        <location filename="../../gui/mainwindow.cpp" line="9526"/>
+        <location filename="../../gui/mainwindow.cpp" line="8670"/>
+        <location filename="../../gui/mainwindow.cpp" line="8847"/>
+        <location filename="../../gui/mainwindow.cpp" line="9538"/>
+        <location filename="../../gui/mainwindow.cpp" line="9558"/>
         <source>Can&apos;t write to file %1</source>
         <translation>%1 を保存することができませんでした</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8739"/>
+        <location filename="../../gui/mainwindow.cpp" line="8771"/>
         <source>Can&apos;t read the selected session file.</source>
         <translation>選択したセッションファイルを読み取れません。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8917"/>
+        <location filename="../../gui/mainwindow.cpp" line="8949"/>
         <source>Global User Variable</source>
         <translation>グローバルユーザー変数</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8918"/>
+        <location filename="../../gui/mainwindow.cpp" line="8950"/>
         <source>Global User Function</source>
         <translation>グローバルユーザー関数</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8919"/>
+        <location filename="../../gui/mainwindow.cpp" line="8951"/>
         <source>Global User Unit</source>
         <translation>グローバルユーザー単位</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9289"/>
+        <location filename="../../gui/mainwindow.cpp" line="9321"/>
         <source>History Size Limit</source>
         <translation>履歴サイズ制限</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9290"/>
+        <location filename="../../gui/mainwindow.cpp" line="9322"/>
         <source>Maximum number of history entries for this session (0 = unlimited):</source>
         <translation>このセッションの履歴項目の最大数 (0 = 無制限):</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9519"/>
+        <location filename="../../gui/mainwindow.cpp" line="9551"/>
         <source>Text file (*.txt);;Any file (*.*)</source>
         <translation>テキストファイル(*.txt);;すべてのファイル(*.*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9556"/>
+        <location filename="../../gui/mainwindow.cpp" line="9588"/>
         <source>Display font</source>
         <translation>表示フォント</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11320"/>
-        <location filename="../../gui/mainwindow.cpp" line="11493"/>
+        <location filename="../../gui/mainwindow.cpp" line="11352"/>
+        <location filename="../../gui/mainwindow.cpp" line="11525"/>
         <source>Could not recalculate from calculation %1: %2</source>
         <translation>計算 %1 から再計算できませんでした: %2</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11409"/>
+        <location filename="../../gui/mainwindow.cpp" line="11441"/>
         <source>History Size Limit Reached</source>
         <translation>履歴サイズ制限に達しました</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11410"/>
+        <location filename="../../gui/mainwindow.cpp" line="11442"/>
         <source>This calculation fills the last available history slot. Future calculations will remove the oldest calculation from history. You can increase the limit from Session &gt; History Size Limit.</source>
         <translation>この計算で最後の利用可能な履歴枠が埋まります。今後の計算では、履歴から最も古い計算が削除されます。上限は セッション &gt; 履歴サイズ制限 から増やせます。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11433"/>
+        <location filename="../../gui/mainwindow.cpp" line="11465"/>
         <source>Editing calculation. Press Esc twice to cancel.</source>
         <translation>計算を編集中です。キャンセルするには Esc を2回押してください。</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11474"/>
+        <location filename="../../gui/mainwindow.cpp" line="11506"/>
         <source>Calculation Settings</source>
         <translation>計算設定</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11550"/>
+        <location filename="../../gui/mainwindow.cpp" line="11582"/>
         <source>Invalid recalculation start index</source>
         <translation>再計算開始インデックスが無効です</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12097"/>
+        <location filename="../../gui/mainwindow.cpp" line="12129"/>
         <source>System Default</source>
         <translation>システムの既定</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12101"/>
+        <location filename="../../gui/mainwindow.cpp" line="12133"/>
         <source>Language</source>
         <translation>言語</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12101"/>
+        <location filename="../../gui/mainwindow.cpp" line="12133"/>
         <source>Select the language:</source>
         <translation>言語の選択:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12131"/>
+        <location filename="../../gui/mainwindow.cpp" line="12163"/>
         <source>Custom</source>
         <translation>カスタム</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12143"/>
+        <location filename="../../gui/mainwindow.cpp" line="12175"/>
         <source>Decimal places:</source>
         <translation>小数桁数:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3515"/>
-        <location filename="../../gui/mainwindow.cpp" line="3516"/>
+        <location filename="../../gui/mainwindow.cpp" line="3523"/>
+        <location filename="../../gui/mainwindow.cpp" line="3524"/>
         <source>&amp;Automatic</source>
         <translation>自動(&amp;A)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3864"/>
+        <location filename="../../gui/mainwindow.cpp" line="3872"/>
         <source>&amp;Precision</source>
         <translation>精度(&amp;P)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3422"/>
+        <location filename="../../gui/mainwindow.cpp" line="3430"/>
         <source>Plain &amp;text</source>
         <translation>プレーンテキスト (&amp;t)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3449"/>
+        <location filename="../../gui/mainwindow.cpp" line="3457"/>
         <source>Formula &amp;Book</source>
         <translation>公式集 (&amp;B)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3852"/>
+        <location filename="../../gui/mainwindow.cpp" line="3860"/>
         <source>&amp;Export</source>
         <translation>エクスポート (&amp;E)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8705"/>
-        <location filename="../../gui/mainwindow.cpp" line="8789"/>
+        <location filename="../../gui/mainwindow.cpp" line="8737"/>
+        <location filename="../../gui/mainwindow.cpp" line="8821"/>
         <source>SpeedCrunch Sessions (*.json);;All Files (*)</source>
         <translation>SpeedCrunchセッション(*.json);;すべてのファイル(*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8717"/>
-        <location filename="../../gui/mainwindow.cpp" line="8848"/>
+        <location filename="../../gui/mainwindow.cpp" line="8749"/>
+        <location filename="../../gui/mainwindow.cpp" line="8880"/>
         <source>Merge?</source>
         <translation>マージしますか？</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9498"/>
+        <location filename="../../gui/mainwindow.cpp" line="9530"/>
         <source>Export session as HTML</source>
         <translation>セッションをHTMLで出力</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9499"/>
+        <location filename="../../gui/mainwindow.cpp" line="9531"/>
         <source>HTML file (*.html)</source>
         <translation>HTMLファイル(*.html)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9518"/>
+        <location filename="../../gui/mainwindow.cpp" line="9550"/>
         <source>Export session as plain text</source>
         <translation>セッションをテキストで出力</translation>
     </message>
@@ -5924,142 +5946,144 @@ If no, current variables and display will be cleared.</source>
 <context>
     <name>ResultDisplay</name>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="466"/>
+        <location filename="../../gui/resultdisplay.cpp" line="563"/>
+        <location filename="../../gui/resultdisplay.cpp" line="569"/>
+        <location filename="../../gui/resultdisplay.cpp" line="573"/>
         <source>Scroll to bottom</source>
         <translation>一番下へスクロール</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1103"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1408"/>
         <source>Copy Expression</source>
         <translation>式をコピー</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1110"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1415"/>
         <source>Copy Result</source>
         <translation>結果をコピー</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1126"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1431"/>
         <source>Edit Expression</source>
         <translation>式を編集</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1130"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1435"/>
         <source>Change Settings</source>
         <translation>設定を変更</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1134"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1439"/>
         <source>Remove Calculation</source>
         <translation>計算を削除</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1139"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1444"/>
         <source>Remove All Calculations Above</source>
         <translation>上のすべての計算を削除</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1143"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1448"/>
         <source>Remove All Calculations Below</source>
         <translation>下のすべての計算を削除</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1150"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1455"/>
         <source>New Session</source>
         <translation>新規セッション</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1154"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1459"/>
         <source>Open Session</source>
         <translation>セッションを開く</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1159"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1464"/>
         <source>Split Left</source>
         <translation>左に分割</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1163"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1468"/>
         <source>Split Right</source>
         <translation>右に分割</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1167"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1472"/>
         <source>Split Up</source>
         <translation>上に分割</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1171"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1476"/>
         <source>Split Down</source>
         <translation>下に分割</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1176"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1481"/>
         <source>Import Session</source>
         <translation>セッションをインポート</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1177"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1482"/>
         <source>Export Session</source>
         <translation>セッションをエクスポート</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1179"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1484"/>
         <source>Duplicate Session</source>
         <translation>セッションを複製</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1183"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1488"/>
         <source>Rename Session</source>
         <translation>セッション名を変更</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1187"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1492"/>
         <source>Clear Session</source>
         <translation>セッションをクリア</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1191"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1496"/>
         <source>Delete Session</source>
         <translation>セッションを削除</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1195"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1500"/>
         <source>Close Session</source>
         <translation>セッションを閉じる</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1199"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1504"/>
         <source>Close Pane</source>
         <translation>ペインを閉じる</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1207"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1512"/>
         <source>Main Menu</source>
         <translation>メインメニュー</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1333"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1636"/>
         <source>Cancel editing</source>
         <translation>編集をキャンセル</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1389"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1683"/>
         <source>Copy result</source>
         <translation>結果をコピー</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1391"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1684"/>
         <source>Edit expression</source>
         <translation>式を編集</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1393"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1685"/>
         <source>Change settings</source>
         <translation>設定を変更</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1395"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1686"/>
         <source>Remove calculation</source>
         <translation>計算を削除</translation>
     </message>
