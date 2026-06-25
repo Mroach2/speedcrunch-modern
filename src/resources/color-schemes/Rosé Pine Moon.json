@@ -1,14 +1,14 @@
 {
     "scheme": 1,
     "list": "#e0def4",
-    "unit": "#908caa",
+    "unit": "#AEABC3",
     "number": "#ea9a97",
-    "parens": "#eb6f92",
+    "parens": "#FE8AA8",
     "result": "#f6c177",
     "comment": "#c4a7e7",
     "function": "#9ccfd8",
     "operator": "#3e8fb0",
     "variable": "#e0def4",
-    "separator": "#908caa",
+    "separator": "#AEABC3",
     "background": "#232136"
 }

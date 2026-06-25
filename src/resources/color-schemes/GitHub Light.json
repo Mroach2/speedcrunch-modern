@@ -3,12 +3,12 @@
     "list": "#24292E",
     "unit": "#24292E",
     "number": "#24292E",
-    "parens": "#6A737D",
+    "parens": "#54575B",
     "result": "#005CC5",
     "comment": "#6A737D",
     "function": "#6F42C1",
     "operator": "#D73A49",
     "variable": "#005CC5",
-    "separator": "#6A737D",
+    "separator": "#54575B",
     "background": "#FAFBFC"
 }

@@ -1,7 +1,7 @@
 {
     "scheme": 1,
-    "list": "#F99157",
-    "unit": "#F99157",
+    "list": "#FEA372",
+    "unit": "#FEA372",
     "number": "#F99157",
     "parens": "#CCCCCC",
     "result": "#99CC99",
@@ -9,6 +9,6 @@
     "function": "#6699CC",
     "operator": "#66CCCC",
     "variable": "#F2777A",
-    "separator": "#6B6B6B",
+    "separator": "#B9B9B9",
     "background": "#2D2D2D"
 }
