@@ -44,6 +44,7 @@
 #include "gui/resultlineformatutils.h"
 #include "gui/syntaxhighlighter.h"
 #include "gui/themedlineedit.h"
+#include "gui/tooltipstyleutils.h"
 #include "gui/uiconfig.h"
 #include "math/cmath.h"
 #include "math/floatnum/floatconfig.h"
@@ -9624,19 +9625,12 @@ void MainWindow::showStateLabel(const QString& msg)
         themeSurfaceForShadeIndex(surfaces, UiConfig::ResultTooltipBackgroundShade);
     const ThemeSurfaceColors tooltipOutline =
         themeSurfaceForShadeIndex(surfaces, UiConfig::ResultTooltipOutlineShade);
-    const QString tooltipStyle = QStringLiteral(R"(
-        QLabel {
-            background-color: %1;
-            color: %2;
-            border: %5px solid %3;
-            border-radius: %4px;
-        }
-    )").arg(tooltipSurface.background.name(),
-            tooltipSurface.foreground.name(),
-            tooltipOutline.background.name())
-       .arg(UiConfig::ResultTooltipCornerRadius)
-       .arg(UiConfig::PopupOutlineStrokeWidth);
-    m_widgets.state->setStyleSheet(tooltipStyle);
+    m_widgets.state->setStyleSheet(ToolTipStyleUtils::labelToolTipStyleSheet(
+        QStringLiteral("QLabel"),
+        tooltipSurface.background,
+        tooltipSurface.foreground,
+        tooltipOutline.background,
+        UiConfig::ResultTooltipCornerRadius));
     m_widgets.stateCloseButton->setStyleSheet(QStringLiteral(R"(
         QPushButton {
             border: none;

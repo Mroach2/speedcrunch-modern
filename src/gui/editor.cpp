@@ -9,6 +9,7 @@
 #include "gui/oklchutils.h"
 #include "gui/resultlineformatutils.h"
 #include "gui/syntaxhighlighter.h"
+#include "gui/tooltipstyleutils.h"
 #include "gui/uiconfig.h"
 #include "core/constants.h"
 #include "core/evaluator.h"
@@ -24,7 +25,6 @@
 
 #include <QApplication>
 #include <QAbstractTextDocumentLayout>
-#include <QBitmap>
 #include <QEvent>
 #include <QFont>
 #include <QFrame>
@@ -103,114 +103,6 @@ static bool isOperatorOnlyIncompleteInput(const QString& expression)
     }
 
     return sawOperator;
-}
-
-static void applyCompletionPopupMask(QWidget* popup, int cornerRadius)
-{
-    if (!popup)
-        return;
-
-    if (cornerRadius > 0) {
-        QBitmap mask(popup->size());
-        mask.fill(Qt::color0);
-        QPainter painter(&mask);
-        painter.setRenderHint(QPainter::Antialiasing);
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(Qt::color1);
-        painter.drawRoundedRect(QRectF(mask.rect()).adjusted(0, 0, -1, -1),
-                                cornerRadius,
-                                cornerRadius);
-        popup->setMask(mask);
-    } else {
-        popup->clearMask();
-    }
-}
-
-static void applyCompletionPopupTreeTheme(QTreeWidget* popup,
-                                          const QColor& background,
-                                          const QColor& foreground,
-                                          const QColor& scrollbarThumb,
-                                          const QColor& scrollbarThumbForeground,
-                                          const QColor& selectedRow,
-                                          const QColor& selectedRowForeground,
-                                          const QColor& outline,
-                                          int cornerRadius)
-{
-    if (!popup || !background.isValid() || !foreground.isValid())
-        return;
-
-    const QColor effectiveScrollbarThumb = scrollbarThumb.isValid()
-        ? scrollbarThumb
-        : background;
-    const QColor effectiveScrollbarThumbForeground = scrollbarThumbForeground.isValid()
-        ? scrollbarThumbForeground
-        : foreground;
-    const QColor effectiveSelectedRow = selectedRow.isValid()
-        ? selectedRow
-        : effectiveScrollbarThumb;
-    const QColor effectiveSelectedRowForeground = selectedRowForeground.isValid()
-        ? selectedRowForeground
-        : effectiveScrollbarThumbForeground;
-    const QColor effectiveOutline = outline.isValid()
-        ? outline
-        : background;
-    cornerRadius = qMax(0, cornerRadius);
-
-    QPalette palette = popup->palette();
-    for (const QPalette::ColorGroup group : {QPalette::Active,
-                                             QPalette::Inactive,
-                                             QPalette::Disabled}) {
-        palette.setColor(group, QPalette::Base, background);
-        palette.setColor(group, QPalette::Window, background);
-        palette.setColor(group, QPalette::Text, foreground);
-        palette.setColor(group, QPalette::WindowText, foreground);
-        palette.setColor(group, QPalette::Highlight, effectiveSelectedRow);
-        palette.setColor(group, QPalette::HighlightedText, effectiveSelectedRowForeground);
-    }
-    popup->setPalette(palette);
-    popup->viewport()->setPalette(palette);
-    popup->viewport()->setAutoFillBackground(true);
-    popup->setCursor(Qt::PointingHandCursor);
-    popup->viewport()->setCursor(Qt::PointingHandCursor);
-
-    popup->setStyleSheet(QStringLiteral(
-        "QTreeWidget {"
-        " background: %1; color: %2;"
-        " selection-background-color: %3; selection-color: %4;"
-        " border: %8px solid %6;"
-        " border-radius: %7px;"
-        "}"
-        "QTreeWidget::item:selected {"
-        " background: %3; color: %4;"
-        "}"
-        "QScrollBar:vertical {"
-        " background: %1; border: 0; margin: 0; width: 10px;"
-        "}"
-        "QScrollBar:horizontal {"
-        " background: %1; border: 0; margin: 0; height: 10px;"
-        "}"
-        "QScrollBar::handle:vertical {"
-        " background: %5; border: 0; border-radius: 4px; min-height: 20px;"
-        "}"
-        "QScrollBar::handle:horizontal {"
-        " background: %5; border: 0; border-radius: 4px; min-width: 20px;"
-        "}"
-        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,"
-        "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {"
-        " background: %1; border: 0; width: 0; height: 0;"
-        "}"
-        "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical,"
-        "QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {"
-        " background: %1;"
-        "}")
-        .arg(background.name(),
-             foreground.name(),
-             effectiveSelectedRow.name(),
-             effectiveSelectedRowForeground.name(),
-             effectiveScrollbarThumb.name(),
-             effectiveOutline.name())
-        .arg(cornerRadius)
-        .arg(UiConfig::PopupOutlineStrokeWidth));
 }
 
 class EditorCompletionPopup : public QTreeWidget
@@ -4246,15 +4138,16 @@ void EditorCompletion::setThemeColors(const QColor& background,
 
 void EditorCompletion::applyThemeColors()
 {
-    applyCompletionPopupTreeTheme(m_popup,
-                                  m_backgroundColor,
-                                  m_foregroundColor,
-                                  m_scrollbarThumbColor,
-                                  m_scrollbarThumbForegroundColor,
-                                  m_selectedRowColor,
-                                  m_selectedRowForegroundColor,
-                                  m_outlineColor,
-                                  m_cornerRadius);
+    ToolTipStyleUtils::applyTreePopupTheme(
+        m_popup,
+        {m_backgroundColor,
+         m_foregroundColor,
+         m_scrollbarThumbColor,
+         m_scrollbarThumbForegroundColor,
+         m_selectedRowColor,
+         m_selectedRowForegroundColor,
+         m_outlineColor,
+         m_cornerRadius});
 }
 
 void EditorCompletion::restoreEditorFocus()
@@ -4553,7 +4446,7 @@ void EditorCompletion::showCompletion(const QStringList& choices)
 
     m_popup->setUpdatesEnabled(true);
     m_popup->setGeometry(QRect(position, QSize(width, height)));
-    applyCompletionPopupMask(m_popup, m_cornerRadius);
+    ToolTipStyleUtils::applyRoundedPopupMask(m_popup, m_cornerRadius);
     m_popup->verticalScrollBar()->setValue(m_popup->verticalScrollBar()->minimum());
     m_popup->show();
     m_editor->setFocus();
@@ -4706,24 +4599,18 @@ void ConstantCompletion::applyThemeColors()
     m_popup->setStyleSheet(QStringLiteral("QFrame#constantCompletionPopup { background: %1; }")
                                .arg(m_backgroundColor.name()));
 
-    applyCompletionPopupTreeTheme(m_categoryWidget,
-                                  m_backgroundColor,
-                                  m_foregroundColor,
-                                  m_scrollbarThumbColor,
-                                  m_scrollbarThumbForegroundColor,
-                                  m_selectedRowColor,
-                                  m_selectedRowForegroundColor,
-                                  m_outlineColor,
-                                  m_cornerRadius);
-    applyCompletionPopupTreeTheme(m_constantWidget,
-                                  m_backgroundColor,
-                                  m_foregroundColor,
-                                  m_scrollbarThumbColor,
-                                  m_scrollbarThumbForegroundColor,
-                                  m_selectedRowColor,
-                                  m_selectedRowForegroundColor,
-                                  m_outlineColor,
-                                  m_cornerRadius);
+    const ToolTipStyleUtils::TreePopupTheme theme {
+        m_backgroundColor,
+        m_foregroundColor,
+        m_scrollbarThumbColor,
+        m_scrollbarThumbForegroundColor,
+        m_selectedRowColor,
+        m_selectedRowForegroundColor,
+        m_outlineColor,
+        m_cornerRadius
+    };
+    ToolTipStyleUtils::applyTreePopupTheme(m_categoryWidget, theme);
+    ToolTipStyleUtils::applyTreePopupTheme(m_constantWidget, theme);
 }
 
 void ConstantCompletion::showCategory()
@@ -4894,7 +4781,7 @@ void ConstantCompletion::showCompletion()
     setHorizontalPosition(0);
 
     m_popup->move(pos);
-    applyCompletionPopupMask(m_popup, m_cornerRadius);
+    ToolTipStyleUtils::applyRoundedPopupMask(m_popup, m_cornerRadius);
     m_popup->show();
 }
 

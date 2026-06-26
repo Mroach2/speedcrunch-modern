@@ -44,6 +44,7 @@ gui/numberformatdialog.h
     gui/notationandprecisiondialog.h
 gui/oklchutils.h
 gui/resultdisplay.h
+gui/tooltipstyleutils.h
 gui/variablelistwidget.h
 gui/userfunctionlistwidget.h
 gui/userunitlistwidget.h
@@ -120,6 +121,7 @@ gui/resultdisplay.cpp
 gui/splittertreeutils.cpp
 gui/syntaxhighlighter.cpp
 gui/themedlineedit.cpp
+gui/tooltipstyleutils.cpp
 gui/variablelistwidget.cpp
 gui/userfunctionlistwidget.cpp
 gui/userunitlistwidget.cpp
@@ -207,6 +209,7 @@ gui/oklchutils.cpp
 gui/resultdisplay.cpp
 gui/splittertreeutils.cpp
 gui/syntaxhighlighter.cpp
+gui/tooltipstyleutils.cpp
 math/floatnum/floatcommon.c
 math/floatnum/floatconst.c
 math/floatnum/floatconvert.c
@@ -330,6 +333,7 @@ gui/oklchutils.cpp
 gui/resultdisplay.cpp
 gui/syntaxhighlighter.cpp
 gui/editor.cpp
+gui/tooltipstyleutils.cpp
 math/floatnum/floatcommon.c
 math/floatnum/floatconst.c
 math/floatnum/floatconvert.c
@@ -385,6 +389,7 @@ gui/splittertreeutils.cpp
 gui/syntaxhighlighter.cpp
 gui/editor.cpp
 gui/themedlineedit.cpp
+gui/tooltipstyleutils.cpp
 gui/variablelistwidget.cpp
 gui/userunitlistwidget.cpp
 math/floatnum/floatcommon.c
@@ -453,6 +458,7 @@ gui/splittertreeutils.cpp
 gui/syntaxhighlighter.cpp
 gui/editor.cpp
 gui/themedlineedit.cpp
+gui/tooltipstyleutils.cpp
 gui/userfunctionlistwidget.cpp
 gui/variablelistwidget.cpp
 gui/userunitlistwidget.cpp

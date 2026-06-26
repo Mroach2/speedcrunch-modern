@@ -16,6 +16,7 @@
 #include "core/mathdsl.h"
 #include "gui/simplifiedexpressionutils.h"
 #include "gui/syntaxhighlighter.h"
+#include "gui/tooltipstyleutils.h"
 #include "gui/uiconfig.h"
 #include "math/cmath.h"
 #include "math/floatnum/floatconfig.h"
@@ -25,11 +26,9 @@
 
 #include <QLatin1String>
 #include <QApplication>
-#include <QBitmap>
 #include <QClipboard>
 #include <QContextMenuEvent>
 #include <QFrame>
-#include <QGuiApplication>
 #include <QHoverEvent>
 #include <QIcon>
 #include <QLabel>
@@ -42,9 +41,7 @@
 #include <QPolygonF>
 #include <QLinearGradient>
 #include <QScrollBar>
-#include <QScreen>
 #include <QToolButton>
-#include <QVBoxLayout>
 
 #include <limits>
 
@@ -100,52 +97,6 @@ QVector<QColor> resultDisplayShadesFromBackground(const QColor& background)
 QColor shadeOrFallback(const QVector<QColor>& shades, int index, const QColor& fallback)
 {
     return shades.value(index, fallback);
-}
-
-void applyRoundedPopupMask(QWidget* popup, int cornerRadius)
-{
-    if (popup == nullptr)
-        return;
-
-    if (cornerRadius > 0) {
-        QBitmap mask(popup->size());
-        mask.fill(Qt::color0);
-        QPainter painter(&mask);
-        painter.setRenderHint(QPainter::Antialiasing);
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(Qt::color1);
-        painter.drawRoundedRect(QRectF(mask.rect()).adjusted(0, 0, -1, -1),
-                                cornerRadius,
-                                cornerRadius);
-        popup->setMask(mask);
-    } else {
-        popup->clearMask();
-    }
-}
-
-QPoint constrainedPopupPosition(QWidget* anchor,
-                                const QPoint& globalPos,
-                                const QSize& popupSize)
-{
-    constexpr int kPopupOffsetX = 12;
-    constexpr int kPopupOffsetY = 18;
-
-    QPoint pos = globalPos + QPoint(kPopupOffsetX, kPopupOffsetY);
-    QScreen* screen = anchor != nullptr ? anchor->screen() : QGuiApplication::primaryScreen();
-    if (screen == nullptr)
-        return pos;
-
-    const QRect available = screen->availableGeometry();
-    if (pos.x() + popupSize.width() > available.right())
-        pos.setX(globalPos.x() - popupSize.width() - kPopupOffsetX);
-    if (pos.y() + popupSize.height() > available.bottom())
-        pos.setY(globalPos.y() - popupSize.height() - kPopupOffsetY);
-
-    pos.setX(qBound(available.left(), pos.x(),
-                    qMax(available.left(), available.right() - popupSize.width())));
-    pos.setY(qBound(available.top(), pos.y(),
-                    qMax(available.top(), available.bottom() - popupSize.height())));
-    return pos;
 }
 
 ResultDisplayScrollBarColors scrollBarColorsForResultBackground(const QColor& background)
@@ -903,53 +854,14 @@ void ResultDisplay::setHoverActionToolTip(const QString& text)
 
 void ResultDisplay::applyHoverActionPopupTheme()
 {
-    if (m_hoverActionPopup == nullptr)
-        return;
-
-    const QColor background = m_toolTipBackgroundColor.isValid()
-        ? m_toolTipBackgroundColor
-        : palette().color(QPalette::ToolTipBase);
-    const QColor foreground = m_toolTipForegroundColor.isValid()
-        ? m_toolTipForegroundColor
-        : palette().color(QPalette::ToolTipText);
-    const QColor outline = m_toolTipOutlineColor.isValid()
-        ? m_toolTipOutlineColor
-        : background;
-    const int cornerRadius = qMax(0, UiConfig::ResultTooltipCornerRadius);
-
-    QPalette popupPalette = m_hoverActionPopup->palette();
-    for (const QPalette::ColorGroup group : {QPalette::Active,
-                                             QPalette::Inactive,
-                                             QPalette::Disabled}) {
-        popupPalette.setColor(group, QPalette::Window, background);
-        popupPalette.setColor(group, QPalette::WindowText, foreground);
-    }
-    m_hoverActionPopup->setPalette(popupPalette);
-
-    QPalette labelPalette = m_hoverActionPopupLabel->palette();
-    for (const QPalette::ColorGroup group : {QPalette::Active,
-                                             QPalette::Inactive,
-                                             QPalette::Disabled}) {
-        labelPalette.setColor(group, QPalette::WindowText, foreground);
-        labelPalette.setColor(group, QPalette::Text, foreground);
-    }
-    m_hoverActionPopupLabel->setPalette(labelPalette);
-
-    m_hoverActionPopup->setStyleSheet(QStringLiteral(
-        "QFrame#resultActionPopup {"
-        " background: %1; color: %2;"
-        " border: %4px solid %3;"
-        " border-radius: %5px;"
-        "}"
-        "QLabel#resultActionPopupLabel {"
-        " background: transparent; color: %2;"
-        "}")
-                                          .arg(background.name(),
-                                               foreground.name(),
-                                               outline.name())
-                                          .arg(UiConfig::PopupOutlineStrokeWidth)
-                                          .arg(cornerRadius));
-    updateHoverActionPopupMask();
+    ToolTipStyleUtils::applyPopupTheme(
+        m_hoverActionPopup,
+        m_hoverActionPopupLabel,
+        this,
+        {m_toolTipBackgroundColor,
+         m_toolTipForegroundColor,
+         m_toolTipOutlineColor,
+         UiConfig::ResultTooltipCornerRadius});
 }
 
 void ResultDisplay::ensureHoverActionPopup()
@@ -957,26 +869,12 @@ void ResultDisplay::ensureHoverActionPopup()
     if (m_hoverActionPopup != nullptr)
         return;
 
-    m_hoverActionPopup = new QFrame(this, Qt::ToolTip | Qt::FramelessWindowHint);
-    m_hoverActionPopup->setObjectName(QStringLiteral("resultActionPopup"));
-    m_hoverActionPopup->setAutoFillBackground(true);
-    m_hoverActionPopup->setAttribute(Qt::WA_ShowWithoutActivating, true);
-    m_hoverActionPopup->setAttribute(Qt::WA_StyledBackground, true);
-    m_hoverActionPopup->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-    m_hoverActionPopup->setFocusPolicy(Qt::NoFocus);
-    m_hoverActionPopup->setFrameStyle(QFrame::NoFrame);
-
-    QVBoxLayout* layout = new QVBoxLayout(m_hoverActionPopup);
-    layout->setContentsMargins(6, 4, 6, 4);
-    layout->setSpacing(0);
-
-    m_hoverActionPopupLabel = new QLabel(m_hoverActionPopup);
-    m_hoverActionPopupLabel->setObjectName(QStringLiteral("resultActionPopupLabel"));
-    m_hoverActionPopupLabel->setTextFormat(Qt::RichText);
-    m_hoverActionPopupLabel->setTextInteractionFlags(Qt::NoTextInteraction);
-    m_hoverActionPopupLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
-    layout->addWidget(m_hoverActionPopupLabel);
-
+    m_hoverActionPopup = ToolTipStyleUtils::createPopup(this,
+                                                        QStringLiteral("resultActionPopup"),
+                                                        QStringLiteral("resultActionPopupLabel"),
+                                                        Qt::RichText,
+                                                        &m_hoverActionPopupLabel,
+                                                        true);
     applyHoverActionPopupTheme();
 }
 
@@ -994,14 +892,12 @@ void ResultDisplay::showHoverActionPopup(const QString& text)
 void ResultDisplay::showHoverActionPopup(const QString& text, QWidget* anchor, const QPoint& globalPos)
 {
     ensureHoverActionPopup();
-    m_hoverActionPopupLabel->setText(text);
-    m_hoverActionPopup->adjustSize();
-    m_hoverActionPopup->resize(m_hoverActionPopup->sizeHint());
-    updateHoverActionPopupMask();
-    m_hoverActionPopup->move(constrainedPopupPosition(anchor,
-                                                      globalPos,
-                                                      m_hoverActionPopup->size()));
-    m_hoverActionPopup->show();
+    ToolTipStyleUtils::showPopup(m_hoverActionPopup,
+                                 m_hoverActionPopupLabel,
+                                 text,
+                                 anchor,
+                                 globalPos,
+                                 UiConfig::ResultTooltipCornerRadius);
 }
 
 void ResultDisplay::updateHoverActionPopupMask()
@@ -1009,7 +905,8 @@ void ResultDisplay::updateHoverActionPopupMask()
     if (m_hoverActionPopup == nullptr)
         return;
 
-    applyRoundedPopupMask(m_hoverActionPopup, qMax(0, UiConfig::ResultTooltipCornerRadius));
+    ToolTipStyleUtils::applyRoundedPopupMask(m_hoverActionPopup,
+                                             qMax(0, UiConfig::ResultTooltipCornerRadius));
 }
 
 QColor ResultDisplay::hoverActionBadgeFillColor() const

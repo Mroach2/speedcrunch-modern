@@ -34,6 +34,7 @@ HEADERS += ../core/book.h \
            ../core/userunit.h \
            ../gui/displayformatutils.h \
            ../gui/functiontooltiputils.h \
+           ../gui/tooltipstyleutils.h \
            ../gui/variablelistwidget.h \
            ../math/floatnum/floatnum/floatcommon.h \
            ../math/floatnum/floatnum/floatconfig.h \
@@ -79,6 +80,7 @@ SOURCES += ../core/book.cpp \
            ../gui/displayformatutils.cpp \
            ../core/opcode.cpp \
            ../gui/functiontooltiputils.cpp \
+           ../gui/tooltipstyleutils.cpp \
            ../gui/variablelistwidget.cpp \
            ../math/floatnum/floatnum/floatcommon.c \
            ../math/floatnum/floatnum/floatconst.c \

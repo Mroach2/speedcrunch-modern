@@ -8,27 +8,23 @@
 #include "core/unicodechars.h"
 #include "core/mathdsl.h"
 #include "gui/oklchutils.h"
+#include "gui/tooltipstyleutils.h"
 #include "gui/uiconfig.h"
 
 #include <QLocale>
-#include <QBitmap>
 #include <QHash>
 #include <QApplication>
 #include <QFrame>
 #include <QGridLayout>
-#include <QGuiApplication>
 #include <QHelpEvent>
 #include <QHoverEvent>
 #include <QLabel>
 #include <QMouseEvent>
-#include <QPainter>
 #include <QPoint>
 #include <QPushButton>
-#include <QScreen>
 #include <QStyle>
 #include <QStyleOptionButton>
 #include <QTimer>
-#include <QVBoxLayout>
 
 #if QT_VERSION >= 0x040400 && defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
@@ -78,52 +74,6 @@ const Keypad::KeyDescription Keypad::keyDescriptions[] = {
 };
 
 namespace {
-void applyRoundedPopupMask(QWidget* popup, int cornerRadius)
-{
-    if (popup == nullptr)
-        return;
-
-    if (cornerRadius > 0) {
-        QBitmap mask(popup->size());
-        mask.fill(Qt::color0);
-        QPainter painter(&mask);
-        painter.setRenderHint(QPainter::Antialiasing);
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(Qt::color1);
-        painter.drawRoundedRect(QRectF(mask.rect()).adjusted(0, 0, -1, -1),
-                                cornerRadius,
-                                cornerRadius);
-        popup->setMask(mask);
-    } else {
-        popup->clearMask();
-    }
-}
-
-QPoint constrainedPopupPosition(QWidget* anchor,
-                                const QPoint& globalPos,
-                                const QSize& popupSize)
-{
-    constexpr int kPopupOffsetX = 12;
-    constexpr int kPopupOffsetY = 18;
-
-    QPoint pos = globalPos + QPoint(kPopupOffsetX, kPopupOffsetY);
-    QScreen* screen = anchor != nullptr ? anchor->screen() : QGuiApplication::primaryScreen();
-    if (screen == nullptr)
-        return pos;
-
-    const QRect available = screen->availableGeometry();
-    if (pos.x() + popupSize.width() > available.right())
-        pos.setX(globalPos.x() - popupSize.width() - kPopupOffsetX);
-    if (pos.y() + popupSize.height() > available.bottom())
-        pos.setY(globalPos.y() - popupSize.height() - kPopupOffsetY);
-
-    pos.setX(qBound(available.left(), pos.x(),
-                    qMax(available.left(), available.right() - popupSize.width())));
-    pos.setY(qBound(available.top(), pos.y(),
-                    qMax(available.top(), available.bottom() - popupSize.height())));
-    return pos;
-}
-
 struct LayoutEntry {
     Keypad::Button button;
     int row;
@@ -1044,53 +994,14 @@ QString Keypad::tooltipTextForObject(const QObject* watched) const
 
 void Keypad::applySummaryPopupTheme()
 {
-    if (m_summaryPopup == nullptr)
-        return;
-
-    const QColor background = m_summaryPopupBackgroundColor.isValid()
-        ? m_summaryPopupBackgroundColor
-        : palette().color(QPalette::ToolTipBase);
-    const QColor foreground = m_summaryPopupForegroundColor.isValid()
-        ? m_summaryPopupForegroundColor
-        : palette().color(QPalette::ToolTipText);
-    const QColor outline = m_summaryPopupOutlineColor.isValid()
-        ? m_summaryPopupOutlineColor
-        : background;
-    const int cornerRadius = qMax(0, m_summaryPopupCornerRadius);
-
-    QPalette popupPalette = m_summaryPopup->palette();
-    for (const QPalette::ColorGroup group : {QPalette::Active,
-                                             QPalette::Inactive,
-                                             QPalette::Disabled}) {
-        popupPalette.setColor(group, QPalette::Window, background);
-        popupPalette.setColor(group, QPalette::WindowText, foreground);
-    }
-    m_summaryPopup->setPalette(popupPalette);
-
-    QPalette labelPalette = m_summaryPopupLabel->palette();
-    for (const QPalette::ColorGroup group : {QPalette::Active,
-                                             QPalette::Inactive,
-                                             QPalette::Disabled}) {
-        labelPalette.setColor(group, QPalette::WindowText, foreground);
-        labelPalette.setColor(group, QPalette::Text, foreground);
-    }
-    m_summaryPopupLabel->setPalette(labelPalette);
-
-    m_summaryPopup->setStyleSheet(QStringLiteral(
-        "QFrame#keypadSummaryPopup {"
-        " background: %1; color: %2;"
-        " border: %4px solid %3;"
-        " border-radius: %5px;"
-        "}"
-        "QLabel#keypadSummaryPopupLabel {"
-        " background: transparent; color: %2;"
-        "}")
-                                      .arg(background.name(),
-                                           foreground.name(),
-                                           outline.name())
-                                      .arg(UiConfig::PopupOutlineStrokeWidth)
-                                      .arg(cornerRadius));
-    updateSummaryPopupMask();
+    ToolTipStyleUtils::applyPopupTheme(
+        m_summaryPopup,
+        m_summaryPopupLabel,
+        this,
+        {m_summaryPopupBackgroundColor,
+         m_summaryPopupForegroundColor,
+         m_summaryPopupOutlineColor,
+         m_summaryPopupCornerRadius});
 }
 
 void Keypad::ensureSummaryPopup()
@@ -1098,25 +1009,11 @@ void Keypad::ensureSummaryPopup()
     if (m_summaryPopup != nullptr)
         return;
 
-    m_summaryPopup = new QFrame(this, Qt::ToolTip | Qt::FramelessWindowHint);
-    m_summaryPopup->setObjectName(QStringLiteral("keypadSummaryPopup"));
-    m_summaryPopup->setAutoFillBackground(true);
-    m_summaryPopup->setAttribute(Qt::WA_ShowWithoutActivating, true);
-    m_summaryPopup->setAttribute(Qt::WA_StyledBackground, true);
-    m_summaryPopup->setFocusPolicy(Qt::NoFocus);
-    m_summaryPopup->setFrameStyle(QFrame::NoFrame);
-
-    QVBoxLayout* layout = new QVBoxLayout(m_summaryPopup);
-    layout->setContentsMargins(6, 4, 6, 4);
-    layout->setSpacing(0);
-
-    m_summaryPopupLabel = new QLabel(m_summaryPopup);
-    m_summaryPopupLabel->setObjectName(QStringLiteral("keypadSummaryPopupLabel"));
-    m_summaryPopupLabel->setTextFormat(Qt::PlainText);
-    m_summaryPopupLabel->setTextInteractionFlags(Qt::NoTextInteraction);
-    m_summaryPopupLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
-    layout->addWidget(m_summaryPopupLabel);
-
+    m_summaryPopup = ToolTipStyleUtils::createPopup(this,
+                                                    QStringLiteral("keypadSummaryPopup"),
+                                                    QStringLiteral("keypadSummaryPopupLabel"),
+                                                    Qt::PlainText,
+                                                    &m_summaryPopupLabel);
     applySummaryPopupTheme();
 }
 
@@ -1132,14 +1029,12 @@ void Keypad::showSummaryPopup(const QString& text, QWidget* anchor, const QPoint
         return;
 
     ensureSummaryPopup();
-    m_summaryPopupLabel->setText(text);
-    m_summaryPopup->adjustSize();
-    m_summaryPopup->resize(m_summaryPopup->sizeHint());
-    updateSummaryPopupMask();
-    m_summaryPopup->move(constrainedPopupPosition(anchor,
-                                                  globalPos,
-                                                  m_summaryPopup->size()));
-    m_summaryPopup->show();
+    ToolTipStyleUtils::showPopup(m_summaryPopup,
+                                 m_summaryPopupLabel,
+                                 text,
+                                 anchor,
+                                 globalPos,
+                                 m_summaryPopupCornerRadius);
 }
 
 void Keypad::updateSummaryPopupMask()
@@ -1147,7 +1042,8 @@ void Keypad::updateSummaryPopupMask()
     if (m_summaryPopup == nullptr)
         return;
 
-    applyRoundedPopupMask(m_summaryPopup, qMax(0, m_summaryPopupCornerRadius));
+    ToolTipStyleUtils::applyRoundedPopupMask(m_summaryPopup,
+                                             qMax(0, m_summaryPopupCornerRadius));
 }
 
 void Keypad::sizeButtons()
