@@ -1,6 +1,9 @@
 User Interface
 ==============
 
+Shortcut notation: :kbd:`Ctrl` means :kbd:`Ctrl` on Windows/Linux and
+:kbd:`Cmd` on macOS.
+
 Widgets
 -------
 
@@ -133,7 +136,7 @@ The expression editor provides some advanced features:
     This also works for user-defined functions. Pressing :kbd:`Escape` will dismiss the tooltip.
 
 * Quick constant insertion
-    Press :kbd:`Control+Space` to open a list of constants that allows quick access to the same constants as the constants widget (see above).
+    Press :kbd:`Ctrl+Space` to open a list of constants that allows quick access to the same constants as the constants widget (see above).
     Use the arrow keys to navigate the list. Pressing :kbd:`Escape` will dismiss this popup.
     Selecting an entry inserts its identifier (for example ``k_speed_of_light_in_vacuum``).
 
@@ -595,47 +598,47 @@ Keyboard Shortcuts
 
 Editing
 +++++++
-* :kbd:`Control+L`
+* :kbd:`Ctrl+L`
     Load session.
-* :kbd:`Control+S`
+* :kbd:`Ctrl+S`
     Save session.
-* :kbd:`Control+Q`
+* :kbd:`Ctrl+Q`
     Quit SpeedCrunch.
-* :kbd:`Control+N`
-    Create a new session in the current session pane (:kbd:`Command+N` on macOS).
-* :kbd:`Control+Shift+T`
-    Reopen the most recently closed session tab (:kbd:`Command+Shift+T` on macOS).
-* :kbd:`Control+C`
+* :kbd:`Ctrl+N`
+    Create a new session in the current session pane.
+* :kbd:`Ctrl+Shift+T`
+    Reopen the most recently closed session tab.
+* :kbd:`Ctrl+C`
     Copy selected text to clipboard.
-* :kbd:`Control+R`
+* :kbd:`Ctrl+R`
     Copy last result to clipboard.
-* :kbd:`Control+V`
+* :kbd:`Ctrl+V`
     Paste from clipboard.
-* :kbd:`Control+A`
+* :kbd:`Ctrl+A`
     Select entire expression.
-* :kbd:`Control+(` or :kbd:`Control+)`
+* :kbd:`Ctrl+(` or :kbd:`Ctrl+)`
     Wrap the current selection in parentheses. If no text is selected, the entire expression is wrapped.
 
 Widgets and Docks
 +++++++++++++++++
 
-* :kbd:`Control+1`
+* :kbd:`Ctrl+1`
     Show/hide formula book.
-* :kbd:`Control+2`
+* :kbd:`Ctrl+2`
     Show/hide constants widget.
-* :kbd:`Control+3`
+* :kbd:`Ctrl+3`
     Show/hide functions widgets.
-* :kbd:`Control+4`
+* :kbd:`Ctrl+4`
     Show/hide variables widget.
-* :kbd:`Control+5`
+* :kbd:`Ctrl+5`
     Show/hide user functions widget.
-* :kbd:`Control+6`
-    Show/hide bit field dock.
-* :kbd:`Control+7`
-    Show/hide history widget.
-* :kbd:`Control+8`
+* :kbd:`Ctrl+6`
     Show/hide user units widget.
-* :kbd:`Control+B`
+* :kbd:`Ctrl+7`
+    Show/hide history widget.
+* :kbd:`Ctrl+8`
+    Show/hide bit field dock.
+* :kbd:`Ctrl+B`
     Show/hide the status bar.
     The status bar provides quick selectors for :menuselection:`Angle Mode`,
     :menuselection:`Results --> Notation`, and
@@ -649,7 +652,7 @@ Scrolling
     Scroll the result window page-wise.
 * :kbd:`Shift+Page Up` and :kbd:`Shift+Page Down`
     Scroll the result window line-wise.
-* :kbd:`Control+Page Up` and :kbd:`Control+Page Down`
+* :kbd:`Ctrl+Page Up` and :kbd:`Ctrl+Page Down`
     Scroll to the top or bottom of the result window.
 
 
@@ -685,9 +688,9 @@ Various
 
 * :kbd:`F11`
     Toggle full screen.
-* :kbd:`Control` + mouse wheel, :kbd:`Shift` + mouse wheel, or :kbd:`Shift+Up` and :kbd:`Shift+Down`
+* :kbd:`Ctrl` + mouse wheel, :kbd:`Shift` + mouse wheel, or :kbd:`Shift+Up` and :kbd:`Shift+Down`
     Change the font size.
-* :kbd:`Control+Shift` + mouse wheel
+* :kbd:`Ctrl+Shift` + mouse wheel
     Change the window opacity.
 
     .. versionadded:: 0.12

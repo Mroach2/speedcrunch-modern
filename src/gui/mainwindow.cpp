@@ -3663,7 +3663,7 @@ void MainWindow::createActionShortcuts()
         QKeySequence(Qt::CTRL | Qt::Key_ParenLeft),
         QKeySequence(Qt::CTRL | Qt::Key_ParenRight)
     });
-    m_actions.viewBitfield->setShortcut(Qt::CTRL | Qt::Key_6);
+    m_actions.viewBitfield->setShortcut(Qt::CTRL | Qt::Key_8);
     m_actions.viewConstants->setShortcut(Qt::CTRL | Qt::Key_2);
     m_actions.viewFullScreenMode->setShortcut(Qt::Key_F11);
     m_actions.viewFunctions->setShortcut(Qt::CTRL | Qt::Key_3);
@@ -3672,7 +3672,7 @@ void MainWindow::createActionShortcuts()
     m_actions.viewStatusBar->setShortcut(Qt::CTRL | Qt::Key_B);
     m_actions.viewVariables->setShortcut(Qt::CTRL | Qt::Key_4);
     m_actions.viewUserFunctions->setShortcut(Qt::CTRL | Qt::Key_5);
-    m_actions.viewUserUnits->setShortcut(Qt::CTRL | Qt::Key_8);
+    m_actions.viewUserUnits->setShortcut(Qt::CTRL | Qt::Key_6);
     m_actions.settingsResultFormatGeneral->setShortcut(Qt::Key_F2);
     m_actions.settingsResultFormatFixed->setShortcut(Qt::Key_F3);
     m_actions.settingsResultFormatEngineering->setShortcut(Qt::Key_F4);
