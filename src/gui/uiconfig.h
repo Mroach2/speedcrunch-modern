@@ -12,6 +12,7 @@ constexpr int DockSplitterStrokeWidth = 2;
 constexpr int OutlineStrokeWidth = 2;
 constexpr int PopupOutlineStrokeWidth = 1;
 constexpr int ActiveSessionTabIndicatorStrokeWidth = 2;
+constexpr int SessionTabHorizontalPadding = 36;
 constexpr int KeypadButtonMargin = 3;
 constexpr int KeypadButtonPadding = 3;
 constexpr int KeypadButtonCornerRadius = 8;

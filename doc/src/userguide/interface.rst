@@ -602,7 +602,7 @@ Editing
 * :kbd:`Control+Q`
     Quit SpeedCrunch.
 * :kbd:`Control+N`
-    Clear history.
+    Create a new session in the current session pane (:kbd:`Command+N` on macOS).
 * :kbd:`Control+C`
     Copy selected text to clipboard.
 * :kbd:`Control+R`

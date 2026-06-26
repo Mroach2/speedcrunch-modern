@@ -504,6 +504,7 @@ private slots:
     void focusing_loaded_pane_preserves_its_current_scroll_position();
     void persisting_layout_captures_visible_scroll_positions_for_all_panes();
     void switching_session_tabs_preserves_each_editor_text();
+    void new_shortcut_creates_session_in_active_pane();
     void session_tabs_reorder_with_horizontal_drag();
     void closing_and_reopening_docks_keeps_attached_widgets();
 };
@@ -4005,6 +4006,113 @@ void TestDisplayUi::switching_session_tabs_preserves_each_editor_text()
     QTest::mouseClick(tabBar, Qt::LeftButton, Qt::NoModifier, tabBar->tabRect(1).center());
     QCoreApplication::processEvents();
     QCOMPARE(editor->text(), QStringLiteral("second tab draft"));
+}
+
+void TestDisplayUi::new_shortcut_creates_session_in_active_pane()
+{
+    Settings* appSettings = Settings::instance();
+    struct SettingsGuard {
+        Settings* settings;
+        QByteArray oldSkipUpdateCheck;
+        bool hadSkipUpdateCheck;
+        QString oldSessionLayoutJson;
+        bool oldConstantsDockVisible;
+        bool oldFunctionsDockVisible;
+        bool oldHistoryDockVisible;
+        bool oldKeypadVisible;
+        bool oldFormulaBookDockVisible;
+        bool oldVariablesDockVisible;
+        bool oldUserFunctionsDockVisible;
+        bool oldUserUnitsDockVisible;
+        bool oldBitfieldVisible;
+        bool oldWindowPositionSave;
+        bool oldHasNumberFormatStyleSetting;
+
+        ~SettingsGuard()
+        {
+            if (hadSkipUpdateCheck)
+                qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", oldSkipUpdateCheck);
+            else
+                qunsetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
+            settings->sessionLayoutJson = oldSessionLayoutJson;
+            settings->constantsDockVisible = oldConstantsDockVisible;
+            settings->functionsDockVisible = oldFunctionsDockVisible;
+            settings->historyDockVisible = oldHistoryDockVisible;
+            settings->keypadVisible = oldKeypadVisible;
+            settings->formulaBookDockVisible = oldFormulaBookDockVisible;
+            settings->variablesDockVisible = oldVariablesDockVisible;
+            settings->userFunctionsDockVisible = oldUserFunctionsDockVisible;
+            settings->userUnitsDockVisible = oldUserUnitsDockVisible;
+            settings->bitfieldVisible = oldBitfieldVisible;
+            settings->windowPositionSave = oldWindowPositionSave;
+            settings->hasNumberFormatStyleSetting = oldHasNumberFormatStyleSetting;
+        }
+    } guard {
+        appSettings,
+        qgetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK"),
+        qEnvironmentVariableIsSet("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK"),
+        appSettings->sessionLayoutJson,
+        appSettings->constantsDockVisible,
+        appSettings->functionsDockVisible,
+        appSettings->historyDockVisible,
+        appSettings->keypadVisible,
+        appSettings->formulaBookDockVisible,
+        appSettings->variablesDockVisible,
+        appSettings->userFunctionsDockVisible,
+        appSettings->userUnitsDockVisible,
+        appSettings->bitfieldVisible,
+        appSettings->windowPositionSave,
+        appSettings->hasNumberFormatStyleSetting
+    };
+
+    qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
+    appSettings->sessionLayoutJson.clear();
+    appSettings->constantsDockVisible = false;
+    appSettings->functionsDockVisible = false;
+    appSettings->historyDockVisible = false;
+    appSettings->keypadVisible = false;
+    appSettings->formulaBookDockVisible = false;
+    appSettings->variablesDockVisible = false;
+    appSettings->userFunctionsDockVisible = false;
+    appSettings->userUnitsDockVisible = false;
+    appSettings->bitfieldVisible = false;
+    appSettings->windowPositionSave = false;
+    appSettings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QVERIFY(QMetaObject::invokeMethod(&window, "splitActivePaneRight", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+
+    const QList<ResultDisplay*> displays = window.findChildren<ResultDisplay*>();
+    QCOMPARE(displays.size(), 2);
+    ResultDisplay* firstDisplay = displays.at(0);
+    ResultDisplay* secondDisplay = displays.at(1);
+    QWidget* firstPane = paneWidgetForDisplay(firstDisplay);
+    QWidget* secondPane = paneWidgetForDisplay(secondDisplay);
+    QTabBar* firstTabBar = firstPane ? firstPane->findChild<QTabBar*>() : nullptr;
+    QTabBar* secondTabBar = secondPane ? secondPane->findChild<QTabBar*>() : nullptr;
+    QVERIFY(firstTabBar != nullptr);
+    QVERIFY(secondTabBar != nullptr);
+    QCOMPARE(firstTabBar->count(), 1);
+    QCOMPARE(secondTabBar->count(), 1);
+
+    QTest::mouseClick(secondDisplay->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      secondDisplay->viewport()->rect().center());
+    QCoreApplication::processEvents();
+
+    const QList<QKeySequence> bindings = QKeySequence::keyBindings(QKeySequence::New);
+    QVERIFY(!bindings.isEmpty());
+    const QKeyCombination shortcut = bindings.first()[0];
+    QTest::keyClick(&window, shortcut.key(), shortcut.keyboardModifiers());
+    QCoreApplication::processEvents();
+
+    QCOMPARE(firstTabBar->count(), 1);
+    QTRY_COMPARE(secondTabBar->count(), 2);
+    QCOMPARE(secondTabBar->currentIndex(), 1);
 }
 
 void TestDisplayUi::session_tabs_reorder_with_horizontal_drag()

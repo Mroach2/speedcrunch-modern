@@ -2456,7 +2456,8 @@ protected:
     {
         const int closeExtent = qMax(16, fontMetrics().height() + 1);
         const int closeWidth = closeExtent + 8;
-        const int width = fontMetrics().horizontalAdvance(tabText(index)) + 30 + closeWidth;
+        const int width = fontMetrics().horizontalAdvance(tabText(index))
+            + UiConfig::SessionTabHorizontalPadding + closeWidth;
         const int height = qMax(30, fontMetrics().height() + 12);
         return QSize(width, height);
     }
@@ -3654,7 +3655,6 @@ void MainWindow::createActionShortcuts()
     m_actions.sessionLoad->setShortcut(Qt::CTRL | Qt::Key_L);
     m_actions.sessionQuit->setShortcut(Qt::CTRL | Qt::Key_Q);
     m_actions.sessionSave->setShortcut(Qt::CTRL | Qt::Key_S);
-    m_actions.editClearHistory->setShortcut(Qt::CTRL | Qt::Key_N);
     m_actions.editCopyLastResult->setShortcut(Qt::CTRL | Qt::Key_R);
     m_actions.editCopy->setShortcut(Qt::CTRL | Qt::Key_C);
     m_actions.editPaste->setShortcut(Qt::CTRL | Qt::Key_V);
@@ -6649,6 +6649,7 @@ void MainWindow::createFixedConnections()
             connect(shortcut, &QShortcut::activated, this, handler);
         }
     };
+    bindStandardKey(QKeySequence::New, [this]() { showNewSessionDialog(); });
     bindStandardKey(QKeySequence::AddTab, [this]() { showNewSessionDialog(); });
     bindStandardKey(QKeySequence::NextChild, [this]() { activateNextChild(); });
     bindStandardKey(QKeySequence::PreviousChild, [this]() { activatePreviousChild(); });
