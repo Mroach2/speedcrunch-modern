@@ -110,6 +110,8 @@ private slots:
     void showRenameSessionDialog();
     void closeCurrentSession();
     void restoreClosedSessionTab();
+    void cycleFocusForward();
+    void cycleFocusBackward();
     void closeCurrentPane();
     void deleteCurrentSession();
     void splitActivePaneLeft();
@@ -310,6 +312,9 @@ private:
     bool isDockWidgetDescendant(QWidget* widget) const;
     bool isDockTextInput(QWidget* widget) const;
     void deactivateActiveEditorForTextInputFocus();
+    QList<QWidget*> focusCycleTargets() const;
+    bool focusWidgetMatchesCycleTarget(QWidget* focusWidget, QWidget* target) const;
+    void cycleFocusRegion(int direction);
     void splitActivePane(Qt::Orientation orientation, bool insertAfter);
     Session* createUntitledSession(bool activateCreatedSession = true);
     QList<ResultDisplay*> splitPaneDisplays() const;

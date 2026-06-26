@@ -3677,7 +3677,6 @@ void MainWindow::createActionShortcuts()
     m_actions.settingsResultFormatFixed->setShortcut(Qt::Key_F3);
     m_actions.settingsResultFormatEngineering->setShortcut(Qt::Key_F4);
     m_actions.settingsResultFormatScientific->setShortcut(Qt::Key_F5);
-    m_actions.settingsResultFormatBinary->setShortcut(Qt::Key_F6);
     m_actions.settingsResultFormatOctal->setShortcut(Qt::Key_F7);
     m_actions.settingsResultFormatHexadecimal->setShortcut(Qt::Key_F8);
     m_actions.settingsResultFormatSexagesimal->setShortcut(Qt::Key_F9);
@@ -4500,6 +4499,114 @@ QAbstractItemView* MainWindow::dockItemViewFocusTarget(QWidget* widget) const
     }
 
     return nullptr;
+}
+
+QList<QWidget*> MainWindow::focusCycleTargets() const
+{
+    QList<QWidget*> targets;
+    QSet<QWidget*> seen;
+
+    const auto addTarget = [&targets, &seen, this](QWidget* widget) {
+        if (widget == nullptr || seen.contains(widget))
+            return;
+        if (!widget->isEnabled() || !widget->isVisibleTo(const_cast<MainWindow*>(this)))
+            return;
+        if (widget->focusPolicy() == Qt::NoFocus)
+            return;
+        targets.append(widget);
+        seen.insert(widget);
+    };
+
+    for (Editor* editor : splitPaneEditors())
+        addTarget(editor);
+
+    for (QDockWidget* dock : m_allDocks) {
+        if (dock == nullptr || !dock->isEnabled() || !dock->isVisibleTo(const_cast<MainWindow*>(this)))
+            continue;
+        QWidget* dockWidget = dock->widget();
+        if (dockWidget == nullptr || !dockWidget->isEnabled() || !dockWidget->isVisibleTo(const_cast<MainWindow*>(this)))
+            continue;
+
+        const QList<QLineEdit*> textInputs = dockWidget->findChildren<QLineEdit*>();
+        for (QLineEdit* textInput : textInputs)
+            addTarget(textInput);
+
+        const QList<QAbstractItemView*> itemViews = dockWidget->findChildren<QAbstractItemView*>();
+        for (QAbstractItemView* itemView : itemViews)
+            addTarget(itemView);
+    }
+
+    return targets;
+}
+
+bool MainWindow::focusWidgetMatchesCycleTarget(QWidget* focusWidget, QWidget* target) const
+{
+    if (focusWidget == nullptr || target == nullptr)
+        return false;
+    if (focusWidget == target)
+        return true;
+    if (target->isAncestorOf(focusWidget))
+        return true;
+
+    if (QAbstractItemView* itemView = qobject_cast<QAbstractItemView*>(target)) {
+        QWidget* viewport = itemView->viewport();
+        return focusWidget == viewport
+            || (viewport != nullptr && viewport->isAncestorOf(focusWidget));
+    }
+
+    return false;
+}
+
+void MainWindow::cycleFocusRegion(int direction)
+{
+    const QList<QWidget*> targets = focusCycleTargets();
+    if (targets.size() <= 1)
+        return;
+
+    QWidget* focused = focusWidget();
+    if (focused == nullptr)
+        focused = QApplication::focusWidget();
+
+    int currentIndex = -1;
+    for (int i = 0; i < targets.size(); ++i) {
+        if (focusWidgetMatchesCycleTarget(focused, targets.at(i))) {
+            currentIndex = i;
+            break;
+        }
+    }
+
+    const int targetIndex = currentIndex < 0
+        ? (direction >= 0 ? 0 : targets.size() - 1)
+        : (currentIndex + direction + targets.size()) % targets.size();
+    QWidget* target = targets.at(targetIndex);
+
+    pendingDockFocusTarget() = nullptr;
+    pendingDockTextInputFocusTarget() = nullptr;
+    if (isDockWidgetDescendant(target)) {
+        pendingDockFocusTarget() = target;
+        if (isDockTextInput(target))
+            pendingDockTextInputFocusTarget() = target;
+        deactivateActiveEditorForTextInputFocus();
+        hideStateLabel();
+        QPointer<QWidget> focusTarget(target);
+        QTimer::singleShot(100, target, [focusTarget]() {
+            if (pendingDockFocusTarget() == focusTarget)
+                pendingDockFocusTarget() = nullptr;
+            if (pendingDockTextInputFocusTarget() == focusTarget)
+                pendingDockTextInputFocusTarget() = nullptr;
+        });
+    }
+    target->setFocus(Qt::ShortcutFocusReason);
+}
+
+void MainWindow::cycleFocusForward()
+{
+    cycleFocusRegion(1);
+}
+
+void MainWindow::cycleFocusBackward()
+{
+    cycleFocusRegion(-1);
 }
 
 void MainWindow::deactivateActiveEditorForTextInputFocus()
@@ -6732,8 +6839,20 @@ void MainWindow::createFixedConnections()
 
     QShortcut* restoreClosedSessionTabShortcut =
         new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_T), this);
+    restoreClosedSessionTabShortcut->setContext(Qt::ApplicationShortcut);
     connect(restoreClosedSessionTabShortcut, &QShortcut::activated,
             this, &MainWindow::restoreClosedSessionTab);
+
+    QShortcut* cycleFocusForwardShortcut = new QShortcut(QKeySequence(Qt::Key_F6), this);
+    cycleFocusForwardShortcut->setContext(Qt::ApplicationShortcut);
+    connect(cycleFocusForwardShortcut, &QShortcut::activated,
+            this, &MainWindow::cycleFocusForward);
+
+    QShortcut* cycleFocusBackwardShortcut =
+        new QShortcut(QKeySequence(Qt::SHIFT | Qt::Key_F6), this);
+    cycleFocusBackwardShortcut->setContext(Qt::ApplicationShortcut);
+    connect(cycleFocusBackwardShortcut, &QShortcut::activated,
+            this, &MainWindow::cycleFocusBackward);
 
     QShortcut* splitRightShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+\\")), this);
     connect(splitRightShortcut, &QShortcut::activated, this, &MainWindow::splitActivePaneRight);
@@ -9822,6 +9941,21 @@ bool MainWindow::event(QEvent* e)
     if (e != nullptr
         && (e->type() == QEvent::KeyPress || e->type() == QEvent::ShortcutOverride)) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+        const Qt::KeyboardModifiers shortcutModifiers =
+            keyEvent->modifiers() & ~(Qt::KeypadModifier);
+        if (e->type() == QEvent::KeyPress
+            && keyEvent->key() == Qt::Key_F6
+            && (shortcutModifiers == Qt::NoModifier
+                || shortcutModifiers == Qt::ShiftModifier)
+            && qApp->activeModalWidget() == nullptr
+            && qApp->activePopupWidget() == nullptr) {
+            if (shortcutModifiers == Qt::ShiftModifier)
+                cycleFocusBackward();
+            else
+                cycleFocusForward();
+            keyEvent->accept();
+            return true;
+        }
         if (keyEvent->key() == Qt::Key_Escape
             && m_widgets.state != nullptr
             && m_widgets.state->isVisible()
@@ -9917,6 +10051,27 @@ bool MainWindow::event(QEvent* e)
 
 bool MainWindow::eventFilter(QObject* o, QEvent* e)
 {
+    if (e != nullptr && e->type() == QEvent::KeyPress) {
+        if (QWidget* widget = qobject_cast<QWidget*>(o);
+            widget != nullptr && widget->window() == this) {
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+            const Qt::KeyboardModifiers shortcutModifiers =
+                keyEvent->modifiers() & ~(Qt::KeypadModifier);
+            if (keyEvent->key() == Qt::Key_F6
+                && (shortcutModifiers == Qt::NoModifier
+                    || shortcutModifiers == Qt::ShiftModifier)
+                && qApp->activeModalWidget() == nullptr
+                && qApp->activePopupWidget() == nullptr) {
+                if (shortcutModifiers == Qt::ShiftModifier)
+                    cycleFocusBackward();
+                else
+                    cycleFocusForward();
+                keyEvent->accept();
+                return true;
+            }
+        }
+    }
+
     if (qobject_cast<QSplitterHandle*>(o) != nullptr) {
         if (e->type() == QEvent::MouseButtonPress) {
             const QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(e);

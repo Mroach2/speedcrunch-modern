@@ -468,6 +468,22 @@ QKeyCombination restoreClosedTabShortcut()
 {
     return QKeyCombination(Qt::ControlModifier | Qt::ShiftModifier, Qt::Key_T);
 }
+
+bool focusIsWithin(QWidget* target)
+{
+    QWidget* focused = QApplication::focusWidget();
+    if (target == nullptr || focused == nullptr)
+        return false;
+    if (focused == target || target->isAncestorOf(focused))
+        return true;
+    if (QAbstractItemView* view = qobject_cast<QAbstractItemView*>(target)) {
+        QWidget* viewport = view->viewport();
+        return focused == viewport
+            || (viewport != nullptr && viewport->isAncestorOf(focused));
+    }
+    return false;
+}
+
 }
 
 class TestDisplayUi : public QObject {
@@ -501,6 +517,7 @@ private slots:
     void dock_scroll_corner_uses_scrollbar_track_fill();
     void dock_separator_style_uses_primary_while_hovered_or_dragged();
     void constants_dock_uses_configured_narrow_minimum_width();
+    void f6_cycles_focus_between_editor_and_visible_dock_controls();
     void dock_search_focus_suppresses_editor_primary_outline_across_panes();
     void dock_selection_inserts_into_active_session_pane_after_focus_transfer();
     void clicking_tab_activates_own_pane_in_nested_split_layout();
@@ -3076,6 +3093,122 @@ void TestDisplayUi::constants_dock_uses_configured_narrow_minimum_width()
 
     QVERIFY(constantsDock->widget()->minimumSizeHint().width()
             <= UiConfig::ConstantsDockMinimumWidth);
+}
+
+void TestDisplayUi::f6_cycles_focus_between_editor_and_visible_dock_controls()
+{
+    Settings* settings = Settings::instance();
+    struct SettingsGuard {
+        Settings* settings;
+        bool oldConstantsDockVisible;
+        bool oldFunctionsDockVisible;
+        bool oldHistoryDockVisible;
+        bool oldFormulaBookDockVisible;
+        bool oldVariablesDockVisible;
+        bool oldUserFunctionsDockVisible;
+        bool oldUserUnitsDockVisible;
+        bool oldBitfieldVisible;
+        Settings::KeypadMode oldKeypadMode;
+        bool oldKeypadVisible;
+        bool oldHasNumberFormatStyleSetting;
+        QByteArray oldSkipUpdateCheck;
+        bool hadSkipUpdateCheck;
+
+        ~SettingsGuard()
+        {
+            settings->constantsDockVisible = oldConstantsDockVisible;
+            settings->functionsDockVisible = oldFunctionsDockVisible;
+            settings->historyDockVisible = oldHistoryDockVisible;
+            settings->formulaBookDockVisible = oldFormulaBookDockVisible;
+            settings->variablesDockVisible = oldVariablesDockVisible;
+            settings->userFunctionsDockVisible = oldUserFunctionsDockVisible;
+            settings->userUnitsDockVisible = oldUserUnitsDockVisible;
+            settings->bitfieldVisible = oldBitfieldVisible;
+            settings->keypadMode = oldKeypadMode;
+            settings->keypadVisible = oldKeypadVisible;
+            settings->hasNumberFormatStyleSetting = oldHasNumberFormatStyleSetting;
+            if (hadSkipUpdateCheck)
+                qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", oldSkipUpdateCheck);
+            else
+                qunsetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK");
+        }
+    } guard {
+        settings,
+        settings->constantsDockVisible,
+        settings->functionsDockVisible,
+        settings->historyDockVisible,
+        settings->formulaBookDockVisible,
+        settings->variablesDockVisible,
+        settings->userFunctionsDockVisible,
+        settings->userUnitsDockVisible,
+        settings->bitfieldVisible,
+        settings->keypadMode,
+        settings->keypadVisible,
+        settings->hasNumberFormatStyleSetting,
+        qgetenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK"),
+        qEnvironmentVariableIsSet("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK")
+    };
+
+    qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->keypadMode = Settings::KeypadModeDisabled;
+    settings->keypadVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    Editor* editor = window.findChild<Editor*>();
+    QVERIFY(editor != nullptr);
+    editor->setFocus();
+    QTRY_VERIFY(focusIsWithin(editor));
+
+    QTest::keyClick(editor, Qt::Key_F6);
+    QCoreApplication::processEvents();
+    QVERIFY(focusIsWithin(editor));
+
+    QVERIFY(QMetaObject::invokeMethod(&window, "setConstantsDockVisible",
+                                      Qt::DirectConnection,
+                                      Q_ARG(bool, true),
+                                      Q_ARG(bool, false)));
+    QCoreApplication::processEvents();
+    QDockWidget* constantsDock =
+        window.findChild<QDockWidget*>(QStringLiteral("ConstantsDock"));
+    QVERIFY(constantsDock != nullptr);
+    QLineEdit* searchBox = constantsDock->findChild<QLineEdit*>();
+    QTreeWidget* table = constantsDock->findChild<QTreeWidget*>();
+    QVERIFY(searchBox != nullptr);
+    QVERIFY(table != nullptr);
+    QVERIFY(searchBox->isVisible());
+    QVERIFY(table->isVisible());
+
+    editor->setFocus();
+    QTRY_VERIFY(focusIsWithin(editor));
+
+    QTest::keyClick(editor, Qt::Key_F6);
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(focusIsWithin(searchBox));
+
+    QTest::keyClick(searchBox, Qt::Key_F6);
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(focusIsWithin(table));
+
+    QTest::keyClick(table, Qt::Key_F6);
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(focusIsWithin(editor));
+
+    QVERIFY(QMetaObject::invokeMethod(&window, "cycleFocusBackward", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(focusIsWithin(table));
 }
 
 void TestDisplayUi::dock_search_focus_suppresses_editor_primary_outline_across_panes()

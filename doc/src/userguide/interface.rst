@@ -655,6 +655,12 @@ Scrolling
 * :kbd:`Ctrl+Page Up` and :kbd:`Ctrl+Page Down`
     Scroll to the top or bottom of the result window.
 
+Focus Navigation
+++++++++++++++++
+
+* :kbd:`F6` and :kbd:`Shift+F6`
+    Move focus forward or backward between the expression editor and visible dock controls.
+
 
 Notation
 ++++++++
@@ -667,8 +673,6 @@ Notation
     Set result notation to engineering decimal.
 * :kbd:`F5`
     Set result notation to scientific decimal.
-* :kbd:`F6`
-    Set result notation to binary.
 * :kbd:`F7`
     Set result notation to octal.
 * :kbd:`F8`
