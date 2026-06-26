@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace {
 
@@ -55,6 +56,10 @@ constexpr double kDarkPrimaryLightness = 0.74;
 constexpr double kLightPrimaryLightness = 0.52;
 constexpr double kDarkPrimaryMaximumLightness = 0.86;
 constexpr double kLightPrimaryMinimumLightness = 0.36;
+constexpr double kSecondaryLinkMinimumHueDistance = 55.0;
+constexpr double kSecondaryLinkMinimumChroma = 0.025;
+constexpr double kSecondaryLinkMaximumChroma = 0.080;
+constexpr double kSecondaryLinkChromaStep = 0.005;
 
 // Chroma retention applied per shade step away from the base shade. This keeps
 // generated palettes from becoming over-saturated as lightness moves toward the
@@ -281,6 +286,90 @@ QColor contrastFallbackPrimary(const QColor& background)
     if (fallback == QColor(Qt::black))
         return QColor(QStringLiteral("#111111"));
     return fallback;
+}
+
+double hueDistance(double first, double second)
+{
+    const double difference = std::abs(normalizedHue(first) - normalizedHue(second));
+    return std::min(difference, kDegreesInCircle - difference);
+}
+
+bool isDistinctHue(double hue, const std::optional<double>& avoidedHue)
+{
+    return !avoidedHue.has_value()
+        || hueDistance(hue, avoidedHue.value()) >= kSecondaryLinkMinimumHueDistance;
+}
+
+void appendDistinctHueCandidate(QVector<double>& hues,
+                                double hue,
+                                const std::optional<double>& avoidedHue)
+{
+    const double normalized = normalizedHue(hue);
+    if (!isDistinctHue(normalized, avoidedHue))
+        return;
+
+    const auto existing = std::find_if(hues.cbegin(), hues.cend(), [normalized](double candidate) {
+        return hueDistance(candidate, normalized) < 0.5;
+    });
+    if (existing == hues.cend())
+        hues.append(normalized);
+}
+
+QVector<double> secondaryLinkHueCandidates(double preferredHue,
+                                           const std::optional<double>& avoidedHue)
+{
+    QVector<double> hues;
+    appendDistinctHueCandidate(hues, preferredHue, avoidedHue);
+
+    if (avoidedHue.has_value()) {
+        const double avoided = avoidedHue.value();
+        appendDistinctHueCandidate(hues, avoided + kSecondaryLinkMinimumHueDistance, avoidedHue);
+        appendDistinctHueCandidate(hues, avoided - kSecondaryLinkMinimumHueDistance, avoidedHue);
+        for (double offset = 75.0; offset <= 180.0; offset += 15.0) {
+            appendDistinctHueCandidate(hues, avoided + offset, avoidedHue);
+            appendDistinctHueCandidate(hues, avoided - offset, avoidedHue);
+        }
+    }
+
+    for (double hue = 0.0; hue < kDegreesInCircle; hue += 15.0)
+        appendDistinctHueCandidate(hues, hue, avoidedHue);
+
+    std::sort(hues.begin(), hues.end(), [preferredHue](double first, double second) {
+        return hueDistance(first, preferredHue) < hueDistance(second, preferredHue);
+    });
+    return hues;
+}
+
+QColor readableLinkCandidate(const QColor& background,
+                             double hue,
+                             double chroma,
+                             double minimumContrast)
+{
+    const Oklch backgroundOklch = qColorToOklch(background);
+    const bool dark = themePolarityForBackground(background) == ThemePolarity::Dark;
+    double failingLightness = backgroundOklch.l;
+    double passingLightness = dark ? 1.0 : 0.0;
+
+    auto candidateForLightness = [hue, chroma](double lightness) {
+        return oklchToValidSrgbQColor({lightness, chroma, hue, 1.0});
+    };
+
+    if (contrastRatio(candidateForLightness(passingLightness), background) < minimumContrast)
+        return QColor();
+
+    QColor passingCandidate = candidateForLightness(passingLightness);
+    for (int i = 0; i < kBinarySearchIterations; ++i) {
+        const double attemptLightness = (failingLightness + passingLightness) / 2.0;
+        const QColor attempt = candidateForLightness(attemptLightness);
+        if (contrastRatio(attempt, background) >= minimumContrast) {
+            passingLightness = attemptLightness;
+            passingCandidate = attempt;
+        } else {
+            failingLightness = attemptLightness;
+        }
+    }
+
+    return passingCandidate;
 }
 
 double shadeLightnessForIndex(double baseLightness,
@@ -546,6 +635,59 @@ QColor generatePrimaryFromBackground(const QColor& background,
     // expressive as accents, but a readable primary is preferable to preserving
     // chroma when an extreme input color defeats the bounded OKLCH adjustment.
     return contrastFallbackPrimary(background);
+}
+
+QColor generateSecondaryLinkFromBackground(const QColor& background,
+                                           const QColor& primaryLink,
+                                           double minimumContrast)
+{
+    if (!background.isValid())
+        return QColor();
+
+    const Oklch backgroundOklch = qColorToOklch(background);
+    const Oklch primaryLinkOklch = qColorToOklch(primaryLink);
+    const std::optional<double> avoidedHue =
+        primaryLink.isValid() && primaryLinkOklch.c >= kMinimumVisibleTintChroma
+        ? std::optional<double>(primaryLinkOklch.h)
+        : std::nullopt;
+    const double preferredHue = backgroundOklch.c < kNeutralBackgroundChromaThreshold
+        ? avoidedHue.value_or(kDefaultPrimaryFallbackHueDegrees)
+        : backgroundOklch.h;
+    const QVector<double> hues = secondaryLinkHueCandidates(preferredHue, avoidedHue);
+
+    QColor bestCandidate;
+    double bestScore = std::numeric_limits<double>::max();
+    for (double chroma = kSecondaryLinkMinimumChroma;
+         chroma <= kSecondaryLinkMaximumChroma + 0.0001;
+         chroma += kSecondaryLinkChromaStep) {
+        for (const double hue : hues) {
+            const QColor candidate = readableLinkCandidate(
+                background, hue, chroma, minimumContrast);
+            if (!candidate.isValid())
+                continue;
+
+            const Oklch candidateOklch = qColorToOklch(candidate);
+            if (candidateOklch.c < kMinimumVisibleTintChroma)
+                continue;
+            if (avoidedHue.has_value()
+                && !isDistinctHue(candidateOklch.h, avoidedHue)) {
+                continue;
+            }
+
+            const double score = candidateOklch.c * 1000.0
+                + hueDistance(candidateOklch.h, preferredHue) / kDegreesInCircle
+                + std::abs(candidateOklch.l - backgroundOklch.l) * 0.01;
+            if (score < bestScore) {
+                bestScore = score;
+                bestCandidate = candidate;
+            }
+        }
+
+        if (bestCandidate.isValid())
+            return bestCandidate;
+    }
+
+    return aaForegroundForBackground(background, minimumContrast);
 }
 
 double defaultOklchShadeDistanceFactor()

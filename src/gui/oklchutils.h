@@ -32,6 +32,9 @@ ThemePolarity themePolarityForBackground(const QColor& background);
 QColor generatePrimaryFromBackground(
     const QColor& background,
     std::optional<double> fallbackHueDegrees = std::nullopt);
+QColor generateSecondaryLinkFromBackground(const QColor& background,
+                                           const QColor& primaryLink,
+                                           double minimumContrast = 7.0);
 double defaultOklchShadeDistanceFactor();
 
 QVector<QColor> generateOklchShades(const QColor& base,

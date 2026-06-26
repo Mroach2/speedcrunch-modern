@@ -95,6 +95,9 @@ private slots:
     void primary_from_saturated_background_keeps_hue_family_and_gains_prominence();
     void primary_generation_handles_gamut_edges();
     void generated_primary_meets_minimum_contrast_for_representative_backgrounds();
+    void preferred_blue_link_is_adjusted_to_aa_on_dark_formula_book_surface();
+    void secondary_link_is_readable_neutral_and_hue_distinct();
+    void secondary_link_tracks_theme_hue_when_it_is_distinct();
     void html_report_contains_generation_inputs_and_outputs();
 };
 
@@ -415,6 +418,48 @@ void TestOklchUtils::generated_primary_meets_minimum_contrast_for_representative
         verifyValidColor(primary);
         QVERIFY(contrastRatio(primary, background) >= 3.0);
     }
+}
+
+void TestOklchUtils::preferred_blue_link_is_adjusted_to_aa_on_dark_formula_book_surface()
+{
+    const QColor background(QStringLiteral("#333348"));
+    const QColor preferredLink(QStringLiteral("#0000ff"));
+    QVERIFY(contrastRatio(preferredLink, background) < kExpectedAaMinimumContrast);
+
+    const QColor formulaLink = aaForegroundForBackground(background, preferredLink);
+    verifyValidColor(formulaLink);
+    QVERIFY(contrastRatio(formulaLink, background) >= kExpectedAaMinimumContrast);
+    QVERIFY(formulaLink != QColor(Qt::black));
+    QVERIFY(formulaLink != QColor(Qt::white));
+}
+
+void TestOklchUtils::secondary_link_is_readable_neutral_and_hue_distinct()
+{
+    const QColor background(QStringLiteral("#232136"));
+    const QColor primaryLink = generatePrimaryFromBackground(background);
+    const QColor secondaryLink = generateSecondaryLinkFromBackground(background, primaryLink);
+    const Oklch primaryOklch = qColorToOklch(primaryLink);
+    const Oklch secondaryOklch = qColorToOklch(secondaryLink);
+
+    verifyValidColor(secondaryLink);
+    QVERIFY(contrastRatio(secondaryLink, background) >= kExpectedAaMinimumContrast);
+    QVERIFY(hueDistance(secondaryOklch.h, primaryOklch.h) >= 45.0);
+    QVERIFY(secondaryOklch.c < primaryOklch.c);
+}
+
+void TestOklchUtils::secondary_link_tracks_theme_hue_when_it_is_distinct()
+{
+    const QColor background(QStringLiteral("#123526"));
+    const QColor primaryLink(QStringLiteral("#d6c2ff"));
+    const QColor secondaryLink = generateSecondaryLinkFromBackground(background, primaryLink);
+    const Oklch backgroundOklch = qColorToOklch(background);
+    const Oklch primaryOklch = qColorToOklch(primaryLink);
+    const Oklch secondaryOklch = qColorToOklch(secondaryLink);
+
+    verifyValidColor(secondaryLink);
+    QVERIFY(contrastRatio(secondaryLink, background) >= kExpectedAaMinimumContrast);
+    QVERIFY(hueDistance(secondaryOklch.h, primaryOklch.h) >= 45.0);
+    QVERIFY(hueDistance(secondaryOklch.h, backgroundOklch.h) < 18.0);
 }
 
 void TestOklchUtils::html_report_contains_generation_inputs_and_outputs()

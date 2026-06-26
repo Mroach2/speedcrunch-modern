@@ -65,6 +65,7 @@
 #include <QTranslator>
 #include <QTimer>
 #include <QTreeWidget>
+#include <QUrl>
 
 namespace {
 QWidget* paneWidgetForDisplay(ResultDisplay* display)
@@ -2641,6 +2642,17 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     QCOMPARE(bookBrowser->palette().color(QPalette::Text).name(), contentText.name());
     QCOMPARE(bookBrowser->viewport()->palette().color(QPalette::Base).name(), contentFill.name());
     QVERIFY(bookBrowser->toHtml().contains(contentFill.name()));
+    const QColor expectedBookSectionLink = generateSecondaryLinkFromBackground(
+        contentFill,
+        aaForegroundForBackground(contentFill, bookBrowser->palette().color(QPalette::Link)));
+    QVERIFY(bookBrowser->toHtml().contains(expectedBookSectionLink.name()));
+    QVERIFY(!bookBrowser->toHtml().contains(QStringLiteral("#555555")));
+    const QColor expectedBookFormulaLink = aaForegroundForBackground(
+        contentFill, bookBrowser->palette().color(QPalette::Link));
+    QVERIFY(QMetaObject::invokeMethod(bookDock,
+                                      "openPage",
+                                      Q_ARG(QUrl, QUrl(QStringLiteral("geometry/sector")))));
+    QVERIFY(bookBrowser->toHtml().contains(expectedBookFormulaLink.name()));
     const QString bookScrollBarStyle = bookBrowser->verticalScrollBar()->styleSheet();
     QVERIFY(bookScrollBarStyle.contains(contentFill.name()));
     QVERIFY(bookScrollBarStyle.contains(titleFill.name()));

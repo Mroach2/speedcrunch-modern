@@ -7,8 +7,9 @@
 #include "core/book.h"
 #include "core/evaluator.h"
 #include "core/settings.h"
-#include "gui/editorutils.h"
 #include "core/mathdsl.h"
+#include "gui/editorutils.h"
+#include "gui/oklchutils.h"
 
 #include <QEvent>
 #include <QPalette>
@@ -186,21 +187,23 @@ void BookDock::refreshCurrentPage()
 QString BookDock::applyPaletteStyle(const QString& content) const
 {
     const QPalette palette = m_browser->palette();
-    const QString style = QStringLiteral(
-        "<style>"
-        "body { background-color: %1; color: %2; }"
-        "a:link, a:visited { color: %3; }"
-        ".page-link a:link, .page-link a:visited { color: %2; }"
-        ".formula a:link, .formula a:visited { color: %3; }"
-        "</style>")
-        .arg(palette.color(QPalette::Base).name(),
-             palette.color(QPalette::Text).name(),
-             palette.color(QPalette::Link).name());
-
+    const QColor background = palette.color(QPalette::Base);
+    const QColor foreground = palette.color(QPalette::Text);
+    const QColor formulaLink = aaForegroundForBackground(
+        background, palette.color(QPalette::Link));
+    const QColor sectionLink = generateSecondaryLinkFromBackground(
+        background, formulaLink);
+    const QString sectionLinkName =
+        sectionLink.isValid() ? sectionLink.name() : foreground.name();
     QString styledContent = content;
-    const int headEnd = styledContent.indexOf(QStringLiteral("</head>"), 0, Qt::CaseInsensitive);
-    if (headEnd >= 0)
-        styledContent.insert(headEnd, style);
+    styledContent.replace(QStringLiteral("background-color: #ffffff;"),
+                          QStringLiteral("background-color: %1;").arg(background.name()));
+    styledContent.replace(QStringLiteral("color: #000000;"),
+                          QStringLiteral("color: %1;").arg(foreground.name()));
+    styledContent.replace(QStringLiteral("color: #555;"),
+                          QStringLiteral("color: %1;").arg(sectionLinkName));
+    styledContent.replace(QStringLiteral("color: SteelBlue;"),
+                          QStringLiteral("color: %1;").arg(formulaLink.name()));
     return styledContent;
 }
 
