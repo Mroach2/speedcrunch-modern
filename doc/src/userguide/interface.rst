@@ -679,6 +679,8 @@ Notation
     Set result notation to hexadecimal.
 * :kbd:`F9`
     Set result notation to sexagesimal.
+* :kbd:`F10`
+    Set result notation to binary.
 
     .. versionadded:: 1.0
     

@@ -3680,6 +3680,7 @@ void MainWindow::createActionShortcuts()
     m_actions.settingsResultFormatOctal->setShortcut(Qt::Key_F7);
     m_actions.settingsResultFormatHexadecimal->setShortcut(Qt::Key_F8);
     m_actions.settingsResultFormatSexagesimal->setShortcut(Qt::Key_F9);
+    m_actions.settingsResultFormatBinary->setShortcut(Qt::Key_F10);
     m_actions.contextHelp->setShortcut(Qt::Key_F1);
 }
 
