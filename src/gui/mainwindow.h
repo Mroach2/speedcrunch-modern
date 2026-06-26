@@ -13,6 +13,7 @@
 #include <QJsonObject>
 #include <QMainWindow>
 #include <QPair>
+#include <QPointer>
 #include <QStringList>
 
 class AutoHideLabel;
@@ -108,6 +109,7 @@ private slots:
     void showDuplicateSessionDialog();
     void showRenameSessionDialog();
     void closeCurrentSession();
+    void restoreClosedSessionTab();
     void closeCurrentPane();
     void deleteCurrentSession();
     void splitActivePaneLeft();
@@ -326,6 +328,7 @@ private:
     void moveSessionTab(QTabBar* sourceTabBar, QTabBar* targetTabBar, const QString& name, int targetIndex);
     void moveSessionTabToPane(QTabBar* sourceTabBar, ResultDisplay* targetDisplay, const QString& name, const QPoint& panePos);
     void splitPaneWithSession(QTabBar* sourceTabBar, ResultDisplay* targetDisplay, const QString& name, Qt::Orientation orientation, bool insertAfter);
+    void rememberClosedSessionTab(ResultDisplay* display, const QString& name);
     void removeSessionTabFromPane(ResultDisplay* display, const QString& name, bool closePaneIfEmpty);
     void removePaneForDisplay(ResultDisplay* display);
     void normalizeSplitContainerTree();
@@ -574,6 +577,14 @@ private:
     QHash<ResultDisplay*, QStringList> m_paneSessionTabs;
     QHash<ResultDisplay*, QTabBar*> m_paneTabBars;
     QHash<QTabBar*, ResultDisplay*> m_tabBarDisplays;
+    struct ClosedSessionTab {
+        QString name;
+        QJsonObject sessionJson;
+        QString editorText;
+        QPointer<ResultDisplay> display;
+        int tabIndex = -1;
+    };
+    QList<ClosedSessionTab> m_closedSessionTabs;
 
     struct {
         bool autoAns;

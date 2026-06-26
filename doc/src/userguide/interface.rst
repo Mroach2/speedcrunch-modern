@@ -603,6 +603,8 @@ Editing
     Quit SpeedCrunch.
 * :kbd:`Control+N`
     Create a new session in the current session pane (:kbd:`Command+N` on macOS).
+* :kbd:`Control+Shift+T`
+    Reopen the most recently closed session tab (:kbd:`Command+Shift+T` on macOS).
 * :kbd:`Control+C`
     Copy selected text to clipboard.
 * :kbd:`Control+R`

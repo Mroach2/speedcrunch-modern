@@ -5168,6 +5168,79 @@ void MainWindow::moveSessionTab(QTabBar* sourceTabBar, QTabBar* targetTabBar, co
     saveSessionLayout(false);
 }
 
+void MainWindow::rememberClosedSessionTab(ResultDisplay* display, const QString& name)
+{
+    if (display == nullptr || name.isEmpty())
+        return;
+
+    Session* session = m_loadedSessions.value(name, nullptr);
+    if (session == nullptr)
+        return;
+
+    if (display == m_widgets.display && session == m_session)
+        captureEditorTextInCurrentSession();
+
+    ClosedSessionTab closedTab;
+    closedTab.name = name;
+    session->serialize(closedTab.sessionJson);
+    closedTab.editorText = session->editorText();
+    closedTab.display = display;
+    closedTab.tabIndex = paneSessionNames(display).indexOf(name);
+    m_closedSessionTabs.append(closedTab);
+}
+
+void MainWindow::restoreClosedSessionTab()
+{
+    if (qApp->activeModalWidget() != nullptr || qApp->activePopupWidget() != nullptr)
+        return;
+    if (m_closedSessionTabs.isEmpty())
+        return;
+
+    ClosedSessionTab closedTab = m_closedSessionTabs.last();
+    ResultDisplay* targetDisplay = nullptr;
+    const QList<ResultDisplay*> displays = splitPaneDisplays();
+    if (closedTab.display != nullptr && displays.contains(closedTab.display)
+        && displayTabBar(closedTab.display) != nullptr) {
+        targetDisplay = closedTab.display;
+    } else if (m_widgets.display != nullptr && displays.contains(m_widgets.display)
+               && displayTabBar(m_widgets.display) != nullptr) {
+        targetDisplay = m_widgets.display;
+    }
+    if (targetDisplay == nullptr)
+        return;
+
+    m_closedSessionTabs.removeLast();
+
+    Session* session = m_loadedSessions.value(closedTab.name, nullptr);
+    if (session == nullptr) {
+        session = new Session();
+        if (!session->deSerialize(closedTab.sessionJson, false)) {
+            delete session;
+            return;
+        }
+        session->setName(closedTab.name);
+        session->setEditorText(closedTab.editorText);
+        m_loadedSessions.insert(closedTab.name, session);
+        applyUserDefinitions();
+    } else {
+        session->setEditorText(closedTab.editorText);
+    }
+
+    QStringList targetNames = paneSessionNames(targetDisplay);
+    if (targetNames.contains(closedTab.name, Qt::CaseInsensitive)) {
+        switchPaneToSession(targetDisplay, closedTab.name);
+        return;
+    }
+
+    const int insertIndex = qBound(0, closedTab.tabIndex, targetNames.size());
+    targetNames.insert(insertIndex, closedTab.name);
+    m_paneSessionTabs.insert(targetDisplay, targetNames);
+    switchPaneToSession(targetDisplay, closedTab.name);
+    updatePaneLoadedSessionCounts();
+    updatePaneTabBars();
+    saveSessionLayout(false);
+}
+
 void MainWindow::removeSessionTabFromPane(ResultDisplay* display, const QString& name, bool closePaneIfEmpty)
 {
     if (display == nullptr || name.isEmpty())
@@ -6657,6 +6730,11 @@ void MainWindow::createFixedConnections()
     bindStandardKey(QKeySequence::Close, [this]() { closeCurrentSession(); });
     bindStandardKey(QKeySequence::Quit, []() { qApp->quit(); });
 
+    QShortcut* restoreClosedSessionTabShortcut =
+        new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_T), this);
+    connect(restoreClosedSessionTabShortcut, &QShortcut::activated,
+            this, &MainWindow::restoreClosedSessionTab);
+
     QShortcut* splitRightShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+\\")), this);
     connect(splitRightShortcut, &QShortcut::activated, this, &MainWindow::splitActivePaneRight);
     QShortcut* splitDownShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+\\")), this);
@@ -7818,6 +7896,7 @@ void MainWindow::closeCurrentSession()
     if (names.size() <= 1) {
         if (splitPaneDisplays().size() <= 1) {
             const QString closingName = m_session->name();
+            rememberClosedSessionTab(m_widgets.display, closingName);
             if (shouldDeleteSessionFileOnClose(closingName, m_session))
                 QFile::remove(sessionFilePath(closingName));
             else if (sessionHasPersistableContent(m_session))
@@ -7863,6 +7942,8 @@ void MainWindow::closeCurrentSession()
         if (nextDisplay == nullptr || nextEditor == nullptr || pane == nextPane)
             return;
 
+        const QString closingName = m_session->name();
+        rememberClosedSessionTab(m_widgets.display, closingName);
         captureEditorTextInCurrentSession();
         QTabBar* closingTabBar = displayTabBar(m_widgets.display);
         m_paneSessionNames.remove(m_widgets.display);
@@ -7884,6 +7965,7 @@ void MainWindow::closeCurrentSession()
     }
 
     const QString closingName = m_session->name();
+    rememberClosedSessionTab(m_widgets.display, closingName);
     if (shouldDeleteSessionFileOnClose(closingName, m_session))
         QFile::remove(sessionFilePath(closingName));
     else if (sessionHasPersistableContent(m_session))
