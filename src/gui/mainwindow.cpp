@@ -5839,10 +5839,18 @@ void MainWindow::applyKeypadThemeSurfacePalette()
         themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonHoverShade);
     const ThemeSurfaceColors keypadButtonPressed =
         themeSurfaceForShadeIndex(surfaces, UiConfig::KeypadButtonPressedShade);
+    const ThemeSurfaceColors keypadToolTip =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupBackgroundShade);
+    const ThemeSurfaceColors keypadToolTipOutline =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::CompletionPopupOutlineShade);
 
     applyThemeBackgroundRoleToWidget(m_widgets.keypadContainer, keypadBackground.background);
     m_widgets.keypad->setPalette(keypadPalette);
     m_widgets.keypad->setAutoFillBackground(true);
+    m_widgets.keypad->setToolTipThemeColors(keypadToolTip.background,
+                                            keypadToolTip.foreground,
+                                            keypadToolTipOutline.background,
+                                            UiConfig::CompletionPopupCornerRadius);
     m_widgets.keypad->setThemeButtonColors(keypadButton.background,
                                            keypadButton.foreground,
                                            keypadButtonHover.background,

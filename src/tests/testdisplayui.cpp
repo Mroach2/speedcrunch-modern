@@ -478,6 +478,7 @@ private slots:
     void result_display_context_menu_hides_main_menu_when_menu_bar_visible();
     void bitfield_selected_bit_keeps_primary_fill_while_hovered();
     void bitfield_buttons_use_configured_generated_shades();
+    void keypad_buttons_use_custom_themed_tooltips();
     void dock_list_selected_row_keeps_primary_fill_while_hovered();
     void custom_keypad_action_stays_checked_after_dialog_accepts();
     void keypad_power_button_uses_exponent_label_but_inserts_caret();
@@ -1011,6 +1012,56 @@ void TestDisplayUi::bitfield_buttons_use_configured_generated_shades()
         summaryPopup->findChild<QLabel*>(QStringLiteral("bitfieldButtonSummaryPopupLabel"));
     QVERIFY(summaryPopupLabel != nullptr);
     QCOMPARE(summaryPopupLabel->text(), QStringLiteral("Shift bits left"));
+    QVERIFY(summaryPopup->styleSheet().contains(popupBackground.name()));
+    QVERIFY(summaryPopup->styleSheet().contains(popupForeground.name()));
+    QVERIFY(summaryPopup->styleSheet().contains(QStringLiteral("border: %1px solid %2")
+                                                    .arg(UiConfig::PopupOutlineStrokeWidth)
+                                                    .arg(popupOutline.name())));
+    QVERIFY(!summaryPopup->mask().isEmpty());
+}
+
+void TestDisplayUi::keypad_buttons_use_custom_themed_tooltips()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#e5eee8\"}");
+    settings->keypadMode = Settings::KeypadModeBasicWide;
+    settings->keypadVisible = true;
+    settings->bitfieldVisible = false;
+
+    const QVector<QColor> shades =
+        generateOklchShades(QColor(QStringLiteral("#e5eee8")), 6, ThemePolarity::Light);
+    const QVector<QColor> foregrounds = aaForegroundsForBackgrounds(shades);
+    const QColor popupBackground = shades.at(UiConfig::CompletionPopupBackgroundShade);
+    const QColor popupForeground = foregrounds.at(UiConfig::CompletionPopupBackgroundShade);
+    const QColor popupOutline = shades.at(UiConfig::CompletionPopupOutlineShade);
+
+    MainWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    Keypad* keypad = window.findChild<Keypad*>();
+    QVERIFY(keypad != nullptr);
+    QPushButton* plusButton = keypadButtonWithText(keypad, QStringLiteral("+"));
+    QVERIFY(plusButton != nullptr);
+    QCOMPARE(plusButton->toolTip(), QString());
+
+    const QPoint buttonCenter = plusButton->rect().center();
+    QMouseEvent moveEvent(QEvent::MouseMove,
+                          QPointF(buttonCenter),
+                          QPointF(plusButton->mapToGlobal(buttonCenter)),
+                          Qt::NoButton,
+                          Qt::NoButton,
+                          Qt::NoModifier);
+    QCoreApplication::sendEvent(plusButton, &moveEvent);
+
+    QFrame* summaryPopup = keypad->findChild<QFrame*>(QStringLiteral("keypadSummaryPopup"));
+    QTRY_VERIFY(summaryPopup != nullptr && summaryPopup->isVisible());
+    QLabel* summaryPopupLabel =
+        summaryPopup->findChild<QLabel*>(QStringLiteral("keypadSummaryPopupLabel"));
+    QVERIFY(summaryPopupLabel != nullptr);
+    QCOMPARE(summaryPopupLabel->text(), QStringLiteral("Addition"));
     QVERIFY(summaryPopup->styleSheet().contains(popupBackground.name()));
     QVERIFY(summaryPopup->styleSheet().contains(popupForeground.name()));
     QVERIFY(summaryPopup->styleSheet().contains(QStringLiteral("border: %1px solid %2")
