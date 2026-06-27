@@ -48,6 +48,13 @@ QString themeJsonString(QJsonObject colors)
 {
     return QString::fromUtf8(QJsonDocument(themeJson(colors)).toJson(QJsonDocument::Compact));
 }
+
+QJsonObject sessionJson(QJsonObject values = QJsonObject())
+{
+    values.insert(QLatin1String(SessionJsonKeys::Schema), QLatin1String(SessionJsonKeys::SchemaDialect));
+    values.insert(QLatin1String(SessionJsonKeys::Id), QLatin1String(SessionJsonKeys::SchemaId));
+    return values;
+}
 }
 
 typedef Quantity::Format Format;
@@ -6783,10 +6790,17 @@ void test_session_history_limit()
     QJsonObject serializedSession;
     session.serialize(serializedSession);
     ++eval_total_tests;
-    if (serializedSession.value(QLatin1String(SessionJsonKeys::Limit)).toInt(-1) != 3) {
+    const QString serializedSchema =
+        serializedSession.value(QLatin1String(SessionJsonKeys::Schema)).toString();
+    const QString serializedId =
+        serializedSession.value(QLatin1String(SessionJsonKeys::Id)).toString();
+    if (serializedSession.value(QLatin1String(SessionJsonKeys::Limit)).toInt(-1) != 3
+            || serializedSchema != QLatin1String(SessionJsonKeys::SchemaDialect)
+            || serializedId != QLatin1String(SessionJsonKeys::SchemaId)
+            || serializedSession.contains(QLatin1String("scheme"))) {
         ++eval_failed_tests;
         ++eval_new_failed_tests;
-        cerr << __FILE__ << "[" << __LINE__ << "]\tsession serializes history limit\t[NEW]" << endl;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tsession serializes schema metadata and history limit\t[NEW]" << endl;
     }
 
     session.setHistoryLimit(2);
@@ -6799,14 +6813,13 @@ void test_session_history_limit()
         cerr << __FILE__ << "[" << __LINE__ << "]\thistory trim on apply limit\t[NEW]" << endl;
     }
 
-    QJsonObject json;
+    QJsonObject json = sessionJson();
     QJsonArray histEntries;
     for (int i = 1; i <= 4; ++i) {
         QJsonObject entry;
         HistoryEntry(QString::number(i), Quantity(i)).serialize(entry);
         histEntries.append(entry);
     }
-    json["speedcrunch"] = QString(SPEEDCRUNCH_VERSION);
     json[QLatin1String(SessionJsonKeys::Limit)] = 2;
     json["history"] = histEntries;
 
@@ -6824,7 +6837,7 @@ void test_session_history_limit()
         cerr << __FILE__ << "[" << __LINE__ << "]\thistory trim on deserialize\t[NEW]" << endl;
     }
 
-    QJsonObject jsonWithCommentTail;
+    QJsonObject jsonWithCommentTail = sessionJson();
     QJsonArray histWithCommentTail;
     {
         QJsonObject entry;
@@ -6836,7 +6849,6 @@ void test_session_history_limit()
         HistoryEntry("? foo", CMath::nan()).serialize(entry);
         histWithCommentTail.append(entry);
     }
-    jsonWithCommentTail["speedcrunch"] = QString(SPEEDCRUNCH_VERSION);
     jsonWithCommentTail["history"] = histWithCommentTail;
 
     Session loadedWithCommentTail;
@@ -6932,7 +6944,7 @@ void test_session_globals_deserialize_preserves_existing_definitions()
     const QString previousDefinitions = settings->startupUserDefinitions;
     settings->startupUserDefinitions.clear();
 
-    QJsonObject sessionWithGlobals;
+    QJsonObject sessionWithGlobals = sessionJson();
     sessionWithGlobals[QLatin1String(SessionJsonKeys::Session)] = QStringLiteral("Untitled-1");
     QJsonArray globals;
     globals.append(QStringLiteral("global_var=42"));
@@ -6941,7 +6953,7 @@ void test_session_globals_deserialize_preserves_existing_definitions()
     Session first;
     first.deSerialize(sessionWithGlobals, false);
 
-    QJsonObject sessionWithEmptyGlobals;
+    QJsonObject sessionWithEmptyGlobals = sessionJson();
     sessionWithEmptyGlobals[QLatin1String(SessionJsonKeys::Session)] = QStringLiteral("Untitled-2");
     sessionWithEmptyGlobals[QLatin1String(SessionJsonKeys::Globals)] = QJsonArray();
 
@@ -6957,7 +6969,7 @@ void test_session_globals_deserialize_preserves_existing_definitions()
              << "\tExpected : global_var=42" << endl;
     }
 
-    QJsonObject sessionWithOtherGlobals;
+    QJsonObject sessionWithOtherGlobals = sessionJson();
     sessionWithOtherGlobals[QLatin1String(SessionJsonKeys::Session)] = QStringLiteral("Untitled-3");
     QJsonArray otherGlobals;
     otherGlobals.append(QStringLiteral("other_global=24"));
@@ -6986,7 +6998,10 @@ void test_session_deserialize_rejects_invalid_schema_without_mutating()
     session.setEditorText("kept editor");
 
     QJsonObject invalid;
-    invalid[QLatin1String(SessionJsonKeys::SchemaVersion)] = SessionJsonKeys::SchemaVersionValue + 1;
+    invalid[QLatin1String(SessionJsonKeys::Schema)] =
+        QLatin1String(SessionJsonKeys::SchemaDialect);
+    invalid[QLatin1String(SessionJsonKeys::Id)] =
+        QStringLiteral("https://speedcrunch.org/schemas/session-v2.schema.json");
     invalid[QLatin1String(SessionJsonKeys::History)] = QJsonArray();
     invalid[QLatin1String(SessionJsonKeys::Variables)] = QJsonArray();
 
@@ -7004,6 +7019,27 @@ void test_session_deserialize_rejects_invalid_schema_without_mutating()
         ++eval_failed_tests;
         ++eval_new_failed_tests;
         cerr << __FILE__ << "[" << __LINE__ << "]\tsession deserialize rejects invalid schema without mutating\t[NEW]" << endl;
+    }
+
+    QJsonObject obsolete = sessionJson();
+    obsolete[QLatin1String("scheme")] = 1;
+    obsolete[QLatin1String(SessionJsonKeys::History)] = QJsonArray();
+    obsolete[QLatin1String(SessionJsonKeys::Variables)] = QJsonArray();
+
+    const int obsoleteResult = session.deSerialize(obsolete, false);
+
+    ++eval_total_tests;
+    const bool historyStillKept = session.historySize() == 1
+        && session.historyEntryAt(0).expr() == QStringLiteral("1+1");
+    const bool variableStillKept = session.hasVariable(QStringLiteral("kept"))
+        && DMath::format(session.getVariable(QStringLiteral("kept")).value(), Format::Fixed()) == "7";
+    if (obsoleteResult != false
+            || !historyStillKept
+            || !variableStillKept
+            || session.editorText() != QStringLiteral("kept editor")) {
+        ++eval_failed_tests;
+        ++eval_new_failed_tests;
+        cerr << __FILE__ << "[" << __LINE__ << "]\tsession deserialize rejects obsolete scheme key without mutating\t[NEW]" << endl;
     }
 }
 

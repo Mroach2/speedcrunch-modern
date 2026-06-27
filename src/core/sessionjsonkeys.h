@@ -5,13 +5,20 @@
 /*
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://speedcrunch.org/schemas/session.json",
+  "$id": "https://speedcrunch.org/schemas/session-v1.schema.json",
   "title": "SpeedCrunch Session",
   "type": "object",
-  "required": ["scheme", "session", "limit", "history", "variables", "functions", "units", "globals"],
+  "required": ["$schema", "$id", "session", "limit", "history", "variables", "functions", "units", "globals"],
   "additionalProperties": false,
   "properties": {
-    "scheme": { "type": "integer", "const": 1 },
+    "$schema": {
+      "const": "https://json-schema.org/draft/2020-12/schema",
+      "description": "JSON Schema dialect identifier"
+    },
+    "$id": {
+      "const": "https://speedcrunch.org/schemas/session-v1.schema.json",
+      "description": "Session schema identifier"
+    },
     "session": { "type": "string", "minLength": 1 },
     "limit": {
       "type": "integer",
@@ -209,8 +216,10 @@
 #define CORE_SESSIONJSONKEYS_H
 
 namespace SessionJsonKeys {
-inline constexpr const char* SchemaVersion = "scheme";
-inline constexpr int SchemaVersionValue = 1;
+inline constexpr const char* Schema = "$schema";
+inline constexpr const char* SchemaDialect = "https://json-schema.org/draft/2020-12/schema";
+inline constexpr const char* Id = "$id";
+inline constexpr const char* SchemaId = "https://speedcrunch.org/schemas/session-v1.schema.json";
 inline constexpr const char* Session = "session";
 inline constexpr const char* SessionValueMain = "main";
 inline constexpr const char* Limit = "limit";

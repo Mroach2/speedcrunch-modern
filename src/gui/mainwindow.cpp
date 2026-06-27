@@ -183,8 +183,16 @@ bool hasCurrentSessionSchema(const QByteArray& data)
     if (!doc.isObject())
         return false;
 
-    const QJsonValue schema = doc.object().value(QLatin1String(SessionJsonKeys::SchemaVersion));
-    return schema.isDouble() && schema.toInt() == SessionJsonKeys::SchemaVersionValue;
+    const QJsonObject object = doc.object();
+    if (object.contains(QLatin1String("scheme")))
+        return false;
+
+    const QJsonValue schema = object.value(QLatin1String(SessionJsonKeys::Schema));
+    const QJsonValue id = object.value(QLatin1String(SessionJsonKeys::Id));
+    return schema.isString()
+        && schema.toString() == QLatin1String(SessionJsonKeys::SchemaDialect)
+        && id.isString()
+        && id.toString() == QLatin1String(SessionJsonKeys::SchemaId);
 }
 
 bool readValidSessionJson(const QString& filePath, QJsonObject* json)
@@ -198,8 +206,15 @@ bool readValidSessionJson(const QString& filePath, QJsonObject* json)
         return false;
 
     const QJsonObject object = doc.object();
-    const QJsonValue schema = object.value(QLatin1String(SessionJsonKeys::SchemaVersion));
-    if (!schema.isDouble() || schema.toInt() != SessionJsonKeys::SchemaVersionValue)
+    if (object.contains(QLatin1String("scheme")))
+        return false;
+
+    const QJsonValue schema = object.value(QLatin1String(SessionJsonKeys::Schema));
+    if (!schema.isString() || schema.toString() != QLatin1String(SessionJsonKeys::SchemaDialect))
+        return false;
+
+    const QJsonValue id = object.value(QLatin1String(SessionJsonKeys::Id));
+    if (!id.isString() || id.toString() != QLatin1String(SessionJsonKeys::SchemaId))
         return false;
 
     const QString name = object.value(QLatin1String(SessionJsonKeys::Session)).toString().trimmed();

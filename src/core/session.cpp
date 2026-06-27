@@ -119,7 +119,8 @@ void SessionSerialization::serialize(const Session& session, QJsonObject& json)
     const QString globalFunctionTag = QObject::tr("Global User Function");
     const QString globalUnitTag = QObject::tr("Global User Unit");
 
-    json[QLatin1String(SessionJsonKeys::SchemaVersion)] = SessionJsonKeys::SchemaVersionValue;
+    json[QLatin1String(SessionJsonKeys::Schema)] = QLatin1String(SessionJsonKeys::SchemaDialect);
+    json[QLatin1String(SessionJsonKeys::Id)] = QLatin1String(SessionJsonKeys::SchemaId);
     json[QLatin1String(SessionJsonKeys::Session)] = session.name().isEmpty()
         ? QLatin1String(SessionJsonKeys::SessionValueMain)
         : session.name();
@@ -201,11 +202,15 @@ int SessionSerialization::deserialize(Session& session, const QJsonObject& json,
     if (json.isEmpty())
         return false;
 
-    const QJsonValue schemaVersion = json.value(QLatin1String(SessionJsonKeys::SchemaVersion));
-    if (!schemaVersion.isUndefined()
-            && (!schemaVersion.isDouble() || schemaVersion.toInt() != SessionJsonKeys::SchemaVersionValue)) {
+    const QJsonValue schema = json.value(QLatin1String(SessionJsonKeys::Schema));
+    if (!schema.isString() || schema.toString() != QLatin1String(SessionJsonKeys::SchemaDialect))
         return false;
-    }
+    const QJsonValue id = json.value(QLatin1String(SessionJsonKeys::Id));
+    if (!id.isString() || id.toString() != QLatin1String(SessionJsonKeys::SchemaId))
+        return false;
+    if (json.contains(QLatin1String("scheme")))
+        return false;
+
     if (!hasType(SessionJsonKeys::Session, &QJsonValue::isString)
             || !hasType(SessionJsonKeys::Limit, &QJsonValue::isDouble)
             || !hasType(SessionJsonKeys::History, &QJsonValue::isArray)
