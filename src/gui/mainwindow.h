@@ -95,6 +95,7 @@ private slots:
     void handleBulkEvaluationFinished();
     void handleApplicationFocusChanged(QWidget* previous, QWidget* focused);
     void cancelHistoryEntryEdit();
+    void exportJson();
     void exportHtml();
     void exportPlainText();
     void handleAutoCalcMessageAvailable(const QString&);
@@ -143,7 +144,6 @@ private slots:
     void openSourceURL();
     void openDonateURL();
     void retranslateText();
-    void saveSessionDialog();
     void selectEditorExpression();
     void setAlwaysOnTopEnabled(bool);
     void setAngleModeDegree();
@@ -379,9 +379,9 @@ private:
 
     struct {
         QAction* sessionOpen;
-        QAction* sessionSave;
         QAction* sessionImport;
         QAction* sessionImportUserDefinitions;
+        QAction* sessionExportJson;
         QAction* sessionExportHtml;
         QAction* sessionExportPlainText;
         QAction* sessionQuit;

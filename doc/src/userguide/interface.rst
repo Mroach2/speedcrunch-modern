@@ -154,12 +154,13 @@ The expression editor provides some advanced features:
 Import/Export
 -------------
 
-SpeedCrunch can save/export your session in a number of ways. The :menuselection:`Session --> Save` and :menuselection:`Session --> Open` menu entries
-allow you to easily save and restore your entire SpeedCrunch session. The data is stored in a SpeedCrunch-specific file format. [#f1]_
-While the session files are human-readable, they are designed for use by SpeedCrunch. If you want to export your
-calculations to work on them in another program or hand them to a colleague, the other export options are preferable.
+SpeedCrunch automatically stores your sessions and lets you restore them with :menuselection:`Session --> Open`.
+You can also export the current session as JSON (:menuselection:`Session --> Export --> JSON`). The data is stored
+in a SpeedCrunch-specific file format. [#f1]_ While the session files are human-readable, they are designed for use by
+SpeedCrunch. If you want to export your calculations to work on them in another program or hand them to a colleague,
+the other export options are preferable.
 
-You can save the session as HTML (:menuselection:`Session --> Export --> HTML`). The resulting file will consist of the contents of the result
+You can export the session as HTML (:menuselection:`Session --> Export --> HTML`). The resulting file will consist of the contents of the result
 display and can be viewed in any web browser. This feature can also be used to print a SpeedCrunch session by printing the exported
 HTML document. Since the syntax highlighting and color scheme are maintained in the HTML output, it is recommended to select a color scheme
 with a white background (e.g. *Standard*) prior to exporting if you intend to print the document.
@@ -602,8 +603,6 @@ Editing
 +++++++
 * :kbd:`Ctrl+O`
     Open session.
-* :kbd:`Ctrl+S`
-    Save session.
 * :kbd:`Ctrl+Q`
     Quit SpeedCrunch.
 * :kbd:`Ctrl+N`

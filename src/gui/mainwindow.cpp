@@ -69,7 +69,6 @@
 #include <QContextMenuEvent>
 #include <QCoreApplication>
 #include <QCursor>
-#include <QDateTime>
 #include <QDesktopServices>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -3126,12 +3125,12 @@ void MainWindow::createUi()
 void MainWindow::createActions()
 {
     m_actions.sessionExportHtml = new QAction(this);
+    m_actions.sessionExportJson = new QAction(this);
     m_actions.sessionExportPlainText = new QAction(this);
     m_actions.sessionImport = new QAction(this);
     m_actions.sessionImportUserDefinitions = new QAction(this);
     m_actions.sessionOpen = new QAction(this);
     m_actions.sessionQuit = new QAction(this);
-    m_actions.sessionSave = new QAction(this);
     m_actions.editClearExpression = new QAction(this);
     m_actions.editClearHistory = new QAction(this);
     m_actions.editCopyLastResult = new QAction(this);
@@ -3484,12 +3483,12 @@ QString MainWindow::statusBarResultPrecisionValue() const
 void MainWindow::setActionsText()
 {
     m_actions.sessionExportHtml->setText(QStringLiteral("&HTML"));
+    m_actions.sessionExportJson->setText(QStringLiteral("JSON"));
     m_actions.sessionExportPlainText->setText(MainWindow::tr("Plain &text"));
     m_actions.sessionImport->setText(MainWindow::tr("&Import..."));
     m_actions.sessionImportUserDefinitions->setText(MainWindow::tr("User &Definitions..."));
     m_actions.sessionOpen->setText(MainWindow::tr("&Open..."));
     m_actions.sessionQuit->setText(MainWindow::tr("&Quit"));
-    m_actions.sessionSave->setText(MainWindow::tr("&Save..."));
 
     m_actions.editClearExpression->setText(MainWindow::tr("Clear E&xpression"));
     m_actions.editClearHistory->setText(MainWindow::tr("Clear &History"));
@@ -3708,7 +3707,6 @@ void MainWindow::createActionGroups()
 void MainWindow::createActionShortcuts()
 {
     m_actions.sessionQuit->setShortcut(Qt::CTRL | Qt::Key_Q);
-    m_actions.sessionSave->setShortcut(Qt::CTRL | Qt::Key_S);
     m_actions.editCopyLastResult->setShortcut(Qt::CTRL | Qt::Key_R);
     m_actions.editCopy->setShortcut(Qt::CTRL | Qt::Key_C);
     m_actions.editPaste->setShortcut(Qt::CTRL | Qt::Key_V);
@@ -3743,13 +3741,14 @@ void MainWindow::createMenus()
     m_menus.session = new QMenu("", this);
     menuBar()->addMenu(m_menus.session);
     m_menus.session->addAction(m_actions.sessionOpen);
-    m_menus.session->addAction(m_actions.sessionSave);
-    m_menus.session->addAction(m_actions.settingsBehaviorHistorySizeLimit);
     m_menus.session->addSeparator();
     m_menus.session->addAction(m_actions.sessionImport);
     m_menus.sessionExport = m_menus.session->addMenu("");
+    m_menus.sessionExport->addAction(m_actions.sessionExportJson);
     m_menus.sessionExport->addAction(m_actions.sessionExportPlainText);
     m_menus.sessionExport->addAction(m_actions.sessionExportHtml);
+    m_menus.session->addSeparator();
+    m_menus.session->addAction(m_actions.settingsBehaviorHistorySizeLimit);
     m_menus.session->addSeparator();
     m_menus.session->addAction(m_actions.sessionQuit);
 
@@ -6696,12 +6695,12 @@ void MainWindow::createFixedConnections()
     connect(this, &MainWindow::colorSchemeChanged, this, &MainWindow::refreshPaneThemes);
     connect(this, &MainWindow::syntaxHighlightingChanged, this, &MainWindow::refreshPaneThemes);
 
+    connect(m_actions.sessionExportJson, SIGNAL(triggered()), SLOT(exportJson()));
     connect(m_actions.sessionExportHtml, SIGNAL(triggered()), SLOT(exportHtml()));
     connect(m_actions.sessionExportPlainText, SIGNAL(triggered()), SLOT(exportPlainText()));
     connect(m_actions.sessionImport, SIGNAL(triggered()), SLOT(showSessionImportDialog()));
     connect(m_actions.sessionOpen, SIGNAL(triggered()), SLOT(showOpenSessionDialog()));
     connect(m_actions.sessionQuit, &QAction::triggered, qApp, &QCoreApplication::quit);
-    connect(m_actions.sessionSave, SIGNAL(triggered()), SLOT(saveSessionDialog()));
 
     connect(m_actions.editClearExpression, SIGNAL(triggered()), SLOT(clearEditorAndBitfield()));
     connect(m_actions.editClearHistory, SIGNAL(triggered()), SLOT(clearHistory()));
@@ -9051,15 +9050,18 @@ void MainWindow::wrapSelection()
     m_widgets.editor->wrapSelection();
 }
 
-void MainWindow::saveSessionDialog()
+void MainWindow::exportJson()
 {
-    QString filters = tr("SpeedCrunch Sessions (*.json);;All Files (*)");
-    const QString sessionBaseName =
-        QString(QLatin1String("session-%1")).arg(QDateTime::currentDateTime().toString(QLatin1String("yyyy_MM_dd-HH_mm_ss")));
+    if (m_session == nullptr)
+        return;
+
+    const QString filters = tr("JSON file (*.json);;Any file (*.*)");
+    const QString sessionBaseName = sessionFileBaseName(m_session->name());
     const QString defaultFileName = sessionBaseName + QLatin1String(".json");
 
-    QFileDialog dialog(this, tr("Save Session"), QString(), filters);
+    QFileDialog dialog(this, tr("Export session as JSON"), QDir::homePath(), filters);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDefaultSuffix(QStringLiteral("json"));
     dialog.selectFile(defaultFileName);
     QTimer::singleShot(0, &dialog, [sessionBaseName, &dialog]() {
         if (QLineEdit* fileNameEdit = dialog.findChild<QLineEdit*>())

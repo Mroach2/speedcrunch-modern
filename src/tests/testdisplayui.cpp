@@ -30,6 +30,8 @@
 #include <QDockWidget>
 #include <QDir>
 #include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QFrame>
 #include <QFocusEvent>
 #include <QHeaderView>
@@ -166,6 +168,12 @@ QAction* directMenuActionWithText(const QMenu* menu, const QString& text)
             return action;
     }
     return nullptr;
+}
+
+QMenu* directSubmenuWithTitle(const QMenu* menu, const QString& title)
+{
+    QAction* action = directMenuActionWithText(menu, title);
+    return action != nullptr ? action->menu() : nullptr;
 }
 
 bool rejectActiveDialogWithTitle(const QString& title)
@@ -591,6 +599,7 @@ private slots:
     void session_tab_navigation_shortcuts_switch_tabs();
     void new_shortcut_creates_session_in_active_pane();
     void session_open_menu_action_uses_open_dialog();
+    void session_export_menu_offers_json_without_save_action();
     void restore_closed_tab_shortcut_restores_last_closed_session_tab();
     void session_tabs_reorder_with_horizontal_drag();
     void closing_and_reopening_docks_keeps_attached_widgets();
@@ -4537,6 +4546,60 @@ void TestDisplayUi::session_open_menu_action_uses_open_dialog()
     });
     openAction->trigger();
     QVERIFY(menuActionOpenedDialog);
+}
+
+void TestDisplayUi::session_export_menu_offers_json_without_save_action()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+
+    settings->sessionLayoutJson.clear();
+    settings->windowState.clear();
+    settings->windowGeometry.clear();
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QMenu* sessionMenu = menuWithTitle(window.menuBar(), QStringLiteral("&Session"));
+    QVERIFY(sessionMenu != nullptr);
+    QVERIFY(directMenuActionWithText(sessionMenu, QStringLiteral("&Save...")) == nullptr);
+
+    QMenu* exportMenu = directSubmenuWithTitle(sessionMenu, QStringLiteral("&Export"));
+    QVERIFY(exportMenu != nullptr);
+    QVERIFY(!exportMenu->actions().isEmpty());
+    QCOMPARE(exportMenu->actions().constFirst()->text(), QStringLiteral("JSON"));
+    QAction* jsonAction = directMenuActionWithText(exportMenu, QStringLiteral("JSON"));
+    QVERIFY(jsonAction != nullptr);
+
+    bool sawJsonDialog = false;
+    QTimer::singleShot(0, &window, [&sawJsonDialog]() {
+        QFileDialog* dialog = qobject_cast<QFileDialog*>(QApplication::activeModalWidget());
+        if (dialog == nullptr)
+            return;
+
+        const QStringList files = dialog->selectedFiles();
+        const QString selectedFile = files.isEmpty() ? QString() : files.constFirst();
+        const QFileInfo fileInfo(selectedFile);
+        sawJsonDialog = dialog->windowTitle() == QStringLiteral("Export session as JSON")
+            && dialog->defaultSuffix() == QStringLiteral("json")
+            && fileInfo.suffix() == QStringLiteral("json")
+            && QDir::cleanPath(fileInfo.absolutePath()) == QDir::cleanPath(QDir::homePath());
+        dialog->reject();
+    });
+    jsonAction->trigger();
+    QVERIFY(sawJsonDialog);
 }
 
 void TestDisplayUi::restore_closed_tab_shortcut_restores_last_closed_session_tab()
