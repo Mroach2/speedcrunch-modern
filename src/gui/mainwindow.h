@@ -300,6 +300,7 @@ private:
                                     QHash<QString, QJsonObject> sessionJsons,
                                     QHash<QString, QPair<int, int>> viewportAnchors,
                                     QHash<QString, int> scrollValues);
+    void openImportedSession(Session* session);
     void activateSession(Session* session);
     void captureEditorTextInCurrentSession();
     void restoreEditorTextFromCurrentSession();

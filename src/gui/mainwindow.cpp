@@ -131,6 +131,7 @@
 #include <QWidgetAction>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QJsonParseError>
 #include <QUuid>
 
 #include <algorithm>
@@ -419,6 +420,25 @@ QString firstAvailableUntitledSessionName(const QHash<QString, Session*>& sessio
     }
 
     return QStringLiteral("Untitled");
+}
+
+QString firstAvailableImportedSessionName(const QString& preferredName, const QHash<QString, Session*>& sessions)
+{
+    const QString baseName = normalizedSessionName(preferredName);
+    const auto isAvailable = [&sessions](const QString& name) {
+        return !loadedSessionNameExists(sessions, name) && !QFileInfo::exists(sessionFilePath(name));
+    };
+
+    if (isAvailable(baseName))
+        return baseName;
+
+    for (int number = 2; number < std::numeric_limits<int>::max(); ++number) {
+        const QString candidate = QStringLiteral("%1 (%2)").arg(baseName).arg(number);
+        if (isAvailable(candidate))
+            return candidate;
+    }
+
+    return firstAvailableUntitledSessionName(sessions);
 }
 
 int untitledSessionNumber(const QString& name)
@@ -7533,6 +7553,26 @@ void MainWindow::saveSessionLayout(bool captureCurrentViewport)
     m_settings->saveSessionLayoutJson();
 }
 
+void MainWindow::openImportedSession(Session* session)
+{
+    if (session == nullptr)
+        return;
+
+    if (m_sessionSavePending)
+        flushPendingSessionSave();
+
+    const QString name = firstAvailableImportedSessionName(session->name(), m_loadedSessions);
+    session->setName(name);
+    m_loadedSessions.insert(name, session);
+    updatePaneLoadedSessionCounts();
+    applyUserDefinitions();
+    activateSession(session);
+
+    QString importedSessionPath = sessionFilePath(name);
+    saveSession(importedSessionPath);
+    saveSessionLayout(false);
+}
+
 void MainWindow::activateSession(Session* session)
 {
     if (session == nullptr)
@@ -9096,86 +9136,104 @@ void MainWindow::exportJson()
 
 void MainWindow::showSessionImportDialog()
 {
-    QString filters = tr("All Files (*)");
-    QString fname = QFileDialog::getOpenFileName(this, tr("Import Session"), QString(), filters);
+    const QString filters = tr("JSON file (*.json);;Any file (*.*)");
+    QFileDialog dialog(this, tr("Import Session"), QDir::homePath(), filters);
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setDefaultSuffix(QStringLiteral("json"));
+
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+
+    const QStringList selectedFiles = dialog.selectedFiles();
+    if (selectedFiles.isEmpty())
+        return;
+
+    const QString fname = selectedFiles.constFirst();
     if (fname.isEmpty())
         return;
 
     QFile file(fname);
     if (!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(this, tr("Error"), tr("Can't read from file %1").arg(fname));
+        QMessageBox::critical(this, tr("Import Session"), tr("Can't read from file %1").arg(fname));
         return;
     }
 
-    // Ask for merge with current session.
-    QString mergeMsg = tr(
-        "Merge session being imported with current session?\n"
-        "If no, current variables and display will be cleared."
-    );
-
-    QMessageBox::StandardButton button =
-        QMessageBox::question(this, tr("Merge?"), mergeMsg,
-            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
-
-    if (button == QMessageBox::Cancel)
+    QJsonParseError parseError;
+    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &parseError);
+    if (parseError.error != QJsonParseError::NoError) {
+        QMessageBox::critical(this,
+                              tr("Import Session"),
+                              tr("The selected file is not valid JSON: %1").arg(parseError.errorString()));
         return;
-    if (button == QMessageBox::No) {
-        m_session->clearHistory();
-        m_session->clearVariables();
-        m_session->clearUserFunctions();
-        m_session->clearUserUnits();
-        m_evaluator->initializeBuiltInVariables();
     }
 
-    QTextStream stream(&file);
-    QString exp = stream.readLine();
-    bool ignoreAll = false;
-    while (!exp.isNull()) {
-        const QString normalizedExp =
-            EditorUtils::normalizeExpressionOperators(exp);
-        m_widgets.editor->setText(normalizedExp);
-
-        QString str = m_evaluator->autoFix(normalizedExp);
-
-        m_evaluator->setExpression(str);
-
-        Quantity result = m_evaluator->evalUpdateAns();
-        if (!m_evaluator->error().isEmpty()) {
-            if (!ignoreAll) {
-                QMessageBox::StandardButton button =
-                    QMessageBox::warning(this, tr("Error"), tr("Ignore error?") + "\n" + m_evaluator->error(),
-                        QMessageBox::Yes | QMessageBox::YesToAll
-                        | QMessageBox::Cancel, QMessageBox::Yes);
-
-                if (button == QMessageBox::Cancel)
-                    return;
-                if (button == QMessageBox::YesToAll)
-                    ignoreAll = true;
-            }
-        } else {
-            const QString interpretedExpr = m_evaluator->interpretedExpression();
-            HistoryEntry historyEntry(normalizedExp, result, interpretedExpr);
-            historyEntry.setRenderedLines(renderedLinesForHistoryEntry(historyEntry, m_settings, m_evaluator));
-            m_session->addHistoryEntry(historyEntry);
-            m_widgets.editor->setText(str);
-            m_widgets.editor->selectAll();
-            m_widgets.editor->stopAutoCalc();
-            m_widgets.editor->stopAutoComplete();
-            if(!result.isNan())
-                m_conditions.autoAns = true;
-        }
-
-        exp = stream.readLine();
+    if (!doc.isObject()) {
+        QMessageBox::critical(this,
+                              tr("Import Session"),
+                              tr("The selected file is not a SpeedCrunch session JSON file."));
+        return;
     }
 
-    file.close();
-    emit historyChanged();
-    emit variablesChanged();
-    emit functionsChanged();
-    emit unitsChanged();
+    const QJsonObject json = doc.object();
+    if (json.contains(QLatin1String("scheme"))) {
+        QMessageBox::critical(this,
+                              tr("Import Session"),
+                              tr("This file uses an obsolete SpeedCrunch session format and cannot be imported."));
+        return;
+    }
 
-    if (!isActiveWindow())
-        activateWindow();
+    const QJsonValue schema = json.value(QLatin1String(SessionJsonKeys::Schema));
+    if (!schema.isString()) {
+        QMessageBox::critical(this,
+                              tr("Import Session"),
+                              tr("The selected JSON file is missing the required $schema field."));
+        return;
+    }
+    if (schema.toString() != QLatin1String(SessionJsonKeys::SchemaDialect)) {
+        QMessageBox::critical(this,
+                              tr("Import Session"),
+                              tr("The selected JSON file uses an unsupported JSON schema: %1").arg(schema.toString()));
+        return;
+    }
+
+    const QJsonValue schemaId = json.value(QLatin1String(SessionJsonKeys::Id));
+    if (!schemaId.isString()) {
+        QMessageBox::critical(this,
+                              tr("Import Session"),
+                              tr("The selected JSON file is missing the SpeedCrunch session schema identifier ($id)."));
+        return;
+    }
+    if (schemaId.toString() != QLatin1String(SessionJsonKeys::SchemaId)) {
+        QMessageBox::critical(this,
+                              tr("Import Session"),
+                              tr("The selected JSON file uses an unsupported SpeedCrunch session format: %1").arg(schemaId.toString()));
+        return;
+    }
+
+    const QJsonValue sessionName = json.value(QLatin1String(SessionJsonKeys::Session));
+    if (!sessionName.isString()) {
+        QMessageBox::critical(this,
+                              tr("Import Session"),
+                              tr("The selected JSON file is missing the required session name."));
+        return;
+    }
+    if (sessionName.toString().trimmed().isEmpty()) {
+        QMessageBox::critical(this,
+                              tr("Import Session"),
+                              tr("The selected JSON file has an empty session name."));
+        return;
+    }
+
+    std::unique_ptr<Session> importedSession(new Session());
+    if (!importedSession->deSerialize(json, false)) {
+        QMessageBox::critical(this,
+                              tr("Import Session"),
+                              tr("The selected JSON file has invalid or incomplete SpeedCrunch session data."));
+        return;
+    }
+
+    openImportedSession(importedSession.release());
 }
 
 void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwriteExisting,

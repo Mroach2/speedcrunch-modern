@@ -4,6 +4,7 @@
 
 #include "core/colorscheme.h"
 #include "core/session.h"
+#include "core/sessionjsonkeys.h"
 #include "core/settings.h"
 #include "gui/bitfieldwidget.h"
 #include "gui/constantswidget.h"
@@ -46,6 +47,7 @@
 #include <QListWidget>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QMargins>
 #include <QLineEdit>
@@ -66,6 +68,7 @@
 #include <QToolButton>
 #include <QTranslator>
 #include <QTimer>
+#include <QTemporaryDir>
 #include <QTreeWidget>
 #include <QUrl>
 
@@ -80,6 +83,34 @@ QJsonObject themeJson(QJsonObject colors)
 QString themeJsonString(QJsonObject colors)
 {
     return QString::fromUtf8(QJsonDocument(themeJson(colors)).toJson(QJsonDocument::Compact));
+}
+
+QJsonObject sessionJson(const QString& name)
+{
+    QJsonObject historyEntry;
+    HistoryEntry(QStringLiteral("6*7"), Quantity(42)).serialize(historyEntry);
+
+    QJsonArray history;
+    history.append(historyEntry);
+
+    QJsonObject values;
+    values.insert(QLatin1String(SessionJsonKeys::Schema), QLatin1String(SessionJsonKeys::SchemaDialect));
+    values.insert(QLatin1String(SessionJsonKeys::Id), QLatin1String(SessionJsonKeys::SchemaId));
+    values.insert(QLatin1String(SessionJsonKeys::Session), name);
+    values.insert(QLatin1String(SessionJsonKeys::Limit), 1000);
+    values.insert(QLatin1String(SessionJsonKeys::History), history);
+    values.insert(QLatin1String(SessionJsonKeys::Variables), QJsonArray());
+    values.insert(QLatin1String(SessionJsonKeys::Functions), QJsonArray());
+    values.insert(QLatin1String(SessionJsonKeys::Units), QJsonArray());
+    values.insert(QLatin1String(SessionJsonKeys::Globals), QJsonArray());
+    return values;
+}
+
+void writeFile(const QString& filePath, const QByteArray& data)
+{
+    QFile file(filePath);
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    QCOMPARE(file.write(data), qint64(data.size()));
 }
 
 QWidget* paneWidgetForDisplay(ResultDisplay* display)
@@ -599,6 +630,8 @@ private slots:
     void session_tab_navigation_shortcuts_switch_tabs();
     void new_shortcut_creates_session_in_active_pane();
     void session_open_menu_action_uses_open_dialog();
+    void session_import_dialog_opens_valid_json_as_new_tab();
+    void session_import_rejects_invalid_json_without_new_tab();
     void session_export_menu_offers_json_without_save_action();
     void restore_closed_tab_shortcut_restores_last_closed_session_tab();
     void session_tabs_reorder_with_horizontal_drag();
@@ -4546,6 +4579,144 @@ void TestDisplayUi::session_open_menu_action_uses_open_dialog()
     });
     openAction->trigger();
     QVERIFY(menuActionOpenedDialog);
+}
+
+void TestDisplayUi::session_import_dialog_opens_valid_json_as_new_tab()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+
+    settings->sessionLayoutJson.clear();
+    settings->windowState.clear();
+    settings->windowGeometry.clear();
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadMode = Settings::KeypadModeDisabled;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->statusBarVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    QTemporaryDir temporaryDirectory;
+    QVERIFY(temporaryDirectory.isValid());
+    const QString importedName =
+        QStringLiteral("Imported Session %1").arg(QUuid::createUuid().toString(QUuid::Id128));
+    const QString importFilePath = QDir(temporaryDirectory.path()).filePath(QStringLiteral("imported.json"));
+    writeFile(importFilePath, QJsonDocument(sessionJson(importedName)).toJson(QJsonDocument::Compact));
+    const QString savedImportPath = QDir(QDir(Settings::getDataPath()).filePath(QStringLiteral("sessions")))
+        .filePath(importedName + QStringLiteral(".json"));
+    auto savedImportCleanup = qScopeGuard([savedImportPath]() {
+        QFile::remove(savedImportPath);
+    });
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    ResultDisplay* display = window.findChild<ResultDisplay*>();
+    QVERIFY(display != nullptr);
+    QTabBar* tabBar = tabBarForDisplay(display);
+    QVERIFY(tabBar != nullptr);
+    QCOMPARE(tabBar->count(), 1);
+
+    QMenu* sessionMenu = menuWithTitle(window.menuBar(), QStringLiteral("&Session"));
+    QVERIFY(sessionMenu != nullptr);
+    QAction* importAction = directMenuActionWithText(sessionMenu, QStringLiteral("&Import..."));
+    QVERIFY(importAction != nullptr);
+
+    bool sawImportDialog = false;
+    QTimer::singleShot(0, &window, [&sawImportDialog, &importFilePath]() {
+        QFileDialog* dialog = qobject_cast<QFileDialog*>(QApplication::activeModalWidget());
+        if (dialog == nullptr)
+            return;
+
+        sawImportDialog = dialog->windowTitle() == QStringLiteral("Import Session")
+            && dialog->acceptMode() == QFileDialog::AcceptOpen
+            && dialog->fileMode() == QFileDialog::ExistingFile
+            && dialog->defaultSuffix() == QStringLiteral("json");
+        dialog->selectFile(importFilePath);
+        static_cast<QDialog*>(dialog)->accept();
+    });
+    importAction->trigger();
+    QVERIFY(sawImportDialog);
+
+    QTRY_COMPARE(tabBar->count(), 2);
+    QCOMPARE(tabBar->tabText(tabBar->currentIndex()), importedName);
+    QVERIFY(display->session() != nullptr);
+    QCOMPARE(display->session()->name(), importedName);
+    QCOMPARE(display->session()->historySize(), 1);
+    QCOMPARE(display->session()->historyEntryAtRef(0).expr(), QStringLiteral("6*7"));
+}
+
+void TestDisplayUi::session_import_rejects_invalid_json_without_new_tab()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+
+    settings->sessionLayoutJson.clear();
+    settings->windowState.clear();
+    settings->windowGeometry.clear();
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadMode = Settings::KeypadModeDisabled;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->statusBarVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    QTemporaryDir temporaryDirectory;
+    QVERIFY(temporaryDirectory.isValid());
+    const QString importFilePath = QDir(temporaryDirectory.path()).filePath(QStringLiteral("not-session.json"));
+    writeFile(importFilePath, QByteArray("1+1\n"));
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    ResultDisplay* display = window.findChild<ResultDisplay*>();
+    QVERIFY(display != nullptr);
+    QTabBar* tabBar = tabBarForDisplay(display);
+    QVERIFY(tabBar != nullptr);
+    QCOMPARE(tabBar->count(), 1);
+
+    QMenu* sessionMenu = menuWithTitle(window.menuBar(), QStringLiteral("&Session"));
+    QVERIFY(sessionMenu != nullptr);
+    QAction* importAction = directMenuActionWithText(sessionMenu, QStringLiteral("&Import..."));
+    QVERIFY(importAction != nullptr);
+
+    bool sawImportDialog = false;
+    QTimer::singleShot(0, &window, [&sawImportDialog, &importFilePath, &window]() {
+        QFileDialog* dialog = qobject_cast<QFileDialog*>(QApplication::activeModalWidget());
+        if (dialog == nullptr)
+            return;
+
+        sawImportDialog = dialog->windowTitle() == QStringLiteral("Import Session")
+            && dialog->defaultSuffix() == QStringLiteral("json");
+        dialog->selectFile(importFilePath);
+        const auto acceptMessageBox = []() {
+            QMessageBox* messageBox = qobject_cast<QMessageBox*>(QApplication::activeModalWidget());
+            if (messageBox != nullptr)
+                messageBox->accept();
+        };
+        QTimer::singleShot(20, &window, acceptMessageBox);
+        QTimer::singleShot(100, &window, acceptMessageBox);
+        static_cast<QDialog*>(dialog)->accept();
+    });
+    importAction->trigger();
+    QVERIFY(sawImportDialog);
+    QCOMPARE(tabBar->count(), 1);
 }
 
 void TestDisplayUi::session_export_menu_offers_json_without_save_action()

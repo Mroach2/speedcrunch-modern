@@ -155,10 +155,13 @@ Import/Export
 -------------
 
 SpeedCrunch automatically stores your sessions and lets you restore them with :menuselection:`Session --> Open`.
-You can also export the current session as JSON (:menuselection:`Session --> Export --> JSON`). The data is stored
-in a SpeedCrunch-specific file format. [#f1]_ While the session files are human-readable, they are designed for use by
-SpeedCrunch. If you want to export your calculations to work on them in another program or hand them to a colleague,
-the other export options are preferable.
+You can also export the current session as JSON (:menuselection:`Session --> Export --> JSON`) and later import it
+with :menuselection:`Session --> Import`. The data is stored in a SpeedCrunch-specific file format. [#f1]_ While the
+session files are human-readable, they are designed for use by SpeedCrunch. If you want to export your calculations
+to work on them in another program or hand them to a colleague, the other export options are preferable.
+
+Import validates the selected JSON file as a SpeedCrunch session and opens it as a new tab. If the file is not valid
+SpeedCrunch session JSON, SpeedCrunch shows an error and leaves the current session unchanged.
 
 You can export the session as HTML (:menuselection:`Session --> Export --> HTML`). The resulting file will consist of the contents of the result
 display and can be viewed in any web browser. This feature can also be used to print a SpeedCrunch session by printing the exported
@@ -167,9 +170,6 @@ with a white background (e.g. *Standard*) prior to exporting if you intend to pr
 
 The final, most basic option is to export your session as a plain text file (:menuselection:`Session --> Export --> Plain text`).
 In contrast to the HTML export option, the syntax highlighting will be lost.
-
-SpeedCrunch also offers capabilities to *import* a session from a text file (:menuselection:`Session --> Import`).
-Select any plain text file and SpeedCrunch will try to evaluate each line of the file as if the user entered it directly.
 
 User Definitions
 ++++++++++++++++++++++++
