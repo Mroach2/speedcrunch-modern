@@ -149,6 +149,36 @@ bool menuContainsActionText(const QMenu* menu, const QString& text)
     return false;
 }
 
+QMenu* menuWithTitle(const QMenuBar* menuBar, const QString& title)
+{
+    for (QAction* action : menuBar->actions()) {
+        QMenu* menu = action->menu();
+        if (menu != nullptr && menu->title() == title)
+            return menu;
+    }
+    return nullptr;
+}
+
+QAction* directMenuActionWithText(const QMenu* menu, const QString& text)
+{
+    for (QAction* action : menu->actions()) {
+        if (action->text() == text)
+            return action;
+    }
+    return nullptr;
+}
+
+bool rejectActiveDialogWithTitle(const QString& title)
+{
+    QDialog* dialog = qobject_cast<QDialog*>(QApplication::activeModalWidget());
+    if (dialog == nullptr)
+        return false;
+
+    const bool matches = dialog->windowTitle() == title;
+    dialog->reject();
+    return matches;
+}
+
 class MenuTestResultDisplay : public ResultDisplay {
 public:
     explicit MenuTestResultDisplay(QWidget* parent = nullptr)
@@ -560,6 +590,7 @@ private slots:
     void switching_session_tabs_preserves_each_editor_text();
     void session_tab_navigation_shortcuts_switch_tabs();
     void new_shortcut_creates_session_in_active_pane();
+    void session_open_menu_action_uses_open_dialog();
     void restore_closed_tab_shortcut_restores_last_closed_session_tab();
     void session_tabs_reorder_with_horizontal_drag();
     void closing_and_reopening_docks_keeps_attached_widgets();
@@ -4458,6 +4489,54 @@ void TestDisplayUi::new_shortcut_creates_session_in_active_pane()
     QCOMPARE(firstTabBar->count(), 1);
     QTRY_COMPARE(secondTabBar->count(), 2);
     QCOMPARE(secondTabBar->currentIndex(), 1);
+}
+
+void TestDisplayUi::session_open_menu_action_uses_open_dialog()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+
+    settings->sessionLayoutJson.clear();
+    settings->windowState.clear();
+    settings->windowGeometry.clear();
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QMenu* sessionMenu = menuWithTitle(window.menuBar(), QStringLiteral("&Session"));
+    QVERIFY(sessionMenu != nullptr);
+    QAction* openAction = directMenuActionWithText(sessionMenu, QStringLiteral("&Open..."));
+    QVERIFY(openAction != nullptr);
+    const QList<QKeySequence> openKeyBindings = QKeySequence::keyBindings(QKeySequence::Open);
+    QVERIFY(!openKeyBindings.isEmpty());
+    QVERIFY(directMenuActionWithText(sessionMenu, QStringLiteral("&Load...")) == nullptr);
+
+    bool shortcutOpenedDialog = false;
+    QTimer::singleShot(0, &window, [&shortcutOpenedDialog]() {
+        shortcutOpenedDialog = rejectActiveDialogWithTitle(QStringLiteral("Open Session"));
+    });
+    const QKeyCombination shortcut = openKeyBindings.constFirst()[0];
+    QTest::keyClick(&window, shortcut.key(), shortcut.keyboardModifiers());
+    QVERIFY(shortcutOpenedDialog);
+
+    bool menuActionOpenedDialog = false;
+    QTimer::singleShot(0, &window, [&menuActionOpenedDialog]() {
+        menuActionOpenedDialog = rejectActiveDialogWithTitle(QStringLiteral("Open Session"));
+    });
+    openAction->trigger();
+    QVERIFY(menuActionOpenedDialog);
 }
 
 void TestDisplayUi::restore_closed_tab_shortcut_restores_last_closed_session_tab()

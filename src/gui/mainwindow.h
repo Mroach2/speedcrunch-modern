@@ -232,7 +232,6 @@ private slots:
     void showKeypadContextMenu(const QPoint&);
     void showResultFormatContextMenu(const QPoint&);
     void showSessionImportDialog();
-    void showSessionLoadDialog();
     void wrapSelection();
     void startHistoryEntryEdit(int index);
     void editHistoryEntryContext(int index);
@@ -379,7 +378,7 @@ private:
     static QTranslator* createTranslator(const QString& langCode);
 
     struct {
-        QAction* sessionLoad;
+        QAction* sessionOpen;
         QAction* sessionSave;
         QAction* sessionImport;
         QAction* sessionImportUserDefinitions;

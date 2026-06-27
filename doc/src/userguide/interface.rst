@@ -154,7 +154,7 @@ The expression editor provides some advanced features:
 Import/Export
 -------------
 
-SpeedCrunch can save/export your session in a number of ways. The :menuselection:`Session --> Save` and :menuselection:`Session --> Load` menu entries
+SpeedCrunch can save/export your session in a number of ways. The :menuselection:`Session --> Save` and :menuselection:`Session --> Open` menu entries
 allow you to easily save and restore your entire SpeedCrunch session. The data is stored in a SpeedCrunch-specific file format. [#f1]_
 While the session files are human-readable, they are designed for use by SpeedCrunch. If you want to export your
 calculations to work on them in another program or hand them to a colleague, the other export options are preferable.
@@ -600,8 +600,8 @@ Keyboard Shortcuts
 
 Editing
 +++++++
-* :kbd:`Ctrl+L`
-    Load session.
+* :kbd:`Ctrl+O`
+    Open session.
 * :kbd:`Ctrl+S`
     Save session.
 * :kbd:`Ctrl+Q`

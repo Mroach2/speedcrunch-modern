@@ -3105,7 +3105,7 @@ void MainWindow::createActions()
     m_actions.sessionExportPlainText = new QAction(this);
     m_actions.sessionImport = new QAction(this);
     m_actions.sessionImportUserDefinitions = new QAction(this);
-    m_actions.sessionLoad = new QAction(this);
+    m_actions.sessionOpen = new QAction(this);
     m_actions.sessionQuit = new QAction(this);
     m_actions.sessionSave = new QAction(this);
     m_actions.editClearExpression = new QAction(this);
@@ -3463,7 +3463,7 @@ void MainWindow::setActionsText()
     m_actions.sessionExportPlainText->setText(MainWindow::tr("Plain &text"));
     m_actions.sessionImport->setText(MainWindow::tr("&Import..."));
     m_actions.sessionImportUserDefinitions->setText(MainWindow::tr("User &Definitions..."));
-    m_actions.sessionLoad->setText(MainWindow::tr("&Load..."));
+    m_actions.sessionOpen->setText(MainWindow::tr("&Open..."));
     m_actions.sessionQuit->setText(MainWindow::tr("&Quit"));
     m_actions.sessionSave->setText(MainWindow::tr("&Save..."));
 
@@ -3683,7 +3683,6 @@ void MainWindow::createActionGroups()
 
 void MainWindow::createActionShortcuts()
 {
-    m_actions.sessionLoad->setShortcut(Qt::CTRL | Qt::Key_L);
     m_actions.sessionQuit->setShortcut(Qt::CTRL | Qt::Key_Q);
     m_actions.sessionSave->setShortcut(Qt::CTRL | Qt::Key_S);
     m_actions.editCopyLastResult->setShortcut(Qt::CTRL | Qt::Key_R);
@@ -3719,7 +3718,7 @@ void MainWindow::createMenus()
 {
     m_menus.session = new QMenu("", this);
     menuBar()->addMenu(m_menus.session);
-    m_menus.session->addAction(m_actions.sessionLoad);
+    m_menus.session->addAction(m_actions.sessionOpen);
     m_menus.session->addAction(m_actions.sessionSave);
     m_menus.session->addAction(m_actions.settingsBehaviorHistorySizeLimit);
     m_menus.session->addSeparator();
@@ -6669,7 +6668,7 @@ void MainWindow::createFixedConnections()
     connect(m_actions.sessionExportHtml, SIGNAL(triggered()), SLOT(exportHtml()));
     connect(m_actions.sessionExportPlainText, SIGNAL(triggered()), SLOT(exportPlainText()));
     connect(m_actions.sessionImport, SIGNAL(triggered()), SLOT(showSessionImportDialog()));
-    connect(m_actions.sessionLoad, SIGNAL(triggered()), SLOT(showSessionLoadDialog()));
+    connect(m_actions.sessionOpen, SIGNAL(triggered()), SLOT(showOpenSessionDialog()));
     connect(m_actions.sessionQuit, &QAction::triggered, qApp, &QCoreApplication::quit);
     connect(m_actions.sessionSave, SIGNAL(triggered()), SLOT(saveSessionDialog()));
 
@@ -9014,85 +9013,6 @@ void MainWindow::handleEditorEscapePressed()
     }
 
     cancelHistoryEntryEdit();
-}
-
-void MainWindow::showSessionLoadDialog()
-{
-    QString filters = tr("SpeedCrunch Sessions (*.json);;All Files (*)");
-    QString fname = QFileDialog::getOpenFileName(this, tr("Load Session"), QString(), filters);
-    if (fname.isEmpty())
-        return;
-
-    // Ask for merge with current session.
-    bool merge;
-    QString mergeMsg = tr(
-        "Merge session being loaded with current session?\n"
-        "If no, current variables and display will be cleared."
-    );
-    QMessageBox::StandardButton button =
-        QMessageBox::question(this, tr("Merge?"), mergeMsg,
-            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
-
-    if (button == QMessageBox::Yes)
-        merge = true;
-    else if (button == QMessageBox::No)
-        merge = false;
-    else return;
-
-    QPointer<MainWindow> windowGuard(this);
-    QThread* thread = QThread::create([windowGuard, fname, merge]() {
-        QJsonObject json;
-        const bool ok = readValidSessionJson(fname, &json);
-
-        if (!windowGuard)
-            return;
-
-        QMetaObject::invokeMethod(windowGuard.data(), [windowGuard, ok, json, merge]() mutable {
-            if (!windowGuard)
-                return;
-            if (!ok) {
-                QMessageBox::critical(windowGuard.data(), MainWindow::tr("Error"),
-                                      MainWindow::tr("Can't read the selected session file."));
-                return;
-            }
-
-            MainWindow* window = windowGuard.data();
-            Session loadedSession;
-            loadedSession.deSerialize(json, false);
-            if (merge) {
-                const QList<HistoryEntry> history = loadedSession.historyToList();
-                for (const HistoryEntry& entry : history)
-                    window->m_session->addHistoryEntry(entry);
-                for (const Variable& variable : loadedSession.variablesToList()) {
-                    if (variable.type() != Variable::BuiltIn)
-                        window->m_session->addVariable(variable);
-                }
-                for (const UserFunction& function : loadedSession.UserFunctionsToList())
-                    window->m_session->addUserFunction(function);
-                for (const UserUnit& unit : loadedSession.userUnitsToList())
-                    window->m_session->addUserUnit(unit);
-            } else {
-                *window->m_session = loadedSession;
-                window->restoreEditorTextFromCurrentSession();
-            }
-
-            emit window->historyChanged();
-            emit window->variablesChanged();
-            emit window->functionsChanged();
-            emit window->unitsChanged();
-            window->m_conditions.autoAns = !window->m_session->historyIsEmpty();
-        }, Qt::QueuedConnection);
-    });
-    {
-        QMutexLocker locker(&asyncSessionIoMutex());
-        asyncSessionIoThreads().append(thread);
-    }
-    QObject::connect(thread, &QThread::finished, thread, [thread]() {
-        unregisterAsyncSessionIoThread(thread);
-        thread->deleteLater();
-    });
-    thread->start();
-
 }
 
 void MainWindow::wrapSelection()
