@@ -1879,10 +1879,34 @@ QPointer<QWidget>& pendingDockTextInputFocusTarget()
     return target;
 }
 
+int& pendingDockTextInputFocusTargetGeneration()
+{
+    static int generation = 0;
+    return generation;
+}
+
+int setPendingDockTextInputFocusTarget(QWidget* target)
+{
+    pendingDockTextInputFocusTarget() = target;
+    return ++pendingDockTextInputFocusTargetGeneration();
+}
+
 QPointer<QWidget>& pendingDockFocusTarget()
 {
     static QPointer<QWidget> target;
     return target;
+}
+
+int& pendingDockFocusTargetGeneration()
+{
+    static int generation = 0;
+    return generation;
+}
+
+int setPendingDockFocusTarget(QWidget* target)
+{
+    pendingDockFocusTarget() = target;
+    return ++pendingDockFocusTargetGeneration();
 }
 
 QPointer<ResultDisplay>& pendingSessionTabActivationDisplay()
@@ -4378,7 +4402,7 @@ void MainWindow::setActiveEditorDisplayPane(ResultDisplay* display, Editor* edit
 
     if (forceEditorFocus) {
         cancelWindowActivationRestore();
-        pendingDockTextInputFocusTarget() = nullptr;
+        setPendingDockTextInputFocusTarget(nullptr);
     }
 
     const bool dockWidgetHasFocus = !forceEditorFocus
@@ -4611,20 +4635,25 @@ void MainWindow::cycleFocusRegion(int direction)
         : (currentIndex + direction + targets.size()) % targets.size();
     QWidget* target = targets.at(targetIndex);
 
-    pendingDockFocusTarget() = nullptr;
-    pendingDockTextInputFocusTarget() = nullptr;
+    setPendingDockFocusTarget(nullptr);
+    setPendingDockTextInputFocusTarget(nullptr);
     if (isDockWidgetDescendant(target)) {
-        pendingDockFocusTarget() = target;
+        const int focusGeneration = setPendingDockFocusTarget(target);
+        int textInputGeneration = pendingDockTextInputFocusTargetGeneration();
         if (isDockTextInput(target))
-            pendingDockTextInputFocusTarget() = target;
+            textInputGeneration = setPendingDockTextInputFocusTarget(target);
         deactivateActiveEditorForTextInputFocus();
         hideStateLabel();
         QPointer<QWidget> focusTarget(target);
-        QTimer::singleShot(100, target, [focusTarget]() {
-            if (pendingDockFocusTarget() == focusTarget)
-                pendingDockFocusTarget() = nullptr;
-            if (pendingDockTextInputFocusTarget() == focusTarget)
-                pendingDockTextInputFocusTarget() = nullptr;
+        QTimer::singleShot(100, target, [focusTarget, focusGeneration, textInputGeneration]() {
+            if (pendingDockFocusTargetGeneration() == focusGeneration
+                && pendingDockFocusTarget() == focusTarget) {
+                setPendingDockFocusTarget(nullptr);
+            }
+            if (pendingDockTextInputFocusTargetGeneration() == textInputGeneration
+                && pendingDockTextInputFocusTarget() == focusTarget) {
+                setPendingDockTextInputFocusTarget(nullptr);
+            }
         });
     }
     target->setFocus(Qt::ShortcutFocusReason);
@@ -4677,11 +4706,13 @@ void MainWindow::handleApplicationFocusChanged(QWidget* previous, QWidget* focus
     if (!isDockTextInput(focused))
         return;
 
-    pendingDockTextInputFocusTarget() = focused;
+    const int textInputGeneration = setPendingDockTextInputFocusTarget(focused);
     QPointer<QWidget> textInput(focused);
-    QTimer::singleShot(100, focused, [textInput]() {
-        if (pendingDockTextInputFocusTarget() == textInput)
-            pendingDockTextInputFocusTarget() = nullptr;
+    QTimer::singleShot(100, focused, [textInput, textInputGeneration]() {
+        if (pendingDockTextInputFocusTargetGeneration() == textInputGeneration
+            && pendingDockTextInputFocusTarget() == textInput) {
+            setPendingDockTextInputFocusTarget(nullptr);
+        }
     });
     deactivateActiveEditorForTextInputFocus();
 }
@@ -10109,7 +10140,7 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
 
     if (QWidget* widget = qobject_cast<QWidget*>(o); isDockTextInput(widget)) {
         if (e->type() == QEvent::MouseButtonPress) {
-            pendingDockTextInputFocusTarget() = widget;
+            const int textInputGeneration = setPendingDockTextInputFocusTarget(widget);
             widget->setFocus(Qt::MouseFocusReason);
             deactivateActiveEditorForTextInputFocus();
             QPointer<QWidget> textInput(widget);
@@ -10117,9 +10148,11 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
                 if (textInput != nullptr)
                     textInput->setFocus(Qt::MouseFocusReason);
             });
-            QTimer::singleShot(100, widget, [textInput]() {
-                if (pendingDockTextInputFocusTarget() == textInput)
-                    pendingDockTextInputFocusTarget() = nullptr;
+            QTimer::singleShot(100, widget, [textInput, textInputGeneration]() {
+                if (pendingDockTextInputFocusTargetGeneration() == textInputGeneration
+                    && pendingDockTextInputFocusTarget() == textInput) {
+                    setPendingDockTextInputFocusTarget(nullptr);
+                }
             });
         } else if (e->type() == QEvent::FocusIn) {
             deactivateActiveEditorForTextInputFocus();
@@ -10143,10 +10176,10 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
                 } else {
                     dock->setFocusPolicy(Qt::StrongFocus);
                 }
-                pendingDockFocusTarget() = focusTarget;
+                const int focusGeneration = setPendingDockFocusTarget(focusTarget);
                 deactivateActiveEditorForTextInputFocus();
                 hideStateLabel();
-                pendingDockTextInputFocusTarget() = nullptr;
+                setPendingDockTextInputFocusTarget(nullptr);
                 const QColor inactivePrimary = generatedSurfaceColors(m_settings).primary.background;
                 for (Editor* paneEditor : splitPaneEditors()) {
                     if (paneEditor == nullptr)
@@ -10163,9 +10196,11 @@ bool MainWindow::eventFilter(QObject* o, QEvent* e)
                 };
                 QTimer::singleShot(0, focusTarget, restoreDockFocus);
                 QTimer::singleShot(50, focusTarget, restoreDockFocus);
-                QTimer::singleShot(250, focusTarget, [focusTargetGuard]() {
-                    if (pendingDockFocusTarget() == focusTargetGuard)
-                        pendingDockFocusTarget() = nullptr;
+                QTimer::singleShot(250, focusTarget, [focusTargetGuard, focusGeneration]() {
+                    if (pendingDockFocusTargetGeneration() == focusGeneration
+                        && pendingDockFocusTarget() == focusTargetGuard) {
+                        setPendingDockFocusTarget(nullptr);
+                    }
                 });
             }
         }

@@ -183,6 +183,7 @@ ConstantsWidget::ConstantsWidget(QWidget* parent)
     retranslateText();
     updateDomainLayout();
 
+    QWidget::setTabOrder(m_filter, m_list);
     setFocusProxy(m_filter);
 
     filter();
