@@ -749,6 +749,17 @@ ColorScheme activeColorScheme(const Settings* settings)
     return ColorScheme::loadByName(QStringLiteral("Terminal"));
 }
 
+QString colorSchemeDisplayName(const QString& schemeName, const ColorScheme& scheme)
+{
+    const QString displayName = scheme.displayName();
+    return displayName.isEmpty() ? schemeName : displayName;
+}
+
+QString colorSchemeDisplayName(const QString& schemeName)
+{
+    return colorSchemeDisplayName(schemeName, ColorScheme::loadByName(schemeName));
+}
+
 struct ThemeSurfaceColors
 {
     QColor background;
@@ -847,12 +858,16 @@ GeneratedThemeSurfaces generatedSurfaceColors(const Settings* settings)
 QPalette paletteForThemeSurface(const QPalette& inherited, const ThemeSurfaceColors& surface)
 {
     QPalette palette = inherited;
-    palette.setColor(QPalette::Window, surface.background);
-    palette.setColor(QPalette::WindowText, surface.foreground);
-    palette.setColor(QPalette::Base, surface.background);
-    palette.setColor(QPalette::Text, surface.foreground);
-    palette.setColor(QPalette::Button, surface.background);
-    palette.setColor(QPalette::ButtonText, surface.foreground);
+    for (const QPalette::ColorGroup group : {QPalette::Active,
+                                             QPalette::Inactive,
+                                             QPalette::Disabled}) {
+        palette.setColor(group, QPalette::Window, surface.background);
+        palette.setColor(group, QPalette::WindowText, surface.foreground);
+        palette.setColor(group, QPalette::Base, surface.background);
+        palette.setColor(group, QPalette::Text, surface.foreground);
+        palette.setColor(group, QPalette::Button, surface.background);
+        palette.setColor(group, QPalette::ButtonText, surface.foreground);
+    }
     return palette;
 }
 
@@ -3297,7 +3312,7 @@ void MainWindow::createActions()
     for (auto& colorScheme : schemes) {
         auto action = new QAction(this);
         action->setCheckable(true);
-        action->setText(colorScheme);
+        action->setText(colorSchemeDisplayName(colorScheme));
         action->setData(colorScheme);
         m_actions.settingsDisplayColorSchemes.append(action);
     }
@@ -5926,12 +5941,7 @@ void MainWindow::applyThemeSurfacePalette()
         }
     }
     const ThemeSurfaceColors& surface = surfaces.window;
-    QPalette pal = palette();
-    pal.setColor(QPalette::Window, surface.background);
-    pal.setColor(QPalette::WindowText, surface.foreground);
-    pal.setColor(QPalette::Button, surface.background);
-    pal.setColor(QPalette::ButtonText, surface.foreground);
-    setPalette(pal);
+    setPalette(paletteForThemeSurface(palette(), surface));
     setAutoFillBackground(true);
     setAttribute(Qt::WA_StyledBackground, true);
     setStyleSheet(QStringLiteral("QMainWindow { background-color: %1; }")
@@ -6030,6 +6040,15 @@ void MainWindow::applyKeypadThemeSurfacePalette()
     applyThemeBackgroundRoleToWidget(m_widgets.keypadContainer, keypadBackground.background);
     m_widgets.keypad->setPalette(keypadPalette);
     m_widgets.keypad->setAutoFillBackground(true);
+    const QPointer<Keypad> keypad = m_widgets.keypad;
+    QTimer::singleShot(0, this, [keypad, keypadPalette]() {
+        if (!keypad)
+            return;
+        keypad->setPalette(keypadPalette);
+        keypad->setAutoFillBackground(true);
+        QEvent paletteChange(QEvent::PaletteChange);
+        QApplication::sendEvent(keypad, &paletteChange);
+    });
     m_widgets.keypad->setToolTipThemeColors(keypadToolTip.background,
                                             keypadToolTip.foreground,
                                             keypadToolTipOutline.background,
@@ -8568,6 +8587,8 @@ void MainWindow::showCustomThemeDialog()
     setColorsFromScheme(currentScheme);
     const auto colorSchemeJsonObject = [&colorsByRole, &primaryColorExplicit, roleEntries]() {
         QJsonObject object;
+        object.insert(QStringLiteral("$schema"), QString::fromLatin1(ColorScheme::SchemaDraft));
+        object.insert(QStringLiteral("$id"), QString::fromLatin1(ColorScheme::SchemaId));
         for (const auto& roleEntry : roleEntries) {
             if (roleEntry.second == ColorScheme::Primary && !primaryColorExplicit)
                 continue;
@@ -8666,7 +8687,7 @@ void MainWindow::showCustomThemeDialog()
             const ColorScheme scheme = ColorScheme::loadByName(schemeName);
             if (!scheme.isValid() || !colorSchemeMatchesFilter(scheme, filter))
                 continue;
-            auto item = new QListWidgetItem(schemeName, list);
+            auto item = new QListWidgetItem(colorSchemeDisplayName(schemeName, scheme), list);
             item->setData(Qt::UserRole, schemeName);
         }
         updateThemeListHeight(list);

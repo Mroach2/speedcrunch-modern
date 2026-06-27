@@ -1,5 +1,11 @@
 {
-    "scheme": 1,
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://speedcrunch.org/schemas/theme-v1.schema.json",
+    "name": "Solarized Dark",
+    "author": "SpeedCrunch",
+    "homepage": "http://speedcrunch.org",
+    "version": "1",
+
     "list": "#B2C1C3",
     "unit": "#B2C1C3",
     "number": "#839496",

@@ -1,5 +1,11 @@
 {
-    "scheme": 1,
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://speedcrunch.org/schemas/theme-v1.schema.json",
+    "name": "One Dark",
+    "author": "SpeedCrunch",
+    "homepage": "http://speedcrunch.org",
+    "version": "1",
+
     "list": "#f0f0f0",
     "unit": "#f0f0f0",
     "number": "#e5c07b",

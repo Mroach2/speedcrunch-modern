@@ -1,5 +1,11 @@
 {
-    "scheme": 1,
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://speedcrunch.org/schemas/theme-v1.schema.json",
+    "name": "Catppuccin Macchiato",
+    "author": "SpeedCrunch",
+    "homepage": "http://speedcrunch.org",
+    "version": "1",
+
     "list": "#f5a97f",
     "unit": "#f5a97f",
     "number": "#f5a97f",

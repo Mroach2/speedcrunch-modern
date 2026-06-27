@@ -9,6 +9,7 @@
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QPair>
+#include <QtCore/QString>
 #include <QtCore/QVector>
 #include <QColor>
 
@@ -30,11 +31,13 @@ public:
         Primary
     };
 
-    static const int SchemeVersion = 1;
+    static constexpr const char* SchemaDraft = "https://json-schema.org/draft/2020-12/schema";
+    static constexpr const char* SchemaId = "https://speedcrunch.org/schemas/theme-v1.schema.json";
 
     ColorScheme() : m_valid(false) { }
     ColorScheme(const QJsonDocument& doc);
     bool isValid() const { return m_valid; }
+    QString displayName() const { return m_displayName; }
     QColor colorForRole(Role role) const;
     bool hasColorForRole(Role role) const;
     QJsonObject toJsonObject() const;
@@ -50,6 +53,7 @@ public:
 
 private:
     bool m_valid;
+    QString m_displayName;
     QHash<Role, QColor> m_colors;
 };
 

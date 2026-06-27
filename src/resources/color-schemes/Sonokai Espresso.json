@@ -1,5 +1,11 @@
 {
-    "scheme": 1,
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://speedcrunch.org/schemas/theme-v1.schema.json",
+    "name": "Sonokai Espresso",
+    "author": "SpeedCrunch",
+    "homepage": "http://speedcrunch.org",
+    "version": "1",
+
     "list": "#e4e3e1",
     "unit": "#AEABA9",
     "number": "#f0c66f",

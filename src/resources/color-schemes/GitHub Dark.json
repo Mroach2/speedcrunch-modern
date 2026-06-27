@@ -1,5 +1,11 @@
 {
-    "scheme": 1,
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://speedcrunch.org/schemas/theme-v1.schema.json",
+    "name": "GitHub Dark",
+    "author": "SpeedCrunch",
+    "homepage": "http://speedcrunch.org",
+    "version": "1",
+
     "list": "#C9D1D9",
     "unit": "#C9D1D9",
     "number": "#C9D1D9",

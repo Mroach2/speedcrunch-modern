@@ -68,6 +68,18 @@
 #include <QUrl>
 
 namespace {
+QJsonObject themeJson(QJsonObject colors)
+{
+    colors.insert(QStringLiteral("$schema"), QString::fromLatin1(ColorScheme::SchemaDraft));
+    colors.insert(QStringLiteral("$id"), QString::fromLatin1(ColorScheme::SchemaId));
+    return colors;
+}
+
+QString themeJsonString(QJsonObject colors)
+{
+    return QString::fromUtf8(QJsonDocument(themeJson(colors)).toJson(QJsonDocument::Compact));
+}
+
 QWidget* paneWidgetForDisplay(ResultDisplay* display)
 {
     QWidget* widget = display;
@@ -491,6 +503,8 @@ class TestDisplayUi : public QObject {
 
 private slots:
     void color_scheme_roles_exclude_obsolete_scrollbar();
+    void color_scheme_reads_optional_display_name();
+    void color_scheme_validates_schema_metadata();
     void theme_dialog_preserves_list_scroll_and_fills_role_color_buttons();
     void result_display_insets_viewport_horizontally();
     void result_display_scrollbar_hover_keeps_viewport_width_stable();
@@ -544,23 +558,30 @@ void TestDisplayUi::color_scheme_roles_exclude_obsolete_scrollbar()
     }
     QVERIFY(hasPrimaryRole);
 
-    const ColorScheme scheme = ColorScheme::fromJsonObject(QJsonObject{
+    const ColorScheme scheme = ColorScheme::fromJsonObject(themeJson(QJsonObject{
         {QStringLiteral("background"), QStringLiteral("#1f3229")},
         {QStringLiteral("cursor"), QStringLiteral("#ffff00")},
         {QStringLiteral("scrollbar"), QStringLiteral("#ff00ff")},
         {QStringLiteral("matched"), QStringLiteral("#00ffff")}
-    });
+    }));
     QVERIFY(scheme.isValid());
+    const QJsonObject schemeJson = scheme.toJsonObject();
+    QCOMPARE(schemeJson.value(QStringLiteral("$schema")).toString(),
+             QString::fromLatin1(ColorScheme::SchemaDraft));
+    QCOMPARE(schemeJson.value(QStringLiteral("$id")).toString(),
+             QString::fromLatin1(ColorScheme::SchemaId));
+    QVERIFY(!schemeJson.contains(QStringLiteral("version")));
+    QVERIFY(!schemeJson.contains(QStringLiteral("scheme")));
     QVERIFY(!scheme.hasColorForRole(ColorScheme::Primary));
-    QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("scrollbar")));
-    QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("cursor")));
-    QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("matched")));
-    QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("primary")));
+    QVERIFY(!schemeJson.contains(QStringLiteral("scrollbar")));
+    QVERIFY(!schemeJson.contains(QStringLiteral("cursor")));
+    QVERIFY(!schemeJson.contains(QStringLiteral("matched")));
+    QVERIFY(!schemeJson.contains(QStringLiteral("primary")));
 
-    const ColorScheme schemeWithPrimary = ColorScheme::fromJsonObject(QJsonObject{
+    const ColorScheme schemeWithPrimary = ColorScheme::fromJsonObject(themeJson(QJsonObject{
         {QStringLiteral("background"), QStringLiteral("#1f3229")},
         {QStringLiteral("primary"), QStringLiteral("#abcdef")}
-    });
+    }));
     QVERIFY(schemeWithPrimary.isValid());
     QVERIFY(schemeWithPrimary.hasColorForRole(ColorScheme::Primary));
     QCOMPARE(schemeWithPrimary.colorForRole(ColorScheme::Primary).name(),
@@ -569,15 +590,97 @@ void TestDisplayUi::color_scheme_roles_exclude_obsolete_scrollbar()
              QStringLiteral("#abcdef"));
 }
 
+void TestDisplayUi::color_scheme_reads_optional_display_name()
+{
+    const ColorScheme namedScheme = ColorScheme::fromJsonObject(themeJson(QJsonObject{
+        {QStringLiteral("name"), QStringLiteral("  Named Theme  ")},
+        {QStringLiteral("background"), QStringLiteral("#1f3229")}
+    }));
+    QVERIFY(namedScheme.isValid());
+    QCOMPARE(namedScheme.displayName(), QStringLiteral("Named Theme"));
+    QCOMPARE(namedScheme.toJsonObject().value(QStringLiteral("name")).toString(),
+             QStringLiteral("Named Theme"));
+
+    const ColorScheme blankNameScheme = ColorScheme::fromJsonObject(themeJson(QJsonObject{
+        {QStringLiteral("name"), QStringLiteral("   ")},
+        {QStringLiteral("background"), QStringLiteral("#1f3229")}
+    }));
+    QVERIFY(blankNameScheme.isValid());
+    QVERIFY(blankNameScheme.displayName().isEmpty());
+    QVERIFY(!blankNameScheme.toJsonObject().contains(QStringLiteral("name")));
+
+    const ColorScheme nonStringNameScheme = ColorScheme::fromJsonObject(themeJson(QJsonObject{
+        {QStringLiteral("name"), 1},
+        {QStringLiteral("background"), QStringLiteral("#1f3229")}
+    }));
+    QVERIFY(nonStringNameScheme.isValid());
+    QVERIFY(nonStringNameScheme.displayName().isEmpty());
+}
+
+void TestDisplayUi::color_scheme_validates_schema_metadata()
+{
+    const QJsonObject baseScheme{
+        {QStringLiteral("background"), QStringLiteral("#1f3229")}
+    };
+
+    QJsonObject currentSchema = baseScheme;
+    currentSchema.insert(QStringLiteral("$schema"), QString::fromLatin1(ColorScheme::SchemaDraft));
+    currentSchema.insert(QStringLiteral("$id"), QString::fromLatin1(ColorScheme::SchemaId));
+    currentSchema.insert(QStringLiteral("version"), QStringLiteral("1"));
+    QVERIFY(ColorScheme::fromJsonObject(currentSchema).isValid());
+
+    QJsonObject futureSchemaId = baseScheme;
+    futureSchemaId.insert(QStringLiteral("$schema"), QString::fromLatin1(ColorScheme::SchemaDraft));
+    futureSchemaId.insert(QStringLiteral("$id"),
+                          QStringLiteral("https://speedcrunch.org/schemas/theme-v2.schema.json"));
+    futureSchemaId.insert(QStringLiteral("version"), QStringLiteral("1"));
+    QVERIFY(!ColorScheme::fromJsonObject(futureSchemaId).isValid());
+
+    QVERIFY(!ColorScheme::fromJsonObject(baseScheme).isValid());
+
+    QJsonObject missingVersion = baseScheme;
+    missingVersion.insert(QStringLiteral("$schema"), QString::fromLatin1(ColorScheme::SchemaDraft));
+    missingVersion.insert(QStringLiteral("$id"), QString::fromLatin1(ColorScheme::SchemaId));
+    QVERIFY(ColorScheme::fromJsonObject(missingVersion).isValid());
+
+    QJsonObject authorVersion = baseScheme;
+    authorVersion.insert(QStringLiteral("$schema"), QString::fromLatin1(ColorScheme::SchemaDraft));
+    authorVersion.insert(QStringLiteral("$id"), QString::fromLatin1(ColorScheme::SchemaId));
+    authorVersion.insert(QStringLiteral("version"), QStringLiteral("2"));
+    QVERIFY(ColorScheme::fromJsonObject(authorVersion).isValid());
+
+    QJsonObject stringVersion = baseScheme;
+    stringVersion.insert(QStringLiteral("$schema"), QString::fromLatin1(ColorScheme::SchemaDraft));
+    stringVersion.insert(QStringLiteral("$id"), QString::fromLatin1(ColorScheme::SchemaId));
+    stringVersion.insert(QStringLiteral("version"), QStringLiteral("1.2"));
+    QVERIFY(ColorScheme::fromJsonObject(stringVersion).isValid());
+
+    QJsonObject invalidVersion = baseScheme;
+    invalidVersion.insert(QStringLiteral("$schema"), QString::fromLatin1(ColorScheme::SchemaDraft));
+    invalidVersion.insert(QStringLiteral("$id"), QString::fromLatin1(ColorScheme::SchemaId));
+    invalidVersion.insert(QStringLiteral("version"), 1);
+    QVERIFY(!ColorScheme::fromJsonObject(invalidVersion).isValid());
+
+    QJsonObject malformedSchema = baseScheme;
+    malformedSchema.insert(QStringLiteral("$schema"), 1);
+    malformedSchema.insert(QStringLiteral("$id"), QString::fromLatin1(ColorScheme::SchemaId));
+    malformedSchema.insert(QStringLiteral("version"), QStringLiteral("1"));
+    QVERIFY(!ColorScheme::fromJsonObject(malformedSchema).isValid());
+
+    QJsonObject missingId = baseScheme;
+    missingId.insert(QStringLiteral("$schema"), QString::fromLatin1(ColorScheme::SchemaDraft));
+    QVERIFY(!ColorScheme::fromJsonObject(missingId).isValid());
+}
+
 void TestDisplayUi::theme_dialog_preserves_list_scroll_and_fills_role_color_buttons()
 {
     MainWindowStateGuard guard;
     Settings* settings = Settings::instance();
 
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(QJsonObject{
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{
         {QStringLiteral("background"), QStringLiteral("#123456")}
-    }).toJson(QJsonDocument::Compact));
+    });
     settings->constantsDockVisible = false;
     settings->functionsDockVisible = false;
     settings->historyDockVisible = false;
@@ -997,7 +1100,7 @@ void TestDisplayUi::bitfield_buttons_use_configured_generated_shades()
     MainWindowStateGuard guard;
     Settings* settings = guard.settings;
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#e5eee8\"}");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#e5eee8")}});
     settings->bitfieldVisible = true;
     settings->keypadVisible = false;
 
@@ -1076,7 +1179,7 @@ void TestDisplayUi::keypad_buttons_use_custom_themed_tooltips()
     MainWindowStateGuard guard;
     Settings* settings = guard.settings;
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#e5eee8\"}");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#e5eee8")}});
     settings->keypadMode = Settings::KeypadModeBasicWide;
     settings->keypadVisible = true;
     settings->bitfieldVisible = false;
@@ -1374,10 +1477,10 @@ void TestDisplayUi::main_window_applies_primary_role_to_active_editor_and_dock_s
 
     qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(QJsonObject{
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{
         {QStringLiteral("background"), base.name()},
         {QStringLiteral("primary"), configuredPrimary.name()}
-    }).toJson(QJsonDocument::Compact));
+    });
     settings->constantsDockVisible = true;
     settings->hasNumberFormatStyleSetting = true;
 
@@ -1408,9 +1511,9 @@ void TestDisplayUi::main_window_applies_primary_role_to_active_editor_and_dock_s
     QCOMPARE(table->property("dockListInactiveSelectionForeground").value<QColor>().name(),
              foregrounds.at(4).name());
 
-    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(QJsonObject{
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{
         {QStringLiteral("background"), base.name()}
-    }).toJson(QJsonDocument::Compact));
+    });
     window.colorSchemeChanged();
     QCoreApplication::processEvents();
 
@@ -1596,8 +1699,7 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
     const auto verifyTheme = [settings](const QString& baseName, ThemePolarity polarity) {
         QJsonObject colors;
         colors.insert(QStringLiteral("background"), baseName);
-        settings->customColorSchemeJson =
-            QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+        settings->customColorSchemeJson = themeJsonString(colors);
         settings->keypadVisible = true;
         settings->bitfieldVisible = true;
 
@@ -1708,12 +1810,12 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         QVERIFY(editor->styleSheet().contains(QStringLiteral("border-radius: 13px")));
         QVERIFY(editor->styleSheet().contains(QStringLiteral("padding: 10px 18px")));
         QVERIFY(editor->viewport()->styleSheet().contains(QStringLiteral("background: transparent")));
-        QCOMPARE(editor->cursorWidth(), 2);
+        QTRY_COMPARE(editor->cursorWidth(), 2);
         QCOMPARE(editor->graphicsEffect(), nullptr);
         QVERIFY(editor->mask().isEmpty());
         QCOMPARE(keypad->palette().color(QPalette::Window).name(), expectedKeypadSurface.name());
-        QCOMPARE(keypad->palette().color(QPalette::WindowText).name(),
-                 expectedKeypadForeground.name());
+        QTRY_COMPARE(keypad->palette().color(QPalette::WindowText).name(),
+                     expectedKeypadForeground.name());
         QPushButton* keypadButton = keypadButtonWithText(keypad, QStringLiteral("%"));
         QPushButton* keypadDigitButton = keypadButtonWithText(keypad, QStringLiteral("7"));
         QPushButton* keypadDecimalButton =
@@ -1870,12 +1972,12 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
     verifyTheme(QStringLiteral("#1f3229"), ThemePolarity::Dark);
     verifyTheme(QStringLiteral("#e5eee8"), ThemePolarity::Light);
 
-    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#e5eee8\"}");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#e5eee8")}});
     MainWindow changedWindow;
     changedWindow.show();
     QCoreApplication::processEvents();
 
-    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#300a24\"}");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#300a24")}});
     changedWindow.colorSchemeChanged();
     QCoreApplication::processEvents();
 
@@ -2077,7 +2179,7 @@ void TestDisplayUi::restored_session_layout_reapplies_generated_theme_surfaces()
 
     qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#300a24\"}");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#300a24")}});
     settings->sessionLayoutJson.clear();
     settings->keypadMode = Settings::KeypadModeBasicWide;
     settings->statusBarVisible = true;
@@ -2187,7 +2289,7 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
 
     qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#1f3229\"}");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#1f3229")}});
     settings->windowState.clear();
     settings->constantsDockVisible = true;
     settings->hasNumberFormatStyleSetting = true;
@@ -2774,7 +2876,7 @@ void TestDisplayUi::dock_surfaces_use_successive_generated_shades()
     }
     QVERIFY(foundDockTabs);
 
-    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#300a24\"}");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#300a24")}});
     window.colorSchemeChanged();
     QCoreApplication::processEvents();
 
@@ -2881,7 +2983,7 @@ void TestDisplayUi::dock_scroll_corner_uses_scrollbar_track_fill()
 
     qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#1f3229\"}");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#1f3229")}});
     settings->sessionLayoutJson.clear();
     settings->windowState.clear();
     settings->constantsDockVisible = true;
@@ -3306,7 +3408,7 @@ void TestDisplayUi::dock_search_focus_suppresses_editor_primary_outline_across_p
 
     qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#1f3229\"}");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#1f3229")}});
     settings->sessionLayoutJson.clear();
     settings->constantsDockVisible = true;
     settings->functionsDockVisible = false;
@@ -3564,7 +3666,7 @@ void TestDisplayUi::clicking_tab_activates_own_pane_in_nested_split_layout()
 
     qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#1f3229\"}");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#1f3229")}});
     settings->sessionLayoutJson.clear();
     settings->constantsDockVisible = false;
     settings->functionsDockVisible = false;
@@ -3651,7 +3753,7 @@ void TestDisplayUi::active_pane_survives_window_reactivation_focus_replay()
     MainWindowStateGuard guard;
     Settings* settings = Settings::instance();
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QStringLiteral("{\"background\":\"#1f3229\"}");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#1f3229")}});
     settings->sessionLayoutJson.clear();
     settings->constantsDockVisible = false;
     settings->functionsDockVisible = false;

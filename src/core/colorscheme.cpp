@@ -63,6 +63,19 @@ static QColor getFallbackColor(ColorScheme::Role role)
     }
 }
 
+static bool hasSupportedThemeSchema(const QJsonObject& obj)
+{
+    const QJsonValue schemaValue = obj.value(QStringLiteral("$schema"));
+    const QJsonValue idValue = obj.value(QStringLiteral("$id"));
+    if (!schemaValue.isString() || schemaValue.toString() != QLatin1String(ColorScheme::SchemaDraft))
+        return false;
+    if (!idValue.isString() || idValue.toString() != QLatin1String(ColorScheme::SchemaId))
+        return false;
+
+    const QJsonValue versionValue = obj.value(QStringLiteral("version"));
+    return versionValue.isUndefined() || versionValue.isString();
+}
+
 ColorScheme::ColorScheme(const QJsonDocument& doc)
     : m_valid(false)
 {
@@ -70,10 +83,14 @@ ColorScheme::ColorScheme(const QJsonDocument& doc)
         return;
 
     const auto obj = doc.object();
-    const QJsonValue schemeValue = obj.value(QStringLiteral("scheme"));
-    if (!schemeValue.isUndefined()
-            && (!schemeValue.isDouble() || schemeValue.toInt() != SchemeVersion)) {
+    if (!hasSupportedThemeSchema(obj))
         return;
+
+    const QJsonValue nameValue = obj.value(QStringLiteral("name"));
+    if (nameValue.isString()) {
+        const QString name = nameValue.toString().trimmed();
+        if (!name.isEmpty())
+            m_displayName = name;
     }
 
     const auto roleEntries = roleNames();
@@ -140,7 +157,10 @@ ColorScheme ColorScheme::loadByName(const QString& name)
 QJsonObject ColorScheme::toJsonObject() const
 {
     QJsonObject object;
-    object.insert(QStringLiteral("scheme"), SchemeVersion);
+    object.insert(QStringLiteral("$schema"), QString::fromLatin1(SchemaDraft));
+    object.insert(QStringLiteral("$id"), QString::fromLatin1(SchemaId));
+    if (!m_displayName.isEmpty())
+        object.insert(QStringLiteral("name"), m_displayName);
     const auto roleEntries = roleNames();
     for (const auto& roleEntry : roleEntries) {
         if (roleEntry.second == Primary && !hasColorForRole(Primary))

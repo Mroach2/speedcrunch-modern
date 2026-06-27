@@ -3,6 +3,7 @@
 
 
 #include "core/evaluator.h"
+#include "core/colorscheme.h"
 #include "core/complexform.h"
 #include "core/numberformatter.h"
 #include "core/settings.h"
@@ -34,6 +35,20 @@
 #include <sstream>
 
 using namespace std;
+
+namespace {
+QJsonObject themeJson(QJsonObject colors)
+{
+    colors.insert(QStringLiteral("$schema"), QString::fromLatin1(ColorScheme::SchemaDraft));
+    colors.insert(QStringLiteral("$id"), QString::fromLatin1(ColorScheme::SchemaId));
+    return colors;
+}
+
+QString themeJsonString(QJsonObject colors)
+{
+    return QString::fromUtf8(QJsonDocument(themeJson(colors)).toJson(QJsonDocument::Compact));
+}
+}
 
 typedef Quantity::Format Format;
 
@@ -7580,7 +7595,7 @@ void test_result_display_highlights_simplified_expression_line()
     colors.insert(QStringLiteral("operator"), QStringLiteral("#654321"));
     colors.insert(QStringLiteral("result"), QStringLiteral("#abcdef"));
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+    settings->customColorSchemeJson = themeJsonString(colors);
 
     eval->setExpression(QStringLiteral("2 * cos(pi) * sin(pi) * cos(pi)"));
     const Quantity value = eval->evalUpdateAns();
@@ -7690,7 +7705,7 @@ void test_result_display_highlights_primary_result_with_extra_result_line()
     colors.insert(QStringLiteral("operator"), QStringLiteral("#654321"));
     colors.insert(QStringLiteral("result"), QStringLiteral("#abcdef"));
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+    settings->customColorSchemeJson = themeJsonString(colors);
 
     Session* session = evalSession;
     session->clearHistory();
@@ -7783,7 +7798,7 @@ void test_result_display_highlights_primary_sexagesimal_result_with_extra_result
     colors.insert(QStringLiteral("operator"), QStringLiteral("#654321"));
     colors.insert(QStringLiteral("result"), QStringLiteral("#abcdef"));
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+    settings->customColorSchemeJson = themeJsonString(colors);
 
     Session* session = evalSession;
     session->clearHistory();
@@ -7882,7 +7897,7 @@ void test_result_display_highlights_primary_radian_result_with_pi_factor_line()
     colors.insert(QStringLiteral("operator"), QStringLiteral("#654321"));
     colors.insert(QStringLiteral("result"), QStringLiteral("#abcdef"));
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+    settings->customColorSchemeJson = themeJsonString(colors);
 
     eval->setExpression(QString::fromUtf8("12°"));
     const Quantity value = eval->evalUpdateAns();

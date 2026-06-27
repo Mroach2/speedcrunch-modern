@@ -3,6 +3,8 @@ Theme JSON Schema
 
 SpeedCrunch theme files are JSON objects with supported color-role keys.
 Each color-role value is a color string in ``#RRGGBB`` format.
+Theme files also include required schema metadata and may include optional
+descriptive and format metadata.
 
 Schema
 ------
@@ -11,12 +13,14 @@ Schema
 
    {
      "$schema": "https://json-schema.org/draft/2020-12/schema",
-     "$id": "https://speedcrunch.org/schemas/theme.schema.json",
+     "$id": "https://speedcrunch.org/schemas/theme-v1.schema.json",
      "title": "SpeedCrunch Theme",
+     "description": "Defines the colors used by a SpeedCrunch theme.",
      "type": "object",
      "additionalProperties": false,
      "required": [
-       "scheme",
+       "$schema",
+       "$id",
        "number",
        "parens",
        "list",
@@ -30,7 +34,30 @@ Schema
        "background"
      ],
      "properties": {
-       "scheme": { "const": 1, "description": "Theme schema version" },
+       "$schema": {
+         "const": "https://json-schema.org/draft/2020-12/schema",
+         "description": "JSON Schema draft identifier"
+       },
+       "$id": {
+         "const": "https://speedcrunch.org/schemas/theme-v1.schema.json",
+         "description": "Theme schema identifier"
+       },
+       "name": {
+         "type": "string",
+         "description": "Optional theme display name"
+       },
+       "author": {
+         "type": "string",
+         "description": "Optional theme author"
+       },
+       "homepage": {
+         "type": "string",
+         "description": "Optional theme homepage"
+       },
+       "version": {
+         "type": "string",
+         "description": "Optional theme version chosen by the theme author"
+       },
        "number": { "$ref": "#/$defs/color" },
        "parens": { "$ref": "#/$defs/color" },
        "list": { "$ref": "#/$defs/color" },
@@ -72,6 +99,10 @@ Notes
   primary/accent color used for active selections, focused editor outlines,
   cursor accents, pane splitters, and primary-hue keypad fills. When omitted,
   SpeedCrunch generates the primary/accent color from ``background``.
+* ``name``, ``author``, ``homepage``, and ``version`` are optional metadata
+  fields. ``version`` is a string that belongs to the theme author and is not
+  used as the schema or format version. A non-empty ``name`` is used as the
+  theme display name.
 
 Fictitious Example
 ------------------
@@ -81,7 +112,13 @@ The following example is fictitious and provided only as a usage example:
 .. code-block:: json
 
    {
-     "scheme": 1,
+     "$schema": "https://json-schema.org/draft/2020-12/schema",
+     "$id": "https://speedcrunch.org/schemas/theme-v1.schema.json",
+     "name": "Example Theme",
+     "author": "Example Author",
+     "homepage": "https://example.com",
+     "version": "1",
+
      "number": "#6ED3FF",
      "parens": "#C8A2C8",
      "list": "#B39DDB",

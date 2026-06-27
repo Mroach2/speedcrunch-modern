@@ -7,6 +7,7 @@
 #include "gui/oklchutils.h"
 #include "gui/syntaxhighlighter.h"
 #include "gui/uiconfig.h"
+#include "core/colorscheme.h"
 #include "core/evaluator.h"
 #include "core/session.h"
 #include "core/settings.h"
@@ -29,6 +30,20 @@
 #include <QTextLayout>
 #include <QTreeWidget>
 #include <QVBoxLayout>
+
+namespace {
+QJsonObject themeJson(QJsonObject colors)
+{
+    colors.insert(QStringLiteral("$schema"), QString::fromLatin1(ColorScheme::SchemaDraft));
+    colors.insert(QStringLiteral("$id"), QString::fromLatin1(ColorScheme::SchemaId));
+    return colors;
+}
+
+QString themeJsonString(QJsonObject colors)
+{
+    return QString::fromUtf8(QJsonDocument(themeJson(colors)).toJson(QJsonDocument::Compact));
+}
+}
 
 class TestEditorUi : public QObject {
     Q_OBJECT
@@ -550,7 +565,7 @@ void TestEditorUi::highlights_list_braces_as_parentheses()
     colors.insert(QStringLiteral("list"), QStringLiteral("#123456"));
     colors.insert(QStringLiteral("operator"), QStringLiteral("#222222"));
     colors.insert(QStringLiteral("separator"), QStringLiteral("#333333"));
-    highlighter.setColorScheme(ColorScheme(QJsonDocument(colors)));
+    highlighter.setColorScheme(ColorScheme(QJsonDocument(themeJson(colors))));
 
     editor.setPlainText(QStringLiteral("{1; 2}"));
     highlighter.rehighlight();
@@ -4148,10 +4163,10 @@ void TestEditorUi::matching_parentheses_use_parens_and_generated_foreground_colo
     const QColor parensColor(QStringLiteral("#c8a2c8"));
     const QColor resultBackground(QStringLiteral("#102030"));
     const QColor generatedForeground = aaForegroundForBackground(parensColor);
-    const ColorScheme scheme = ColorScheme::fromJsonObject(QJsonObject{
+    const ColorScheme scheme = ColorScheme::fromJsonObject(themeJson(QJsonObject{
         {QStringLiteral("parens"), parensColor.name()},
         {QStringLiteral("background"), QStringLiteral("#010203")}
-    });
+    }));
     QVERIFY(scheme.isValid());
 
     Editor editor;
@@ -4253,8 +4268,7 @@ void TestEditorUi::editor_fill_color_is_15_percent_lighter_for_dark_background_r
     QJsonObject colors;
     colors.insert(QStringLiteral("background"), QStringLiteral("#202020"));
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson =
-        QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+    settings->customColorSchemeJson = themeJsonString(colors);
 
     Editor editor;
     editor.rehighlight();
@@ -4278,8 +4292,7 @@ void TestEditorUi::editor_fill_color_is_15_percent_darker_for_light_background_r
     QJsonObject colors;
     colors.insert(QStringLiteral("background"), QStringLiteral("#d0d0d0"));
     settings->colorScheme = QStringLiteral("Custom");
-    settings->customColorSchemeJson =
-        QString::fromUtf8(QJsonDocument(colors).toJson(QJsonDocument::Compact));
+    settings->customColorSchemeJson = themeJsonString(colors);
 
     Editor editor;
     editor.rehighlight();
