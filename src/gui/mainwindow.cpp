@@ -694,6 +694,7 @@ QString colorSchemeRoleLabel(ColorScheme::Role role)
     case ColorScheme::Variable: return QStringLiteral("variable");
     case ColorScheme::Separator: return QStringLiteral("separator");
     case ColorScheme::Background: return QStringLiteral("background");
+    case ColorScheme::Primary: return QStringLiteral("primary");
     }
     return QString();
 }
@@ -802,15 +803,15 @@ GeneratedThemeSurfaces generatedSurfaceColorsForScheme(const ColorScheme& scheme
     const QColor base = scheme.isValid()
         ? scheme.colorForRole(ColorScheme::Background)
         : QApplication::palette().color(QPalette::Base);
-    // The generated primary enters the app theme pipeline here, where
-    // configured theme colors are resolved into concrete UI roles. It
-    // intentionally has no color-scheme role: every theme gets a readable
-    // accent that is perceptually derived from its background while unrelated
-    // roles continue to come from the scheme or surface generator.
+    const QColor configuredPrimary = scheme.isValid() && scheme.hasColorForRole(ColorScheme::Primary)
+        ? scheme.colorForRole(ColorScheme::Primary)
+        : QColor();
     const QColor generatedPrimary = generatePrimaryFromBackground(base);
-    const QColor primary = generatedPrimary.isValid()
-        ? generatedPrimary
-        : QApplication::palette().color(QPalette::Text);
+    const QColor primary = configuredPrimary.isValid()
+        ? configuredPrimary
+        : (generatedPrimary.isValid()
+              ? generatedPrimary
+              : QApplication::palette().color(QPalette::Text));
     const ThemePolarity polarity = themePolarityForBackground(base);
     const QVector<QColor> shades = generateOklchShades(base,
                                                        kThemeGeneratedShadeCount,
@@ -8544,8 +8545,7 @@ void MainWindow::showCustomThemeDialog()
 
     QMap<ColorScheme::Role, QColor> colorsByRole;
     const auto roleEntries = ColorScheme::roleNames();
-    for (const auto& roleEntry : roleEntries)
-        colorsByRole.insert(roleEntry.second, currentScheme.colorForRole(roleEntry.second));
+    bool primaryColorExplicit = false;
 
     QMap<ColorScheme::Role, QPushButton*> roleButtons;
     QPushButton* okButton = nullptr;
@@ -8553,21 +8553,36 @@ void MainWindow::showCustomThemeDialog()
         for (const auto& roleEntry : roleEntries)
             updateColorButtonStyle(roleButtons.value(roleEntry.second), colorsByRole.value(roleEntry.second));
     };
-    const auto setColorsFromScheme = [&colorsByRole, roleEntries](const ColorScheme& scheme) {
+    const auto setColorsFromScheme =
+        [&colorsByRole, &primaryColorExplicit, roleEntries](const ColorScheme& scheme) {
         for (const auto& roleEntry : roleEntries)
             colorsByRole[roleEntry.second] = scheme.colorForRole(roleEntry.second);
+        primaryColorExplicit = scheme.hasColorForRole(ColorScheme::Primary);
+        if (!primaryColorExplicit) {
+            const QColor background = colorsByRole.value(ColorScheme::Background);
+            const QColor generatedPrimary = generatePrimaryFromBackground(background);
+            if (generatedPrimary.isValid())
+                colorsByRole[ColorScheme::Primary] = generatedPrimary;
+        }
     };
-    const auto applyPreview = [&colorsByRole,
+    setColorsFromScheme(currentScheme);
+    const auto colorSchemeJsonObject = [&colorsByRole, &primaryColorExplicit, roleEntries]() {
+        QJsonObject object;
+        for (const auto& roleEntry : roleEntries) {
+            if (roleEntry.second == ColorScheme::Primary && !primaryColorExplicit)
+                continue;
+            object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
+        }
+        return object;
+    };
+    const auto applyPreview = [&colorSchemeJsonObject,
                                preview,
                                previewHighlighter,
                                previewWidget,
                                previewScrollbarTrack,
                                previewScrollbar,
                                editorPreview]() {
-        QJsonObject object;
-        const auto roles = ColorScheme::roleNames();
-        for (const auto& roleEntry : roles)
-            object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
+        const QJsonObject object = colorSchemeJsonObject();
         const ColorScheme scheme = ColorScheme::fromJsonObject(object);
         const GeneratedThemeSurfaces surfaces = generatedSurfaceColorsForScheme(scheme);
         previewWidget->setAutoFillBackground(true);
@@ -8700,6 +8715,15 @@ void MainWindow::showCustomThemeDialog()
             if (!chosen.isValid())
                 return;
             colorsByRole[role] = chosen;
+            if (role == ColorScheme::Primary)
+                primaryColorExplicit = true;
+            if (role == ColorScheme::Background && !primaryColorExplicit) {
+                const QColor generatedPrimary = generatePrimaryFromBackground(chosen);
+                if (generatedPrimary.isValid()) {
+                    colorsByRole[ColorScheme::Primary] = generatedPrimary;
+                    updateColorButtonStyle(roleButtons.value(ColorScheme::Primary), generatedPrimary);
+                }
+            }
             selectedSchemeName.clear();
             isCustomScheme = true;
             lightThemeList->clearSelection();
@@ -8749,9 +8773,7 @@ void MainWindow::showCustomThemeDialog()
 
     const auto applyCurrentTheme = [&]() {
         if (isCustomScheme || selectedSchemeName.isEmpty()) {
-            QJsonObject object;
-            for (const auto& roleEntry : roleEntries)
-                object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
+            const QJsonObject object = colorSchemeJsonObject();
             m_settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(object).toJson(QJsonDocument::Compact));
             m_settings->colorScheme = QStringLiteral("Custom");
         } else {
@@ -8882,9 +8904,7 @@ void MainWindow::showCustomThemeDialog()
             QMessageBox::critical(this, tr("Error"), tr("Can't write to file %1").arg(filePath));
             return;
         }
-        QJsonObject object;
-        for (const auto& roleEntry : roleEntries)
-            object.insert(roleEntry.first, colorsByRole.value(roleEntry.second).name());
+        const QJsonObject object = colorSchemeJsonObject();
         file.write(QJsonDocument(object).toJson(QJsonDocument::Indented));
         file.close();
         const ColorScheme exportedScheme = ColorScheme::loadFromFile(filePath);

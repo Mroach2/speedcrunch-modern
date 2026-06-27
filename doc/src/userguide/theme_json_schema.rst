@@ -1,8 +1,8 @@
 Theme JSON Schema
 =================
 
-SpeedCrunch theme files are JSON objects with a fixed set of color-role keys.
-Each value is a color string in ``#RRGGBB`` format.
+SpeedCrunch theme files are JSON objects with supported color-role keys.
+Each color-role value is a color string in ``#RRGGBB`` format.
 
 Schema
 ------
@@ -41,7 +41,11 @@ Schema
        "operator": { "$ref": "#/$defs/color" },
        "variable": { "$ref": "#/$defs/color" },
        "separator": { "$ref": "#/$defs/color" },
-       "background": { "$ref": "#/$defs/color" }
+       "background": { "$ref": "#/$defs/color" },
+       "primary": {
+         "$ref": "#/$defs/color",
+         "description": "Optional primary/accent color override"
+       }
      },
      "$defs": {
        "color": {
@@ -60,11 +64,14 @@ Notes
 * ``unit`` controls highlighting for square-bracketed unit blocks, including
   both ``[]`` and everything inside them.
 * ``background`` also supplies the base color for the generated application
-  chrome, expression-editor surface colors, primary/accent color, and
-  successive generated surfaces used by dock titles, controls and headers, and
-  content areas. Scrollbar colors are generated from the background of the
-  surface that owns each scrollbar, so theme files do not include a separate
-  key for them.
+  chrome, expression-editor surface colors, and successive generated surfaces
+  used by dock titles, controls and headers, and content areas. Scrollbar
+  colors are generated from the background of the surface that owns each
+  scrollbar, so theme files do not include a separate key for them.
+* ``primary`` is optional. When present, it overrides the generated
+  primary/accent color used for active selections, focused editor outlines,
+  cursor accents, pane splitters, and primary-hue keypad fills. When omitted,
+  SpeedCrunch generates the primary/accent color from ``background``.
 
 Fictitious Example
 ------------------
@@ -85,5 +92,6 @@ The following example is fictitious and provided only as a usage example:
      "operator": "#F5F5F5",
      "variable": "#FF8DA1",
      "separator": "#2F3640",
-     "background": "#111827"
+     "background": "#111827",
+     "primary": "#6EE7B7"
    }

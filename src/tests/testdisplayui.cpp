@@ -535,11 +535,14 @@ private slots:
 void TestDisplayUi::color_scheme_roles_exclude_obsolete_scrollbar()
 {
     const auto roles = ColorScheme::roleNames();
+    bool hasPrimaryRole = false;
     for (const auto& roleEntry : roles) {
+        hasPrimaryRole = hasPrimaryRole || roleEntry.first == QStringLiteral("primary");
         QVERIFY(roleEntry.first != QStringLiteral("scrollbar"));
         QVERIFY(roleEntry.first != QStringLiteral("cursor"));
         QVERIFY(roleEntry.first != QStringLiteral("matched"));
     }
+    QVERIFY(hasPrimaryRole);
 
     const ColorScheme scheme = ColorScheme::fromJsonObject(QJsonObject{
         {QStringLiteral("background"), QStringLiteral("#1f3229")},
@@ -548,9 +551,22 @@ void TestDisplayUi::color_scheme_roles_exclude_obsolete_scrollbar()
         {QStringLiteral("matched"), QStringLiteral("#00ffff")}
     });
     QVERIFY(scheme.isValid());
+    QVERIFY(!scheme.hasColorForRole(ColorScheme::Primary));
     QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("scrollbar")));
     QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("cursor")));
     QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("matched")));
+    QVERIFY(!scheme.toJsonObject().contains(QStringLiteral("primary")));
+
+    const ColorScheme schemeWithPrimary = ColorScheme::fromJsonObject(QJsonObject{
+        {QStringLiteral("background"), QStringLiteral("#1f3229")},
+        {QStringLiteral("primary"), QStringLiteral("#abcdef")}
+    });
+    QVERIFY(schemeWithPrimary.isValid());
+    QVERIFY(schemeWithPrimary.hasColorForRole(ColorScheme::Primary));
+    QCOMPARE(schemeWithPrimary.colorForRole(ColorScheme::Primary).name(),
+             QStringLiteral("#abcdef"));
+    QCOMPARE(schemeWithPrimary.toJsonObject().value(QStringLiteral("primary")).toString(),
+             QStringLiteral("#abcdef"));
 }
 
 void TestDisplayUi::theme_dialog_preserves_list_scroll_and_fills_role_color_buttons()
@@ -583,6 +599,8 @@ void TestDisplayUi::theme_dialog_preserves_list_scroll_and_fills_role_color_butt
     int darkScrollAfter = -1;
     QColor backgroundButtonColor;
     QColor backgroundButtonPixel;
+    QColor primaryButtonColor;
+    QColor expectedPrimaryButtonColor;
 
     const auto recordFailure = [&failure](const QString& message) {
         if (failure.isEmpty())
@@ -605,8 +623,11 @@ void TestDisplayUi::theme_dialog_preserves_list_scroll_and_fills_role_color_butt
         QListWidget* darkList = dialog->findChild<QListWidget*>(QStringLiteral("DarkThemeList"));
         QPushButton* backgroundButton = dialog->findChild<QPushButton*>(
             QStringLiteral("ThemeColorButton_background"));
+        QPushButton* primaryButton = dialog->findChild<QPushButton*>(
+            QStringLiteral("ThemeColorButton_primary"));
 
-        if (lightList == nullptr || darkList == nullptr || backgroundButton == nullptr) {
+        if (lightList == nullptr || darkList == nullptr || backgroundButton == nullptr
+                || primaryButton == nullptr) {
             recordFailure(QStringLiteral("Theme dialog controls were not found."));
             return;
         }
@@ -621,6 +642,10 @@ void TestDisplayUi::theme_dialog_preserves_list_scroll_and_fills_role_color_butt
         if (dialog->layout() != nullptr)
             dialog->layout()->activate();
         QCoreApplication::processEvents();
+
+        const QColor initialBackgroundButtonColor(backgroundButton->text());
+        primaryButtonColor = QColor(primaryButton->text());
+        expectedPrimaryButtonColor = generatePrimaryFromBackground(initialBackgroundButtonColor);
 
         if (lightList->verticalScrollBar()->maximum() <= 0
                 || darkList->verticalScrollBar()->maximum() <= 0) {
@@ -674,6 +699,7 @@ void TestDisplayUi::theme_dialog_preserves_list_scroll_and_fills_role_color_butt
     QCOMPARE(lightScrollAfter, lightScrollBefore);
     QCOMPARE(darkScrollAfter, darkScrollBefore);
     QVERIFY(colorsAreClose(backgroundButtonPixel, backgroundButtonColor, 3));
+    QCOMPARE(primaryButtonColor.name(), expectedPrimaryButtonColor.name());
 }
 
 void TestDisplayUi::result_display_insets_viewport_horizontally()
@@ -1339,14 +1365,18 @@ void TestDisplayUi::main_window_applies_primary_role_to_active_editor_and_dock_s
 
     const QColor base(QStringLiteral("#1f3229"));
     const QColor generatedPrimary = generatePrimaryFromBackground(base);
+    const QColor configuredPrimary(QStringLiteral("#d94f8c"));
     const QVector<QColor> shades = generateOklchShades(base, 6, ThemePolarity::Dark);
     const QVector<QColor> foregrounds = aaForegroundsForBackgrounds(shades);
     QVERIFY(generatedPrimary.isValid());
+    QVERIFY(configuredPrimary.isValid());
+    QVERIFY(generatedPrimary.name() != configuredPrimary.name());
 
     qputenv("SPEEDCRUNCH_TEST_SKIP_UPDATE_CHECK", "1");
     settings->colorScheme = QStringLiteral("Custom");
     settings->customColorSchemeJson = QString::fromUtf8(QJsonDocument(QJsonObject{
-        {QStringLiteral("background"), base.name()}
+        {QStringLiteral("background"), base.name()},
+        {QStringLiteral("primary"), configuredPrimary.name()}
     }).toJson(QJsonDocument::Compact));
     settings->constantsDockVisible = true;
     settings->hasNumberFormatStyleSetting = true;
@@ -1357,22 +1387,22 @@ void TestDisplayUi::main_window_applies_primary_role_to_active_editor_and_dock_s
 
     Editor* editor = window.findChild<Editor*>();
     QVERIFY(editor != nullptr);
-    QCOMPARE(editor->palette().color(QPalette::Text).name(), generatedPrimary.name());
-    QVERIFY(editor->palette().color(QPalette::Base).name() != generatedPrimary.name());
-    QTRY_VERIFY(editor->styleSheet().contains(QStringLiteral("color: %1;").arg(generatedPrimary.name())));
-    QTRY_VERIFY(editorHasPrimaryOutline(editor, generatedPrimary));
+    QCOMPARE(editor->palette().color(QPalette::Text).name(), configuredPrimary.name());
+    QVERIFY(editor->palette().color(QPalette::Base).name() != configuredPrimary.name());
+    QTRY_VERIFY(editor->styleSheet().contains(QStringLiteral("color: %1;").arg(configuredPrimary.name())));
+    QTRY_VERIFY(editorHasPrimaryOutline(editor, configuredPrimary));
     QVERIFY(QMetaObject::invokeMethod(&window, "showNewSessionDialog", Qt::DirectConnection));
     QCoreApplication::processEvents();
-    QTRY_VERIFY(editorHasPrimaryOutline(editor, generatedPrimary));
+    QTRY_VERIFY(editorHasPrimaryOutline(editor, configuredPrimary));
 
     QDockWidget* constantsDock = window.findChild<QDockWidget*>(QStringLiteral("ConstantsDock"));
     QVERIFY(constantsDock != nullptr);
     QTreeWidget* table = constantsDock->findChild<QTreeWidget*>();
     QVERIFY(table != nullptr);
     QCOMPARE(table->property("dockListActiveSelectionBackground").value<QColor>().name(),
-             generatedPrimary.name());
+             configuredPrimary.name());
     QCOMPARE(table->property("dockListActiveSelectionForeground").value<QColor>().name(),
-             aaForegroundForBackground(generatedPrimary).name());
+             aaForegroundForBackground(configuredPrimary).name());
     QCOMPARE(table->property("dockListInactiveSelectionBackground").value<QColor>().name(),
              shades.at(4).name());
     QCOMPARE(table->property("dockListInactiveSelectionForeground").value<QColor>().name(),

@@ -26,7 +26,8 @@ public:
         Operator,
         Variable,
         Separator,
-        Background
+        Background,
+        Primary
     };
 
     static const int SchemeVersion = 1;
@@ -35,6 +36,7 @@ public:
     ColorScheme(const QJsonDocument& doc);
     bool isValid() const { return m_valid; }
     QColor colorForRole(Role role) const;
+    bool hasColorForRole(Role role) const;
     QJsonObject toJsonObject() const;
 
     static QStringList enumerate();

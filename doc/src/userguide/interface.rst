@@ -539,12 +539,12 @@ User Interface Settings
 
     The :guilabel:`Preview` area shows representative result-display and
     editor content so that syntax-highlighting, result, and background colors
-    are visible while editing. The selected ``background``
-    color also generates the primary/accent color and nearby OKLCH surface
-    colors for the expression editor and surrounding application chrome,
-    followed by progressively offset surface colors for dock titles, dock
-    controls and table headers, dock search and content areas, pane splitters,
-    and scrollbars.
+    are visible while editing. The selected ``background`` color generates
+    nearby OKLCH surface colors for the expression editor and surrounding
+    application chrome, followed by progressively offset surface colors for
+    dock titles, dock controls and table headers, dock search and content
+    areas, pane splitters, and scrollbars. It also generates the
+    primary/accent color unless the theme specifies a ``primary`` color.
 
     The :guilabel:`Colors` area provides per-role color selection buttons showing
     both the ``#RRGGBB`` value and the actual color. Changing any color creates a
@@ -572,8 +572,9 @@ User Interface Settings
 
     Theme files use JSON and map role names to color values. Supported role names are:
     ``number``, ``parens``, ``list``, ``unit``, ``result``, ``comment``,
-    ``function``, ``operator``, ``variable``, ``separator``, ``background``.
-    The editor surface and scrollbar colors are generated from ``background``.
+    ``function``, ``operator``, ``variable``, ``separator``, ``background``,
+    and optional ``primary``. The editor surface and scrollbar colors are
+    generated from ``background``.
     For the full schema, see :doc:`theme_json_schema`.
 
     .. versionadded:: 1.0

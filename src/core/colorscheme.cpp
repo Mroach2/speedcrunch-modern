@@ -93,11 +93,16 @@ ColorScheme::ColorScheme(const QJsonDocument& doc)
 
 QColor ColorScheme::colorForRole(Role role) const
 {
-    QColor color = m_colors[role];
+    QColor color = m_colors.value(role);
     if (!color.isValid())
         return getFallbackColor(role);
     else
         return color;
+}
+
+bool ColorScheme::hasColorForRole(Role role) const
+{
+    return m_colors.contains(role) && m_colors.value(role).isValid();
 }
 
 QStringList ColorScheme::enumerate()
@@ -137,8 +142,11 @@ QJsonObject ColorScheme::toJsonObject() const
     QJsonObject object;
     object.insert(QStringLiteral("scheme"), SchemeVersion);
     const auto roleEntries = roleNames();
-    for (const auto& roleEntry : roleEntries)
+    for (const auto& roleEntry : roleEntries) {
+        if (roleEntry.second == Primary && !hasColorForRole(Primary))
+            continue;
         object.insert(roleEntry.first, colorForRole(roleEntry.second).name());
+    }
     return object;
 }
 
@@ -161,5 +169,6 @@ QVector<QPair<QString, ColorScheme::Role>> ColorScheme::roleNames()
         { QStringLiteral("variable"), ColorScheme::Variable },
         { QStringLiteral("separator"), ColorScheme::Separator },
         { QStringLiteral("background"), ColorScheme::Background },
+        { QStringLiteral("primary"), ColorScheme::Primary },
     };
 }
