@@ -481,6 +481,24 @@ QKeyCombination restoreClosedTabShortcut()
     return QKeyCombination(Qt::ControlModifier | Qt::ShiftModifier, Qt::Key_T);
 }
 
+QKeyCombination nextSessionTabShortcut()
+{
+#if defined(Q_OS_MACOS)
+    return QKeyCombination(Qt::ControlModifier | Qt::AltModifier, Qt::Key_Right);
+#else
+    return QKeyCombination(Qt::ControlModifier, Qt::Key_PageDown);
+#endif
+}
+
+QKeyCombination previousSessionTabShortcut()
+{
+#if defined(Q_OS_MACOS)
+    return QKeyCombination(Qt::ControlModifier | Qt::AltModifier, Qt::Key_Left);
+#else
+    return QKeyCombination(Qt::ControlModifier, Qt::Key_PageUp);
+#endif
+}
+
 bool focusIsWithin(QWidget* target)
 {
     QWidget* focused = QApplication::focusWidget();
@@ -540,6 +558,7 @@ private slots:
     void focusing_loaded_pane_preserves_its_current_scroll_position();
     void persisting_layout_captures_visible_scroll_positions_for_all_panes();
     void switching_session_tabs_preserves_each_editor_text();
+    void session_tab_navigation_shortcuts_switch_tabs();
     void new_shortcut_creates_session_in_active_pane();
     void restore_closed_tab_shortcut_restores_last_closed_session_tab();
     void session_tabs_reorder_with_horizontal_drag();
@@ -4277,6 +4296,61 @@ void TestDisplayUi::switching_session_tabs_preserves_each_editor_text()
     QTest::mouseClick(tabBar, Qt::LeftButton, Qt::NoModifier, tabBar->tabRect(1).center());
     QCoreApplication::processEvents();
     QCOMPARE(editor->text(), QStringLiteral("second tab draft"));
+}
+
+void TestDisplayUi::session_tab_navigation_shortcuts_switch_tabs()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+
+    settings->sessionLayoutJson.clear();
+    settings->windowState.clear();
+    settings->windowGeometry.clear();
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadMode = Settings::KeypadModeDisabled;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->statusBarVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    ResultDisplay* display = window.findChild<ResultDisplay*>();
+    QVERIFY(display != nullptr);
+    QTabBar* tabBar = tabBarForDisplay(display);
+    QVERIFY(tabBar != nullptr);
+    Editor* editor = editorForDisplay(display);
+    QVERIFY(editor != nullptr);
+
+    QVERIFY(QMetaObject::invokeMethod(&window, "showNewSessionDialog", Qt::DirectConnection));
+    QVERIFY(QMetaObject::invokeMethod(&window, "showNewSessionDialog", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(tabBar->count(), 3);
+
+    tabBar->setCurrentIndex(0);
+    editor->setFocus();
+    QTRY_VERIFY(editor->hasFocus());
+    QCOMPARE(tabBar->currentIndex(), 0);
+
+    const QKeyCombination next = nextSessionTabShortcut();
+    QTest::keyClick(editor, next.key(), next.keyboardModifiers());
+    QTRY_COMPARE(tabBar->currentIndex(), 1);
+
+    QTest::keyClick(editor, next.key(), next.keyboardModifiers());
+    QTRY_COMPARE(tabBar->currentIndex(), 2);
+
+    const QKeyCombination previous = previousSessionTabShortcut();
+    QTest::keyClick(editor, previous.key(), previous.keyboardModifiers());
+    QTRY_COMPARE(tabBar->currentIndex(), 1);
 }
 
 void TestDisplayUi::new_shortcut_creates_session_in_active_pane()

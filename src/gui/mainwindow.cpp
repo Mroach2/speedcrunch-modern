@@ -6865,13 +6865,29 @@ void MainWindow::createFixedConnections()
             connect(shortcut, &QShortcut::activated, this, handler);
         }
     };
+    const auto bindApplicationShortcut = [this](const QKeySequence& sequence,
+                                                const std::function<void()>& handler) {
+        QShortcut* shortcut = new QShortcut(sequence, this);
+        shortcut->setContext(Qt::ApplicationShortcut);
+        connect(shortcut, &QShortcut::activated, this, handler);
+    };
     bindStandardKey(QKeySequence::New, [this]() { showNewSessionDialog(); });
     bindStandardKey(QKeySequence::AddTab, [this]() { showNewSessionDialog(); });
-    bindStandardKey(QKeySequence::NextChild, [this]() { activateNextChild(); });
-    bindStandardKey(QKeySequence::PreviousChild, [this]() { activatePreviousChild(); });
     bindStandardKey(QKeySequence::Open, [this]() { showOpenSessionDialog(); });
     bindStandardKey(QKeySequence::Close, [this]() { closeCurrentSession(); });
     bindStandardKey(QKeySequence::Quit, []() { qApp->quit(); });
+
+#if defined(Q_OS_MACOS)
+    bindApplicationShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_Right),
+                            [this]() { activateNextChild(); });
+    bindApplicationShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_Left),
+                            [this]() { activatePreviousChild(); });
+#else
+    bindApplicationShortcut(QKeySequence(Qt::CTRL | Qt::Key_PageDown),
+                            [this]() { activateNextChild(); });
+    bindApplicationShortcut(QKeySequence(Qt::CTRL | Qt::Key_PageUp),
+                            [this]() { activatePreviousChild(); });
+#endif
 
     QShortcut* restoreClosedSessionTabShortcut =
         new QShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_T), this);

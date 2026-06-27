@@ -2,7 +2,8 @@ User Interface
 ==============
 
 Shortcut notation: :kbd:`Ctrl` means :kbd:`Ctrl` on Windows/Linux and
-:kbd:`Cmd` on macOS.
+:kbd:`Cmd` on macOS. Platform-specific shortcuts spell out :kbd:`Cmd` when
+they differ from this convention.
 
 Widgets
 -------
@@ -620,6 +621,14 @@ Editing
 * :kbd:`Ctrl+(` or :kbd:`Ctrl+)`
     Wrap the current selection in parentheses. If no text is selected, the entire expression is wrapped.
 
+Session Tabs
+++++++++++++
+
+* :kbd:`Cmd+Alt+Left` and :kbd:`Cmd+Alt+Right` (macOS)
+    Move to the previous or next session tab or pane.
+* :kbd:`Ctrl+Page Up` and :kbd:`Ctrl+Page Down` (Windows/Linux)
+    Move to the previous or next session tab or pane.
+
 Widgets and Docks
 +++++++++++++++++
 
@@ -653,7 +662,7 @@ Scrolling
     Scroll the result window page-wise.
 * :kbd:`Shift+Page Up` and :kbd:`Shift+Page Down`
     Scroll the result window line-wise.
-* :kbd:`Ctrl+Page Up` and :kbd:`Ctrl+Page Down`
+* :kbd:`Cmd+Page Up` and :kbd:`Cmd+Page Down` (macOS)
     Scroll to the top or bottom of the result window.
 
 Focus Navigation
