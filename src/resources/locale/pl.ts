@@ -58,22 +58,22 @@
 <context>
     <name>BitFieldWidget</name>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="745"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="643"/>
         <source>Reset bits to zero</source>
         <translation>Wyzeruj bity</translation>
     </message>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="747"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="645"/>
         <source>Invert bits</source>
         <translation>Odwróć bity</translation>
     </message>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="749"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="647"/>
         <source>Shift bits left</source>
         <translation>Przesuń bity w lewo</translation>
     </message>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="751"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="649"/>
         <source>Shift bits right</source>
         <translation>Przesuń bity w prawo</translation>
     </message>
@@ -406,7 +406,7 @@
 <context>
     <name>BookDock</name>
     <message>
-        <location filename="../../gui/bookdock.cpp" line="149"/>
+        <location filename="../../gui/bookdock.cpp" line="150"/>
         <source>Formula Book</source>
         <translation>Zbiór formuł</translation>
     </message>
@@ -414,9 +414,9 @@
 <context>
     <name>ConstantCompletion</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="4628"/>
-        <location filename="../../gui/editor.cpp" line="4638"/>
-        <location filename="../../gui/editor.cpp" line="4758"/>
+        <location filename="../../gui/editor.cpp" line="4521"/>
+        <location filename="../../gui/editor.cpp" line="4531"/>
+        <location filename="../../gui/editor.cpp" line="4645"/>
         <source>All</source>
         <translation>Wszystko</translation>
     </message>
@@ -2547,47 +2547,47 @@
 <context>
     <name>ConstantsWidget</name>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="293"/>
+        <location filename="../../gui/constantswidget.cpp" line="245"/>
         <source>Domain</source>
         <translation>Dziedzina</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="294"/>
+        <location filename="../../gui/constantswidget.cpp" line="246"/>
         <source>Subdomain</source>
         <translation>Poddziedzina</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="296"/>
+        <location filename="../../gui/constantswidget.cpp" line="248"/>
         <source>No match found</source>
         <translation>Brak dopasowań</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="299"/>
+        <location filename="../../gui/constantswidget.cpp" line="251"/>
         <source>Name</source>
         <translation>Nazwa</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="300"/>
+        <location filename="../../gui/constantswidget.cpp" line="252"/>
         <source>Value</source>
         <translation>Wartość</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="301"/>
+        <location filename="../../gui/constantswidget.cpp" line="253"/>
         <source>Unit</source>
         <translation>Jednostka</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="295"/>
+        <location filename="../../gui/constantswidget.cpp" line="247"/>
         <source>Search</source>
         <translation>Wyszukiwanie</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="346"/>
-        <location filename="../../gui/constantswidget.cpp" line="348"/>
-        <location filename="../../gui/constantswidget.cpp" line="427"/>
-        <location filename="../../gui/constantswidget.cpp" line="467"/>
-        <location filename="../../gui/constantswidget.cpp" line="468"/>
-        <location filename="../../gui/constantswidget.cpp" line="477"/>
+        <location filename="../../gui/constantswidget.cpp" line="298"/>
+        <location filename="../../gui/constantswidget.cpp" line="300"/>
+        <location filename="../../gui/constantswidget.cpp" line="379"/>
+        <location filename="../../gui/constantswidget.cpp" line="419"/>
+        <location filename="../../gui/constantswidget.cpp" line="420"/>
+        <location filename="../../gui/constantswidget.cpp" line="429"/>
         <source>All</source>
         <translation>Wszystko</translation>
     </message>
@@ -2663,45 +2663,45 @@
 <context>
     <name>Editor</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="1903"/>
+        <location filename="../../gui/editor.cpp" line="1795"/>
         <source>Unit</source>
         <translation>Jednostka</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1907"/>
+        <location filename="../../gui/editor.cpp" line="1799"/>
         <source>User unit</source>
         <translation>Jednostka użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1962"/>
+        <location filename="../../gui/editor.cpp" line="1854"/>
         <source>User function</source>
         <translation>Funkcja użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2089"/>
+        <location filename="../../gui/editor.cpp" line="1981"/>
         <source>Argument</source>
         <translation>Argument</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2265"/>
-        <location filename="../../gui/editor.cpp" line="2299"/>
+        <location filename="../../gui/editor.cpp" line="2157"/>
+        <location filename="../../gui/editor.cpp" line="2191"/>
         <source>Current result:&lt;br/&gt;%1</source>
         <translation>Bieżący wynik:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2371"/>
-        <location filename="../../gui/editor.cpp" line="2399"/>
+        <location filename="../../gui/editor.cpp" line="2263"/>
+        <location filename="../../gui/editor.cpp" line="2291"/>
         <source>Selection result:&lt;br/&gt;%1</source>
         <translation>Wynik zaznaczenia:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2365"/>
-        <location filename="../../gui/editor.cpp" line="2393"/>
+        <location filename="../../gui/editor.cpp" line="2257"/>
+        <location filename="../../gui/editor.cpp" line="2285"/>
         <source>Selection result: n/a</source>
         <translation>Wynik zaznaczenia: brak</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2406"/>
+        <location filename="../../gui/editor.cpp" line="2298"/>
         <source>Selection result: %1</source>
         <translation>Wynik zaznaczenia: %1</translation>
     </message>
@@ -4432,152 +4432,152 @@
 <context>
     <name>Keypad</name>
     <message>
-        <location filename="../../gui/keypad.cpp" line="882"/>
+        <location filename="../../gui/keypad.cpp" line="910"/>
         <source>Inverse cosine</source>
         <translation>Odwrotny kosinus</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="883"/>
+        <location filename="../../gui/keypad.cpp" line="911"/>
         <source>The last result</source>
         <translation>Poprzedni wynik</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="884"/>
+        <location filename="../../gui/keypad.cpp" line="912"/>
         <source>Inverse sine</source>
         <translation>Odwrotny sinus</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="885"/>
+        <location filename="../../gui/keypad.cpp" line="913"/>
         <source>Inverse tangent</source>
         <translation>Odwrotny tangens</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="886"/>
+        <location filename="../../gui/keypad.cpp" line="914"/>
         <source>Evaluate expression</source>
         <translation>Oblicz wyrażenie</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="887"/>
+        <location filename="../../gui/keypad.cpp" line="915"/>
         <source>Division</source>
         <translation>Dzielenie</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="888"/>
+        <location filename="../../gui/keypad.cpp" line="916"/>
         <source>Multiplication</source>
         <translation>Mnożenie</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="889"/>
+        <location filename="../../gui/keypad.cpp" line="917"/>
         <source>Subtraction</source>
         <translation>Odejmowanie</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="890"/>
+        <location filename="../../gui/keypad.cpp" line="918"/>
         <source>Addition</source>
         <translation>Dodawanie</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="891"/>
+        <location filename="../../gui/keypad.cpp" line="919"/>
         <source>Clear expression</source>
         <translation>Wyczyść wyrażenie</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="892"/>
+        <location filename="../../gui/keypad.cpp" line="920"/>
         <source>Cosine</source>
         <translation>Cosinus</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="893"/>
+        <location filename="../../gui/keypad.cpp" line="921"/>
         <source>Backspace</source>
         <translation>Backspace</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="894"/>
+        <location filename="../../gui/keypad.cpp" line="922"/>
         <source>Scientific notation</source>
         <translation>Notacja naukowa</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="895"/>
+        <location filename="../../gui/keypad.cpp" line="923"/>
         <source>Exponential</source>
         <translation>Wykładnicza</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="896"/>
+        <location filename="../../gui/keypad.cpp" line="924"/>
         <source>Factorial</source>
         <translation>Silnia</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="897"/>
+        <location filename="../../gui/keypad.cpp" line="925"/>
         <source>Natural logarithm</source>
         <translation>Logarytm naturalny</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="898"/>
+        <location filename="../../gui/keypad.cpp" line="926"/>
         <source>Left parenthesis</source>
         <translation>Lewy nawias</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="899"/>
+        <location filename="../../gui/keypad.cpp" line="927"/>
         <source>Cube root</source>
         <translation>Pierwiastek sześcienny</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="900"/>
+        <location filename="../../gui/keypad.cpp" line="928"/>
         <source>Common logarithm</source>
         <translation>Logarytm dziesiętny</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="901"/>
+        <location filename="../../gui/keypad.cpp" line="929"/>
         <source>Modulo</source>
         <translation>Modulo</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="902"/>
+        <location filename="../../gui/keypad.cpp" line="930"/>
         <source>Contextual percentage</source>
         <translation>Procent kontekstowy</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="903"/>
+        <location filename="../../gui/keypad.cpp" line="931"/>
         <source>Power</source>
         <translation>Potęgowanie</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="904"/>
+        <location filename="../../gui/keypad.cpp" line="932"/>
         <source>Right parenthesis</source>
         <translation>Prawy nawias</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="905"/>
+        <location filename="../../gui/keypad.cpp" line="933"/>
         <source>Sine</source>
         <translation>Sinus</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="906"/>
+        <location filename="../../gui/keypad.cpp" line="934"/>
         <source>Square root</source>
         <translation>Pierwiastek kwadratowy</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="907"/>
+        <location filename="../../gui/keypad.cpp" line="935"/>
         <source>Tangent</source>
         <translation>Tangens</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="908"/>
+        <location filename="../../gui/keypad.cpp" line="936"/>
         <source>Pi</source>
         <translation>Pi</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="909"/>
+        <location filename="../../gui/keypad.cpp" line="937"/>
         <source>Decimal separator</source>
         <translation>Separator dziesiętny</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="910"/>
+        <location filename="../../gui/keypad.cpp" line="938"/>
         <source>Assign variable x</source>
         <translation>Przypisz zmienną x</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="911"/>
+        <location filename="../../gui/keypad.cpp" line="939"/>
         <source>The variable x</source>
         <translation>Zmienna x</translation>
     </message>
@@ -4585,1219 +4585,1257 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3397"/>
+        <location filename="../../gui/mainwindow.cpp" line="3476"/>
         <source>Radian</source>
         <translation>Radian</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3401"/>
+        <location filename="../../gui/mainwindow.cpp" line="3480"/>
         <source>Degree</source>
         <translation>Stopień</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3398"/>
+        <location filename="../../gui/mainwindow.cpp" line="3477"/>
         <source>Gradian</source>
         <translation>Grad</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3407"/>
+        <location filename="../../gui/mainwindow.cpp" line="3486"/>
         <source>Binary</source>
         <translation>Dwójkowa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3408"/>
+        <location filename="../../gui/mainwindow.cpp" line="3487"/>
         <source>Octal</source>
         <translation>Ósemkowa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3409"/>
+        <location filename="../../gui/mainwindow.cpp" line="3488"/>
         <source>Hexadecimal</source>
         <translation>Szesnastkowa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3410"/>
+        <location filename="../../gui/mainwindow.cpp" line="3489"/>
         <source>Sexagesimal</source>
         <translation>Sześćdziesiątkowa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3412"/>
+        <location filename="../../gui/mainwindow.cpp" line="3491"/>
         <source>Engineering decimal</source>
         <translation>Dziesiętna inżynierska</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3413"/>
+        <location filename="../../gui/mainwindow.cpp" line="3492"/>
         <source>Scientific decimal</source>
         <translation>Dziesiętna naukowa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3431"/>
+        <location filename="../../gui/mainwindow.cpp" line="3511"/>
         <source>&amp;Import...</source>
         <translation>&amp;Importuj...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3433"/>
-        <source>&amp;Load...</source>
-        <translation>Z&amp;aładuj...</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="3434"/>
+        <location filename="../../gui/mainwindow.cpp" line="3517"/>
         <source>&amp;Quit</source>
         <translation>&amp;Zakończ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3435"/>
-        <source>&amp;Save...</source>
-        <translation>Zapi&amp;sz...</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="3437"/>
+        <location filename="../../gui/mainwindow.cpp" line="3519"/>
         <source>Clear E&amp;xpression</source>
         <translation>W&amp;yczyść wyrażenie</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3438"/>
+        <location filename="../../gui/mainwindow.cpp" line="3520"/>
         <source>Clear &amp;History</source>
         <translation>Wyczyść &amp;historię</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3439"/>
+        <location filename="../../gui/mainwindow.cpp" line="3521"/>
         <source>Copy Last &amp;Result</source>
         <translation>Skopiuj &amp;ostatni wynik</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3440"/>
+        <location filename="../../gui/mainwindow.cpp" line="3522"/>
         <source>&amp;Copy</source>
         <translation>&amp;Kopiuj</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3441"/>
+        <location filename="../../gui/mainwindow.cpp" line="3523"/>
         <source>&amp;Paste</source>
         <translation>&amp;Wklej</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3442"/>
+        <location filename="../../gui/mainwindow.cpp" line="3524"/>
         <source>&amp;Select Expression</source>
         <translation>&amp;Zaznacz wyrażenie</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3443"/>
+        <location filename="../../gui/mainwindow.cpp" line="3525"/>
         <source>&amp;Wrap Selection in Parentheses</source>
         <translation>&amp;Otocz zaznaczenie nawiasami</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3445"/>
+        <location filename="../../gui/mainwindow.cpp" line="3527"/>
         <source>&amp;Constants</source>
         <translation>&amp;Stałe</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3446"/>
+        <location filename="../../gui/mainwindow.cpp" line="3528"/>
         <source>F&amp;ull Screen Mode</source>
         <translation>&amp;Tryb pełnoekranowy</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3447"/>
+        <location filename="../../gui/mainwindow.cpp" line="3529"/>
         <source>&amp;Functions</source>
         <translation>&amp;Funkcje</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3448"/>
+        <location filename="../../gui/mainwindow.cpp" line="3530"/>
         <source>&amp;History</source>
         <translation>&amp;Historia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3458"/>
+        <location filename="../../gui/mainwindow.cpp" line="3540"/>
         <source>&amp;Status Bar</source>
         <translation>Pasek s&amp;tanu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3461"/>
-        <location filename="../../gui/mainwindow.cpp" line="6089"/>
+        <location filename="../../gui/mainwindow.cpp" line="3543"/>
+        <location filename="../../gui/mainwindow.cpp" line="6471"/>
         <source>Bitfield</source>
         <translation>Pole bitowe</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3462"/>
+        <location filename="../../gui/mainwindow.cpp" line="3544"/>
         <source>Use&amp;r Functions</source>
         <translation>Fun&amp;kcje użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3465"/>
+        <location filename="../../gui/mainwindow.cpp" line="3547"/>
         <source>&amp;Degree</source>
         <translation>&amp;Stopień</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3466"/>
+        <location filename="../../gui/mainwindow.cpp" line="3548"/>
         <source>&amp;Radian</source>
         <translation>&amp;Radian</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3467"/>
+        <location filename="../../gui/mainwindow.cpp" line="3549"/>
         <source>&amp;Gradian</source>
         <translation>&amp;Grad</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3474"/>
+        <location filename="../../gui/mainwindow.cpp" line="3556"/>
         <source>Automatic &amp;Completion</source>
         <translation>Automatyczne &amp;dopełnianie</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3485"/>
+        <location filename="../../gui/mainwindow.cpp" line="3567"/>
         <source>Syntax &amp;Highlighting</source>
         <translation>Podświetlanie &amp;składni</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3503"/>
+        <location filename="../../gui/mainwindow.cpp" line="3585"/>
         <source>&amp;Comma</source>
         <translation>&amp;Przecinek</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3504"/>
+        <location filename="../../gui/mainwindow.cpp" line="3586"/>
         <source>&amp;System Default</source>
         <translation>Domyślne &amp;systemowe</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3505"/>
+        <location filename="../../gui/mainwindow.cpp" line="3587"/>
         <source>&amp;Dot</source>
         <translation>&amp;Kropka</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3506"/>
+        <location filename="../../gui/mainwindow.cpp" line="3588"/>
         <source>Dot &amp;And Comma</source>
         <translation>Kropka &amp;i przecinek</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3529"/>
+        <location filename="../../gui/mainwindow.cpp" line="3611"/>
         <source>&amp;Binary</source>
         <translation>&amp;Dwójkowy</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3526"/>
+        <location filename="../../gui/mainwindow.cpp" line="3608"/>
         <source>&amp;Engineering</source>
         <translation>&amp;Inżynierska</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3531"/>
+        <location filename="../../gui/mainwindow.cpp" line="3613"/>
         <source>&amp;Hexadecimal</source>
         <translation>&amp;Szesnastkowy</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3530"/>
+        <location filename="../../gui/mainwindow.cpp" line="3612"/>
         <source>&amp;Octal</source>
         <translation>Ósemk&amp;owy</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3527"/>
+        <location filename="../../gui/mainwindow.cpp" line="3609"/>
         <source>&amp;Scientific</source>
         <translation>&amp;Naukowa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3549"/>
+        <location filename="../../gui/mainwindow.cpp" line="3631"/>
         <source>User &amp;Manual</source>
         <translation>&amp;Instrukcja</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3557"/>
+        <location filename="../../gui/mainwindow.cpp" line="3639"/>
         <source>&amp;Donate</source>
         <translation>&amp;Wesprzyj</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6195"/>
+        <location filename="../../gui/mainwindow.cpp" line="4281"/>
+        <source>New Tab</source>
+        <translation>Nowa karta</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="6577"/>
         <source>Constants</source>
         <translation>Stałe</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6225"/>
+        <location filename="../../gui/mainwindow.cpp" line="6607"/>
         <source>Functions</source>
         <translation>Funkcje</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6248"/>
+        <location filename="../../gui/mainwindow.cpp" line="6630"/>
         <source>History</source>
         <translation>Historia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6318"/>
+        <location filename="../../gui/mainwindow.cpp" line="6700"/>
         <source>User Functions</source>
         <translation>Funkcje użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6909"/>
+        <location filename="../../gui/mainwindow.cpp" line="7372"/>
         <source>Type an expression here</source>
         <translation>Wpisz tutaj wyrażenie</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3545"/>
+        <location filename="../../gui/mainwindow.cpp" line="3627"/>
         <source>&amp;Font...</source>
         <translation>&amp;Czcionka...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3547"/>
+        <location filename="../../gui/mainwindow.cpp" line="3629"/>
         <source>&amp;Language...</source>
         <translation>&amp;Język...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3859"/>
+        <location filename="../../gui/mainwindow.cpp" line="3943"/>
         <source>&amp;Session</source>
         <translation>&amp;Sesja</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3861"/>
+        <location filename="../../gui/mainwindow.cpp" line="3945"/>
         <source>&amp;Edit</source>
         <translation>&amp;Edycja</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3862"/>
+        <location filename="../../gui/mainwindow.cpp" line="3946"/>
         <source>&amp;View</source>
         <translation>&amp;Widok</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3865"/>
+        <location filename="../../gui/mainwindow.cpp" line="3949"/>
         <source>Se&amp;ttings</source>
         <translation>Us&amp;tawienia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3871"/>
+        <location filename="../../gui/mainwindow.cpp" line="3955"/>
         <source>&amp;Decimal</source>
         <translation>D&amp;ziesiętny</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3863"/>
+        <location filename="../../gui/mainwindow.cpp" line="3947"/>
         <source>&amp;Keypad</source>
         <translation>&amp;Klawiatura</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3470"/>
+        <location filename="../../gui/mainwindow.cpp" line="3552"/>
         <source>Always on &amp;Top</source>
         <translation>Zawsze na &amp;wierzchu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3487"/>
+        <location filename="../../gui/mainwindow.cpp" line="3569"/>
         <source>Disabled</source>
         <translation>Wyłączony</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3488"/>
+        <location filename="../../gui/mainwindow.cpp" line="3570"/>
         <source>Small Space</source>
         <translation>Mały odstęp</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3489"/>
+        <location filename="../../gui/mainwindow.cpp" line="3571"/>
         <source>Medium Space</source>
         <translation>Średni odstęp</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3490"/>
+        <location filename="../../gui/mainwindow.cpp" line="3572"/>
         <source>Large Space</source>
         <translation>Duży odstęp</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3507"/>
+        <location filename="../../gui/mainwindow.cpp" line="3589"/>
         <source>&amp;0 Digits</source>
         <translation>&amp;0 cyfr</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3508"/>
+        <location filename="../../gui/mainwindow.cpp" line="3590"/>
         <source>&amp;15 Digits</source>
         <translation>&amp;15 cyfr</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3509"/>
+        <location filename="../../gui/mainwindow.cpp" line="3591"/>
         <source>&amp;2 Digits</source>
         <translation>&amp;2 cyfry</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3510"/>
+        <location filename="../../gui/mainwindow.cpp" line="3592"/>
         <source>&amp;3 Digits</source>
         <translation>&amp;3 cyfry</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3511"/>
+        <location filename="../../gui/mainwindow.cpp" line="3593"/>
         <source>&amp;50 Digits</source>
         <translation>&amp;50 cyfr</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3512"/>
+        <location filename="../../gui/mainwindow.cpp" line="3594"/>
         <source>&amp;8 Digits</source>
         <translation>&amp;8 cyfr</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3532"/>
+        <location filename="../../gui/mainwindow.cpp" line="3614"/>
         <source>&amp;Sexagesimal</source>
         <translation>&amp;Sześćdziesiątkowy</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3550"/>
+        <location filename="../../gui/mainwindow.cpp" line="3632"/>
         <source>Context Help</source>
         <translation>Pomoc kontekstowa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3558"/>
+        <location filename="../../gui/mainwindow.cpp" line="3640"/>
         <source>About &amp;SpeedCrunch</source>
         <translation>O &amp;SpeedCrunch</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3882"/>
+        <location filename="../../gui/mainwindow.cpp" line="3966"/>
         <source>&amp;Help</source>
         <translation>&amp;Pomoc</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8738"/>
-        <source>Load Session</source>
-        <translation>Załaduj sesję</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8571"/>
-        <location filename="../../gui/mainwindow.cpp" line="8577"/>
-        <location filename="../../gui/mainwindow.cpp" line="8585"/>
-        <location filename="../../gui/mainwindow.cpp" line="8591"/>
-        <location filename="../../gui/mainwindow.cpp" line="8607"/>
-        <location filename="../../gui/mainwindow.cpp" line="8613"/>
-        <location filename="../../gui/mainwindow.cpp" line="8664"/>
-        <location filename="../../gui/mainwindow.cpp" line="8670"/>
-        <location filename="../../gui/mainwindow.cpp" line="8770"/>
-        <location filename="../../gui/mainwindow.cpp" line="8847"/>
-        <location filename="../../gui/mainwindow.cpp" line="8869"/>
-        <location filename="../../gui/mainwindow.cpp" line="8909"/>
-        <location filename="../../gui/mainwindow.cpp" line="9538"/>
-        <location filename="../../gui/mainwindow.cpp" line="9558"/>
+        <location filename="../../gui/mainwindow.cpp" line="9141"/>
+        <location filename="../../gui/mainwindow.cpp" line="9147"/>
+        <location filename="../../gui/mainwindow.cpp" line="9155"/>
+        <location filename="../../gui/mainwindow.cpp" line="9161"/>
+        <location filename="../../gui/mainwindow.cpp" line="9177"/>
+        <location filename="../../gui/mainwindow.cpp" line="9183"/>
+        <location filename="../../gui/mainwindow.cpp" line="9234"/>
+        <location filename="../../gui/mainwindow.cpp" line="9240"/>
+        <location filename="../../gui/mainwindow.cpp" line="9339"/>
+        <location filename="../../gui/mainwindow.cpp" line="10065"/>
+        <location filename="../../gui/mainwindow.cpp" line="10085"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8571"/>
-        <location filename="../../gui/mainwindow.cpp" line="8869"/>
+        <location filename="../../gui/mainwindow.cpp" line="9141"/>
+        <location filename="../../gui/mainwindow.cpp" line="9373"/>
         <source>Can&apos;t read from file %1</source>
         <translation>Nie można czytać z pliku %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8744"/>
-        <source>Merge session being loaded with current session?
-If no, current variables and display will be cleared.</source>
-        <translation>Połączyć ładowaną sesję z bieżącą?
-Jeżeli nie, zmienne i wyświetlacz zostaną wyczyszczone.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8862"/>
-        <source>All Files (*)</source>
-        <translation>Wszystkie pliki (*)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="4205"/>
-        <location filename="../../gui/mainwindow.cpp" line="8863"/>
+        <location filename="../../gui/mainwindow.cpp" line="9355"/>
+        <location filename="../../gui/mainwindow.cpp" line="9373"/>
+        <location filename="../../gui/mainwindow.cpp" line="9381"/>
+        <location filename="../../gui/mainwindow.cpp" line="9388"/>
+        <location filename="../../gui/mainwindow.cpp" line="9396"/>
+        <location filename="../../gui/mainwindow.cpp" line="9404"/>
+        <location filename="../../gui/mainwindow.cpp" line="9410"/>
+        <location filename="../../gui/mainwindow.cpp" line="9418"/>
+        <location filename="../../gui/mainwindow.cpp" line="9424"/>
+        <location filename="../../gui/mainwindow.cpp" line="9432"/>
+        <location filename="../../gui/mainwindow.cpp" line="9438"/>
+        <location filename="../../gui/mainwindow.cpp" line="9446"/>
         <source>Import Session</source>
         <translation>Importuj sesję</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8874"/>
-        <source>Merge session being imported with current session?
-If no, current variables and display will be cleared.</source>
-        <translation>Połączyć importowaną sesję z bieżącą?
-Jeżeli nie, zmienne i wyświetlacz zostaną wyczyszczone.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8909"/>
-        <source>Ignore error?</source>
-        <translation>Zignorować błąd?</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8826"/>
-        <source>Save Session</source>
-        <translation>Zapisz sesję</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="2147"/>
-        <location filename="../../gui/mainwindow.cpp" line="4212"/>
+        <location filename="../../gui/mainwindow.cpp" line="2222"/>
+        <location filename="../../gui/mainwindow.cpp" line="4301"/>
         <source>Close Session</source>
         <translation>Zamknij sesję</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3332"/>
+        <location filename="../../gui/mainwindow.cpp" line="3411"/>
         <source>Angle Mode:</source>
         <translation>Tryb kąta:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3333"/>
+        <location filename="../../gui/mainwindow.cpp" line="3412"/>
         <source>Notation:</source>
         <translation>Notacja:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3334"/>
+        <location filename="../../gui/mainwindow.cpp" line="3413"/>
         <source>Precision:</source>
         <translation>Precyzja:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3399"/>
+        <location filename="../../gui/mainwindow.cpp" line="3478"/>
         <source>Turn</source>
         <translation>Obrót</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3400"/>
+        <location filename="../../gui/mainwindow.cpp" line="3479"/>
         <source>Revolution</source>
         <translation>Pełny obrót</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3411"/>
+        <location filename="../../gui/mainwindow.cpp" line="3490"/>
         <source>Fixed-point decimal</source>
         <translation>Dziesiętna stałoprzecinkowa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3414"/>
+        <location filename="../../gui/mainwindow.cpp" line="3493"/>
         <source>Rational</source>
         <translation>Wymierna</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3415"/>
+        <location filename="../../gui/mainwindow.cpp" line="3494"/>
         <source>Automatic decimal</source>
         <translation>Automatyczna dziesiętna</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3423"/>
-        <location filename="../../gui/mainwindow.cpp" line="12155"/>
+        <location filename="../../gui/mainwindow.cpp" line="3502"/>
+        <location filename="../../gui/mainwindow.cpp" line="12722"/>
         <source>Automatic</source>
         <translation>Automatycznie</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3432"/>
+        <location filename="../../gui/mainwindow.cpp" line="3512"/>
         <source>User &amp;Definitions...</source>
         <translation>&amp;Definicje użytkownika...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3450"/>
+        <location filename="../../gui/mainwindow.cpp" line="3513"/>
+        <source>New &amp;Tab</source>
+        <translation>Nowa &amp;karta</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3514"/>
+        <source>New &amp;Window</source>
+        <translation>Nowe &amp;okno</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3515"/>
+        <source>&amp;Open...</source>
+        <translation>&amp;Otwórz...</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3516"/>
+        <source>Open Sessions &amp;Folder</source>
+        <translation>Otwórz &amp;folder sesji</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3532"/>
         <source>&amp;Basic</source>
         <translation>&amp;Podstawowa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3451"/>
+        <location filename="../../gui/mainwindow.cpp" line="3533"/>
         <source>&amp;Scientific (wide)</source>
         <translation>&amp;Naukowa (szeroka)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3452"/>
+        <location filename="../../gui/mainwindow.cpp" line="3534"/>
         <source>Scientific (narrow)</source>
         <translation>Naukowa (wąska)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3453"/>
-        <location filename="../../gui/mainwindow.cpp" line="3513"/>
+        <location filename="../../gui/mainwindow.cpp" line="3535"/>
+        <location filename="../../gui/mainwindow.cpp" line="3595"/>
         <source>&amp;Custom...</source>
         <translation>&amp;Własne...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3459"/>
+        <location filename="../../gui/mainwindow.cpp" line="3541"/>
         <source>Main &amp;Menu</source>
         <translation>&amp;Menu główne</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3460"/>
+        <location filename="../../gui/mainwindow.cpp" line="3542"/>
         <source>User &amp;Variables</source>
         <translation>&amp;Zmienne użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3463"/>
+        <location filename="../../gui/mainwindow.cpp" line="3545"/>
         <source>User &amp;Units</source>
         <translation>&amp;Jednostki użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3468"/>
+        <location filename="../../gui/mainwindow.cpp" line="3550"/>
         <source>&amp;Turn</source>
         <translation>O&amp;brót</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3469"/>
+        <location filename="../../gui/mainwindow.cpp" line="3551"/>
         <source>&amp;Revolution</source>
         <translation>&amp;Pełny obrót</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3471"/>
+        <location filename="../../gui/mainwindow.cpp" line="3553"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
         <translation>Automatycznie wstawiaj &quot;ans&quot; przy rozpoczęciu operatorem</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3472"/>
-        <location filename="../../gui/mainwindow.cpp" line="3473"/>
+        <location filename="../../gui/mainwindow.cpp" line="3554"/>
+        <location filename="../../gui/mainwindow.cpp" line="3555"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
         <translation>Jeśli nowe wyrażenie zaczyna się od +, -, * lub /, SpeedCrunch najpierw wstawia &quot;ans&quot;.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3475"/>
+        <location filename="../../gui/mainwindow.cpp" line="3557"/>
         <source>Built-in &amp;functions</source>
         <translation>Wbudowane &amp;funkcje</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3476"/>
+        <location filename="../../gui/mainwindow.cpp" line="3558"/>
         <source>Built-in &amp;variables</source>
         <translation>Wbudowane &amp;zmienne</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3477"/>
+        <location filename="../../gui/mainwindow.cpp" line="3559"/>
         <source>&amp;Units</source>
         <translation>&amp;Jednostki</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3478"/>
+        <location filename="../../gui/mainwindow.cpp" line="3560"/>
         <source>User &amp;functions</source>
         <translation>Funkcje &amp;użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3479"/>
+        <location filename="../../gui/mainwindow.cpp" line="3561"/>
         <source>User &amp;variables</source>
         <translation>Zmienne &amp;użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3480"/>
+        <location filename="../../gui/mainwindow.cpp" line="3562"/>
         <source>Show Empty History &amp;Hint</source>
         <translation>Pokaż &amp;wskazówkę pustej historii</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3481"/>
-        <location filename="../../gui/mainwindow.cpp" line="3482"/>
+        <location filename="../../gui/mainwindow.cpp" line="3563"/>
+        <location filename="../../gui/mainwindow.cpp" line="3564"/>
         <source>When history is empty, show a hint in the status area.</source>
         <translation>Gdy historia jest pusta, pokazuj wskazówkę w obszarze stanu.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3483"/>
+        <location filename="../../gui/mainwindow.cpp" line="3565"/>
         <source>Show Live Result &amp;Preview</source>
         <translation>Pokaż podgląd wyniku na ż&amp;ywo</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3484"/>
+        <location filename="../../gui/mainwindow.cpp" line="3566"/>
         <source>Save &amp;Window Position on Exit</source>
         <translation>Zapisuj pozycję &amp;okna przy wyjściu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3486"/>
+        <location filename="../../gui/mainwindow.cpp" line="3568"/>
         <source>Hover Highlighting</source>
         <translation>Podświetlanie po najechaniu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3491"/>
+        <location filename="../../gui/mainwindow.cpp" line="3573"/>
         <source>Group Integer Part Only</source>
         <translation>Grupuj tylko część całkowitą</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3492"/>
+        <location filename="../../gui/mainwindow.cpp" line="3574"/>
         <source>Keep Entered Expression After Evaluate</source>
         <translation>Zachowuj wprowadzone wyrażenie po obliczeniu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3493"/>
+        <location filename="../../gui/mainwindow.cpp" line="3575"/>
         <source>Number Format...</source>
         <translation>Format liczb...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3494"/>
+        <location filename="../../gui/mainwindow.cpp" line="3576"/>
         <source>Notation &amp;&amp; Precision...</source>
         <translation>Notacja i precyzja...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3495"/>
-        <location filename="../../gui/mainwindow.cpp" line="3496"/>
+        <location filename="../../gui/mainwindow.cpp" line="3577"/>
+        <location filename="../../gui/mainwindow.cpp" line="3578"/>
         <source>After pressing Enter, keep the entered expression selected in the editor.</source>
         <translation>Po naciśnięciu Enter zachowuj wprowadzone wyrażenie zaznaczone w edytorze.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3497"/>
+        <location filename="../../gui/mainwindow.cpp" line="3579"/>
         <source>Never</source>
         <translation>Nigdy</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3498"/>
+        <location filename="../../gui/mainwindow.cpp" line="3580"/>
         <source>Always</source>
         <translation>Zawsze</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3499"/>
+        <location filename="../../gui/mainwindow.cpp" line="3581"/>
         <source>Only for Single-Line Expressions</source>
         <translation>Tylko dla wyrażeń jednowierszowych</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3500"/>
+        <location filename="../../gui/mainwindow.cpp" line="3582"/>
         <source>Automatically Copy New Results to Clipboard</source>
         <translation>Automatycznie kopiuj nowe wyniki do schowka</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3501"/>
+        <location filename="../../gui/mainwindow.cpp" line="3583"/>
         <source>Simplify Displayed Expressions</source>
         <translation>Upraszczaj wyświetlane wyrażenia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3502"/>
+        <location filename="../../gui/mainwindow.cpp" line="3584"/>
         <source>History Size &amp;Limit...</source>
         <translation>&amp;Limit rozmiaru historii...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3515"/>
+        <location filename="../../gui/mainwindow.cpp" line="3597"/>
         <source>Nearest, Half &amp;Away (round)</source>
         <translation>Najbliższe, połówki &amp;od zera (round)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3517"/>
+        <location filename="../../gui/mainwindow.cpp" line="3599"/>
         <source>Nearest, Half &amp;Even (roundeven)</source>
         <translation>Najbliższe, połówki do &amp;parzystej (roundeven)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3518"/>
+        <location filename="../../gui/mainwindow.cpp" line="3600"/>
         <source>Toward &amp;Zero (trunc)</source>
         <translation>W kierunku &amp;zera (trunc)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3520"/>
+        <location filename="../../gui/mainwindow.cpp" line="3602"/>
         <source>Toward +&amp;∞ (ceil)</source>
         <translation>W kierunku +&amp;∞ (ceil)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3522"/>
+        <location filename="../../gui/mainwindow.cpp" line="3604"/>
         <source>Toward −&amp;∞ (floor)</source>
         <translation>W kierunku −&amp;∞ (floor)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3525"/>
+        <location filename="../../gui/mainwindow.cpp" line="3607"/>
         <source>&amp;Fixed-Point</source>
         <translation>&amp;Stałoprzecinkowa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3528"/>
+        <location filename="../../gui/mainwindow.cpp" line="3610"/>
         <source>&amp;Rational</source>
         <translation>&amp;Wymierna</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3534"/>
+        <location filename="../../gui/mainwindow.cpp" line="3616"/>
         <source>&amp;Exponential (m·s⁻¹)</source>
         <translation>&amp;Wykładnicza (m·s⁻¹)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3536"/>
+        <location filename="../../gui/mainwindow.cpp" line="3618"/>
         <source>&amp;Fractional (m/s)</source>
         <translation>&amp;Ułamkowa (m/s)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3537"/>
+        <location filename="../../gui/mainwindow.cpp" line="3619"/>
         <source>&amp;Rectangular (a + bi)</source>
         <translation>&amp;Prostokątna (a + bi)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3538"/>
+        <location filename="../../gui/mainwindow.cpp" line="3620"/>
         <source>Exponential (reⁱᶿ)</source>
         <translation>Wykładnicza (reⁱᶿ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3540"/>
+        <location filename="../../gui/mainwindow.cpp" line="3622"/>
         <source>Trigonometric (r(cos θ + i·sin θ))</source>
         <translation>Trygonometryczna (r(cos θ + i·sin θ))</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3542"/>
+        <location filename="../../gui/mainwindow.cpp" line="3624"/>
         <source>Phasor (r∠θ)</source>
         <translation>Fazorowa (r∠θ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3546"/>
+        <location filename="../../gui/mainwindow.cpp" line="3628"/>
         <source>&amp;Theme...</source>
         <translation>&amp;Motyw...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3551"/>
+        <location filename="../../gui/mainwindow.cpp" line="3633"/>
         <source>Check for &amp;Updates</source>
         <translation>Sprawdź &amp;aktualizacje</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3552"/>
+        <location filename="../../gui/mainwindow.cpp" line="3634"/>
         <source>Issue Tracker</source>
         <translation>System zgłoszeń</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3553"/>
+        <location filename="../../gui/mainwindow.cpp" line="3635"/>
         <source>Google Group</source>
         <translation>Grupa Google</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3554"/>
+        <location filename="../../gui/mainwindow.cpp" line="3636"/>
         <source>Facebook &amp;Group</source>
         <translation>Grupa &amp;Facebook</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3555"/>
+        <location filename="../../gui/mainwindow.cpp" line="3637"/>
         <source>&amp;Blogspot</source>
         <translation>&amp;Blogspot</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3556"/>
+        <location filename="../../gui/mainwindow.cpp" line="3638"/>
         <source>Source Code</source>
         <translation>Kod źródłowy</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3864"/>
+        <location filename="../../gui/mainwindow.cpp" line="3948"/>
         <source>&amp;Zoom</source>
         <translation>&amp;Powiększenie</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3866"/>
+        <location filename="../../gui/mainwindow.cpp" line="3950"/>
         <source>&amp;Results</source>
         <translation>&amp;Wyniki</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3867"/>
+        <location filename="../../gui/mainwindow.cpp" line="3951"/>
         <source>&amp;Symbols</source>
         <translation>&amp;Symbole</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3868"/>
+        <location filename="../../gui/mainwindow.cpp" line="3952"/>
         <source>Unit Notation</source>
         <translation>Notacja jednostek</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3869"/>
+        <location filename="../../gui/mainwindow.cpp" line="3953"/>
         <source>Rounding Mode</source>
         <translation>Tryb zaokrąglania</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3870"/>
+        <location filename="../../gui/mainwindow.cpp" line="3954"/>
         <source>&amp;Notation</source>
         <translation>&amp;Notacja</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3873"/>
+        <location filename="../../gui/mainwindow.cpp" line="3957"/>
         <source>&amp;Angle Mode</source>
         <translation>Tryb &amp;kąta</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3874"/>
+        <location filename="../../gui/mainwindow.cpp" line="3958"/>
         <source>Complex &amp;Numbers</source>
         <translation>Liczby &amp;zespolone</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3875"/>
+        <location filename="../../gui/mainwindow.cpp" line="3959"/>
         <source>&amp;Form</source>
         <translation>&amp;Postać</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3876"/>
+        <location filename="../../gui/mainwindow.cpp" line="3960"/>
         <source>&amp;Imaginary Unit</source>
         <translation>Jednostka &amp;urojona</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3877"/>
+        <location filename="../../gui/mainwindow.cpp" line="3961"/>
         <source>&amp;Window</source>
         <translation>&amp;Okno</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3878"/>
+        <location filename="../../gui/mainwindow.cpp" line="3962"/>
         <source>&amp;Editing</source>
         <translation>&amp;Edycja</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3879"/>
+        <location filename="../../gui/mainwindow.cpp" line="3963"/>
         <source>A&amp;utocomplete</source>
         <translation>Auto&amp;uzupełnianie</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3880"/>
+        <location filename="../../gui/mainwindow.cpp" line="3964"/>
         <source>Up/Down Arrow History</source>
         <translation>Historia strzałkami góra/dół</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3881"/>
+        <location filename="../../gui/mainwindow.cpp" line="3965"/>
         <source>&amp;Appearance</source>
         <translation>&amp;Wygląd</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3888"/>
+        <location filename="../../gui/mainwindow.cpp" line="3972"/>
         <source>&amp;Disabled</source>
         <translation>&amp;Wyłączona</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3890"/>
+        <location filename="../../gui/mainwindow.cpp" line="3974"/>
         <source>&amp;Disable</source>
         <translation>&amp;Wyłącz</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4054"/>
+        <location filename="../../gui/mainwindow.cpp" line="4138"/>
         <source>Close preview</source>
         <translation>Zamknij podgląd</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4197"/>
-        <source>New Session</source>
-        <translation>Nowa sesja</translation>
+        <location filename="../../gui/mainwindow.cpp" line="9313"/>
+        <location filename="../../gui/mainwindow.cpp" line="9354"/>
+        <source>JSON file (*.json);;Any file (*.*)</source>
+        <translation>Plik JSON (*.json);;Dowolny plik (*.*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4198"/>
-        <location filename="../../gui/mainwindow.cpp" line="7592"/>
+        <location filename="../../gui/mainwindow.cpp" line="9317"/>
+        <source>Export session as JSON</source>
+        <translation>Eksportuj sesję jako JSON</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9382"/>
+        <source>The selected file is not valid JSON: %1</source>
+        <translation>Wybrany plik nie jest prawidłowym JSON-em: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9389"/>
+        <source>The selected file is not a SpeedCrunch session JSON file.</source>
+        <translation>Wybrany plik nie jest plikiem JSON sesji SpeedCrunch.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9397"/>
+        <source>This file uses an obsolete SpeedCrunch session format and cannot be imported.</source>
+        <translation>Ten plik używa przestarzałego formatu sesji SpeedCrunch i nie może zostać zaimportowany.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9405"/>
+        <source>The selected JSON file is missing the required $schema field.</source>
+        <translation>W wybranym pliku JSON brakuje wymaganego pola $schema.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9411"/>
+        <source>The selected JSON file uses an unsupported JSON schema: %1</source>
+        <translation>Wybrany plik JSON używa nieobsługiwanego schematu JSON: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9419"/>
+        <source>The selected JSON file is missing the SpeedCrunch session schema identifier ($id).</source>
+        <translation>W wybranym pliku JSON brakuje identyfikatora schematu sesji SpeedCrunch ($id).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9425"/>
+        <source>The selected JSON file uses an unsupported SpeedCrunch session format: %1</source>
+        <translation>Wybrany plik JSON używa nieobsługiwanego formatu sesji SpeedCrunch: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9433"/>
+        <source>The selected JSON file is missing the required session name.</source>
+        <translation>W wybranym pliku JSON brakuje wymaganej nazwy sesji.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9439"/>
+        <source>The selected JSON file has an empty session name.</source>
+        <translation>Wybrany plik JSON ma pustą nazwę sesji.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9447"/>
+        <source>The selected JSON file has invalid or incomplete SpeedCrunch session data.</source>
+        <translation>Wybrany plik JSON zawiera nieprawidłowe lub niekompletne dane sesji SpeedCrunch.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9458"/>
+        <location filename="../../gui/mainwindow.cpp" line="9466"/>
+        <source>Open Sessions Folder</source>
+        <translation>Otwórz folder sesji</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9459"/>
+        <source>Could not create the sessions folder: %1</source>
+        <translation>Nie można utworzyć folderu sesji: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9467"/>
+        <source>Could not open the sessions folder: %1</source>
+        <translation>Nie można otworzyć folderu sesji: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="4282"/>
+        <location filename="../../gui/mainwindow.cpp" line="8135"/>
         <source>Open Session</source>
         <translation>Otwórz sesję</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4200"/>
+        <location filename="../../gui/mainwindow.cpp" line="4284"/>
         <source>Split Left</source>
         <translation>Podziel w lewo</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4201"/>
+        <location filename="../../gui/mainwindow.cpp" line="4285"/>
         <source>Split Right</source>
         <translation>Podziel w prawo</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4202"/>
+        <location filename="../../gui/mainwindow.cpp" line="4286"/>
         <source>Split Up</source>
         <translation>Podziel w górę</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4203"/>
+        <location filename="../../gui/mainwindow.cpp" line="4287"/>
         <source>Split Down</source>
         <translation>Podziel w dół</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4206"/>
-        <source>Export Session</source>
-        <translation>Eksportuj sesję</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="4208"/>
-        <location filename="../../gui/mainwindow.cpp" line="7673"/>
-        <location filename="../../gui/mainwindow.cpp" line="7684"/>
-        <location filename="../../gui/mainwindow.cpp" line="7697"/>
-        <location filename="../../gui/mainwindow.cpp" line="7707"/>
+        <location filename="../../gui/mainwindow.cpp" line="4295"/>
+        <location filename="../../gui/mainwindow.cpp" line="8216"/>
+        <location filename="../../gui/mainwindow.cpp" line="8227"/>
+        <location filename="../../gui/mainwindow.cpp" line="8240"/>
+        <location filename="../../gui/mainwindow.cpp" line="8250"/>
         <source>Duplicate Session</source>
         <translation>Duplikuj sesję</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4209"/>
-        <location filename="../../gui/mainwindow.cpp" line="7736"/>
-        <location filename="../../gui/mainwindow.cpp" line="7750"/>
-        <location filename="../../gui/mainwindow.cpp" line="7761"/>
+        <location filename="../../gui/mainwindow.cpp" line="4296"/>
+        <location filename="../../gui/mainwindow.cpp" line="8279"/>
+        <location filename="../../gui/mainwindow.cpp" line="8293"/>
+        <location filename="../../gui/mainwindow.cpp" line="8304"/>
         <source>Rename Session</source>
         <translation>Zmień nazwę sesji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4210"/>
+        <location filename="../../gui/mainwindow.cpp" line="4298"/>
         <source>Clear Session</source>
         <translation>Wyczyść sesję</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4211"/>
-        <location filename="../../gui/mainwindow.cpp" line="8031"/>
+        <location filename="../../gui/mainwindow.cpp" line="4299"/>
+        <location filename="../../gui/mainwindow.cpp" line="8578"/>
         <source>Delete Session</source>
         <translation>Usuń sesję</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4213"/>
+        <location filename="../../gui/mainwindow.cpp" line="4302"/>
         <source>Close Pane</source>
         <translation>Zamknij panel</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6281"/>
+        <location filename="../../gui/mainwindow.cpp" line="6663"/>
         <source>User Variables</source>
         <translation>Zmienne użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6355"/>
+        <location filename="../../gui/mainwindow.cpp" line="6737"/>
         <source>User Units</source>
         <translation>Jednostki użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7497"/>
-        <location filename="../../gui/mainwindow.cpp" line="7528"/>
+        <location filename="../../gui/mainwindow.cpp" line="7981"/>
+        <location filename="../../gui/mainwindow.cpp" line="8012"/>
         <source>Clear History</source>
         <translation>Wyczyść historię</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7498"/>
-        <location filename="../../gui/mainwindow.cpp" line="7529"/>
+        <location filename="../../gui/mainwindow.cpp" line="7982"/>
+        <location filename="../../gui/mainwindow.cpp" line="8013"/>
         <source>Are you sure you want to clear the calculation history?</source>
         <translation>Czy na pewno chcesz wyczyścić historię obliczeń?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7674"/>
-        <location filename="../../gui/mainwindow.cpp" line="7737"/>
+        <location filename="../../gui/mainwindow.cpp" line="8217"/>
+        <location filename="../../gui/mainwindow.cpp" line="8280"/>
         <source>Session name:</source>
         <translation>Nazwa sesji:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7685"/>
-        <location filename="../../gui/mainwindow.cpp" line="7751"/>
+        <location filename="../../gui/mainwindow.cpp" line="8228"/>
+        <location filename="../../gui/mainwindow.cpp" line="8294"/>
         <source>A session named %1 already exists.</source>
         <translation>Sesja o nazwie %1 już istnieje.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7698"/>
+        <location filename="../../gui/mainwindow.cpp" line="8241"/>
         <source>Could not create session file %1.</source>
         <translation>Nie można utworzyć pliku sesji %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7708"/>
+        <location filename="../../gui/mainwindow.cpp" line="8251"/>
         <source>Could not write session file %1.</source>
         <translation>Nie można zapisać pliku sesji %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7762"/>
+        <location filename="../../gui/mainwindow.cpp" line="8305"/>
         <source>Could not rename session file %1.</source>
         <translation>Nie można zmienić nazwy pliku sesji %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8032"/>
+        <location filename="../../gui/mainwindow.cpp" line="8579"/>
         <source>Are you sure you want to delete this session?</source>
         <translation>Czy na pewno chcesz usunąć tę sesję?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8207"/>
+        <location filename="../../gui/mainwindow.cpp" line="8754"/>
         <source>Custom Precision</source>
         <translation>Własna precyzja</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8208"/>
+        <location filename="../../gui/mainwindow.cpp" line="8755"/>
         <source>Fractional digits:</source>
         <translation>Cyfry ułamkowe:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8225"/>
+        <location filename="../../gui/mainwindow.cpp" line="8772"/>
         <source>Theme</source>
         <translation>Motyw</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8234"/>
+        <location filename="../../gui/mainwindow.cpp" line="8781"/>
         <source>Light Themes</source>
         <translation>Jasne motywy</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8241"/>
+        <location filename="../../gui/mainwindow.cpp" line="8788"/>
         <source>Dark Themes</source>
         <translation>Ciemne motywy</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8249"/>
+        <location filename="../../gui/mainwindow.cpp" line="8796"/>
         <source>Preview</source>
         <translation>Podgląd</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8311"/>
+        <location filename="../../gui/mainwindow.cpp" line="8858"/>
         <source>Colors</source>
         <translation>Kolory</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8487"/>
+        <location filename="../../gui/mainwindow.cpp" line="9050"/>
         <source>Select color for %1</source>
         <translation>Wybierz kolor dla %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8532"/>
+        <location filename="../../gui/mainwindow.cpp" line="9104"/>
         <source>Import...</source>
         <translation>Importuj...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8533"/>
+        <location filename="../../gui/mainwindow.cpp" line="9105"/>
         <source>Export...</source>
         <translation>Eksportuj...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8565"/>
+        <location filename="../../gui/mainwindow.cpp" line="9135"/>
         <source>Import Theme</source>
         <translation>Importuj motyw</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8566"/>
-        <location filename="../../gui/mainwindow.cpp" line="8655"/>
+        <location filename="../../gui/mainwindow.cpp" line="9136"/>
+        <location filename="../../gui/mainwindow.cpp" line="9225"/>
         <source>Theme file (*.json);;All files (*)</source>
         <translation>Plik motywu (*.json);;Wszystkie pliki (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8577"/>
+        <location filename="../../gui/mainwindow.cpp" line="9147"/>
         <source>Invalid theme file.</source>
         <translation>Nieprawidłowy plik motywu.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8586"/>
+        <location filename="../../gui/mainwindow.cpp" line="9156"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>Nie można zaimportować motywu &quot;%1&quot;, ponieważ koliduje z motywem wbudowanym.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8591"/>
+        <location filename="../../gui/mainwindow.cpp" line="9161"/>
         <source>Can&apos;t find a writable theme folder.</source>
         <translation>Nie można znaleźć zapisywalnego folderu motywów.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8598"/>
+        <location filename="../../gui/mainwindow.cpp" line="9168"/>
         <source>Overwrite Theme</source>
         <translation>Zastąp motyw</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8599"/>
+        <location filename="../../gui/mainwindow.cpp" line="9169"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
         <translation>Motyw użytkownika o nazwie &quot;%1&quot; już istnieje. Czy chcesz go zastąpić?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8607"/>
+        <location filename="../../gui/mainwindow.cpp" line="9177"/>
         <source>Can&apos;t overwrite theme file %1</source>
         <translation>Nie można zastąpić pliku motywu %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8613"/>
+        <location filename="../../gui/mainwindow.cpp" line="9183"/>
         <source>Can&apos;t copy theme file to %1</source>
         <translation>Nie można skopiować pliku motywu do %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8654"/>
+        <location filename="../../gui/mainwindow.cpp" line="9224"/>
         <source>Export Theme</source>
         <translation>Eksportuj motyw</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8665"/>
+        <location filename="../../gui/mainwindow.cpp" line="9235"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>Nie można wyeksportować motywu jako &quot;%1&quot;, ponieważ koliduje z motywem wbudowanym.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8670"/>
-        <location filename="../../gui/mainwindow.cpp" line="8847"/>
-        <location filename="../../gui/mainwindow.cpp" line="9538"/>
-        <location filename="../../gui/mainwindow.cpp" line="9558"/>
+        <location filename="../../gui/mainwindow.cpp" line="9240"/>
+        <location filename="../../gui/mainwindow.cpp" line="9339"/>
+        <location filename="../../gui/mainwindow.cpp" line="10065"/>
+        <location filename="../../gui/mainwindow.cpp" line="10085"/>
         <source>Can&apos;t write to file %1</source>
         <translation>Nie można zapisać do pliku %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8771"/>
-        <source>Can&apos;t read the selected session file.</source>
-        <translation>Nie można odczytać wybranego pliku sesji.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8949"/>
+        <location filename="../../gui/mainwindow.cpp" line="9476"/>
         <source>Global User Variable</source>
         <translation>Globalna zmienna użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8950"/>
+        <location filename="../../gui/mainwindow.cpp" line="9477"/>
         <source>Global User Function</source>
         <translation>Globalna funkcja użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8951"/>
+        <location filename="../../gui/mainwindow.cpp" line="9478"/>
         <source>Global User Unit</source>
         <translation>Globalna jednostka użytkownika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9321"/>
+        <location filename="../../gui/mainwindow.cpp" line="9848"/>
         <source>History Size Limit</source>
         <translation>Limit rozmiaru historii</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9322"/>
+        <location filename="../../gui/mainwindow.cpp" line="9849"/>
         <source>Maximum number of history entries for this session (0 = unlimited):</source>
         <translation>Maksymalna liczba wpisów historii dla tej sesji (0 = bez limitu):</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9551"/>
+        <location filename="../../gui/mainwindow.cpp" line="10078"/>
         <source>Text file (*.txt);;Any file (*.*)</source>
         <translation>Plik tekstowy (*.txt);;Dowolny plik (*.*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9588"/>
+        <location filename="../../gui/mainwindow.cpp" line="10115"/>
         <source>Display font</source>
         <translation>Czcionka ekranu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11352"/>
-        <location filename="../../gui/mainwindow.cpp" line="11525"/>
+        <location filename="../../gui/mainwindow.cpp" line="11919"/>
+        <location filename="../../gui/mainwindow.cpp" line="12092"/>
         <source>Could not recalculate from calculation %1: %2</source>
         <translation>Nie można ponownie obliczyć od obliczenia %1: %2</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11441"/>
+        <location filename="../../gui/mainwindow.cpp" line="12008"/>
         <source>History Size Limit Reached</source>
         <translation>Osiągnięto limit rozmiaru historii</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11442"/>
+        <location filename="../../gui/mainwindow.cpp" line="12009"/>
         <source>This calculation fills the last available history slot. Future calculations will remove the oldest calculation from history. You can increase the limit from Session &gt; History Size Limit.</source>
         <translation>To obliczenie zajmuje ostatnie dostępne miejsce w historii. Kolejne obliczenia będą usuwać najstarsze obliczenie z historii. Limit można zwiększyć w menu Sesja &gt; Limit rozmiaru historii.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11465"/>
+        <location filename="../../gui/mainwindow.cpp" line="12032"/>
         <source>Editing calculation. Press Esc twice to cancel.</source>
         <translation>Edycja obliczenia. Naciśnij Esc dwa razy, aby anulować.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11506"/>
+        <location filename="../../gui/mainwindow.cpp" line="12073"/>
         <source>Calculation Settings</source>
         <translation>Ustawienia obliczenia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11582"/>
+        <location filename="../../gui/mainwindow.cpp" line="12149"/>
         <source>Invalid recalculation start index</source>
         <translation>Nieprawidłowy indeks początkowy ponownego obliczania</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12129"/>
+        <location filename="../../gui/mainwindow.cpp" line="12696"/>
         <source>System Default</source>
         <translation>Domyślnie</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12133"/>
+        <location filename="../../gui/mainwindow.cpp" line="12700"/>
         <source>Language</source>
         <translation>Język</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12133"/>
+        <location filename="../../gui/mainwindow.cpp" line="12700"/>
         <source>Select the language:</source>
         <translation>Wybierz język:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12163"/>
+        <location filename="../../gui/mainwindow.cpp" line="12730"/>
         <source>Custom</source>
         <translation>Własne</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12175"/>
+        <location filename="../../gui/mainwindow.cpp" line="12742"/>
         <source>Decimal places:</source>
         <translation>Miejsca dziesiętne:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3523"/>
-        <location filename="../../gui/mainwindow.cpp" line="3524"/>
+        <location filename="../../gui/mainwindow.cpp" line="3605"/>
+        <location filename="../../gui/mainwindow.cpp" line="3606"/>
         <source>&amp;Automatic</source>
         <translation>&amp;Automatyczne</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3872"/>
+        <location filename="../../gui/mainwindow.cpp" line="3956"/>
         <source>&amp;Precision</source>
         <translation>&amp;Dokładność</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3430"/>
+        <location filename="../../gui/mainwindow.cpp" line="3510"/>
         <source>Plain &amp;text</source>
         <translation>Zwykły &amp;tekst</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3457"/>
+        <location filename="../../gui/mainwindow.cpp" line="3539"/>
         <source>Formula &amp;Book</source>
         <translation>Zbiór &amp;formuł</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3860"/>
+        <location filename="../../gui/mainwindow.cpp" line="3944"/>
         <source>&amp;Export</source>
         <translation>&amp;Eksportuj</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8737"/>
-        <location filename="../../gui/mainwindow.cpp" line="8821"/>
-        <source>SpeedCrunch Sessions (*.json);;All Files (*)</source>
-        <translation>Sesje SpeedCrunch (*.json);;Wszystkie pliki (*)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8749"/>
-        <location filename="../../gui/mainwindow.cpp" line="8880"/>
-        <source>Merge?</source>
-        <translation>Połączyć?</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9530"/>
+        <location filename="../../gui/mainwindow.cpp" line="10057"/>
         <source>Export session as HTML</source>
         <translation>Eksportuj sesję jako HTML</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9531"/>
+        <location filename="../../gui/mainwindow.cpp" line="10058"/>
         <source>HTML file (*.html)</source>
         <translation>Plik HTML (*.html)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9550"/>
+        <location filename="../../gui/mainwindow.cpp" line="10077"/>
         <source>Export session as plain text</source>
         <translation>Eksportuj sesję jako zwykły tekst</translation>
     </message>
@@ -5946,144 +5984,149 @@ Jeżeli nie, zmienne i wyświetlacz zostaną wyczyszczone.</translation>
 <context>
     <name>ResultDisplay</name>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="563"/>
-        <location filename="../../gui/resultdisplay.cpp" line="569"/>
-        <location filename="../../gui/resultdisplay.cpp" line="573"/>
+        <location filename="../../gui/resultdisplay.cpp" line="514"/>
+        <location filename="../../gui/resultdisplay.cpp" line="520"/>
+        <location filename="../../gui/resultdisplay.cpp" line="524"/>
         <source>Scroll to bottom</source>
         <translation>Przewiń na dół</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1408"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1305"/>
         <source>Copy Expression</source>
         <translation>Kopiuj wyrażenie</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1415"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1312"/>
         <source>Copy Result</source>
         <translation>Kopiuj wynik</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1431"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1328"/>
         <source>Edit Expression</source>
         <translation>Edytuj wyrażenie</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1435"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1332"/>
         <source>Change Settings</source>
         <translation>Zmień ustawienia</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1439"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1336"/>
         <source>Remove Calculation</source>
         <translation>Usuń obliczenie</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1444"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1341"/>
         <source>Remove All Calculations Above</source>
         <translation>Usuń wszystkie obliczenia powyżej</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1448"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1345"/>
         <source>Remove All Calculations Below</source>
         <translation>Usuń wszystkie obliczenia poniżej</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1455"/>
-        <source>New Session</source>
-        <translation>Nowa sesja</translation>
-    </message>
-    <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1459"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1356"/>
         <source>Open Session</source>
         <translation>Otwórz sesję</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1464"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1361"/>
         <source>Split Left</source>
         <translation>Podziel w lewo</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1468"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1365"/>
         <source>Split Right</source>
         <translation>Podziel w prawo</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1472"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1369"/>
         <source>Split Up</source>
         <translation>Podziel w górę</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1476"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1373"/>
         <source>Split Down</source>
         <translation>Podziel w dół</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1481"/>
-        <source>Import Session</source>
-        <translation>Importuj sesję</translation>
+        <location filename="../../gui/resultdisplay.cpp" line="1352"/>
+        <source>New Tab</source>
+        <translation>Nowa karta</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1482"/>
-        <source>Export Session</source>
-        <translation>Eksportuj sesję</translation>
+        <location filename="../../gui/resultdisplay.cpp" line="1378"/>
+        <source>&amp;Import...</source>
+        <translation>&amp;Importuj...</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1484"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1382"/>
+        <source>&amp;Export</source>
+        <translation>&amp;Eksportuj</translation>
+    </message>
+    <message>
+        <location filename="../../gui/resultdisplay.cpp" line="1387"/>
+        <source>Plain &amp;text</source>
+        <translation>Zwykły &amp;tekst</translation>
+    </message>
+    <message>
+        <location filename="../../gui/resultdisplay.cpp" line="1396"/>
         <source>Duplicate Session</source>
         <translation>Duplikuj sesję</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1488"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1400"/>
         <source>Rename Session</source>
         <translation>Zmień nazwę sesji</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1492"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1405"/>
         <source>Clear Session</source>
         <translation>Wyczyść sesję</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1496"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1409"/>
         <source>Delete Session</source>
         <translation>Usuń sesję</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1500"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1414"/>
         <source>Close Session</source>
         <translation>Zamknij sesję</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1504"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1418"/>
         <source>Close Pane</source>
         <translation>Zamknij panel</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1512"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1426"/>
         <source>Main Menu</source>
         <translation>Menu główne</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1636"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1550"/>
         <source>Cancel editing</source>
         <translation>Anuluj edycję</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1683"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1597"/>
         <source>Copy result</source>
         <translation>Kopiuj wynik</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1684"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1598"/>
         <source>Edit expression</source>
         <translation>Edytuj wyrażenie</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1685"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1599"/>
         <source>Change settings</source>
         <translation>Zmień ustawienia</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1686"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1600"/>
         <source>Remove calculation</source>
         <translation>Usuń obliczenie</translation>
     </message>

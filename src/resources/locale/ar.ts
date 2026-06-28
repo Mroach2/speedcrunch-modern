@@ -58,22 +58,22 @@
 <context>
     <name>BitFieldWidget</name>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="745"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="643"/>
         <source>Reset bits to zero</source>
         <translation>إعادة تعيين البتات إلى الصفر</translation>
     </message>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="747"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="645"/>
         <source>Invert bits</source>
         <translation>عكس البتات</translation>
     </message>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="749"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="647"/>
         <source>Shift bits left</source>
         <translation>إزاحة البتات إلى اليسار</translation>
     </message>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="751"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="649"/>
         <source>Shift bits right</source>
         <translation>إزاحة البتات إلى اليمين</translation>
     </message>
@@ -406,7 +406,7 @@
 <context>
     <name>BookDock</name>
     <message>
-        <location filename="../../gui/bookdock.cpp" line="149"/>
+        <location filename="../../gui/bookdock.cpp" line="150"/>
         <source>Formula Book</source>
         <translation>كتاب المعادلات</translation>
     </message>
@@ -414,9 +414,9 @@
 <context>
     <name>ConstantCompletion</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="4628"/>
-        <location filename="../../gui/editor.cpp" line="4638"/>
-        <location filename="../../gui/editor.cpp" line="4758"/>
+        <location filename="../../gui/editor.cpp" line="4521"/>
+        <location filename="../../gui/editor.cpp" line="4531"/>
+        <location filename="../../gui/editor.cpp" line="4645"/>
         <source>All</source>
         <translation>الكل</translation>
     </message>
@@ -2547,47 +2547,47 @@
 <context>
     <name>ConstantsWidget</name>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="293"/>
+        <location filename="../../gui/constantswidget.cpp" line="245"/>
         <source>Domain</source>
         <translation>المجال</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="294"/>
+        <location filename="../../gui/constantswidget.cpp" line="246"/>
         <source>Subdomain</source>
         <translation>المجال الفرعي</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="296"/>
+        <location filename="../../gui/constantswidget.cpp" line="248"/>
         <source>No match found</source>
         <translation>لا تطابق موجود</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="299"/>
+        <location filename="../../gui/constantswidget.cpp" line="251"/>
         <source>Name</source>
         <translation>الاسم</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="300"/>
+        <location filename="../../gui/constantswidget.cpp" line="252"/>
         <source>Value</source>
         <translation>القيمة</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="301"/>
+        <location filename="../../gui/constantswidget.cpp" line="253"/>
         <source>Unit</source>
         <translation>الوحدة</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="295"/>
+        <location filename="../../gui/constantswidget.cpp" line="247"/>
         <source>Search</source>
         <translation>بحث</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="346"/>
-        <location filename="../../gui/constantswidget.cpp" line="348"/>
-        <location filename="../../gui/constantswidget.cpp" line="427"/>
-        <location filename="../../gui/constantswidget.cpp" line="467"/>
-        <location filename="../../gui/constantswidget.cpp" line="468"/>
-        <location filename="../../gui/constantswidget.cpp" line="477"/>
+        <location filename="../../gui/constantswidget.cpp" line="298"/>
+        <location filename="../../gui/constantswidget.cpp" line="300"/>
+        <location filename="../../gui/constantswidget.cpp" line="379"/>
+        <location filename="../../gui/constantswidget.cpp" line="419"/>
+        <location filename="../../gui/constantswidget.cpp" line="420"/>
+        <location filename="../../gui/constantswidget.cpp" line="429"/>
         <source>All</source>
         <translation>الكل</translation>
     </message>
@@ -2663,45 +2663,45 @@
 <context>
     <name>Editor</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="1903"/>
+        <location filename="../../gui/editor.cpp" line="1795"/>
         <source>Unit</source>
         <translation>الوحدة</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1907"/>
+        <location filename="../../gui/editor.cpp" line="1799"/>
         <source>User unit</source>
         <translation>وحدة المستخدم</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1962"/>
+        <location filename="../../gui/editor.cpp" line="1854"/>
         <source>User function</source>
         <translation>دالة مستخدم</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2089"/>
+        <location filename="../../gui/editor.cpp" line="1981"/>
         <source>Argument</source>
         <translation>وسيط</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2265"/>
-        <location filename="../../gui/editor.cpp" line="2299"/>
+        <location filename="../../gui/editor.cpp" line="2157"/>
+        <location filename="../../gui/editor.cpp" line="2191"/>
         <source>Current result:&lt;br/&gt;%1</source>
         <translation>النتيجة الحالية:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2371"/>
-        <location filename="../../gui/editor.cpp" line="2399"/>
+        <location filename="../../gui/editor.cpp" line="2263"/>
+        <location filename="../../gui/editor.cpp" line="2291"/>
         <source>Selection result:&lt;br/&gt;%1</source>
         <translation>نتيجة التحديد:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2365"/>
-        <location filename="../../gui/editor.cpp" line="2393"/>
+        <location filename="../../gui/editor.cpp" line="2257"/>
+        <location filename="../../gui/editor.cpp" line="2285"/>
         <source>Selection result: n/a</source>
         <translation>نتيجة التحديد: غير متوفر</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2406"/>
+        <location filename="../../gui/editor.cpp" line="2298"/>
         <source>Selection result: %1</source>
         <translation>نتيجة التحديد: %1</translation>
     </message>
@@ -4434,152 +4434,152 @@
 <context>
     <name>Keypad</name>
     <message>
-        <location filename="../../gui/keypad.cpp" line="882"/>
+        <location filename="../../gui/keypad.cpp" line="910"/>
         <source>Inverse cosine</source>
         <translation>معكوس الجتا</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="883"/>
+        <location filename="../../gui/keypad.cpp" line="911"/>
         <source>The last result</source>
         <translation>آخر نتيجة</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="884"/>
+        <location filename="../../gui/keypad.cpp" line="912"/>
         <source>Inverse sine</source>
         <translation>معكوس الجا</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="885"/>
+        <location filename="../../gui/keypad.cpp" line="913"/>
         <source>Inverse tangent</source>
         <translation>معكوس الظل</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="886"/>
+        <location filename="../../gui/keypad.cpp" line="914"/>
         <source>Evaluate expression</source>
         <translation>حساب التعبير</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="887"/>
+        <location filename="../../gui/keypad.cpp" line="915"/>
         <source>Division</source>
         <translation>القسمة</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="888"/>
+        <location filename="../../gui/keypad.cpp" line="916"/>
         <source>Multiplication</source>
         <translation>الضرب</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="889"/>
+        <location filename="../../gui/keypad.cpp" line="917"/>
         <source>Subtraction</source>
         <translation>الطرح</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="890"/>
+        <location filename="../../gui/keypad.cpp" line="918"/>
         <source>Addition</source>
         <translation>الجمع</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="891"/>
+        <location filename="../../gui/keypad.cpp" line="919"/>
         <source>Clear expression</source>
         <translation>مسح العبارة</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="892"/>
+        <location filename="../../gui/keypad.cpp" line="920"/>
         <source>Cosine</source>
         <translation>جتا</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="893"/>
+        <location filename="../../gui/keypad.cpp" line="921"/>
         <source>Backspace</source>
         <translation>مسافة للخلف</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="894"/>
+        <location filename="../../gui/keypad.cpp" line="922"/>
         <source>Scientific notation</source>
         <translation>ترميز علمي</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="895"/>
+        <location filename="../../gui/keypad.cpp" line="923"/>
         <source>Exponential</source>
         <translation>أسي</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="896"/>
+        <location filename="../../gui/keypad.cpp" line="924"/>
         <source>Factorial</source>
         <translation>المضروب</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="897"/>
+        <location filename="../../gui/keypad.cpp" line="925"/>
         <source>Natural logarithm</source>
         <translation>لوغاريتم طبيعي</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="898"/>
+        <location filename="../../gui/keypad.cpp" line="926"/>
         <source>Left parenthesis</source>
         <translation>قوس أيسر</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="899"/>
+        <location filename="../../gui/keypad.cpp" line="927"/>
         <source>Cube root</source>
         <translation>الجذر التكعيبي</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="900"/>
+        <location filename="../../gui/keypad.cpp" line="928"/>
         <source>Common logarithm</source>
         <translation>اللوغاريتم العشري</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="901"/>
+        <location filename="../../gui/keypad.cpp" line="929"/>
         <source>Modulo</source>
         <translation>باقي القسمة</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="902"/>
+        <location filename="../../gui/keypad.cpp" line="930"/>
         <source>Contextual percentage</source>
         <translation>النسبة المئوية السياقية</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="903"/>
+        <location filename="../../gui/keypad.cpp" line="931"/>
         <source>Power</source>
         <translation>الأس</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="904"/>
+        <location filename="../../gui/keypad.cpp" line="932"/>
         <source>Right parenthesis</source>
         <translation>قوس أيمن</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="905"/>
+        <location filename="../../gui/keypad.cpp" line="933"/>
         <source>Sine</source>
         <translation>جا</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="906"/>
+        <location filename="../../gui/keypad.cpp" line="934"/>
         <source>Square root</source>
         <translation>الجذر التربيعي</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="907"/>
+        <location filename="../../gui/keypad.cpp" line="935"/>
         <source>Tangent</source>
         <translation>الظل</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="908"/>
+        <location filename="../../gui/keypad.cpp" line="936"/>
         <source>Pi</source>
         <translation>باي</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="909"/>
+        <location filename="../../gui/keypad.cpp" line="937"/>
         <source>Decimal separator</source>
         <translation>فاصل عشري</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="910"/>
+        <location filename="../../gui/keypad.cpp" line="938"/>
         <source>Assign variable x</source>
         <translation>تعيين المتغير x</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="911"/>
+        <location filename="../../gui/keypad.cpp" line="939"/>
         <source>The variable x</source>
         <translation>x المتغير</translation>
     </message>
@@ -4587,1218 +4587,1257 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3397"/>
+        <location filename="../../gui/mainwindow.cpp" line="3476"/>
         <source>Radian</source>
         <translation>راديان</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3401"/>
+        <location filename="../../gui/mainwindow.cpp" line="3480"/>
         <source>Degree</source>
         <translation>درجة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3398"/>
+        <location filename="../../gui/mainwindow.cpp" line="3477"/>
         <source>Gradian</source>
         <translation>غراديان</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3407"/>
+        <location filename="../../gui/mainwindow.cpp" line="3486"/>
         <source>Binary</source>
         <translation>عدد ثنائي القيمة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3408"/>
+        <location filename="../../gui/mainwindow.cpp" line="3487"/>
         <source>Octal</source>
         <translation>الثماني</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3409"/>
+        <location filename="../../gui/mainwindow.cpp" line="3488"/>
         <source>Hexadecimal</source>
         <translation>السادس عشري</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3410"/>
+        <location filename="../../gui/mainwindow.cpp" line="3489"/>
         <source>Sexagesimal</source>
         <translation>ستيني</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3412"/>
+        <location filename="../../gui/mainwindow.cpp" line="3491"/>
         <source>Engineering decimal</source>
         <translation>الهندسة العشرية</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3413"/>
+        <location filename="../../gui/mainwindow.cpp" line="3492"/>
         <source>Scientific decimal</source>
         <translation>العدد العشري العلمي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3431"/>
+        <location filename="../../gui/mainwindow.cpp" line="3511"/>
         <source>&amp;Import...</source>
         <translation>استيراد...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3433"/>
-        <source>&amp;Load...</source>
-        <translation>تحميل...</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="3434"/>
+        <location filename="../../gui/mainwindow.cpp" line="3517"/>
         <source>&amp;Quit</source>
         <translation>إنهاء</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3435"/>
-        <source>&amp;Save...</source>
-        <translation>حفظ...</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="3437"/>
+        <location filename="../../gui/mainwindow.cpp" line="3519"/>
         <source>Clear E&amp;xpression</source>
         <translation>مسح التعبير</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3438"/>
+        <location filename="../../gui/mainwindow.cpp" line="3520"/>
         <source>Clear &amp;History</source>
         <translation>مسح السجل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3439"/>
+        <location filename="../../gui/mainwindow.cpp" line="3521"/>
         <source>Copy Last &amp;Result</source>
         <translation>نسخ آخر نتيجة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3440"/>
+        <location filename="../../gui/mainwindow.cpp" line="3522"/>
         <source>&amp;Copy</source>
         <translation>نسخ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3441"/>
+        <location filename="../../gui/mainwindow.cpp" line="3523"/>
         <source>&amp;Paste</source>
         <translation>لصق</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3442"/>
+        <location filename="../../gui/mainwindow.cpp" line="3524"/>
         <source>&amp;Select Expression</source>
         <translation>تحديد التعبير</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3443"/>
+        <location filename="../../gui/mainwindow.cpp" line="3525"/>
         <source>&amp;Wrap Selection in Parentheses</source>
         <translation>إحاطة التحديد بأقواس</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3445"/>
+        <location filename="../../gui/mainwindow.cpp" line="3527"/>
         <source>&amp;Constants</source>
         <translation>الثوابت</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3446"/>
+        <location filename="../../gui/mainwindow.cpp" line="3528"/>
         <source>F&amp;ull Screen Mode</source>
         <translation>وضع ملء الشاشة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3447"/>
+        <location filename="../../gui/mainwindow.cpp" line="3529"/>
         <source>&amp;Functions</source>
         <translation>الدوال</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3448"/>
+        <location filename="../../gui/mainwindow.cpp" line="3530"/>
         <source>&amp;History</source>
         <translation>السجل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3458"/>
+        <location filename="../../gui/mainwindow.cpp" line="3540"/>
         <source>&amp;Status Bar</source>
         <translation>شريط الحالة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3461"/>
-        <location filename="../../gui/mainwindow.cpp" line="6089"/>
+        <location filename="../../gui/mainwindow.cpp" line="3543"/>
+        <location filename="../../gui/mainwindow.cpp" line="6471"/>
         <source>Bitfield</source>
         <translation>حقل البتات</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3462"/>
+        <location filename="../../gui/mainwindow.cpp" line="3544"/>
         <source>Use&amp;r Functions</source>
         <translation>دوال المستخدم</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3465"/>
+        <location filename="../../gui/mainwindow.cpp" line="3547"/>
         <source>&amp;Degree</source>
         <translation>درجة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3466"/>
+        <location filename="../../gui/mainwindow.cpp" line="3548"/>
         <source>&amp;Radian</source>
         <translation>راديان</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3467"/>
+        <location filename="../../gui/mainwindow.cpp" line="3549"/>
         <source>&amp;Gradian</source>
         <translation>غراديان</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3474"/>
+        <location filename="../../gui/mainwindow.cpp" line="3556"/>
         <source>Automatic &amp;Completion</source>
         <translation>الإكمال الأتوماتيكي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3485"/>
+        <location filename="../../gui/mainwindow.cpp" line="3567"/>
         <source>Syntax &amp;Highlighting</source>
         <translation>تمييز الصياغة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3503"/>
+        <location filename="../../gui/mainwindow.cpp" line="3585"/>
         <source>&amp;Comma</source>
         <translation>فاصلة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3504"/>
+        <location filename="../../gui/mainwindow.cpp" line="3586"/>
         <source>&amp;System Default</source>
         <translation>النظام الاعتيادي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3505"/>
+        <location filename="../../gui/mainwindow.cpp" line="3587"/>
         <source>&amp;Dot</source>
         <translation>نقطة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3506"/>
+        <location filename="../../gui/mainwindow.cpp" line="3588"/>
         <source>Dot &amp;And Comma</source>
         <translation>نقطة وفاصلة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3529"/>
+        <location filename="../../gui/mainwindow.cpp" line="3611"/>
         <source>&amp;Binary</source>
         <translation>عدد ثنائي القيمة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3526"/>
+        <location filename="../../gui/mainwindow.cpp" line="3608"/>
         <source>&amp;Engineering</source>
         <translation>هندسي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3531"/>
+        <location filename="../../gui/mainwindow.cpp" line="3613"/>
         <source>&amp;Hexadecimal</source>
         <translation>السادس عشري</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3530"/>
+        <location filename="../../gui/mainwindow.cpp" line="3612"/>
         <source>&amp;Octal</source>
         <translation>ثماني</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3527"/>
+        <location filename="../../gui/mainwindow.cpp" line="3609"/>
         <source>&amp;Scientific</source>
         <translation>علمي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3549"/>
+        <location filename="../../gui/mainwindow.cpp" line="3631"/>
         <source>User &amp;Manual</source>
         <translation>دليل المستخدم</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3557"/>
+        <location filename="../../gui/mainwindow.cpp" line="3639"/>
         <source>&amp;Donate</source>
         <translation>تبرع</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6195"/>
+        <location filename="../../gui/mainwindow.cpp" line="4281"/>
+        <source>New Tab</source>
+        <translation>تبويب جديد</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="6577"/>
         <source>Constants</source>
         <translation>ثوابت</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6225"/>
+        <location filename="../../gui/mainwindow.cpp" line="6607"/>
         <source>Functions</source>
         <translation>دوال</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6248"/>
+        <location filename="../../gui/mainwindow.cpp" line="6630"/>
         <source>History</source>
         <translation>سجل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6318"/>
+        <location filename="../../gui/mainwindow.cpp" line="6700"/>
         <source>User Functions</source>
         <translation>دوال المستخدم</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6909"/>
+        <location filename="../../gui/mainwindow.cpp" line="7372"/>
         <source>Type an expression here</source>
         <translation>اكتب تعبيرًا هنا</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3545"/>
+        <location filename="../../gui/mainwindow.cpp" line="3627"/>
         <source>&amp;Font...</source>
         <translation>الخط...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3547"/>
+        <location filename="../../gui/mainwindow.cpp" line="3629"/>
         <source>&amp;Language...</source>
         <translation>اللغة...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3859"/>
+        <location filename="../../gui/mainwindow.cpp" line="3943"/>
         <source>&amp;Session</source>
         <translation>الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3861"/>
+        <location filename="../../gui/mainwindow.cpp" line="3945"/>
         <source>&amp;Edit</source>
         <translation>تحرير</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3862"/>
+        <location filename="../../gui/mainwindow.cpp" line="3946"/>
         <source>&amp;View</source>
         <translation>عرض</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3865"/>
+        <location filename="../../gui/mainwindow.cpp" line="3949"/>
         <source>Se&amp;ttings</source>
         <translation>الإعدادات</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3871"/>
+        <location filename="../../gui/mainwindow.cpp" line="3955"/>
         <source>&amp;Decimal</source>
         <translation>عشري</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3863"/>
+        <location filename="../../gui/mainwindow.cpp" line="3947"/>
         <source>&amp;Keypad</source>
         <translation>لوحة المفاتيح الرقمية</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3470"/>
+        <location filename="../../gui/mainwindow.cpp" line="3552"/>
         <source>Always on &amp;Top</source>
         <translation>دائمًا في الأعلى</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3487"/>
+        <location filename="../../gui/mainwindow.cpp" line="3569"/>
         <source>Disabled</source>
         <translation>معطل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3488"/>
+        <location filename="../../gui/mainwindow.cpp" line="3570"/>
         <source>Small Space</source>
         <translation>مسافة قصيرة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3489"/>
+        <location filename="../../gui/mainwindow.cpp" line="3571"/>
         <source>Medium Space</source>
         <translation>مسافة متوسطة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3490"/>
+        <location filename="../../gui/mainwindow.cpp" line="3572"/>
         <source>Large Space</source>
         <translation>مسافة كبيرة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3507"/>
+        <location filename="../../gui/mainwindow.cpp" line="3589"/>
         <source>&amp;0 Digits</source>
         <translation>0 أرقام</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3508"/>
+        <location filename="../../gui/mainwindow.cpp" line="3590"/>
         <source>&amp;15 Digits</source>
         <translation>15 رقمًا</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3509"/>
+        <location filename="../../gui/mainwindow.cpp" line="3591"/>
         <source>&amp;2 Digits</source>
         <translation>رقمان</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3510"/>
+        <location filename="../../gui/mainwindow.cpp" line="3592"/>
         <source>&amp;3 Digits</source>
         <translation>3 أرقام</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3511"/>
+        <location filename="../../gui/mainwindow.cpp" line="3593"/>
         <source>&amp;50 Digits</source>
         <translation>50 رقمًا</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3512"/>
+        <location filename="../../gui/mainwindow.cpp" line="3594"/>
         <source>&amp;8 Digits</source>
         <translation>8 أرقام</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3532"/>
+        <location filename="../../gui/mainwindow.cpp" line="3614"/>
         <source>&amp;Sexagesimal</source>
         <translation>ستيني</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3550"/>
+        <location filename="../../gui/mainwindow.cpp" line="3632"/>
         <source>Context Help</source>
         <translation>تعليمات السياق</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3558"/>
+        <location filename="../../gui/mainwindow.cpp" line="3640"/>
         <source>About &amp;SpeedCrunch</source>
         <translation>حول SpeedCrunch</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3882"/>
+        <location filename="../../gui/mainwindow.cpp" line="3966"/>
         <source>&amp;Help</source>
         <translation>مساعدة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8738"/>
-        <source>Load Session</source>
-        <translation>تحميل الجلسة</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8571"/>
-        <location filename="../../gui/mainwindow.cpp" line="8577"/>
-        <location filename="../../gui/mainwindow.cpp" line="8585"/>
-        <location filename="../../gui/mainwindow.cpp" line="8591"/>
-        <location filename="../../gui/mainwindow.cpp" line="8607"/>
-        <location filename="../../gui/mainwindow.cpp" line="8613"/>
-        <location filename="../../gui/mainwindow.cpp" line="8664"/>
-        <location filename="../../gui/mainwindow.cpp" line="8670"/>
-        <location filename="../../gui/mainwindow.cpp" line="8770"/>
-        <location filename="../../gui/mainwindow.cpp" line="8847"/>
-        <location filename="../../gui/mainwindow.cpp" line="8869"/>
-        <location filename="../../gui/mainwindow.cpp" line="8909"/>
-        <location filename="../../gui/mainwindow.cpp" line="9538"/>
-        <location filename="../../gui/mainwindow.cpp" line="9558"/>
+        <location filename="../../gui/mainwindow.cpp" line="9141"/>
+        <location filename="../../gui/mainwindow.cpp" line="9147"/>
+        <location filename="../../gui/mainwindow.cpp" line="9155"/>
+        <location filename="../../gui/mainwindow.cpp" line="9161"/>
+        <location filename="../../gui/mainwindow.cpp" line="9177"/>
+        <location filename="../../gui/mainwindow.cpp" line="9183"/>
+        <location filename="../../gui/mainwindow.cpp" line="9234"/>
+        <location filename="../../gui/mainwindow.cpp" line="9240"/>
+        <location filename="../../gui/mainwindow.cpp" line="9339"/>
+        <location filename="../../gui/mainwindow.cpp" line="10065"/>
+        <location filename="../../gui/mainwindow.cpp" line="10085"/>
         <source>Error</source>
         <translation>خطأ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8571"/>
-        <location filename="../../gui/mainwindow.cpp" line="8869"/>
+        <location filename="../../gui/mainwindow.cpp" line="9141"/>
+        <location filename="../../gui/mainwindow.cpp" line="9373"/>
         <source>Can&apos;t read from file %1</source>
         <translation>لا يمكن القراءة من الملف %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8744"/>
-        <source>Merge session being loaded with current session?
-If no, current variables and display will be cleared.</source>
-        <translation>هل تدمج الجلسة المحملة مع الجلسة الجارية؟ وإلا فستمسح المتغيرات وشاشة العرض.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8862"/>
-        <source>All Files (*)</source>
-        <translation>جميع الملفات (*)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="4205"/>
-        <location filename="../../gui/mainwindow.cpp" line="8863"/>
+        <location filename="../../gui/mainwindow.cpp" line="9355"/>
+        <location filename="../../gui/mainwindow.cpp" line="9373"/>
+        <location filename="../../gui/mainwindow.cpp" line="9381"/>
+        <location filename="../../gui/mainwindow.cpp" line="9388"/>
+        <location filename="../../gui/mainwindow.cpp" line="9396"/>
+        <location filename="../../gui/mainwindow.cpp" line="9404"/>
+        <location filename="../../gui/mainwindow.cpp" line="9410"/>
+        <location filename="../../gui/mainwindow.cpp" line="9418"/>
+        <location filename="../../gui/mainwindow.cpp" line="9424"/>
+        <location filename="../../gui/mainwindow.cpp" line="9432"/>
+        <location filename="../../gui/mainwindow.cpp" line="9438"/>
+        <location filename="../../gui/mainwindow.cpp" line="9446"/>
         <source>Import Session</source>
         <translation>استيراد الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8874"/>
-        <source>Merge session being imported with current session?
-If no, current variables and display will be cleared.</source>
-        <translation>هل تدمج الجلسة المستوردة مع الجلسة الحالية؟
-إذا اخترت لا، فستمسح المتغيرات الحالية والعرض.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8909"/>
-        <source>Ignore error?</source>
-        <translation>تجاهل الأخطاء؟</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8826"/>
-        <source>Save Session</source>
-        <translation>حفظ الجلسة</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="2147"/>
-        <location filename="../../gui/mainwindow.cpp" line="4212"/>
+        <location filename="../../gui/mainwindow.cpp" line="2222"/>
+        <location filename="../../gui/mainwindow.cpp" line="4301"/>
         <source>Close Session</source>
         <translation>إغلاق الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3332"/>
+        <location filename="../../gui/mainwindow.cpp" line="3411"/>
         <source>Angle Mode:</source>
         <translation>وضع الزاوية:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3333"/>
+        <location filename="../../gui/mainwindow.cpp" line="3412"/>
         <source>Notation:</source>
         <translation>التدوين:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3334"/>
+        <location filename="../../gui/mainwindow.cpp" line="3413"/>
         <source>Precision:</source>
         <translation>الدقة:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3399"/>
+        <location filename="../../gui/mainwindow.cpp" line="3478"/>
         <source>Turn</source>
         <translation>دورة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3400"/>
+        <location filename="../../gui/mainwindow.cpp" line="3479"/>
         <source>Revolution</source>
         <translation>دوران</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3411"/>
+        <location filename="../../gui/mainwindow.cpp" line="3490"/>
         <source>Fixed-point decimal</source>
         <translation>عدد عشري ثابت الفاصلة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3414"/>
+        <location filename="../../gui/mainwindow.cpp" line="3493"/>
         <source>Rational</source>
         <translation>نسبي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3415"/>
+        <location filename="../../gui/mainwindow.cpp" line="3494"/>
         <source>Automatic decimal</source>
         <translation>عدد عشري تلقائي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3423"/>
-        <location filename="../../gui/mainwindow.cpp" line="12155"/>
+        <location filename="../../gui/mainwindow.cpp" line="3502"/>
+        <location filename="../../gui/mainwindow.cpp" line="12722"/>
         <source>Automatic</source>
         <translation>تلقائي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3432"/>
+        <location filename="../../gui/mainwindow.cpp" line="3512"/>
         <source>User &amp;Definitions...</source>
         <translation>تعريفات المستخدم...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3450"/>
+        <location filename="../../gui/mainwindow.cpp" line="3513"/>
+        <source>New &amp;Tab</source>
+        <translation>تبويب &amp;جديد</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3514"/>
+        <source>New &amp;Window</source>
+        <translation>&amp;نافذة جديدة</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3515"/>
+        <source>&amp;Open...</source>
+        <translation>&amp;فتح...</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3516"/>
+        <source>Open Sessions &amp;Folder</source>
+        <translation>فتح &amp;مجلد الجلسات</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3532"/>
         <source>&amp;Basic</source>
         <translation>أساسي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3451"/>
+        <location filename="../../gui/mainwindow.cpp" line="3533"/>
         <source>&amp;Scientific (wide)</source>
         <translation>علمي (عريض)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3452"/>
+        <location filename="../../gui/mainwindow.cpp" line="3534"/>
         <source>Scientific (narrow)</source>
         <translation>علمي (ضيق)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3453"/>
-        <location filename="../../gui/mainwindow.cpp" line="3513"/>
+        <location filename="../../gui/mainwindow.cpp" line="3535"/>
+        <location filename="../../gui/mainwindow.cpp" line="3595"/>
         <source>&amp;Custom...</source>
         <translation>مخصص...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3459"/>
+        <location filename="../../gui/mainwindow.cpp" line="3541"/>
         <source>Main &amp;Menu</source>
         <translation>القائمة الرئيسية</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3460"/>
+        <location filename="../../gui/mainwindow.cpp" line="3542"/>
         <source>User &amp;Variables</source>
         <translation>متغيرات المستخدم</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3463"/>
+        <location filename="../../gui/mainwindow.cpp" line="3545"/>
         <source>User &amp;Units</source>
         <translation>وحدات المستخدم</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3468"/>
+        <location filename="../../gui/mainwindow.cpp" line="3550"/>
         <source>&amp;Turn</source>
         <translation>دورة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3469"/>
+        <location filename="../../gui/mainwindow.cpp" line="3551"/>
         <source>&amp;Revolution</source>
         <translation>دوران</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3471"/>
+        <location filename="../../gui/mainwindow.cpp" line="3553"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
         <translation>إدراج &quot;ans&quot; تلقائيًا عند البدء بعامل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3472"/>
-        <location filename="../../gui/mainwindow.cpp" line="3473"/>
+        <location filename="../../gui/mainwindow.cpp" line="3554"/>
+        <location filename="../../gui/mainwindow.cpp" line="3555"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
         <translation>إذا بدأ تعبير جديد بـ + أو - أو * أو /، يدرج SpeedCrunch &quot;ans&quot; أولًا.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3475"/>
+        <location filename="../../gui/mainwindow.cpp" line="3557"/>
         <source>Built-in &amp;functions</source>
         <translation>الدوال المدمجة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3476"/>
+        <location filename="../../gui/mainwindow.cpp" line="3558"/>
         <source>Built-in &amp;variables</source>
         <translation>المتغيرات المدمجة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3477"/>
+        <location filename="../../gui/mainwindow.cpp" line="3559"/>
         <source>&amp;Units</source>
         <translation>الوحدات</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3478"/>
+        <location filename="../../gui/mainwindow.cpp" line="3560"/>
         <source>User &amp;functions</source>
         <translation>دوال المستخدم</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3479"/>
+        <location filename="../../gui/mainwindow.cpp" line="3561"/>
         <source>User &amp;variables</source>
         <translation>متغيرات المستخدم</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3480"/>
+        <location filename="../../gui/mainwindow.cpp" line="3562"/>
         <source>Show Empty History &amp;Hint</source>
         <translation>إظهار تلميح السجل الفارغ</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3481"/>
-        <location filename="../../gui/mainwindow.cpp" line="3482"/>
+        <location filename="../../gui/mainwindow.cpp" line="3563"/>
+        <location filename="../../gui/mainwindow.cpp" line="3564"/>
         <source>When history is empty, show a hint in the status area.</source>
         <translation>عندما يكون السجل فارغًا، أظهر تلميحًا في منطقة الحالة.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3483"/>
+        <location filename="../../gui/mainwindow.cpp" line="3565"/>
         <source>Show Live Result &amp;Preview</source>
         <translation>إظهار معاينة النتيجة المباشرة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3484"/>
+        <location filename="../../gui/mainwindow.cpp" line="3566"/>
         <source>Save &amp;Window Position on Exit</source>
         <translation>حفظ موضع النافذة عند الخروج</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3486"/>
+        <location filename="../../gui/mainwindow.cpp" line="3568"/>
         <source>Hover Highlighting</source>
         <translation>تمييز التحويم</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3491"/>
+        <location filename="../../gui/mainwindow.cpp" line="3573"/>
         <source>Group Integer Part Only</source>
         <translation>تجميع الجزء الصحيح فقط</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3492"/>
+        <location filename="../../gui/mainwindow.cpp" line="3574"/>
         <source>Keep Entered Expression After Evaluate</source>
         <translation>إبقاء التعبير المدخل بعد الحساب</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3493"/>
+        <location filename="../../gui/mainwindow.cpp" line="3575"/>
         <source>Number Format...</source>
         <translation>تنسيق الأرقام...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3494"/>
+        <location filename="../../gui/mainwindow.cpp" line="3576"/>
         <source>Notation &amp;&amp; Precision...</source>
         <translation>التدوين والدقة...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3495"/>
-        <location filename="../../gui/mainwindow.cpp" line="3496"/>
+        <location filename="../../gui/mainwindow.cpp" line="3577"/>
+        <location filename="../../gui/mainwindow.cpp" line="3578"/>
         <source>After pressing Enter, keep the entered expression selected in the editor.</source>
         <translation>بعد الضغط على Enter، أبق التعبير المدخل محددًا في المحرر.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3497"/>
+        <location filename="../../gui/mainwindow.cpp" line="3579"/>
         <source>Never</source>
         <translation>أبدًا</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3498"/>
+        <location filename="../../gui/mainwindow.cpp" line="3580"/>
         <source>Always</source>
         <translation>دائمًا</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3499"/>
+        <location filename="../../gui/mainwindow.cpp" line="3581"/>
         <source>Only for Single-Line Expressions</source>
         <translation>فقط للتعبيرات ذات السطر الواحد</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3500"/>
+        <location filename="../../gui/mainwindow.cpp" line="3582"/>
         <source>Automatically Copy New Results to Clipboard</source>
         <translation>نسخ النتائج الجديدة تلقائيًا إلى الحافظة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3501"/>
+        <location filename="../../gui/mainwindow.cpp" line="3583"/>
         <source>Simplify Displayed Expressions</source>
         <translation>تبسيط التعبيرات المعروضة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3502"/>
+        <location filename="../../gui/mainwindow.cpp" line="3584"/>
         <source>History Size &amp;Limit...</source>
         <translation>حد حجم السجل...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3515"/>
+        <location filename="../../gui/mainwindow.cpp" line="3597"/>
         <source>Nearest, Half &amp;Away (round)</source>
         <translation>الأقرب، النصف بعيدًا (round)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3517"/>
+        <location filename="../../gui/mainwindow.cpp" line="3599"/>
         <source>Nearest, Half &amp;Even (roundeven)</source>
         <translation>الأقرب، النصف إلى الزوجي (roundeven)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3518"/>
+        <location filename="../../gui/mainwindow.cpp" line="3600"/>
         <source>Toward &amp;Zero (trunc)</source>
         <translation>نحو الصفر (trunc)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3520"/>
+        <location filename="../../gui/mainwindow.cpp" line="3602"/>
         <source>Toward +&amp;∞ (ceil)</source>
         <translation>نحو +∞ (ceil)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3522"/>
+        <location filename="../../gui/mainwindow.cpp" line="3604"/>
         <source>Toward −&amp;∞ (floor)</source>
         <translation>نحو −∞ (floor)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3525"/>
+        <location filename="../../gui/mainwindow.cpp" line="3607"/>
         <source>&amp;Fixed-Point</source>
         <translation>ثابت الفاصلة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3528"/>
+        <location filename="../../gui/mainwindow.cpp" line="3610"/>
         <source>&amp;Rational</source>
         <translation>نسبي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3534"/>
+        <location filename="../../gui/mainwindow.cpp" line="3616"/>
         <source>&amp;Exponential (m·s⁻¹)</source>
         <translation>أسي (m·s⁻¹)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3536"/>
+        <location filename="../../gui/mainwindow.cpp" line="3618"/>
         <source>&amp;Fractional (m/s)</source>
         <translation>كسري (m/s)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3537"/>
+        <location filename="../../gui/mainwindow.cpp" line="3619"/>
         <source>&amp;Rectangular (a + bi)</source>
         <translation>مستطيل (a + bi)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3538"/>
+        <location filename="../../gui/mainwindow.cpp" line="3620"/>
         <source>Exponential (reⁱᶿ)</source>
         <translation>أسي (reⁱᶿ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3540"/>
+        <location filename="../../gui/mainwindow.cpp" line="3622"/>
         <source>Trigonometric (r(cos θ + i·sin θ))</source>
         <translation>مثلثي (r(cos θ + i·sin θ))</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3542"/>
+        <location filename="../../gui/mainwindow.cpp" line="3624"/>
         <source>Phasor (r∠θ)</source>
         <translation>فيزوري (r∠θ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3546"/>
+        <location filename="../../gui/mainwindow.cpp" line="3628"/>
         <source>&amp;Theme...</source>
         <translation>السمة...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3551"/>
+        <location filename="../../gui/mainwindow.cpp" line="3633"/>
         <source>Check for &amp;Updates</source>
         <translation>التحقق من وجود تحديثات</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3552"/>
+        <location filename="../../gui/mainwindow.cpp" line="3634"/>
         <source>Issue Tracker</source>
         <translation>متتبع العلل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3553"/>
+        <location filename="../../gui/mainwindow.cpp" line="3635"/>
         <source>Google Group</source>
         <translation>مجموعة Google</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3554"/>
+        <location filename="../../gui/mainwindow.cpp" line="3636"/>
         <source>Facebook &amp;Group</source>
         <translation>مجموعة Facebook</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3555"/>
+        <location filename="../../gui/mainwindow.cpp" line="3637"/>
         <source>&amp;Blogspot</source>
         <translation>Blogspot</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3556"/>
+        <location filename="../../gui/mainwindow.cpp" line="3638"/>
         <source>Source Code</source>
         <translation>الشيفرة المصدرية</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3864"/>
+        <location filename="../../gui/mainwindow.cpp" line="3948"/>
         <source>&amp;Zoom</source>
         <translation>التكبير</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3866"/>
+        <location filename="../../gui/mainwindow.cpp" line="3950"/>
         <source>&amp;Results</source>
         <translation>النتائج</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3867"/>
+        <location filename="../../gui/mainwindow.cpp" line="3951"/>
         <source>&amp;Symbols</source>
         <translation>الرموز</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3868"/>
+        <location filename="../../gui/mainwindow.cpp" line="3952"/>
         <source>Unit Notation</source>
         <translation>تدوين الوحدات</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3869"/>
+        <location filename="../../gui/mainwindow.cpp" line="3953"/>
         <source>Rounding Mode</source>
         <translation>وضع التقريب</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3870"/>
+        <location filename="../../gui/mainwindow.cpp" line="3954"/>
         <source>&amp;Notation</source>
         <translation>التدوين</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3873"/>
+        <location filename="../../gui/mainwindow.cpp" line="3957"/>
         <source>&amp;Angle Mode</source>
         <translation>وضع الزاوية</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3874"/>
+        <location filename="../../gui/mainwindow.cpp" line="3958"/>
         <source>Complex &amp;Numbers</source>
         <translation>الأعداد المركبة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3875"/>
+        <location filename="../../gui/mainwindow.cpp" line="3959"/>
         <source>&amp;Form</source>
         <translation>الشكل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3876"/>
+        <location filename="../../gui/mainwindow.cpp" line="3960"/>
         <source>&amp;Imaginary Unit</source>
         <translation>الوحدة التخيلية</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3877"/>
+        <location filename="../../gui/mainwindow.cpp" line="3961"/>
         <source>&amp;Window</source>
         <translation>النافذة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3878"/>
+        <location filename="../../gui/mainwindow.cpp" line="3962"/>
         <source>&amp;Editing</source>
         <translation>التحرير</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3879"/>
+        <location filename="../../gui/mainwindow.cpp" line="3963"/>
         <source>A&amp;utocomplete</source>
         <translation>الإكمال التلقائي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3880"/>
+        <location filename="../../gui/mainwindow.cpp" line="3964"/>
         <source>Up/Down Arrow History</source>
         <translation>سجل السهمين للأعلى/للأسفل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3881"/>
+        <location filename="../../gui/mainwindow.cpp" line="3965"/>
         <source>&amp;Appearance</source>
         <translation>المظهر</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3888"/>
+        <location filename="../../gui/mainwindow.cpp" line="3972"/>
         <source>&amp;Disabled</source>
         <translation>معطل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3890"/>
+        <location filename="../../gui/mainwindow.cpp" line="3974"/>
         <source>&amp;Disable</source>
         <translation>تعطيل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4054"/>
+        <location filename="../../gui/mainwindow.cpp" line="4138"/>
         <source>Close preview</source>
         <translation>إغلاق المعاينة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4197"/>
-        <source>New Session</source>
-        <translation>جلسة جديدة</translation>
+        <location filename="../../gui/mainwindow.cpp" line="9313"/>
+        <location filename="../../gui/mainwindow.cpp" line="9354"/>
+        <source>JSON file (*.json);;Any file (*.*)</source>
+        <translation>ملف JSON (*.json);;أي ملف (*.*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4198"/>
-        <location filename="../../gui/mainwindow.cpp" line="7592"/>
+        <location filename="../../gui/mainwindow.cpp" line="9317"/>
+        <source>Export session as JSON</source>
+        <translation>تصدير الجلسة كملف JSON</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9382"/>
+        <source>The selected file is not valid JSON: %1</source>
+        <translation>الملف المحدد ليس JSON صالحًا: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9389"/>
+        <source>The selected file is not a SpeedCrunch session JSON file.</source>
+        <translation>الملف المحدد ليس ملف جلسة SpeedCrunch بصيغة JSON.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9397"/>
+        <source>This file uses an obsolete SpeedCrunch session format and cannot be imported.</source>
+        <translation>يستخدم هذا الملف تنسيق جلسة SpeedCrunch قديمًا ولا يمكن استيراده.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9405"/>
+        <source>The selected JSON file is missing the required $schema field.</source>
+        <translation>ملف JSON المحدد يفتقد حقل $schema المطلوب.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9411"/>
+        <source>The selected JSON file uses an unsupported JSON schema: %1</source>
+        <translation>يستخدم ملف JSON المحدد مخطط JSON غير مدعوم: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9419"/>
+        <source>The selected JSON file is missing the SpeedCrunch session schema identifier ($id).</source>
+        <translation>ملف JSON المحدد يفتقد معرف مخطط جلسة SpeedCrunch ($id).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9425"/>
+        <source>The selected JSON file uses an unsupported SpeedCrunch session format: %1</source>
+        <translation>يستخدم ملف JSON المحدد تنسيق جلسة SpeedCrunch غير مدعوم: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9433"/>
+        <source>The selected JSON file is missing the required session name.</source>
+        <translation>ملف JSON المحدد يفتقد اسم الجلسة المطلوب.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9439"/>
+        <source>The selected JSON file has an empty session name.</source>
+        <translation>يحتوي ملف JSON المحدد على اسم جلسة فارغ.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9447"/>
+        <source>The selected JSON file has invalid or incomplete SpeedCrunch session data.</source>
+        <translation>يحتوي ملف JSON المحدد على بيانات جلسة SpeedCrunch غير صالحة أو غير مكتملة.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9458"/>
+        <location filename="../../gui/mainwindow.cpp" line="9466"/>
+        <source>Open Sessions Folder</source>
+        <translation>فتح مجلد الجلسات</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9459"/>
+        <source>Could not create the sessions folder: %1</source>
+        <translation>تعذر إنشاء مجلد الجلسات: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9467"/>
+        <source>Could not open the sessions folder: %1</source>
+        <translation>تعذر فتح مجلد الجلسات: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="4282"/>
+        <location filename="../../gui/mainwindow.cpp" line="8135"/>
         <source>Open Session</source>
         <translation>فتح جلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4200"/>
+        <location filename="../../gui/mainwindow.cpp" line="4284"/>
         <source>Split Left</source>
         <translation>تقسيم يسارًا</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4201"/>
+        <location filename="../../gui/mainwindow.cpp" line="4285"/>
         <source>Split Right</source>
         <translation>تقسيم يمينًا</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4202"/>
+        <location filename="../../gui/mainwindow.cpp" line="4286"/>
         <source>Split Up</source>
         <translation>تقسيم لأعلى</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4203"/>
+        <location filename="../../gui/mainwindow.cpp" line="4287"/>
         <source>Split Down</source>
         <translation>تقسيم لأسفل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4206"/>
-        <source>Export Session</source>
-        <translation>تصدير الجلسة</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="4208"/>
-        <location filename="../../gui/mainwindow.cpp" line="7673"/>
-        <location filename="../../gui/mainwindow.cpp" line="7684"/>
-        <location filename="../../gui/mainwindow.cpp" line="7697"/>
-        <location filename="../../gui/mainwindow.cpp" line="7707"/>
+        <location filename="../../gui/mainwindow.cpp" line="4295"/>
+        <location filename="../../gui/mainwindow.cpp" line="8216"/>
+        <location filename="../../gui/mainwindow.cpp" line="8227"/>
+        <location filename="../../gui/mainwindow.cpp" line="8240"/>
+        <location filename="../../gui/mainwindow.cpp" line="8250"/>
         <source>Duplicate Session</source>
         <translation>تكرار الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4209"/>
-        <location filename="../../gui/mainwindow.cpp" line="7736"/>
-        <location filename="../../gui/mainwindow.cpp" line="7750"/>
-        <location filename="../../gui/mainwindow.cpp" line="7761"/>
+        <location filename="../../gui/mainwindow.cpp" line="4296"/>
+        <location filename="../../gui/mainwindow.cpp" line="8279"/>
+        <location filename="../../gui/mainwindow.cpp" line="8293"/>
+        <location filename="../../gui/mainwindow.cpp" line="8304"/>
         <source>Rename Session</source>
         <translation>إعادة تسمية الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4210"/>
+        <location filename="../../gui/mainwindow.cpp" line="4298"/>
         <source>Clear Session</source>
         <translation>مسح الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4211"/>
-        <location filename="../../gui/mainwindow.cpp" line="8031"/>
+        <location filename="../../gui/mainwindow.cpp" line="4299"/>
+        <location filename="../../gui/mainwindow.cpp" line="8578"/>
         <source>Delete Session</source>
         <translation>حذف الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4213"/>
+        <location filename="../../gui/mainwindow.cpp" line="4302"/>
         <source>Close Pane</source>
         <translation>إغلاق الجزء</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6281"/>
+        <location filename="../../gui/mainwindow.cpp" line="6663"/>
         <source>User Variables</source>
         <translation>متغيرات المستخدم</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6355"/>
+        <location filename="../../gui/mainwindow.cpp" line="6737"/>
         <source>User Units</source>
         <translation>وحدات المستخدم</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7497"/>
-        <location filename="../../gui/mainwindow.cpp" line="7528"/>
+        <location filename="../../gui/mainwindow.cpp" line="7981"/>
+        <location filename="../../gui/mainwindow.cpp" line="8012"/>
         <source>Clear History</source>
         <translation>مسح السجل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7498"/>
-        <location filename="../../gui/mainwindow.cpp" line="7529"/>
+        <location filename="../../gui/mainwindow.cpp" line="7982"/>
+        <location filename="../../gui/mainwindow.cpp" line="8013"/>
         <source>Are you sure you want to clear the calculation history?</source>
         <translation>هل تريد بالتأكيد مسح سجل الحسابات؟</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7674"/>
-        <location filename="../../gui/mainwindow.cpp" line="7737"/>
+        <location filename="../../gui/mainwindow.cpp" line="8217"/>
+        <location filename="../../gui/mainwindow.cpp" line="8280"/>
         <source>Session name:</source>
         <translation>اسم الجلسة:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7685"/>
-        <location filename="../../gui/mainwindow.cpp" line="7751"/>
+        <location filename="../../gui/mainwindow.cpp" line="8228"/>
+        <location filename="../../gui/mainwindow.cpp" line="8294"/>
         <source>A session named %1 already exists.</source>
         <translation>توجد جلسة بالاسم %1 بالفعل.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7698"/>
+        <location filename="../../gui/mainwindow.cpp" line="8241"/>
         <source>Could not create session file %1.</source>
         <translation>تعذر إنشاء ملف الجلسة %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7708"/>
+        <location filename="../../gui/mainwindow.cpp" line="8251"/>
         <source>Could not write session file %1.</source>
         <translation>تعذر كتابة ملف الجلسة %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7762"/>
+        <location filename="../../gui/mainwindow.cpp" line="8305"/>
         <source>Could not rename session file %1.</source>
         <translation>تعذر إعادة تسمية ملف الجلسة %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8032"/>
+        <location filename="../../gui/mainwindow.cpp" line="8579"/>
         <source>Are you sure you want to delete this session?</source>
         <translation>هل تريد بالتأكيد حذف هذه الجلسة؟</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8207"/>
+        <location filename="../../gui/mainwindow.cpp" line="8754"/>
         <source>Custom Precision</source>
         <translation>دقة مخصصة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8208"/>
+        <location filename="../../gui/mainwindow.cpp" line="8755"/>
         <source>Fractional digits:</source>
         <translation>الخانات الكسرية:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8225"/>
+        <location filename="../../gui/mainwindow.cpp" line="8772"/>
         <source>Theme</source>
         <translation>السمة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8234"/>
+        <location filename="../../gui/mainwindow.cpp" line="8781"/>
         <source>Light Themes</source>
         <translation>سمات فاتحة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8241"/>
+        <location filename="../../gui/mainwindow.cpp" line="8788"/>
         <source>Dark Themes</source>
         <translation>سمات داكنة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8249"/>
+        <location filename="../../gui/mainwindow.cpp" line="8796"/>
         <source>Preview</source>
         <translation>معاينة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8311"/>
+        <location filename="../../gui/mainwindow.cpp" line="8858"/>
         <source>Colors</source>
         <translation>الألوان</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8487"/>
+        <location filename="../../gui/mainwindow.cpp" line="9050"/>
         <source>Select color for %1</source>
         <translation>اختر لون %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8532"/>
+        <location filename="../../gui/mainwindow.cpp" line="9104"/>
         <source>Import...</source>
         <translation>استيراد...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8533"/>
+        <location filename="../../gui/mainwindow.cpp" line="9105"/>
         <source>Export...</source>
         <translation>تصدير...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8565"/>
+        <location filename="../../gui/mainwindow.cpp" line="9135"/>
         <source>Import Theme</source>
         <translation>استيراد سمة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8566"/>
-        <location filename="../../gui/mainwindow.cpp" line="8655"/>
+        <location filename="../../gui/mainwindow.cpp" line="9136"/>
+        <location filename="../../gui/mainwindow.cpp" line="9225"/>
         <source>Theme file (*.json);;All files (*)</source>
         <translation>ملف سمة (*.json);;كل الملفات (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8577"/>
+        <location filename="../../gui/mainwindow.cpp" line="9147"/>
         <source>Invalid theme file.</source>
         <translation>ملف السمة غير صالح.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8586"/>
+        <location filename="../../gui/mainwindow.cpp" line="9156"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>لا يمكن استيراد السمة &quot;%1&quot; لأنها تتعارض مع سمة مدمجة.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8591"/>
+        <location filename="../../gui/mainwindow.cpp" line="9161"/>
         <source>Can&apos;t find a writable theme folder.</source>
         <translation>تعذر العثور على مجلد سمات قابل للكتابة.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8598"/>
+        <location filename="../../gui/mainwindow.cpp" line="9168"/>
         <source>Overwrite Theme</source>
         <translation>استبدال السمة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8599"/>
+        <location filename="../../gui/mainwindow.cpp" line="9169"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
         <translation>توجد سمة مخصصة بالاسم &quot;%1&quot; بالفعل. هل تريد استبدالها؟</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8607"/>
+        <location filename="../../gui/mainwindow.cpp" line="9177"/>
         <source>Can&apos;t overwrite theme file %1</source>
         <translation>لا يمكن استبدال ملف السمة %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8613"/>
+        <location filename="../../gui/mainwindow.cpp" line="9183"/>
         <source>Can&apos;t copy theme file to %1</source>
         <translation>لا يمكن نسخ ملف السمة إلى %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8654"/>
+        <location filename="../../gui/mainwindow.cpp" line="9224"/>
         <source>Export Theme</source>
         <translation>تصدير السمة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8665"/>
+        <location filename="../../gui/mainwindow.cpp" line="9235"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>لا يمكن تصدير السمة باسم &quot;%1&quot; لأنها تتعارض مع سمة مدمجة.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8670"/>
-        <location filename="../../gui/mainwindow.cpp" line="8847"/>
-        <location filename="../../gui/mainwindow.cpp" line="9538"/>
-        <location filename="../../gui/mainwindow.cpp" line="9558"/>
+        <location filename="../../gui/mainwindow.cpp" line="9240"/>
+        <location filename="../../gui/mainwindow.cpp" line="9339"/>
+        <location filename="../../gui/mainwindow.cpp" line="10065"/>
+        <location filename="../../gui/mainwindow.cpp" line="10085"/>
         <source>Can&apos;t write to file %1</source>
         <translation>لا يمكن الكتابة إلى الملف %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8771"/>
-        <source>Can&apos;t read the selected session file.</source>
-        <translation>لا يمكن قراءة ملف الجلسة المحدد.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8949"/>
+        <location filename="../../gui/mainwindow.cpp" line="9476"/>
         <source>Global User Variable</source>
         <translation>متغير مستخدم عام</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8950"/>
+        <location filename="../../gui/mainwindow.cpp" line="9477"/>
         <source>Global User Function</source>
         <translation>دالة مستخدم عامة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8951"/>
+        <location filename="../../gui/mainwindow.cpp" line="9478"/>
         <source>Global User Unit</source>
         <translation>وحدة مستخدم عامة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9321"/>
+        <location filename="../../gui/mainwindow.cpp" line="9848"/>
         <source>History Size Limit</source>
         <translation>حد حجم السجل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9322"/>
+        <location filename="../../gui/mainwindow.cpp" line="9849"/>
         <source>Maximum number of history entries for this session (0 = unlimited):</source>
         <translation>الحد الأقصى لعدد إدخالات السجل لهذه الجلسة (0 = غير محدود):</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9551"/>
+        <location filename="../../gui/mainwindow.cpp" line="10078"/>
         <source>Text file (*.txt);;Any file (*.*)</source>
         <translation>ملف نصي (*.txt);;أي ملف (*.*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9588"/>
+        <location filename="../../gui/mainwindow.cpp" line="10115"/>
         <source>Display font</source>
         <translation>خط العرض</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11352"/>
-        <location filename="../../gui/mainwindow.cpp" line="11525"/>
+        <location filename="../../gui/mainwindow.cpp" line="11919"/>
+        <location filename="../../gui/mainwindow.cpp" line="12092"/>
         <source>Could not recalculate from calculation %1: %2</source>
         <translation>تعذرت إعادة الحساب من العملية %1: %2</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11441"/>
+        <location filename="../../gui/mainwindow.cpp" line="12008"/>
         <source>History Size Limit Reached</source>
         <translation>تم بلوغ حد حجم السجل</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11442"/>
+        <location filename="../../gui/mainwindow.cpp" line="12009"/>
         <source>This calculation fills the last available history slot. Future calculations will remove the oldest calculation from history. You can increase the limit from Session &gt; History Size Limit.</source>
         <translation>يشغل هذا الحساب آخر خانة متاحة في السجل. ستزيل الحسابات اللاحقة أقدم حساب من السجل. يمكنك زيادة الحد من الجلسة &gt; حد حجم السجل.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11465"/>
+        <location filename="../../gui/mainwindow.cpp" line="12032"/>
         <source>Editing calculation. Press Esc twice to cancel.</source>
         <translation>يجري تحرير الحساب. اضغط Esc مرتين للإلغاء.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11506"/>
+        <location filename="../../gui/mainwindow.cpp" line="12073"/>
         <source>Calculation Settings</source>
         <translation>إعدادات الحساب</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11582"/>
+        <location filename="../../gui/mainwindow.cpp" line="12149"/>
         <source>Invalid recalculation start index</source>
         <translation>فهرس بدء إعادة الحساب غير صالح</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12129"/>
+        <location filename="../../gui/mainwindow.cpp" line="12696"/>
         <source>System Default</source>
         <translation>الافتراضي للنظام</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12133"/>
+        <location filename="../../gui/mainwindow.cpp" line="12700"/>
         <source>Language</source>
         <translation>اللغة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12133"/>
+        <location filename="../../gui/mainwindow.cpp" line="12700"/>
         <source>Select the language:</source>
         <translation>اختر اللغة:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12163"/>
+        <location filename="../../gui/mainwindow.cpp" line="12730"/>
         <source>Custom</source>
         <translation>مخصص</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12175"/>
+        <location filename="../../gui/mainwindow.cpp" line="12742"/>
         <source>Decimal places:</source>
         <translation>المنازل العشرية:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3523"/>
-        <location filename="../../gui/mainwindow.cpp" line="3524"/>
+        <location filename="../../gui/mainwindow.cpp" line="3605"/>
+        <location filename="../../gui/mainwindow.cpp" line="3606"/>
         <source>&amp;Automatic</source>
         <translation>تلقائي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3872"/>
+        <location filename="../../gui/mainwindow.cpp" line="3956"/>
         <source>&amp;Precision</source>
         <translation>الدقة</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3430"/>
+        <location filename="../../gui/mainwindow.cpp" line="3510"/>
         <source>Plain &amp;text</source>
         <translation>نص عادي</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3457"/>
+        <location filename="../../gui/mainwindow.cpp" line="3539"/>
         <source>Formula &amp;Book</source>
         <translation>كتاب المعادلات</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3860"/>
+        <location filename="../../gui/mainwindow.cpp" line="3944"/>
         <source>&amp;Export</source>
         <translation>تصدير</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8737"/>
-        <location filename="../../gui/mainwindow.cpp" line="8821"/>
-        <source>SpeedCrunch Sessions (*.json);;All Files (*)</source>
-        <translation>جلسات SpeedCrunch (*.json);;كل الملفات (*)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8749"/>
-        <location filename="../../gui/mainwindow.cpp" line="8880"/>
-        <source>Merge?</source>
-        <translation>دمج؟</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="9530"/>
+        <location filename="../../gui/mainwindow.cpp" line="10057"/>
         <source>Export session as HTML</source>
         <translation>تصدير الجلسة كملف HTML</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9531"/>
+        <location filename="../../gui/mainwindow.cpp" line="10058"/>
         <source>HTML file (*.html)</source>
         <translation>ملف HTML (*.html)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9550"/>
+        <location filename="../../gui/mainwindow.cpp" line="10077"/>
         <source>Export session as plain text</source>
         <translation>تصدير الجلسة كنص عادي</translation>
     </message>
@@ -5947,144 +5986,149 @@ If no, current variables and display will be cleared.</source>
 <context>
     <name>ResultDisplay</name>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="563"/>
-        <location filename="../../gui/resultdisplay.cpp" line="569"/>
-        <location filename="../../gui/resultdisplay.cpp" line="573"/>
+        <location filename="../../gui/resultdisplay.cpp" line="514"/>
+        <location filename="../../gui/resultdisplay.cpp" line="520"/>
+        <location filename="../../gui/resultdisplay.cpp" line="524"/>
         <source>Scroll to bottom</source>
         <translation>التمرير إلى الأسفل</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1408"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1305"/>
         <source>Copy Expression</source>
         <translation>نسخ التعبير</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1415"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1312"/>
         <source>Copy Result</source>
         <translation>نسخ النتيجة</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1431"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1328"/>
         <source>Edit Expression</source>
         <translation>تحرير التعبير</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1435"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1332"/>
         <source>Change Settings</source>
         <translation>تغيير الإعدادات</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1439"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1336"/>
         <source>Remove Calculation</source>
         <translation>إزالة الحساب</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1444"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1341"/>
         <source>Remove All Calculations Above</source>
         <translation>إزالة كل الحسابات أعلاه</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1448"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1345"/>
         <source>Remove All Calculations Below</source>
         <translation>إزالة كل الحسابات أدناه</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1455"/>
-        <source>New Session</source>
-        <translation>جلسة جديدة</translation>
-    </message>
-    <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1459"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1356"/>
         <source>Open Session</source>
         <translation>فتح جلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1464"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1361"/>
         <source>Split Left</source>
         <translation>تقسيم يسارًا</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1468"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1365"/>
         <source>Split Right</source>
         <translation>تقسيم يمينًا</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1472"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1369"/>
         <source>Split Up</source>
         <translation>تقسيم لأعلى</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1476"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1373"/>
         <source>Split Down</source>
         <translation>تقسيم لأسفل</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1481"/>
-        <source>Import Session</source>
-        <translation>استيراد جلسة</translation>
+        <location filename="../../gui/resultdisplay.cpp" line="1352"/>
+        <source>New Tab</source>
+        <translation>تبويب جديد</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1482"/>
-        <source>Export Session</source>
-        <translation>تصدير الجلسة</translation>
+        <location filename="../../gui/resultdisplay.cpp" line="1378"/>
+        <source>&amp;Import...</source>
+        <translation>ا&amp;ستيراد...</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1484"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1382"/>
+        <source>&amp;Export</source>
+        <translation>&amp;تصدير</translation>
+    </message>
+    <message>
+        <location filename="../../gui/resultdisplay.cpp" line="1387"/>
+        <source>Plain &amp;text</source>
+        <translation>نص &amp;عادي</translation>
+    </message>
+    <message>
+        <location filename="../../gui/resultdisplay.cpp" line="1396"/>
         <source>Duplicate Session</source>
         <translation>تكرار الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1488"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1400"/>
         <source>Rename Session</source>
         <translation>إعادة تسمية الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1492"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1405"/>
         <source>Clear Session</source>
         <translation>مسح الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1496"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1409"/>
         <source>Delete Session</source>
         <translation>حذف الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1500"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1414"/>
         <source>Close Session</source>
         <translation>إغلاق الجلسة</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1504"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1418"/>
         <source>Close Pane</source>
         <translation>إغلاق الجزء</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1512"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1426"/>
         <source>Main Menu</source>
         <translation>القائمة الرئيسية</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1636"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1550"/>
         <source>Cancel editing</source>
         <translation>إلغاء التحرير</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1683"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1597"/>
         <source>Copy result</source>
         <translation>نسخ النتيجة</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1684"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1598"/>
         <source>Edit expression</source>
         <translation>تحرير التعبير</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1685"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1599"/>
         <source>Change settings</source>
         <translation>تغيير الإعدادات</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1686"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1600"/>
         <source>Remove calculation</source>
         <translation>إزالة الحساب</translation>
     </message>

@@ -58,22 +58,22 @@
 <context>
     <name>BitFieldWidget</name>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="745"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="643"/>
         <source>Reset bits to zero</source>
         <translation>Weka upya biti ziwe sifuri</translation>
     </message>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="747"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="645"/>
         <source>Invert bits</source>
         <translation>Geuza biti</translation>
     </message>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="749"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="647"/>
         <source>Shift bits left</source>
         <translation>Hamisha biti kushoto</translation>
     </message>
     <message>
-        <location filename="../../gui/bitfieldwidget.cpp" line="751"/>
+        <location filename="../../gui/bitfieldwidget.cpp" line="649"/>
         <source>Shift bits right</source>
         <translation>Hamisha biti kulia</translation>
     </message>
@@ -406,7 +406,7 @@
 <context>
     <name>BookDock</name>
     <message>
-        <location filename="../../gui/bookdock.cpp" line="149"/>
+        <location filename="../../gui/bookdock.cpp" line="150"/>
         <source>Formula Book</source>
         <translation>Kitabu cha fomula</translation>
     </message>
@@ -414,9 +414,9 @@
 <context>
     <name>ConstantCompletion</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="4628"/>
-        <location filename="../../gui/editor.cpp" line="4638"/>
-        <location filename="../../gui/editor.cpp" line="4758"/>
+        <location filename="../../gui/editor.cpp" line="4521"/>
+        <location filename="../../gui/editor.cpp" line="4531"/>
+        <location filename="../../gui/editor.cpp" line="4645"/>
         <source>All</source>
         <translation>Zote</translation>
     </message>
@@ -2547,47 +2547,47 @@
 <context>
     <name>ConstantsWidget</name>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="293"/>
+        <location filename="../../gui/constantswidget.cpp" line="245"/>
         <source>Domain</source>
         <translation>Kikoa</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="294"/>
+        <location filename="../../gui/constantswidget.cpp" line="246"/>
         <source>Subdomain</source>
         <translation>Kikoa kidogo</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="295"/>
+        <location filename="../../gui/constantswidget.cpp" line="247"/>
         <source>Search</source>
         <translation>Tafuta</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="296"/>
+        <location filename="../../gui/constantswidget.cpp" line="248"/>
         <source>No match found</source>
         <translation>Hakuna kinacholingana kilichopatikana</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="299"/>
+        <location filename="../../gui/constantswidget.cpp" line="251"/>
         <source>Name</source>
         <translation>Jina</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="300"/>
+        <location filename="../../gui/constantswidget.cpp" line="252"/>
         <source>Value</source>
         <translation>Thamani</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="301"/>
+        <location filename="../../gui/constantswidget.cpp" line="253"/>
         <source>Unit</source>
         <translation>Kitengo</translation>
     </message>
     <message>
-        <location filename="../../gui/constantswidget.cpp" line="346"/>
-        <location filename="../../gui/constantswidget.cpp" line="348"/>
-        <location filename="../../gui/constantswidget.cpp" line="427"/>
-        <location filename="../../gui/constantswidget.cpp" line="467"/>
-        <location filename="../../gui/constantswidget.cpp" line="468"/>
-        <location filename="../../gui/constantswidget.cpp" line="477"/>
+        <location filename="../../gui/constantswidget.cpp" line="298"/>
+        <location filename="../../gui/constantswidget.cpp" line="300"/>
+        <location filename="../../gui/constantswidget.cpp" line="379"/>
+        <location filename="../../gui/constantswidget.cpp" line="419"/>
+        <location filename="../../gui/constantswidget.cpp" line="420"/>
+        <location filename="../../gui/constantswidget.cpp" line="429"/>
         <source>All</source>
         <translation>Zote</translation>
     </message>
@@ -2663,45 +2663,45 @@
 <context>
     <name>Editor</name>
     <message>
-        <location filename="../../gui/editor.cpp" line="1903"/>
+        <location filename="../../gui/editor.cpp" line="1795"/>
         <source>Unit</source>
         <translation>Kipimo</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1907"/>
+        <location filename="../../gui/editor.cpp" line="1799"/>
         <source>User unit</source>
         <translation>Kipimo cha mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="1962"/>
+        <location filename="../../gui/editor.cpp" line="1854"/>
         <source>User function</source>
         <translation>Chaguo la kukokotoa la mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2089"/>
+        <location filename="../../gui/editor.cpp" line="1981"/>
         <source>Argument</source>
         <translation>Hoja</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2265"/>
-        <location filename="../../gui/editor.cpp" line="2299"/>
+        <location filename="../../gui/editor.cpp" line="2157"/>
+        <location filename="../../gui/editor.cpp" line="2191"/>
         <source>Current result:&lt;br/&gt;%1</source>
         <translation>Matokeo ya sasa:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2371"/>
-        <location filename="../../gui/editor.cpp" line="2399"/>
+        <location filename="../../gui/editor.cpp" line="2263"/>
+        <location filename="../../gui/editor.cpp" line="2291"/>
         <source>Selection result:&lt;br/&gt;%1</source>
         <translation>Matokeo ya uteuzi:&lt;br/&gt;%1</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2365"/>
-        <location filename="../../gui/editor.cpp" line="2393"/>
+        <location filename="../../gui/editor.cpp" line="2257"/>
+        <location filename="../../gui/editor.cpp" line="2285"/>
         <source>Selection result: n/a</source>
         <translation>Matokeo ya chaguo: hayapo</translation>
     </message>
     <message>
-        <location filename="../../gui/editor.cpp" line="2406"/>
+        <location filename="../../gui/editor.cpp" line="2298"/>
         <source>Selection result: %1</source>
         <translation>Matokeo ya chaguo: %1</translation>
     </message>
@@ -4432,152 +4432,152 @@
 <context>
     <name>Keypad</name>
     <message>
-        <location filename="../../gui/keypad.cpp" line="882"/>
+        <location filename="../../gui/keypad.cpp" line="910"/>
         <source>Inverse cosine</source>
         <translation>Kosini kinyume</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="883"/>
+        <location filename="../../gui/keypad.cpp" line="911"/>
         <source>The last result</source>
         <translation>Matokeo ya mwisho</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="884"/>
+        <location filename="../../gui/keypad.cpp" line="912"/>
         <source>Inverse sine</source>
         <translation>Sinasi kinyume</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="885"/>
+        <location filename="../../gui/keypad.cpp" line="913"/>
         <source>Inverse tangent</source>
         <translation>Tanjenti kinyume</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="886"/>
+        <location filename="../../gui/keypad.cpp" line="914"/>
         <source>Evaluate expression</source>
         <translation>Tathmini usemi</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="887"/>
+        <location filename="../../gui/keypad.cpp" line="915"/>
         <source>Division</source>
         <translation>Ugawaji</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="888"/>
+        <location filename="../../gui/keypad.cpp" line="916"/>
         <source>Multiplication</source>
         <translation>Kuzidisha</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="889"/>
+        <location filename="../../gui/keypad.cpp" line="917"/>
         <source>Subtraction</source>
         <translation>Kutoa</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="890"/>
+        <location filename="../../gui/keypad.cpp" line="918"/>
         <source>Addition</source>
         <translation>Kuongeza</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="891"/>
+        <location filename="../../gui/keypad.cpp" line="919"/>
         <source>Clear expression</source>
         <translation>Futa usemi</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="892"/>
+        <location filename="../../gui/keypad.cpp" line="920"/>
         <source>Cosine</source>
         <translation>Kosini</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="893"/>
+        <location filename="../../gui/keypad.cpp" line="921"/>
         <source>Backspace</source>
         <translation>Futa nyuma</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="894"/>
+        <location filename="../../gui/keypad.cpp" line="922"/>
         <source>Scientific notation</source>
         <translation>Nukuu ya kisayansi</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="895"/>
+        <location filename="../../gui/keypad.cpp" line="923"/>
         <source>Exponential</source>
         <translation>Eksponenshali</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="896"/>
+        <location filename="../../gui/keypad.cpp" line="924"/>
         <source>Factorial</source>
         <translation>Faktoriali</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="897"/>
+        <location filename="../../gui/keypad.cpp" line="925"/>
         <source>Natural logarithm</source>
         <translation>Logaridhimu asilia</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="898"/>
+        <location filename="../../gui/keypad.cpp" line="926"/>
         <source>Left parenthesis</source>
         <translation>Parentesi ya kushoto</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="899"/>
+        <location filename="../../gui/keypad.cpp" line="927"/>
         <source>Cube root</source>
         <translation>Mzizi wa tatu</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="900"/>
+        <location filename="../../gui/keypad.cpp" line="928"/>
         <source>Common logarithm</source>
         <translation>Logaridhimu ya kawaida</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="901"/>
+        <location filename="../../gui/keypad.cpp" line="929"/>
         <source>Modulo</source>
         <translation>Modulo</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="902"/>
+        <location filename="../../gui/keypad.cpp" line="930"/>
         <source>Contextual percentage</source>
         <translation>Asilimia ya kimuktadha</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="903"/>
+        <location filename="../../gui/keypad.cpp" line="931"/>
         <source>Power</source>
         <translation>Nguvu</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="904"/>
+        <location filename="../../gui/keypad.cpp" line="932"/>
         <source>Right parenthesis</source>
         <translation>Parentesi ya kulia</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="905"/>
+        <location filename="../../gui/keypad.cpp" line="933"/>
         <source>Sine</source>
         <translation>Sinasi</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="906"/>
+        <location filename="../../gui/keypad.cpp" line="934"/>
         <source>Square root</source>
         <translation>Mzizi wa mraba</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="907"/>
+        <location filename="../../gui/keypad.cpp" line="935"/>
         <source>Tangent</source>
         <translation>Tanjenti</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="908"/>
+        <location filename="../../gui/keypad.cpp" line="936"/>
         <source>Pi</source>
         <translation>Pi</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="909"/>
+        <location filename="../../gui/keypad.cpp" line="937"/>
         <source>Decimal separator</source>
         <translation>Kitenganishi cha desimali</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="910"/>
+        <location filename="../../gui/keypad.cpp" line="938"/>
         <source>Assign variable x</source>
         <translation>Pangia kigeu x</translation>
     </message>
     <message>
-        <location filename="../../gui/keypad.cpp" line="911"/>
+        <location filename="../../gui/keypad.cpp" line="939"/>
         <source>The variable x</source>
         <translation>Kigeu x</translation>
     </message>
@@ -4585,1219 +4585,1257 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3397"/>
+        <location filename="../../gui/mainwindow.cpp" line="3476"/>
         <source>Radian</source>
         <translation>Radiani</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3398"/>
+        <location filename="../../gui/mainwindow.cpp" line="3477"/>
         <source>Gradian</source>
         <translation>Gradiani</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3401"/>
+        <location filename="../../gui/mainwindow.cpp" line="3480"/>
         <source>Degree</source>
         <translation>Digrii</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3407"/>
+        <location filename="../../gui/mainwindow.cpp" line="3486"/>
         <source>Binary</source>
         <translation>Binari</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3408"/>
+        <location filename="../../gui/mainwindow.cpp" line="3487"/>
         <source>Octal</source>
         <translation>Oktali</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3409"/>
+        <location filename="../../gui/mainwindow.cpp" line="3488"/>
         <source>Hexadecimal</source>
         <translation>Hexadesimali</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3410"/>
+        <location filename="../../gui/mainwindow.cpp" line="3489"/>
         <source>Sexagesimal</source>
         <translation>Seksajisimali</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3412"/>
+        <location filename="../../gui/mainwindow.cpp" line="3491"/>
         <source>Engineering decimal</source>
         <translation>Desimali ya kihandisi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3413"/>
+        <location filename="../../gui/mainwindow.cpp" line="3492"/>
         <source>Scientific decimal</source>
         <translation>Desimali ya kisayansi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3430"/>
+        <location filename="../../gui/mainwindow.cpp" line="3510"/>
         <source>Plain &amp;text</source>
         <translation>Maandishi ya kawaid&amp;a</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3431"/>
+        <location filename="../../gui/mainwindow.cpp" line="3511"/>
         <source>&amp;Import...</source>
         <translation>&amp;Leta...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3433"/>
-        <source>&amp;Load...</source>
-        <translation>&amp;Pakia...</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="3434"/>
+        <location filename="../../gui/mainwindow.cpp" line="3517"/>
         <source>&amp;Quit</source>
         <translation>&amp;Toka</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3435"/>
-        <source>&amp;Save...</source>
-        <translation>&amp;Hifadhi...</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="3437"/>
+        <location filename="../../gui/mainwindow.cpp" line="3519"/>
         <source>Clear E&amp;xpression</source>
         <translation>Futa Us&amp;emi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3438"/>
+        <location filename="../../gui/mainwindow.cpp" line="3520"/>
         <source>Clear &amp;History</source>
         <translation>Futa &amp;Historia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3439"/>
+        <location filename="../../gui/mainwindow.cpp" line="3521"/>
         <source>Copy Last &amp;Result</source>
         <translation>Nakili &amp;matokeo ya mwisho</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3440"/>
+        <location filename="../../gui/mainwindow.cpp" line="3522"/>
         <source>&amp;Copy</source>
         <translation>&amp;Nakili</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3441"/>
+        <location filename="../../gui/mainwindow.cpp" line="3523"/>
         <source>&amp;Paste</source>
         <translation>&amp;Bandika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3442"/>
+        <location filename="../../gui/mainwindow.cpp" line="3524"/>
         <source>&amp;Select Expression</source>
         <translation>&amp;Chagua Usemi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3443"/>
+        <location filename="../../gui/mainwindow.cpp" line="3525"/>
         <source>&amp;Wrap Selection in Parentheses</source>
         <translation>&amp;Funga Chaguo kwa Mabano</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3445"/>
+        <location filename="../../gui/mainwindow.cpp" line="3527"/>
         <source>&amp;Constants</source>
         <translation>&amp;Konstanti</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3446"/>
+        <location filename="../../gui/mainwindow.cpp" line="3528"/>
         <source>F&amp;ull Screen Mode</source>
         <translation>Hali ya Skrini Nz&amp;ima</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3447"/>
+        <location filename="../../gui/mainwindow.cpp" line="3529"/>
         <source>&amp;Functions</source>
         <translation>&amp;Chaguo za kukokotoa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3448"/>
+        <location filename="../../gui/mainwindow.cpp" line="3530"/>
         <source>&amp;History</source>
         <translation>&amp;Historia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3863"/>
+        <location filename="../../gui/mainwindow.cpp" line="3947"/>
         <source>&amp;Keypad</source>
         <translation>&amp;Kibodi ya nambari</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3457"/>
+        <location filename="../../gui/mainwindow.cpp" line="3539"/>
         <source>Formula &amp;Book</source>
         <translation>Ki&amp;tabu cha fomula</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3458"/>
+        <location filename="../../gui/mainwindow.cpp" line="3540"/>
         <source>&amp;Status Bar</source>
         <translation>&amp;Mwambaa wa hali</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3461"/>
-        <location filename="../../gui/mainwindow.cpp" line="6089"/>
+        <location filename="../../gui/mainwindow.cpp" line="3543"/>
+        <location filename="../../gui/mainwindow.cpp" line="6471"/>
         <source>Bitfield</source>
         <translation>Uga wa biti</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3462"/>
+        <location filename="../../gui/mainwindow.cpp" line="3544"/>
         <source>Use&amp;r Functions</source>
         <translation>Chaguo za kukokotoa za &amp;mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3465"/>
+        <location filename="../../gui/mainwindow.cpp" line="3547"/>
         <source>&amp;Degree</source>
         <translation>&amp;Digrii</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3466"/>
+        <location filename="../../gui/mainwindow.cpp" line="3548"/>
         <source>&amp;Radian</source>
         <translation>&amp;Radiani</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3467"/>
+        <location filename="../../gui/mainwindow.cpp" line="3549"/>
         <source>&amp;Gradian</source>
         <translation>&amp;Gradiani</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3470"/>
+        <location filename="../../gui/mainwindow.cpp" line="3552"/>
         <source>Always on &amp;Top</source>
         <translation>Daima Juu &amp;Kabisa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3474"/>
+        <location filename="../../gui/mainwindow.cpp" line="3556"/>
         <source>Automatic &amp;Completion</source>
         <translation>Ukamilishaji &amp;Kiotomatiki</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3485"/>
+        <location filename="../../gui/mainwindow.cpp" line="3567"/>
         <source>Syntax &amp;Highlighting</source>
         <translation>Kuangazia &amp;Sintaksia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3487"/>
+        <location filename="../../gui/mainwindow.cpp" line="3569"/>
         <source>Disabled</source>
         <translation>Imezimwa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3488"/>
+        <location filename="../../gui/mainwindow.cpp" line="3570"/>
         <source>Small Space</source>
         <translation>Nafasi ndogo</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3489"/>
+        <location filename="../../gui/mainwindow.cpp" line="3571"/>
         <source>Medium Space</source>
         <translation>Nafasi ya kati</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3490"/>
+        <location filename="../../gui/mainwindow.cpp" line="3572"/>
         <source>Large Space</source>
         <translation>Nafasi kubwa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3503"/>
+        <location filename="../../gui/mainwindow.cpp" line="3585"/>
         <source>&amp;Comma</source>
         <translation>&amp;Koma</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3504"/>
+        <location filename="../../gui/mainwindow.cpp" line="3586"/>
         <source>&amp;System Default</source>
         <translation>Chaguo-msingi la &amp;Mfumo</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3505"/>
+        <location filename="../../gui/mainwindow.cpp" line="3587"/>
         <source>&amp;Dot</source>
         <translation>&amp;Nukta</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3506"/>
+        <location filename="../../gui/mainwindow.cpp" line="3588"/>
         <source>Dot &amp;And Comma</source>
         <translation>Nukta &amp;Na Koma</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3507"/>
+        <location filename="../../gui/mainwindow.cpp" line="3589"/>
         <source>&amp;0 Digits</source>
         <translation>&amp;Tarakimu 0</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3508"/>
+        <location filename="../../gui/mainwindow.cpp" line="3590"/>
         <source>&amp;15 Digits</source>
         <translation>&amp;Tarakimu 15</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3509"/>
+        <location filename="../../gui/mainwindow.cpp" line="3591"/>
         <source>&amp;2 Digits</source>
         <translation>&amp;Tarakimu 2</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3510"/>
+        <location filename="../../gui/mainwindow.cpp" line="3592"/>
         <source>&amp;3 Digits</source>
         <translation>&amp;Tarakimu 3</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3511"/>
+        <location filename="../../gui/mainwindow.cpp" line="3593"/>
         <source>&amp;50 Digits</source>
         <translation>&amp;Tarakimu 50</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3512"/>
+        <location filename="../../gui/mainwindow.cpp" line="3594"/>
         <source>&amp;8 Digits</source>
         <translation>&amp;Tarakimu 8</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3523"/>
-        <location filename="../../gui/mainwindow.cpp" line="3524"/>
+        <location filename="../../gui/mainwindow.cpp" line="3605"/>
+        <location filename="../../gui/mainwindow.cpp" line="3606"/>
         <source>&amp;Automatic</source>
         <translation>&amp;Kiotomatiki</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3526"/>
+        <location filename="../../gui/mainwindow.cpp" line="3608"/>
         <source>&amp;Engineering</source>
         <translation>&amp;Kihandisi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3527"/>
+        <location filename="../../gui/mainwindow.cpp" line="3609"/>
         <source>&amp;Scientific</source>
         <translation>&amp;Kisayansi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3529"/>
+        <location filename="../../gui/mainwindow.cpp" line="3611"/>
         <source>&amp;Binary</source>
         <translation>&amp;Binari</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3530"/>
+        <location filename="../../gui/mainwindow.cpp" line="3612"/>
         <source>&amp;Octal</source>
         <translation>&amp;Oktali</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3531"/>
+        <location filename="../../gui/mainwindow.cpp" line="3613"/>
         <source>&amp;Hexadecimal</source>
         <translation>&amp;Hexadesimali</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3532"/>
+        <location filename="../../gui/mainwindow.cpp" line="3614"/>
         <source>&amp;Sexagesimal</source>
         <translation>&amp;Seksajisimali</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3545"/>
+        <location filename="../../gui/mainwindow.cpp" line="3627"/>
         <source>&amp;Font...</source>
         <translation>&amp;Fonti...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3547"/>
+        <location filename="../../gui/mainwindow.cpp" line="3629"/>
         <source>&amp;Language...</source>
         <translation>&amp;Lugha...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3549"/>
+        <location filename="../../gui/mainwindow.cpp" line="3631"/>
         <source>User &amp;Manual</source>
         <translation>Mwongozo wa &amp;Mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3550"/>
+        <location filename="../../gui/mainwindow.cpp" line="3632"/>
         <source>Context Help</source>
         <translation>Msaada wa Muktadha</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3557"/>
+        <location filename="../../gui/mainwindow.cpp" line="3639"/>
         <source>&amp;Donate</source>
         <translation>&amp;Changia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3558"/>
+        <location filename="../../gui/mainwindow.cpp" line="3640"/>
         <source>About &amp;SpeedCrunch</source>
         <translation>Kuhusu &amp;SpeedCrunch</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3859"/>
+        <location filename="../../gui/mainwindow.cpp" line="3943"/>
         <source>&amp;Session</source>
         <translation>&amp;Kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3860"/>
+        <location filename="../../gui/mainwindow.cpp" line="3944"/>
         <source>&amp;Export</source>
         <translation>&amp;Hamisha</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3861"/>
+        <location filename="../../gui/mainwindow.cpp" line="3945"/>
         <source>&amp;Edit</source>
         <translation>&amp;Hariri</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3862"/>
+        <location filename="../../gui/mainwindow.cpp" line="3946"/>
         <source>&amp;View</source>
         <translation>&amp;Tazama</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3865"/>
+        <location filename="../../gui/mainwindow.cpp" line="3949"/>
         <source>Se&amp;ttings</source>
         <translation>Ma&amp;mpangilio</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3871"/>
+        <location filename="../../gui/mainwindow.cpp" line="3955"/>
         <source>&amp;Decimal</source>
         <translation>&amp;Desimali</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3872"/>
+        <location filename="../../gui/mainwindow.cpp" line="3956"/>
         <source>&amp;Precision</source>
         <translation>&amp;Usahihi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3882"/>
+        <location filename="../../gui/mainwindow.cpp" line="3966"/>
         <source>&amp;Help</source>
         <translation>&amp;Msaada</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6195"/>
+        <location filename="../../gui/mainwindow.cpp" line="4281"/>
+        <source>New Tab</source>
+        <translation>Kichupo kipya</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="6577"/>
         <source>Constants</source>
         <translation>Konstanti</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6225"/>
+        <location filename="../../gui/mainwindow.cpp" line="6607"/>
         <source>Functions</source>
         <translation>Chaguo za kukokotoa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6248"/>
+        <location filename="../../gui/mainwindow.cpp" line="6630"/>
         <source>History</source>
         <translation>Historia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6318"/>
+        <location filename="../../gui/mainwindow.cpp" line="6700"/>
         <source>User Functions</source>
         <translation>Chaguo za kukokotoa za mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6909"/>
+        <location filename="../../gui/mainwindow.cpp" line="7372"/>
         <source>Type an expression here</source>
         <translation>Andika usemi hapa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8737"/>
-        <location filename="../../gui/mainwindow.cpp" line="8821"/>
-        <source>SpeedCrunch Sessions (*.json);;All Files (*)</source>
-        <translation>Vikao vya SpeedCrunch (*.json);;Faili Zote (*)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8738"/>
-        <source>Load Session</source>
-        <translation>Pakia Kikao</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8571"/>
-        <location filename="../../gui/mainwindow.cpp" line="8577"/>
-        <location filename="../../gui/mainwindow.cpp" line="8585"/>
-        <location filename="../../gui/mainwindow.cpp" line="8591"/>
-        <location filename="../../gui/mainwindow.cpp" line="8607"/>
-        <location filename="../../gui/mainwindow.cpp" line="8613"/>
-        <location filename="../../gui/mainwindow.cpp" line="8664"/>
-        <location filename="../../gui/mainwindow.cpp" line="8670"/>
-        <location filename="../../gui/mainwindow.cpp" line="8770"/>
-        <location filename="../../gui/mainwindow.cpp" line="8847"/>
-        <location filename="../../gui/mainwindow.cpp" line="8869"/>
-        <location filename="../../gui/mainwindow.cpp" line="8909"/>
-        <location filename="../../gui/mainwindow.cpp" line="9538"/>
-        <location filename="../../gui/mainwindow.cpp" line="9558"/>
+        <location filename="../../gui/mainwindow.cpp" line="9141"/>
+        <location filename="../../gui/mainwindow.cpp" line="9147"/>
+        <location filename="../../gui/mainwindow.cpp" line="9155"/>
+        <location filename="../../gui/mainwindow.cpp" line="9161"/>
+        <location filename="../../gui/mainwindow.cpp" line="9177"/>
+        <location filename="../../gui/mainwindow.cpp" line="9183"/>
+        <location filename="../../gui/mainwindow.cpp" line="9234"/>
+        <location filename="../../gui/mainwindow.cpp" line="9240"/>
+        <location filename="../../gui/mainwindow.cpp" line="9339"/>
+        <location filename="../../gui/mainwindow.cpp" line="10065"/>
+        <location filename="../../gui/mainwindow.cpp" line="10085"/>
         <source>Error</source>
         <translation>Hitilafu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8571"/>
-        <location filename="../../gui/mainwindow.cpp" line="8869"/>
+        <location filename="../../gui/mainwindow.cpp" line="9141"/>
+        <location filename="../../gui/mainwindow.cpp" line="9373"/>
         <source>Can&apos;t read from file %1</source>
         <translation>Haiwezi kusoma kutoka faili %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8744"/>
-        <source>Merge session being loaded with current session?
-If no, current variables and display will be cleared.</source>
-        <translation>Unganisha kikao kinachopakiwa na kikao cha sasa?
-Kama sivyo, vigeu na onyesho la sasa vitafutwa.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8749"/>
-        <location filename="../../gui/mainwindow.cpp" line="8880"/>
-        <source>Merge?</source>
-        <translation>Unganisha?</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8826"/>
-        <source>Save Session</source>
-        <translation>Hifadhi Kikao</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8670"/>
-        <location filename="../../gui/mainwindow.cpp" line="8847"/>
-        <location filename="../../gui/mainwindow.cpp" line="9538"/>
-        <location filename="../../gui/mainwindow.cpp" line="9558"/>
+        <location filename="../../gui/mainwindow.cpp" line="9240"/>
+        <location filename="../../gui/mainwindow.cpp" line="9339"/>
+        <location filename="../../gui/mainwindow.cpp" line="10065"/>
+        <location filename="../../gui/mainwindow.cpp" line="10085"/>
         <source>Can&apos;t write to file %1</source>
         <translation>Haiwezi kuandika kwenye faili %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8862"/>
-        <source>All Files (*)</source>
-        <translation>Faili Zote (*)</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="4205"/>
-        <location filename="../../gui/mainwindow.cpp" line="8863"/>
+        <location filename="../../gui/mainwindow.cpp" line="9355"/>
+        <location filename="../../gui/mainwindow.cpp" line="9373"/>
+        <location filename="../../gui/mainwindow.cpp" line="9381"/>
+        <location filename="../../gui/mainwindow.cpp" line="9388"/>
+        <location filename="../../gui/mainwindow.cpp" line="9396"/>
+        <location filename="../../gui/mainwindow.cpp" line="9404"/>
+        <location filename="../../gui/mainwindow.cpp" line="9410"/>
+        <location filename="../../gui/mainwindow.cpp" line="9418"/>
+        <location filename="../../gui/mainwindow.cpp" line="9424"/>
+        <location filename="../../gui/mainwindow.cpp" line="9432"/>
+        <location filename="../../gui/mainwindow.cpp" line="9438"/>
+        <location filename="../../gui/mainwindow.cpp" line="9446"/>
         <source>Import Session</source>
         <translation>Leta Kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="2147"/>
-        <location filename="../../gui/mainwindow.cpp" line="4212"/>
+        <location filename="../../gui/mainwindow.cpp" line="2222"/>
+        <location filename="../../gui/mainwindow.cpp" line="4301"/>
         <source>Close Session</source>
         <translation>Funga kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3332"/>
+        <location filename="../../gui/mainwindow.cpp" line="3411"/>
         <source>Angle Mode:</source>
         <translation>Hali ya pembe:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3333"/>
+        <location filename="../../gui/mainwindow.cpp" line="3412"/>
         <source>Notation:</source>
         <translation>Nukuu:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3334"/>
+        <location filename="../../gui/mainwindow.cpp" line="3413"/>
         <source>Precision:</source>
         <translation>Usahihi:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3399"/>
+        <location filename="../../gui/mainwindow.cpp" line="3478"/>
         <source>Turn</source>
         <translation>Mzunguko</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3400"/>
+        <location filename="../../gui/mainwindow.cpp" line="3479"/>
         <source>Revolution</source>
         <translation>Mzunguko kamili</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3411"/>
+        <location filename="../../gui/mainwindow.cpp" line="3490"/>
         <source>Fixed-point decimal</source>
         <translation>Desimali ya nukta isiyohama</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3414"/>
+        <location filename="../../gui/mainwindow.cpp" line="3493"/>
         <source>Rational</source>
         <translation>Rasyonali</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3415"/>
+        <location filename="../../gui/mainwindow.cpp" line="3494"/>
         <source>Automatic decimal</source>
         <translation>Desimali otomatiki</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3423"/>
-        <location filename="../../gui/mainwindow.cpp" line="12155"/>
+        <location filename="../../gui/mainwindow.cpp" line="3502"/>
+        <location filename="../../gui/mainwindow.cpp" line="12722"/>
         <source>Automatic</source>
         <translation>Otomatiki</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3432"/>
+        <location filename="../../gui/mainwindow.cpp" line="3512"/>
         <source>User &amp;Definitions...</source>
         <translation>&amp;Fafanuzi za mtumiaji...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3450"/>
+        <location filename="../../gui/mainwindow.cpp" line="3513"/>
+        <source>New &amp;Tab</source>
+        <translation>&amp;Kichupo kipya</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3514"/>
+        <source>New &amp;Window</source>
+        <translation>Dirisha &amp;jipya</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3515"/>
+        <source>&amp;Open...</source>
+        <translation>&amp;Fungua...</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3516"/>
+        <source>Open Sessions &amp;Folder</source>
+        <translation>Fungua &amp;folda ya vikao</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="3532"/>
         <source>&amp;Basic</source>
         <translation>&amp;Msingi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3451"/>
+        <location filename="../../gui/mainwindow.cpp" line="3533"/>
         <source>&amp;Scientific (wide)</source>
         <translation>&amp;Kisayansi (pana)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3452"/>
+        <location filename="../../gui/mainwindow.cpp" line="3534"/>
         <source>Scientific (narrow)</source>
         <translation>Kisayansi (nyembamba)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3453"/>
-        <location filename="../../gui/mainwindow.cpp" line="3513"/>
+        <location filename="../../gui/mainwindow.cpp" line="3535"/>
+        <location filename="../../gui/mainwindow.cpp" line="3595"/>
         <source>&amp;Custom...</source>
         <translation>&amp;Maalum...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3459"/>
+        <location filename="../../gui/mainwindow.cpp" line="3541"/>
         <source>Main &amp;Menu</source>
         <translation>&amp;Menyu kuu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3460"/>
+        <location filename="../../gui/mainwindow.cpp" line="3542"/>
         <source>User &amp;Variables</source>
         <translation>&amp;Vigeu vya mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3463"/>
+        <location filename="../../gui/mainwindow.cpp" line="3545"/>
         <source>User &amp;Units</source>
         <translation>&amp;Vipimo vya mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3468"/>
+        <location filename="../../gui/mainwindow.cpp" line="3550"/>
         <source>&amp;Turn</source>
         <translation>&amp;Mzunguko</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3469"/>
+        <location filename="../../gui/mainwindow.cpp" line="3551"/>
         <source>&amp;Revolution</source>
         <translation>M&amp;zunguko kamili</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3471"/>
+        <location filename="../../gui/mainwindow.cpp" line="3553"/>
         <source>Auto-Insert &quot;ans&quot; When Starting with an Operator</source>
         <translation>Ingiza &quot;ans&quot; kiotomatiki unapoanza na opereta</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3472"/>
-        <location filename="../../gui/mainwindow.cpp" line="3473"/>
+        <location filename="../../gui/mainwindow.cpp" line="3554"/>
+        <location filename="../../gui/mainwindow.cpp" line="3555"/>
         <source>If a new expression starts with +, -, *, or /, SpeedCrunch inserts &quot;ans&quot; first.</source>
         <translation>Ikiwa usemi mpya unaanza na +, -, *, au /, SpeedCrunch huingiza &quot;ans&quot; kwanza.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3475"/>
+        <location filename="../../gui/mainwindow.cpp" line="3557"/>
         <source>Built-in &amp;functions</source>
         <translation>&amp;Vitendakazi vilivyojengwa ndani</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3476"/>
+        <location filename="../../gui/mainwindow.cpp" line="3558"/>
         <source>Built-in &amp;variables</source>
         <translation>V&amp;igeu vilivyojengwa ndani</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3477"/>
+        <location filename="../../gui/mainwindow.cpp" line="3559"/>
         <source>&amp;Units</source>
         <translation>&amp;Vipimo</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3478"/>
+        <location filename="../../gui/mainwindow.cpp" line="3560"/>
         <source>User &amp;functions</source>
         <translation>Vi&amp;tendakazi vya mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3479"/>
+        <location filename="../../gui/mainwindow.cpp" line="3561"/>
         <source>User &amp;variables</source>
         <translation>V&amp;igeu vya mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3480"/>
+        <location filename="../../gui/mainwindow.cpp" line="3562"/>
         <source>Show Empty History &amp;Hint</source>
         <translation>Onyesha &amp;kidokezo cha historia tupu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3481"/>
-        <location filename="../../gui/mainwindow.cpp" line="3482"/>
+        <location filename="../../gui/mainwindow.cpp" line="3563"/>
+        <location filename="../../gui/mainwindow.cpp" line="3564"/>
         <source>When history is empty, show a hint in the status area.</source>
         <translation>Historia ikiwa tupu, onyesha kidokezo kwenye eneo la hali.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3483"/>
+        <location filename="../../gui/mainwindow.cpp" line="3565"/>
         <source>Show Live Result &amp;Preview</source>
         <translation>Onyesha &amp;hakikisho la matokeo moja kwa moja</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3484"/>
+        <location filename="../../gui/mainwindow.cpp" line="3566"/>
         <source>Save &amp;Window Position on Exit</source>
         <translation>Hifadhi &amp;nafasi ya dirisha wakati wa kutoka</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3486"/>
+        <location filename="../../gui/mainwindow.cpp" line="3568"/>
         <source>Hover Highlighting</source>
         <translation>Kuangazia unapoelea juu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3491"/>
+        <location filename="../../gui/mainwindow.cpp" line="3573"/>
         <source>Group Integer Part Only</source>
         <translation>Panga sehemu kamili pekee</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3492"/>
+        <location filename="../../gui/mainwindow.cpp" line="3574"/>
         <source>Keep Entered Expression After Evaluate</source>
         <translation>Bakiza usemi uliowekwa baada ya kutathmini</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3493"/>
+        <location filename="../../gui/mainwindow.cpp" line="3575"/>
         <source>Number Format...</source>
         <translation>Muundo wa namba...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3494"/>
+        <location filename="../../gui/mainwindow.cpp" line="3576"/>
         <source>Notation &amp;&amp; Precision...</source>
         <translation>Nukuu &amp;&amp; usahihi...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3495"/>
-        <location filename="../../gui/mainwindow.cpp" line="3496"/>
+        <location filename="../../gui/mainwindow.cpp" line="3577"/>
+        <location filename="../../gui/mainwindow.cpp" line="3578"/>
         <source>After pressing Enter, keep the entered expression selected in the editor.</source>
         <translation>Baada ya kubonyeza Enter, bakiza usemi uliowekwa ukiwa umechaguliwa kwenye kihariri.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3497"/>
+        <location filename="../../gui/mainwindow.cpp" line="3579"/>
         <source>Never</source>
         <translation>Kamwe</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3498"/>
+        <location filename="../../gui/mainwindow.cpp" line="3580"/>
         <source>Always</source>
         <translation>Daima</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3499"/>
+        <location filename="../../gui/mainwindow.cpp" line="3581"/>
         <source>Only for Single-Line Expressions</source>
         <translation>Kwa semi za mstari mmoja pekee</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3500"/>
+        <location filename="../../gui/mainwindow.cpp" line="3582"/>
         <source>Automatically Copy New Results to Clipboard</source>
         <translation>Nakili matokeo mapya kwenye ubao wa kunakili kiotomatiki</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3501"/>
+        <location filename="../../gui/mainwindow.cpp" line="3583"/>
         <source>Simplify Displayed Expressions</source>
         <translation>Rahisisha semi zinazoonyeshwa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3502"/>
+        <location filename="../../gui/mainwindow.cpp" line="3584"/>
         <source>History Size &amp;Limit...</source>
         <translation>&amp;Kikomo cha ukubwa wa historia...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3515"/>
+        <location filename="../../gui/mainwindow.cpp" line="3597"/>
         <source>Nearest, Half &amp;Away (round)</source>
         <translation>Karibu zaidi, nusu &amp;mbali na sifuri (round)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3517"/>
+        <location filename="../../gui/mainwindow.cpp" line="3599"/>
         <source>Nearest, Half &amp;Even (roundeven)</source>
         <translation>Karibu zaidi, nusu &amp;jozi (roundeven)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3518"/>
+        <location filename="../../gui/mainwindow.cpp" line="3600"/>
         <source>Toward &amp;Zero (trunc)</source>
         <translation>Kuelekea &amp;sifuri (trunc)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3520"/>
+        <location filename="../../gui/mainwindow.cpp" line="3602"/>
         <source>Toward +&amp;∞ (ceil)</source>
         <translation>Kuelekea +&amp;∞ (ceil)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3522"/>
+        <location filename="../../gui/mainwindow.cpp" line="3604"/>
         <source>Toward −&amp;∞ (floor)</source>
         <translation>Kuelekea −&amp;∞ (floor)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3525"/>
+        <location filename="../../gui/mainwindow.cpp" line="3607"/>
         <source>&amp;Fixed-Point</source>
         <translation>Nukta &amp;isiyohama</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3528"/>
+        <location filename="../../gui/mainwindow.cpp" line="3610"/>
         <source>&amp;Rational</source>
         <translation>&amp;Rasyonali</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3534"/>
+        <location filename="../../gui/mainwindow.cpp" line="3616"/>
         <source>&amp;Exponential (m·s⁻¹)</source>
         <translation>&amp;Eksponensheli (m·s⁻¹)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3536"/>
+        <location filename="../../gui/mainwindow.cpp" line="3618"/>
         <source>&amp;Fractional (m/s)</source>
         <translation>&amp;Kisehemu (m/s)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3537"/>
+        <location filename="../../gui/mainwindow.cpp" line="3619"/>
         <source>&amp;Rectangular (a + bi)</source>
         <translation>&amp;Mstatili (a + bi)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3538"/>
+        <location filename="../../gui/mainwindow.cpp" line="3620"/>
         <source>Exponential (reⁱᶿ)</source>
         <translation>Eksponensheli (reⁱᶿ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3540"/>
+        <location filename="../../gui/mainwindow.cpp" line="3622"/>
         <source>Trigonometric (r(cos θ + i·sin θ))</source>
         <translation>Trigonometria (r(cos θ + i·sin θ))</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3542"/>
+        <location filename="../../gui/mainwindow.cpp" line="3624"/>
         <source>Phasor (r∠θ)</source>
         <translation>Fasori (r∠θ)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3546"/>
+        <location filename="../../gui/mainwindow.cpp" line="3628"/>
         <source>&amp;Theme...</source>
         <translation>&amp;Mandhari...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3551"/>
+        <location filename="../../gui/mainwindow.cpp" line="3633"/>
         <source>Check for &amp;Updates</source>
         <translation>Kagua &amp;masasisho</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3552"/>
+        <location filename="../../gui/mainwindow.cpp" line="3634"/>
         <source>Issue Tracker</source>
         <translation>Kifuatiliaji cha masuala</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3553"/>
+        <location filename="../../gui/mainwindow.cpp" line="3635"/>
         <source>Google Group</source>
         <translation>Kikundi cha Google</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3554"/>
+        <location filename="../../gui/mainwindow.cpp" line="3636"/>
         <source>Facebook &amp;Group</source>
         <translation>&amp;Kikundi cha Facebook</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3555"/>
+        <location filename="../../gui/mainwindow.cpp" line="3637"/>
         <source>&amp;Blogspot</source>
         <translation>&amp;Blogspot</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3556"/>
+        <location filename="../../gui/mainwindow.cpp" line="3638"/>
         <source>Source Code</source>
         <translation>Msimbo chanzo</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3864"/>
+        <location filename="../../gui/mainwindow.cpp" line="3948"/>
         <source>&amp;Zoom</source>
         <translation>&amp;Kuza</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3866"/>
+        <location filename="../../gui/mainwindow.cpp" line="3950"/>
         <source>&amp;Results</source>
         <translation>&amp;Matokeo</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3867"/>
+        <location filename="../../gui/mainwindow.cpp" line="3951"/>
         <source>&amp;Symbols</source>
         <translation>&amp;Alama</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3868"/>
+        <location filename="../../gui/mainwindow.cpp" line="3952"/>
         <source>Unit Notation</source>
         <translation>Nukuu ya vipimo</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3869"/>
+        <location filename="../../gui/mainwindow.cpp" line="3953"/>
         <source>Rounding Mode</source>
         <translation>Hali ya kuzungusha</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3870"/>
+        <location filename="../../gui/mainwindow.cpp" line="3954"/>
         <source>&amp;Notation</source>
         <translation>&amp;Nukuu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3873"/>
+        <location filename="../../gui/mainwindow.cpp" line="3957"/>
         <source>&amp;Angle Mode</source>
         <translation>Hali ya &amp;pembe</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3874"/>
+        <location filename="../../gui/mainwindow.cpp" line="3958"/>
         <source>Complex &amp;Numbers</source>
         <translation>Namba &amp;changamano</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3875"/>
+        <location filename="../../gui/mainwindow.cpp" line="3959"/>
         <source>&amp;Form</source>
         <translation>&amp;Umbo</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3876"/>
+        <location filename="../../gui/mainwindow.cpp" line="3960"/>
         <source>&amp;Imaginary Unit</source>
         <translation>Kipimo cha &amp;kufikirika</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3877"/>
+        <location filename="../../gui/mainwindow.cpp" line="3961"/>
         <source>&amp;Window</source>
         <translation>&amp;Dirisha</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3878"/>
+        <location filename="../../gui/mainwindow.cpp" line="3962"/>
         <source>&amp;Editing</source>
         <translation>&amp;Uhariri</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3879"/>
+        <location filename="../../gui/mainwindow.cpp" line="3963"/>
         <source>A&amp;utocomplete</source>
         <translation>Kukamilisha &amp;kiotomatiki</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3880"/>
+        <location filename="../../gui/mainwindow.cpp" line="3964"/>
         <source>Up/Down Arrow History</source>
         <translation>Historia kwa vishale vya juu/chini</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3881"/>
+        <location filename="../../gui/mainwindow.cpp" line="3965"/>
         <source>&amp;Appearance</source>
         <translation>&amp;Mwonekano</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3888"/>
+        <location filename="../../gui/mainwindow.cpp" line="3972"/>
         <source>&amp;Disabled</source>
         <translation>&amp;Imezimwa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="3890"/>
+        <location filename="../../gui/mainwindow.cpp" line="3974"/>
         <source>&amp;Disable</source>
         <translation>&amp;Zima</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4054"/>
+        <location filename="../../gui/mainwindow.cpp" line="4138"/>
         <source>Close preview</source>
         <translation>Funga hakikisho</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4197"/>
-        <source>New Session</source>
-        <translation>Kikao kipya</translation>
+        <location filename="../../gui/mainwindow.cpp" line="9313"/>
+        <location filename="../../gui/mainwindow.cpp" line="9354"/>
+        <source>JSON file (*.json);;Any file (*.*)</source>
+        <translation>Faili ya JSON (*.json);;Faili yoyote (*.*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4198"/>
-        <location filename="../../gui/mainwindow.cpp" line="7592"/>
+        <location filename="../../gui/mainwindow.cpp" line="9317"/>
+        <source>Export session as JSON</source>
+        <translation>Hamisha kikao kama JSON</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9382"/>
+        <source>The selected file is not valid JSON: %1</source>
+        <translation>Faili iliyochaguliwa si JSON halali: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9389"/>
+        <source>The selected file is not a SpeedCrunch session JSON file.</source>
+        <translation>Faili iliyochaguliwa si faili ya JSON ya kikao cha SpeedCrunch.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9397"/>
+        <source>This file uses an obsolete SpeedCrunch session format and cannot be imported.</source>
+        <translation>Faili hii inatumia umbizo la zamani la kikao cha SpeedCrunch na haiwezi kuletwa.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9405"/>
+        <source>The selected JSON file is missing the required $schema field.</source>
+        <translation>Faili ya JSON iliyochaguliwa haina sehemu inayohitajika ya $schema.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9411"/>
+        <source>The selected JSON file uses an unsupported JSON schema: %1</source>
+        <translation>Faili ya JSON iliyochaguliwa inatumia skimu ya JSON isiyotumika: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9419"/>
+        <source>The selected JSON file is missing the SpeedCrunch session schema identifier ($id).</source>
+        <translation>Faili ya JSON iliyochaguliwa haina kitambulisho cha skimu ya kikao cha SpeedCrunch ($id).</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9425"/>
+        <source>The selected JSON file uses an unsupported SpeedCrunch session format: %1</source>
+        <translation>Faili ya JSON iliyochaguliwa inatumia umbizo la kikao cha SpeedCrunch lisilotumika: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9433"/>
+        <source>The selected JSON file is missing the required session name.</source>
+        <translation>Faili ya JSON iliyochaguliwa haina jina la kikao linalohitajika.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9439"/>
+        <source>The selected JSON file has an empty session name.</source>
+        <translation>Faili ya JSON iliyochaguliwa ina jina tupu la kikao.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9447"/>
+        <source>The selected JSON file has invalid or incomplete SpeedCrunch session data.</source>
+        <translation>Faili ya JSON iliyochaguliwa ina data batili au isiyokamilika ya kikao cha SpeedCrunch.</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9458"/>
+        <location filename="../../gui/mainwindow.cpp" line="9466"/>
+        <source>Open Sessions Folder</source>
+        <translation>Fungua folda ya vikao</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9459"/>
+        <source>Could not create the sessions folder: %1</source>
+        <translation>Haikuweza kuunda folda ya vikao: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="9467"/>
+        <source>Could not open the sessions folder: %1</source>
+        <translation>Haikuweza kufungua folda ya vikao: %1</translation>
+    </message>
+    <message>
+        <location filename="../../gui/mainwindow.cpp" line="4282"/>
+        <location filename="../../gui/mainwindow.cpp" line="8135"/>
         <source>Open Session</source>
         <translation>Fungua kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4200"/>
+        <location filename="../../gui/mainwindow.cpp" line="4284"/>
         <source>Split Left</source>
         <translation>Gawanya kushoto</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4201"/>
+        <location filename="../../gui/mainwindow.cpp" line="4285"/>
         <source>Split Right</source>
         <translation>Gawanya kulia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4202"/>
+        <location filename="../../gui/mainwindow.cpp" line="4286"/>
         <source>Split Up</source>
         <translation>Gawanya juu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4203"/>
+        <location filename="../../gui/mainwindow.cpp" line="4287"/>
         <source>Split Down</source>
         <translation>Gawanya chini</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4206"/>
-        <source>Export Session</source>
-        <translation>Hamisha kikao</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="4208"/>
-        <location filename="../../gui/mainwindow.cpp" line="7673"/>
-        <location filename="../../gui/mainwindow.cpp" line="7684"/>
-        <location filename="../../gui/mainwindow.cpp" line="7697"/>
-        <location filename="../../gui/mainwindow.cpp" line="7707"/>
+        <location filename="../../gui/mainwindow.cpp" line="4295"/>
+        <location filename="../../gui/mainwindow.cpp" line="8216"/>
+        <location filename="../../gui/mainwindow.cpp" line="8227"/>
+        <location filename="../../gui/mainwindow.cpp" line="8240"/>
+        <location filename="../../gui/mainwindow.cpp" line="8250"/>
         <source>Duplicate Session</source>
         <translation>Nakili kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4209"/>
-        <location filename="../../gui/mainwindow.cpp" line="7736"/>
-        <location filename="../../gui/mainwindow.cpp" line="7750"/>
-        <location filename="../../gui/mainwindow.cpp" line="7761"/>
+        <location filename="../../gui/mainwindow.cpp" line="4296"/>
+        <location filename="../../gui/mainwindow.cpp" line="8279"/>
+        <location filename="../../gui/mainwindow.cpp" line="8293"/>
+        <location filename="../../gui/mainwindow.cpp" line="8304"/>
         <source>Rename Session</source>
         <translation>Badili jina la kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4210"/>
+        <location filename="../../gui/mainwindow.cpp" line="4298"/>
         <source>Clear Session</source>
         <translation>Futa yaliyomo ya kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4211"/>
-        <location filename="../../gui/mainwindow.cpp" line="8031"/>
+        <location filename="../../gui/mainwindow.cpp" line="4299"/>
+        <location filename="../../gui/mainwindow.cpp" line="8578"/>
         <source>Delete Session</source>
         <translation>Futa kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="4213"/>
+        <location filename="../../gui/mainwindow.cpp" line="4302"/>
         <source>Close Pane</source>
         <translation>Funga kidirisha</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6281"/>
+        <location filename="../../gui/mainwindow.cpp" line="6663"/>
         <source>User Variables</source>
         <translation>Vigeu vya mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="6355"/>
+        <location filename="../../gui/mainwindow.cpp" line="6737"/>
         <source>User Units</source>
         <translation>Vipimo vya mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7497"/>
-        <location filename="../../gui/mainwindow.cpp" line="7528"/>
+        <location filename="../../gui/mainwindow.cpp" line="7981"/>
+        <location filename="../../gui/mainwindow.cpp" line="8012"/>
         <source>Clear History</source>
         <translation>Futa historia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7498"/>
-        <location filename="../../gui/mainwindow.cpp" line="7529"/>
+        <location filename="../../gui/mainwindow.cpp" line="7982"/>
+        <location filename="../../gui/mainwindow.cpp" line="8013"/>
         <source>Are you sure you want to clear the calculation history?</source>
         <translation>Una uhakika unataka kufuta historia ya hesabu?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7674"/>
-        <location filename="../../gui/mainwindow.cpp" line="7737"/>
+        <location filename="../../gui/mainwindow.cpp" line="8217"/>
+        <location filename="../../gui/mainwindow.cpp" line="8280"/>
         <source>Session name:</source>
         <translation>Jina la kikao:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7685"/>
-        <location filename="../../gui/mainwindow.cpp" line="7751"/>
+        <location filename="../../gui/mainwindow.cpp" line="8228"/>
+        <location filename="../../gui/mainwindow.cpp" line="8294"/>
         <source>A session named %1 already exists.</source>
         <translation>Kikao kinachoitwa %1 tayari kipo.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7698"/>
+        <location filename="../../gui/mainwindow.cpp" line="8241"/>
         <source>Could not create session file %1.</source>
         <translation>Haikuwezekana kuunda faili ya kikao %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7708"/>
+        <location filename="../../gui/mainwindow.cpp" line="8251"/>
         <source>Could not write session file %1.</source>
         <translation>Haikuwezekana kuandika faili ya kikao %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="7762"/>
+        <location filename="../../gui/mainwindow.cpp" line="8305"/>
         <source>Could not rename session file %1.</source>
         <translation>Haikuwezekana kubadili jina la faili ya kikao %1.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8032"/>
+        <location filename="../../gui/mainwindow.cpp" line="8579"/>
         <source>Are you sure you want to delete this session?</source>
         <translation>Una uhakika unataka kufuta kikao hiki?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8207"/>
+        <location filename="../../gui/mainwindow.cpp" line="8754"/>
         <source>Custom Precision</source>
         <translation>Usahihi maalum</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8208"/>
+        <location filename="../../gui/mainwindow.cpp" line="8755"/>
         <source>Fractional digits:</source>
         <translation>Tarakimu za sehemu:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8225"/>
+        <location filename="../../gui/mainwindow.cpp" line="8772"/>
         <source>Theme</source>
         <translation>Mandhari</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8234"/>
+        <location filename="../../gui/mainwindow.cpp" line="8781"/>
         <source>Light Themes</source>
         <translation>Mandhari mepesi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8241"/>
+        <location filename="../../gui/mainwindow.cpp" line="8788"/>
         <source>Dark Themes</source>
         <translation>Mandhari meusi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8249"/>
+        <location filename="../../gui/mainwindow.cpp" line="8796"/>
         <source>Preview</source>
         <translation>Hakikisho</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8311"/>
+        <location filename="../../gui/mainwindow.cpp" line="8858"/>
         <source>Colors</source>
         <translation>Rangi</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8487"/>
+        <location filename="../../gui/mainwindow.cpp" line="9050"/>
         <source>Select color for %1</source>
         <translation>Chagua rangi ya %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8532"/>
+        <location filename="../../gui/mainwindow.cpp" line="9104"/>
         <source>Import...</source>
         <translation>Leta...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8533"/>
+        <location filename="../../gui/mainwindow.cpp" line="9105"/>
         <source>Export...</source>
         <translation>Hamisha...</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8565"/>
+        <location filename="../../gui/mainwindow.cpp" line="9135"/>
         <source>Import Theme</source>
         <translation>Leta mandhari</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8566"/>
-        <location filename="../../gui/mainwindow.cpp" line="8655"/>
+        <location filename="../../gui/mainwindow.cpp" line="9136"/>
+        <location filename="../../gui/mainwindow.cpp" line="9225"/>
         <source>Theme file (*.json);;All files (*)</source>
         <translation>Faili ya mandhari (*.json);;Faili zote (*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8577"/>
+        <location filename="../../gui/mainwindow.cpp" line="9147"/>
         <source>Invalid theme file.</source>
         <translation>Faili ya mandhari si sahihi.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8586"/>
+        <location filename="../../gui/mainwindow.cpp" line="9156"/>
         <source>Can&apos;t import theme &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>Haiwezi kuleta mandhari &quot;%1&quot; kwa sababu inakinzana na mandhari iliyojengwa ndani.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8591"/>
+        <location filename="../../gui/mainwindow.cpp" line="9161"/>
         <source>Can&apos;t find a writable theme folder.</source>
         <translation>Haiwezi kupata folda ya mandhari inayoweza kuandikwa.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8598"/>
+        <location filename="../../gui/mainwindow.cpp" line="9168"/>
         <source>Overwrite Theme</source>
         <translation>Andika juu ya mandhari</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8599"/>
+        <location filename="../../gui/mainwindow.cpp" line="9169"/>
         <source>A custom theme named &quot;%1&quot; already exists. Do you want to overwrite it?</source>
         <translation>Mandhari maalum inayoitwa &quot;%1&quot; tayari ipo. Unataka kuiandika juu yake?</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8607"/>
+        <location filename="../../gui/mainwindow.cpp" line="9177"/>
         <source>Can&apos;t overwrite theme file %1</source>
         <translation>Haiwezi kuandika juu ya faili ya mandhari %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8613"/>
+        <location filename="../../gui/mainwindow.cpp" line="9183"/>
         <source>Can&apos;t copy theme file to %1</source>
         <translation>Haiwezi kunakili faili ya mandhari kwenda %1</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8654"/>
+        <location filename="../../gui/mainwindow.cpp" line="9224"/>
         <source>Export Theme</source>
         <translation>Hamisha mandhari</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8665"/>
+        <location filename="../../gui/mainwindow.cpp" line="9235"/>
         <source>Can&apos;t export theme as &quot;%1&quot; because it conflicts with a built-in theme.</source>
         <translation>Haiwezi kuhamisha mandhari kama &quot;%1&quot; kwa sababu inakinzana na mandhari iliyojengwa ndani.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8771"/>
-        <source>Can&apos;t read the selected session file.</source>
-        <translation>Haiwezi kusoma faili ya kikao iliyochaguliwa.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8874"/>
-        <source>Merge session being imported with current session?
-If no, current variables and display will be cleared.</source>
-        <translation>Unganisha kikao kinacholetwa na kikao cha sasa?
-Kama sivyo, vigeu na onyesho la sasa vitafutwa.</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8909"/>
-        <source>Ignore error?</source>
-        <translation>Puuza hitilafu?</translation>
-    </message>
-    <message>
-        <location filename="../../gui/mainwindow.cpp" line="8949"/>
+        <location filename="../../gui/mainwindow.cpp" line="9476"/>
         <source>Global User Variable</source>
         <translation>Kigeu cha jumla cha mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8950"/>
+        <location filename="../../gui/mainwindow.cpp" line="9477"/>
         <source>Global User Function</source>
         <translation>Kitendakazi cha jumla cha mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="8951"/>
+        <location filename="../../gui/mainwindow.cpp" line="9478"/>
         <source>Global User Unit</source>
         <translation>Kipimo cha jumla cha mtumiaji</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9321"/>
+        <location filename="../../gui/mainwindow.cpp" line="9848"/>
         <source>History Size Limit</source>
         <translation>Kikomo cha ukubwa wa historia</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9322"/>
+        <location filename="../../gui/mainwindow.cpp" line="9849"/>
         <source>Maximum number of history entries for this session (0 = unlimited):</source>
         <translation>Idadi ya juu ya vipengee vya historia kwa kikao hiki (0 = bila kikomo):</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9530"/>
+        <location filename="../../gui/mainwindow.cpp" line="10057"/>
         <source>Export session as HTML</source>
         <translation>Hamisha kikao kama HTML</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9531"/>
+        <location filename="../../gui/mainwindow.cpp" line="10058"/>
         <source>HTML file (*.html)</source>
         <translation>Faili ya HTML (*.html)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9550"/>
+        <location filename="../../gui/mainwindow.cpp" line="10077"/>
         <source>Export session as plain text</source>
         <translation>Hamisha kikao kama maandishi ya kawaida</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9551"/>
+        <location filename="../../gui/mainwindow.cpp" line="10078"/>
         <source>Text file (*.txt);;Any file (*.*)</source>
         <translation>Faili ya maandishi (*.txt);;Faili yoyote (*.*)</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="9588"/>
+        <location filename="../../gui/mainwindow.cpp" line="10115"/>
         <source>Display font</source>
         <translation>Fonti ya onyesho</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11352"/>
-        <location filename="../../gui/mainwindow.cpp" line="11525"/>
+        <location filename="../../gui/mainwindow.cpp" line="11919"/>
+        <location filename="../../gui/mainwindow.cpp" line="12092"/>
         <source>Could not recalculate from calculation %1: %2</source>
         <translation>Haikuwezekana kukokotoa upya kuanzia hesabu %1: %2</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11441"/>
+        <location filename="../../gui/mainwindow.cpp" line="12008"/>
         <source>History Size Limit Reached</source>
         <translation>Kikomo cha ukubwa wa historia kimefikiwa</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11442"/>
+        <location filename="../../gui/mainwindow.cpp" line="12009"/>
         <source>This calculation fills the last available history slot. Future calculations will remove the oldest calculation from history. You can increase the limit from Session &gt; History Size Limit.</source>
         <translation>Hesabu hii inajaza nafasi ya mwisho ya historia inayopatikana. Hesabu za baadaye zitaondoa hesabu ya zamani zaidi kutoka historia. Unaweza kuongeza kikomo kutoka Kikao &gt; Kikomo cha ukubwa wa historia.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11465"/>
+        <location filename="../../gui/mainwindow.cpp" line="12032"/>
         <source>Editing calculation. Press Esc twice to cancel.</source>
         <translation>Unahariri hesabu. Bonyeza Esc mara mbili ili kughairi.</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11506"/>
+        <location filename="../../gui/mainwindow.cpp" line="12073"/>
         <source>Calculation Settings</source>
         <translation>Mipangilio ya hesabu</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="11582"/>
+        <location filename="../../gui/mainwindow.cpp" line="12149"/>
         <source>Invalid recalculation start index</source>
         <translation>Faharasa batili ya kuanzia kukokotoa upya</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12129"/>
+        <location filename="../../gui/mainwindow.cpp" line="12696"/>
         <source>System Default</source>
         <translation>Chaguo-msingi la mfumo</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12133"/>
+        <location filename="../../gui/mainwindow.cpp" line="12700"/>
         <source>Language</source>
         <translation>Lugha</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12133"/>
+        <location filename="../../gui/mainwindow.cpp" line="12700"/>
         <source>Select the language:</source>
         <translation>Chagua lugha:</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12163"/>
+        <location filename="../../gui/mainwindow.cpp" line="12730"/>
         <source>Custom</source>
         <translation>Maalum</translation>
     </message>
     <message>
-        <location filename="../../gui/mainwindow.cpp" line="12175"/>
+        <location filename="../../gui/mainwindow.cpp" line="12742"/>
         <source>Decimal places:</source>
         <translation>Nafasi za desimali:</translation>
     </message>
@@ -5946,144 +5984,149 @@ Kama sivyo, vigeu na onyesho la sasa vitafutwa.</translation>
 <context>
     <name>ResultDisplay</name>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="563"/>
-        <location filename="../../gui/resultdisplay.cpp" line="569"/>
-        <location filename="../../gui/resultdisplay.cpp" line="573"/>
+        <location filename="../../gui/resultdisplay.cpp" line="514"/>
+        <location filename="../../gui/resultdisplay.cpp" line="520"/>
+        <location filename="../../gui/resultdisplay.cpp" line="524"/>
         <source>Scroll to bottom</source>
         <translation>Sogeza hadi chini</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1408"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1305"/>
         <source>Copy Expression</source>
         <translation>Nakili usemi</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1415"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1312"/>
         <source>Copy Result</source>
         <translation>Nakili matokeo</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1431"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1328"/>
         <source>Edit Expression</source>
         <translation>Hariri usemi</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1435"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1332"/>
         <source>Change Settings</source>
         <translation>Badili mipangilio</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1439"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1336"/>
         <source>Remove Calculation</source>
         <translation>Ondoa hesabu</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1444"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1341"/>
         <source>Remove All Calculations Above</source>
         <translation>Ondoa hesabu zote zilizo juu</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1448"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1345"/>
         <source>Remove All Calculations Below</source>
         <translation>Ondoa hesabu zote zilizo chini</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1455"/>
-        <source>New Session</source>
-        <translation>Kikao kipya</translation>
-    </message>
-    <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1459"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1356"/>
         <source>Open Session</source>
         <translation>Fungua kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1464"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1361"/>
         <source>Split Left</source>
         <translation>Gawanya kushoto</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1468"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1365"/>
         <source>Split Right</source>
         <translation>Gawanya kulia</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1472"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1369"/>
         <source>Split Up</source>
         <translation>Gawanya juu</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1476"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1373"/>
         <source>Split Down</source>
         <translation>Gawanya chini</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1481"/>
-        <source>Import Session</source>
-        <translation>Leta kikao</translation>
+        <location filename="../../gui/resultdisplay.cpp" line="1352"/>
+        <source>New Tab</source>
+        <translation>Kichupo kipya</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1482"/>
-        <source>Export Session</source>
-        <translation>Hamisha kikao</translation>
+        <location filename="../../gui/resultdisplay.cpp" line="1378"/>
+        <source>&amp;Import...</source>
+        <translation>&amp;Leta...</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1484"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1382"/>
+        <source>&amp;Export</source>
+        <translation>&amp;Hamisha</translation>
+    </message>
+    <message>
+        <location filename="../../gui/resultdisplay.cpp" line="1387"/>
+        <source>Plain &amp;text</source>
+        <translation>Maandishi ya &amp;kawaida</translation>
+    </message>
+    <message>
+        <location filename="../../gui/resultdisplay.cpp" line="1396"/>
         <source>Duplicate Session</source>
         <translation>Nakili kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1488"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1400"/>
         <source>Rename Session</source>
         <translation>Badili jina la kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1492"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1405"/>
         <source>Clear Session</source>
         <translation>Futa yaliyomo ya kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1496"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1409"/>
         <source>Delete Session</source>
         <translation>Futa kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1500"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1414"/>
         <source>Close Session</source>
         <translation>Funga kikao</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1504"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1418"/>
         <source>Close Pane</source>
         <translation>Funga kidirisha</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1512"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1426"/>
         <source>Main Menu</source>
         <translation>Menyu kuu</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1636"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1550"/>
         <source>Cancel editing</source>
         <translation>Ghairi kuhariri</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1683"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1597"/>
         <source>Copy result</source>
         <translation>Nakili matokeo</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1684"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1598"/>
         <source>Edit expression</source>
         <translation>Hariri usemi</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1685"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1599"/>
         <source>Change settings</source>
         <translation>Badili mipangilio</translation>
     </message>
     <message>
-        <location filename="../../gui/resultdisplay.cpp" line="1686"/>
+        <location filename="../../gui/resultdisplay.cpp" line="1600"/>
         <source>Remove calculation</source>
         <translation>Ondoa hesabu</translation>
     </message>
