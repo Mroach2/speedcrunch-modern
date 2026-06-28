@@ -80,6 +80,10 @@ signals:
     void removeHistoryEntriesBelowRequested(int index);
     void newSessionRequested();
     void openSessionRequested();
+    void importSessionRequested();
+    void exportSessionJsonRequested();
+    void exportSessionPlainTextRequested();
+    void exportSessionHtmlRequested();
     void duplicateSessionRequested();
     void splitLeftRequested();
     void splitRightRequested();

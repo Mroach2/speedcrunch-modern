@@ -1134,7 +1134,31 @@ void TestDisplayUi::result_display_context_menu_hides_main_menu_when_menu_bar_vi
 
     QVERIFY(window.menuBar()->isVisible());
     QVERIFY(!contextMenuContainsMainMenu(display));
+    QSignalSpy importSessionSpy(display, &ResultDisplay::importSessionRequested);
+    QSignalSpy exportJsonSpy(display, &ResultDisplay::exportSessionJsonRequested);
+    QSignalSpy exportPlainTextSpy(display, &ResultDisplay::exportSessionPlainTextRequested);
+    QSignalSpy exportHtmlSpy(display, &ResultDisplay::exportSessionHtmlRequested);
+
     QMenu* menu = display->createContextMenu(display->rect().center());
+    QAction* importAction = directMenuActionWithText(menu, QStringLiteral("&Import..."));
+    QVERIFY(importAction != nullptr);
+    QMenu* exportMenu = directSubmenuWithTitle(menu, QStringLiteral("&Export"));
+    QVERIFY(exportMenu != nullptr);
+    QVERIFY(directMenuActionWithText(menu, QStringLiteral("Import Session")) == nullptr);
+    QVERIFY(directMenuActionWithText(menu, QStringLiteral("Export Session")) == nullptr);
+    QVERIFY(directMenuActionWithText(exportMenu, QStringLiteral("JSON")) != nullptr);
+    QVERIFY(directMenuActionWithText(exportMenu, QStringLiteral("Plain &text")) != nullptr);
+    QVERIFY(directMenuActionWithText(exportMenu, QStringLiteral("&HTML")) != nullptr);
+
+    importAction->trigger();
+    directMenuActionWithText(exportMenu, QStringLiteral("JSON"))->trigger();
+    directMenuActionWithText(exportMenu, QStringLiteral("Plain &text"))->trigger();
+    directMenuActionWithText(exportMenu, QStringLiteral("&HTML"))->trigger();
+    QCOMPARE(importSessionSpy.size(), 1);
+    QCOMPARE(exportJsonSpy.size(), 1);
+    QCOMPARE(exportPlainTextSpy.size(), 1);
+    QCOMPARE(exportHtmlSpy.size(), 1);
+
     QVERIFY(menu->styleSheet().contains(QStringLiteral("#111111")));
     QVERIFY(menu->styleSheet().contains(QStringLiteral("#eeeeee")));
     QVERIFY(menu->styleSheet().contains(QStringLiteral("#222222")));

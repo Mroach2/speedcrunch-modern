@@ -1375,8 +1375,23 @@ QMenu* ResultDisplay::createContextMenu(const QPoint& pos)
         emit splitDownRequested();
     });
     menu->addSeparator();
-    menu->addAction(tr("Import Session"));
-    menu->addAction(tr("Export Session"));
+    QAction* importSessionAction = menu->addAction(tr("&Import..."));
+    connect(importSessionAction, &QAction::triggered, this, [this]() {
+        emit importSessionRequested();
+    });
+    QMenu* exportSessionMenu = menu->addMenu(tr("&Export"));
+    QAction* exportJsonAction = exportSessionMenu->addAction(QStringLiteral("JSON"));
+    connect(exportJsonAction, &QAction::triggered, this, [this]() {
+        emit exportSessionJsonRequested();
+    });
+    QAction* exportPlainTextAction = exportSessionMenu->addAction(tr("Plain &text"));
+    connect(exportPlainTextAction, &QAction::triggered, this, [this]() {
+        emit exportSessionPlainTextRequested();
+    });
+    QAction* exportHtmlAction = exportSessionMenu->addAction(QStringLiteral("&HTML"));
+    connect(exportHtmlAction, &QAction::triggered, this, [this]() {
+        emit exportSessionHtmlRequested();
+    });
     menu->addSeparator();
     QAction* duplicateSessionAction = menu->addAction(tr("Duplicate Session"));
     connect(duplicateSessionAction, &QAction::triggered, this, [this]() {
@@ -1386,6 +1401,7 @@ QMenu* ResultDisplay::createContextMenu(const QPoint& pos)
     connect(renameSessionAction, &QAction::triggered, this, [this]() {
         emit renameSessionRequested();
     });
+    menu->addSeparator();
     QAction* clearSessionAction = menu->addAction(tr("Clear Session"));
     connect(clearSessionAction, &QAction::triggered, this, [this]() {
         emit clearSessionRequested();
@@ -1394,6 +1410,7 @@ QMenu* ResultDisplay::createContextMenu(const QPoint& pos)
     connect(deleteSessionAction, &QAction::triggered, this, [this]() {
         emit deleteSessionRequested();
     });
+    menu->addSeparator();
     QAction* closeSessionAction = menu->addAction(tr("Close Session"));
     connect(closeSessionAction, &QAction::triggered, this, [this]() {
         emit closeSessionRequested();

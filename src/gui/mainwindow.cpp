@@ -4279,13 +4279,18 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
         QAction* splitUpAction = menu.addAction(tr("Split Up"));
         QAction* splitDownAction = menu.addAction(tr("Split Down"));
         menu.addSeparator();
-        menu.addAction(tr("Import Session"));
-        menu.addAction(tr("Export Session"));
+        menu.addAction(m_actions.sessionImport);
+        QMenu* exportMenu = menu.addMenu(m_menus.sessionExport->title());
+        exportMenu->addAction(m_actions.sessionExportJson);
+        exportMenu->addAction(m_actions.sessionExportPlainText);
+        exportMenu->addAction(m_actions.sessionExportHtml);
         menu.addSeparator();
         QAction* duplicateSessionAction = menu.addAction(tr("Duplicate Session"));
         QAction* renameSessionAction = menu.addAction(tr("Rename Session"));
+        menu.addSeparator();
         QAction* clearSessionAction = menu.addAction(tr("Clear Session"));
         QAction* deleteSessionAction = menu.addAction(tr("Delete Session"));
+        menu.addSeparator();
         QAction* closeSessionAction = menu.addAction(tr("Close Session"));
         QAction* closePaneAction = menu.addAction(tr("Close Pane"));
 
@@ -4813,6 +4818,10 @@ void MainWindow::configureEditorDisplayPane(ResultDisplay* display, Editor* edit
     connect(display, &ResultDisplay::removeHistoryEntriesBelowRequested, this, &MainWindow::removeHistoryEntriesBelow);
     connect(display, &ResultDisplay::newSessionRequested, this, &MainWindow::showNewSessionDialog);
     connect(display, &ResultDisplay::openSessionRequested, this, &MainWindow::showOpenSessionDialog);
+    connect(display, &ResultDisplay::importSessionRequested, this, &MainWindow::showSessionImportDialog);
+    connect(display, &ResultDisplay::exportSessionJsonRequested, this, &MainWindow::exportJson);
+    connect(display, &ResultDisplay::exportSessionPlainTextRequested, this, &MainWindow::exportPlainText);
+    connect(display, &ResultDisplay::exportSessionHtmlRequested, this, &MainWindow::exportHtml);
     connect(display, &ResultDisplay::duplicateSessionRequested, this, &MainWindow::showDuplicateSessionDialog);
     connect(display, &ResultDisplay::splitLeftRequested, this, &MainWindow::splitActivePaneLeft);
     connect(display, &ResultDisplay::splitRightRequested, this, &MainWindow::splitActivePaneRight);
@@ -6870,6 +6879,10 @@ void MainWindow::createFixedConnections()
     connect(m_widgets.display, SIGNAL(removeHistoryEntriesBelowRequested(int)), SLOT(removeHistoryEntriesBelow(int)));
     connect(m_widgets.display, SIGNAL(newSessionRequested()), SLOT(showNewSessionDialog()));
     connect(m_widgets.display, SIGNAL(openSessionRequested()), SLOT(showOpenSessionDialog()));
+    connect(m_widgets.display, SIGNAL(importSessionRequested()), SLOT(showSessionImportDialog()));
+    connect(m_widgets.display, SIGNAL(exportSessionJsonRequested()), SLOT(exportJson()));
+    connect(m_widgets.display, SIGNAL(exportSessionPlainTextRequested()), SLOT(exportPlainText()));
+    connect(m_widgets.display, SIGNAL(exportSessionHtmlRequested()), SLOT(exportHtml()));
     connect(m_widgets.display, SIGNAL(duplicateSessionRequested()), SLOT(showDuplicateSessionDialog()));
     connect(m_widgets.display, SIGNAL(splitLeftRequested()), SLOT(splitActivePaneLeft()));
     connect(m_widgets.display, SIGNAL(splitRightRequested()), SLOT(splitActivePaneRight()));
