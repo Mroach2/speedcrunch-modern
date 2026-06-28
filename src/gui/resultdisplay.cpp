@@ -1349,7 +1349,7 @@ QMenu* ResultDisplay::createContextMenu(const QPoint& pos)
     }
 
     menu->addSeparator();
-    QAction* newSessionAction = menu->addAction(tr("New Session"));
+    QAction* newSessionAction = menu->addAction(tr("New Tab"));
     connect(newSessionAction, &QAction::triggered, this, [this]() {
         emit newSessionRequested();
     });

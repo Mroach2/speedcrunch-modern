@@ -120,6 +120,8 @@ reorder them within the pane, or drag a tab away from the tab bar to move it to
 another pane. Dropping a dragged tab outside the current window creates a new
 window for that session; dropping it on a pane in another SpeedCrunch window
 moves it there.
+Use :menuselection:`Session --> New Window` to open a blank
+session in a new window that copies the current window and dock layout.
 
 
 Expression Editor Features
@@ -609,6 +611,8 @@ Editing
     Quit SpeedCrunch.
 * :kbd:`Ctrl+N`
     Create a new session in the current session pane.
+* :kbd:`Ctrl+T` (:kbd:`Cmd+T` on macOS)
+    Create a new session tab in the current session pane.
 * :kbd:`Ctrl+Shift+T`
     Reopen the most recently closed session tab.
 * :kbd:`Ctrl+C`

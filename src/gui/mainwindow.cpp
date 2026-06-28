@@ -3149,6 +3149,8 @@ void MainWindow::createActions()
     m_actions.sessionExportPlainText = new QAction(this);
     m_actions.sessionImport = new QAction(this);
     m_actions.sessionImportUserDefinitions = new QAction(this);
+    m_actions.sessionNewTab = new QAction(this);
+    m_actions.sessionNewWindow = new QAction(this);
     m_actions.sessionOpen = new QAction(this);
     m_actions.sessionOpenSessionsFolder = new QAction(this);
     m_actions.sessionQuit = new QAction(this);
@@ -3508,6 +3510,8 @@ void MainWindow::setActionsText()
     m_actions.sessionExportPlainText->setText(MainWindow::tr("Plain &text"));
     m_actions.sessionImport->setText(MainWindow::tr("&Import..."));
     m_actions.sessionImportUserDefinitions->setText(MainWindow::tr("User &Definitions..."));
+    m_actions.sessionNewTab->setText(MainWindow::tr("New &Tab"));
+    m_actions.sessionNewWindow->setText(MainWindow::tr("New &Window"));
     m_actions.sessionOpen->setText(MainWindow::tr("&Open..."));
     m_actions.sessionOpenSessionsFolder->setText(MainWindow::tr("Open Sessions &Folder"));
     m_actions.sessionQuit->setText(MainWindow::tr("&Quit"));
@@ -3728,6 +3732,7 @@ void MainWindow::createActionGroups()
 
 void MainWindow::createActionShortcuts()
 {
+    m_actions.sessionNewTab->setShortcuts(QKeySequence::AddTab);
     m_actions.sessionQuit->setShortcut(Qt::CTRL | Qt::Key_Q);
     m_actions.editCopyLastResult->setShortcut(Qt::CTRL | Qt::Key_R);
     m_actions.editCopy->setShortcut(Qt::CTRL | Qt::Key_C);
@@ -3762,6 +3767,8 @@ void MainWindow::createMenus()
 {
     m_menus.session = new QMenu("", this);
     menuBar()->addMenu(m_menus.session);
+    m_menus.session->addAction(m_actions.sessionNewTab);
+    m_menus.session->addAction(m_actions.sessionNewWindow);
     m_menus.session->addAction(m_actions.sessionOpen);
     m_menus.session->addSeparator();
     m_menus.session->addAction(m_actions.sessionImport);
@@ -4271,7 +4278,7 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
         switchPaneToSession(display, sessionName);
 
         QMenu menu(this);
-        QAction* newSessionAction = menu.addAction(tr("New Session"));
+        QAction* newSessionAction = menu.addAction(tr("New Tab"));
         QAction* openSessionAction = menu.addAction(tr("Open Session"));
         menu.addSeparator();
         QAction* splitLeftAction = menu.addAction(tr("Split Left"));
@@ -4341,7 +4348,7 @@ QWidget* MainWindow::createEditorDisplayPane(ResultDisplay* display, Editor* edi
 
         const QString previousLayoutJson = m_settings->sessionLayoutJson;
         m_settings->sessionLayoutJson.clear();
-        MainWindow* detachedWindow = new MainWindow();
+        MainWindow* detachedWindow = new MainWindow(false);
         m_settings->sessionLayoutJson = previousLayoutJson;
         detachedWindow->show();
         detachedWindow->move(globalPos - QPoint(detachedWindow->width() / 4, 18));
@@ -5037,6 +5044,90 @@ void MainWindow::activatePreviousChild()
     const QString sessionName = m_paneSessionNames.value(previousDisplay);
     if (!sessionName.isEmpty())
         switchPaneToSession(previousDisplay, sessionName);
+}
+
+QString MainWindow::firstAvailableUntitledSessionNameAcrossWindows(const MainWindow* ignoredWindow) const
+{
+    QHash<QString, Session*> sessions;
+    for (const QPointer<MainWindow>& ptr : allMainWindows()) {
+        MainWindow* window = ptr.data();
+        if (window == nullptr || window == ignoredWindow)
+            continue;
+        for (auto it = window->m_loadedSessions.constBegin(); it != window->m_loadedSessions.constEnd(); ++it)
+            sessions.insert(it.key(), it.value());
+    }
+    return firstAvailableUntitledSessionName(sessions);
+}
+
+void MainWindow::copyWindowLayoutFrom(const MainWindow* source)
+{
+    if (source == nullptr)
+        return;
+
+    restoreState(source->saveState(DockLayoutStateVersion), DockLayoutStateVersion);
+
+    const auto dockIsVisible = [](QDockWidget* dock) {
+        return dock != nullptr && dock->isVisible();
+    };
+    const auto statusBarIsVisible = [](const MainWindow* window) {
+        const QStatusBar* statusBar = window != nullptr
+            ? window->findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly)
+            : nullptr;
+        return statusBar != nullptr && statusBar->isVisible();
+    };
+
+    const bool statusBarVisible = statusBarIsVisible(source);
+    if (statusBarIsVisible(this) != statusBarVisible)
+        setStatusBarVisible(statusBarVisible);
+    m_actions.viewStatusBar->setChecked(statusBarVisible);
+
+    const bool formulaBookVisible = dockIsVisible(source->m_docks.book);
+    if (dockIsVisible(m_docks.book) != formulaBookVisible)
+        setFormulaBookDockVisible(formulaBookVisible, false);
+    m_actions.viewFormulaBook->setChecked(formulaBookVisible);
+
+    const bool constantsVisible = dockIsVisible(source->m_docks.constants);
+    if (dockIsVisible(m_docks.constants) != constantsVisible)
+        setConstantsDockVisible(constantsVisible, false);
+    m_actions.viewConstants->setChecked(constantsVisible);
+
+    const bool functionsVisible = dockIsVisible(source->m_docks.functions);
+    if (dockIsVisible(m_docks.functions) != functionsVisible)
+        setFunctionsDockVisible(functionsVisible, false);
+    m_actions.viewFunctions->setChecked(functionsVisible);
+
+    const bool historyVisible = dockIsVisible(source->m_docks.history);
+    if (dockIsVisible(m_docks.history) != historyVisible)
+        setHistoryDockVisible(historyVisible, false);
+    m_actions.viewHistory->setChecked(historyVisible);
+
+    const bool variablesVisible = dockIsVisible(source->m_docks.variables);
+    if (dockIsVisible(m_docks.variables) != variablesVisible)
+        setVariablesDockVisible(variablesVisible, false);
+    m_actions.viewVariables->setChecked(variablesVisible);
+
+    const bool userFunctionsVisible = dockIsVisible(source->m_docks.userFunctions);
+    if (dockIsVisible(m_docks.userFunctions) != userFunctionsVisible)
+        setUserFunctionsDockVisible(userFunctionsVisible, false);
+    m_actions.viewUserFunctions->setChecked(userFunctionsVisible);
+
+    const bool userUnitsVisible = dockIsVisible(source->m_docks.userUnits);
+    if (dockIsVisible(m_docks.userUnits) != userUnitsVisible)
+        setUserUnitsDockVisible(userUnitsVisible, false);
+    m_actions.viewUserUnits->setChecked(userUnitsVisible);
+
+    const bool bitfieldVisible = dockIsVisible(source->m_docks.bitField);
+    if (dockIsVisible(m_docks.bitField) != bitfieldVisible)
+        setBitfieldVisible(bitfieldVisible);
+    m_actions.viewBitfield->setChecked(bitfieldVisible);
+
+    const bool keypadVisible = source->m_widgets.keypad != nullptr;
+    if ((m_widgets.keypad != nullptr) != keypadVisible)
+        setKeypadVisible(keypadVisible);
+    updateKeypadModeActionState();
+
+    applyThemeSurfacePalette();
+    refreshPaneThemes();
 }
 
 Session* MainWindow::createUntitledSession(bool activateCreatedSession)
@@ -5790,10 +5881,15 @@ void MainWindow::updateActiveSessionPaneTabColor()
             continue;
         sessionTabBar->setActivePaneSelectedTabIndicatorColor(QColor());
     }
-    if (displays.size() <= 1)
-        return;
+
+    ResultDisplay* activeDisplay = globallyActiveDisplay();
+    if (activeDisplay == nullptr || activeDisplay->window() != this) {
+        if (QApplication::activeWindow() != this)
+            return;
+        activeDisplay = m_widgets.display;
+    }
     SessionTabBar* activeTabBar =
-        dynamic_cast<SessionTabBar*>(displayTabBar(m_widgets.display));
+        dynamic_cast<SessionTabBar*>(displayTabBar(activeDisplay));
     if (activeTabBar != nullptr)
         activeTabBar->setActivePaneSelectedTabIndicatorColor(surfaces.primary.background);
 }
@@ -6731,6 +6827,48 @@ void MainWindow::createFixedConnections()
     connect(m_actions.sessionExportHtml, SIGNAL(triggered()), SLOT(exportHtml()));
     connect(m_actions.sessionExportPlainText, SIGNAL(triggered()), SLOT(exportPlainText()));
     connect(m_actions.sessionImport, SIGNAL(triggered()), SLOT(showSessionImportDialog()));
+    connect(m_actions.sessionNewTab, &QAction::triggered, this, [this]() {
+        // On macOS the native menu bar can dispatch a menu action owned by a
+        // window that is no longer frontmost. The target has to come from the
+        // current Qt active window first, not from this QAction's owner.
+        MainWindow* targetWindow = qobject_cast<MainWindow*>(QApplication::activeWindow());
+        if (targetWindow == nullptr) {
+            if (QWidget* focusWidget = QApplication::focusWidget())
+                targetWindow = qobject_cast<MainWindow*>(focusWidget->window());
+        }
+        // Focus bookkeeping can lag behind title-bar activation. These fallbacks
+        // keep keyboard/menu activation working while avoiding stale global
+        // editor state until every foreground-window source has been tried.
+        if (targetWindow == nullptr) {
+            if (QWidget* focusWidget = lastFocusWidgetInActiveWindow())
+                targetWindow = qobject_cast<MainWindow*>(focusWidget->window());
+        }
+        if (targetWindow == nullptr) {
+            if (QWidget* focusWidget = pendingWindowActivationFocusWidget())
+                targetWindow = qobject_cast<MainWindow*>(focusWidget->window());
+        }
+        if (targetWindow == nullptr) {
+            if (Editor* activeEditor = pendingWindowActivationEditor())
+                targetWindow = qobject_cast<MainWindow*>(activeEditor->window());
+        }
+        if (targetWindow == nullptr) {
+            if (Editor* activeEditor = globallyActiveEditor())
+                targetWindow = qobject_cast<MainWindow*>(activeEditor->window());
+        }
+        if (targetWindow == nullptr) {
+            if (ResultDisplay* activeDisplay = globallyActiveDisplay())
+                targetWindow = qobject_cast<MainWindow*>(activeDisplay->window());
+        }
+        if (targetWindow == nullptr)
+            targetWindow = this;
+
+        QPointer<MainWindow> guardedWindow(targetWindow);
+        QTimer::singleShot(0, targetWindow, [guardedWindow]() {
+            if (guardedWindow != nullptr)
+                guardedWindow->showNewSessionDialog();
+        });
+    });
+    connect(m_actions.sessionNewWindow, SIGNAL(triggered()), SLOT(showNewSessionWindow()));
     connect(m_actions.sessionOpen, SIGNAL(triggered()), SLOT(showOpenSessionDialog()));
     connect(m_actions.sessionOpenSessionsFolder, SIGNAL(triggered()), SLOT(openSessionsFolder()));
     connect(m_actions.sessionQuit, &QAction::triggered, qApp, &QCoreApplication::quit);
@@ -6938,7 +7076,6 @@ void MainWindow::createFixedConnections()
         connect(shortcut, &QShortcut::activated, this, handler);
     };
     bindStandardKey(QKeySequence::New, [this]() { showNewSessionDialog(); });
-    bindStandardKey(QKeySequence::AddTab, [this]() { showNewSessionDialog(); });
     bindStandardKey(QKeySequence::Open, [this]() { showOpenSessionDialog(); });
     bindStandardKey(QKeySequence::Close, [this]() { closeCurrentSession(); });
     bindStandardKey(QKeySequence::Quit, []() { qApp->quit(); });
@@ -7086,7 +7223,8 @@ void MainWindow::applySettings()
 
     UserDefinitions::loadInto(m_settings);
 
-    restoreSession();
+    if (m_restorePreviousSessionOnStartup)
+        restoreSession();
     applyUserDefinitions();
 
     m_actions.settingsBehaviorLeaveLastExpression->setChecked(m_settings->leaveLastExpression);
@@ -7714,8 +7852,9 @@ void MainWindow::restoreEditorTextFromCurrentSession()
     m_widgets.editor->setFocus();
 }
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(bool restorePreviousSession)
     : QMainWindow()
+    , m_restorePreviousSessionOnStartup(restorePreviousSession)
 {
     qApp->setQuitOnLastWindowClosed(false);
     setAttribute(Qt::WA_Hover, true);
@@ -7903,6 +8042,65 @@ void MainWindow::showNewSessionDialog()
 {
     createUntitledSession();
     saveSessionLayout(false);
+}
+
+void MainWindow::showNewSessionWindow()
+{
+    if (m_shutdownStateSaved)
+        return;
+
+    MainWindow* window = new MainWindow(false);
+    window->setAttribute(Qt::WA_DeleteOnClose, true);
+
+    Session* session = window->m_session;
+    if (session != nullptr) {
+        const QString name = firstAvailableUntitledSessionNameAcrossWindows(window);
+        if (session->name().compare(name, Qt::CaseInsensitive) != 0) {
+            window->m_loadedSessions.remove(session->name());
+            session->setName(name);
+            window->m_loadedSessions.insert(name, session);
+        }
+        session->setEditorText(QString());
+        window->m_sessionViewportAnchors.clear();
+        window->m_sessionScrollValues.clear();
+        if (window->m_widgets.display != nullptr) {
+            window->m_paneSessionNames.clear();
+            window->m_paneSessionTabs.clear();
+            window->m_paneSessionNames.insert(window->m_widgets.display, name);
+            window->m_paneSessionTabs.insert(window->m_widgets.display, QStringList(name));
+            window->m_widgets.display->setSession(session);
+            window->m_widgets.display->refresh();
+        }
+        if (window->m_widgets.editor != nullptr) {
+            window->m_widgets.editor->setSession(session);
+            window->m_widgets.editor->setText(QString());
+            window->m_widgets.editor->setCursorPosition(0);
+            window->m_widgets.editor->updateHistory();
+            window->m_widgets.editor->refreshAutoCalc();
+        }
+        window->m_conditions.autoAns = false;
+        window->updatePaneLoadedSessionCounts();
+    }
+
+    window->copyWindowLayoutFrom(this);
+    window->resize(size());
+
+    QRect availableGeometry;
+    if (QScreen* targetScreen = QGuiApplication::screenAt(frameGeometry().center()))
+        availableGeometry = targetScreen->availableGeometry();
+    else if (QGuiApplication::primaryScreen() != nullptr)
+        availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+
+    QPoint targetPos = frameGeometry().topLeft() + QPoint(32, 32);
+    if (!availableGeometry.isEmpty()
+            && !availableGeometry.contains(QRect(targetPos, window->size()))) {
+        targetPos = availableGeometry.center() - QRect(QPoint(0, 0), window->size()).center();
+    }
+    window->move(targetPos);
+    window->show();
+    window->raise();
+    window->activateWindow();
+    window->saveSessionLayout(false);
 }
 
 void MainWindow::showOpenSessionDialog()
@@ -10100,11 +10298,18 @@ bool MainWindow::event(QEvent* e)
         // On macOS the toolkit may later replay passive editor FocusIn events
         // in widget order, and the replay can otherwise promote the last pane.
         QPointer<QWidget> focusWidget(focusWidgetBeforeWindowDeactivate());
+        if (focusWidget != nullptr && focusWidget->window() != this)
+            focusWidget = nullptr;
         QPointer<Editor> activeEditor(qobject_cast<Editor*>(focusWidget.data()));
         if (activeEditor == nullptr && focusWidget != nullptr)
             activeEditor = qobject_cast<Editor*>(focusWidget->parentWidget());
-        if (activeEditor == nullptr)
-            activeEditor = editorBeforeWindowDeactivate();
+        if (activeEditor != nullptr && activeEditor->window() != this)
+            activeEditor = nullptr;
+        if (activeEditor == nullptr) {
+            QPointer<Editor> previousEditor(editorBeforeWindowDeactivate());
+            if (previousEditor != nullptr && previousEditor->window() == this)
+                activeEditor = previousEditor;
+        }
         if (activeEditor == nullptr)
             activeEditor = m_widgets.editor;
         focusWidgetBeforeWindowDeactivate() = nullptr;

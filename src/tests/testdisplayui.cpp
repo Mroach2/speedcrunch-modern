@@ -208,6 +208,16 @@ QMenu* directSubmenuWithTitle(const QMenu* menu, const QString& title)
     return action != nullptr ? action->menu() : nullptr;
 }
 
+QList<MainWindow*> topLevelMainWindows()
+{
+    QList<MainWindow*> windows;
+    for (QWidget* widget : QApplication::topLevelWidgets()) {
+        if (MainWindow* window = qobject_cast<MainWindow*>(widget))
+            windows.append(window);
+    }
+    return windows;
+}
+
 bool rejectActiveDialogWithTitle(const QString& title)
 {
     QDialog* dialog = qobject_cast<QDialog*>(QApplication::activeModalWidget());
@@ -627,12 +637,15 @@ private slots:
     void dock_selection_inserts_into_active_session_pane_after_focus_transfer();
     void clicking_tab_activates_own_pane_in_nested_split_layout();
     void active_pane_survives_window_reactivation_focus_replay();
+    void extra_window_activation_restores_own_active_tab_indicator();
     void focused_dock_search_survives_window_reactivation_focus_replay();
     void focusing_loaded_pane_preserves_its_current_scroll_position();
     void persisting_layout_captures_visible_scroll_positions_for_all_panes();
     void switching_session_tabs_preserves_each_editor_text();
     void session_tab_navigation_shortcuts_switch_tabs();
-    void new_shortcut_creates_session_in_active_pane();
+    void new_tab_menu_action_and_shortcut_create_session_in_active_pane();
+    void new_tab_menu_action_targets_focused_window_when_native_menu_uses_last_window_action();
+    void new_session_window_menu_action_copies_layout_with_single_fresh_session();
     void session_open_menu_action_uses_open_dialog();
     void session_open_sessions_folder_menu_action_opens_session_storage();
     void session_import_dialog_opens_valid_json_as_new_tab();
@@ -1140,6 +1153,8 @@ void TestDisplayUi::result_display_context_menu_hides_main_menu_when_menu_bar_vi
     QSignalSpy exportHtmlSpy(display, &ResultDisplay::exportSessionHtmlRequested);
 
     QMenu* menu = display->createContextMenu(display->rect().center());
+    QVERIFY(directMenuActionWithText(menu, QStringLiteral("New Tab")) != nullptr);
+    QVERIFY(directMenuActionWithText(menu, QStringLiteral("New Session")) == nullptr);
     QAction* importAction = directMenuActionWithText(menu, QStringLiteral("&Import..."));
     QVERIFY(importAction != nullptr);
     QMenu* exportMenu = directSubmenuWithTitle(menu, QStringLiteral("&Export"));
@@ -3976,6 +3991,65 @@ void TestDisplayUi::active_pane_survives_window_reactivation_focus_replay()
         QVERIFY(!editorHasPrimaryOutline(editorForDisplay(displays.at(i)), primary));
 }
 
+void TestDisplayUi::extra_window_activation_restores_own_active_tab_indicator()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = Settings::instance();
+    settings->colorScheme = QStringLiteral("Custom");
+    settings->customColorSchemeJson = themeJsonString(QJsonObject{{QStringLiteral("background"), QStringLiteral("#1f3229")}});
+    settings->sessionLayoutJson.clear();
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    const QColor primary = generatePrimaryFromBackground(QColor(QStringLiteral("#1f3229")));
+
+    MainWindow primaryWindow;
+    primaryWindow.resize(800, 500);
+    primaryWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&primaryWindow));
+
+    MainWindow extraWindow;
+    extraWindow.resize(900, 500);
+    extraWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&extraWindow));
+
+    QList<ResultDisplay*> extraDisplays = extraWindow.findChildren<ResultDisplay*>();
+    QCOMPARE(extraDisplays.size(), 1);
+    ResultDisplay* extraDisplay = extraDisplays.constFirst();
+    QTabBar* extraTabBar = tabBarForDisplay(extraDisplay);
+    QVERIFY(extraTabBar != nullptr);
+
+    QTest::mouseClick(extraDisplay->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      extraDisplay->viewport()->rect().center());
+    QVERIFY(QMetaObject::invokeMethod(&extraWindow, "showNewSessionDialog", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(extraTabBar->count(), 2);
+    QTRY_VERIFY(extraTabBar->isVisible());
+    QTRY_VERIFY(selectedSessionTabHasBottomIndicator(extraTabBar, primary));
+
+    ResultDisplay* primaryDisplay = primaryWindow.findChild<ResultDisplay*>();
+    QVERIFY(primaryDisplay != nullptr);
+    QTest::mouseClick(primaryDisplay->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      primaryDisplay->viewport()->rect().center());
+    QCoreApplication::processEvents();
+
+    QEvent primaryDeactivate(QEvent::WindowDeactivate);
+    QCoreApplication::sendEvent(&primaryWindow, &primaryDeactivate);
+    QEvent extraActivate(QEvent::WindowActivate);
+    QCoreApplication::sendEvent(&extraWindow, &extraActivate);
+    QCoreApplication::processEvents();
+
+    QTRY_VERIFY(selectedSessionTabHasBottomIndicator(extraTabBar, primary));
+}
+
 void TestDisplayUi::focused_dock_search_survives_window_reactivation_focus_replay()
 {
     MainWindowStateGuard guard;
@@ -4458,7 +4532,7 @@ void TestDisplayUi::session_tab_navigation_shortcuts_switch_tabs()
     QTRY_COMPARE(tabBar->currentIndex(), 1);
 }
 
-void TestDisplayUi::new_shortcut_creates_session_in_active_pane()
+void TestDisplayUi::new_tab_menu_action_and_shortcut_create_session_in_active_pane()
 {
     Settings* appSettings = Settings::instance();
     struct SettingsGuard {
@@ -4554,15 +4628,208 @@ void TestDisplayUi::new_shortcut_creates_session_in_active_pane()
                       secondDisplay->viewport()->rect().center());
     QCoreApplication::processEvents();
 
-    const QList<QKeySequence> bindings = QKeySequence::keyBindings(QKeySequence::New);
-    QVERIFY(!bindings.isEmpty());
-    const QKeyCombination shortcut = bindings.first()[0];
-    QTest::keyClick(&window, shortcut.key(), shortcut.keyboardModifiers());
+    QMenu* sessionMenu = menuWithTitle(window.menuBar(), QStringLiteral("&Session"));
+    QVERIFY(sessionMenu != nullptr);
+    QAction* newTabAction = directMenuActionWithText(sessionMenu, QStringLiteral("New &Tab"));
+    QVERIFY(newTabAction != nullptr);
+    QVERIFY(directMenuActionWithText(sessionMenu, QStringLiteral("New Session")) == nullptr);
+
+    newTabAction->trigger();
     QCoreApplication::processEvents();
 
     QCOMPARE(firstTabBar->count(), 1);
     QTRY_COMPARE(secondTabBar->count(), 2);
     QCOMPARE(secondTabBar->currentIndex(), 1);
+
+    const QList<QKeySequence> bindings = QKeySequence::keyBindings(QKeySequence::AddTab);
+    QVERIFY(!bindings.isEmpty());
+    QVERIFY(newTabAction->shortcuts().contains(bindings.first()));
+    const QKeyCombination shortcut = bindings.first()[0];
+    QTest::keyClick(&window, shortcut.key(), shortcut.keyboardModifiers());
+    QCoreApplication::processEvents();
+
+    QCOMPARE(firstTabBar->count(), 1);
+    QTRY_COMPARE(secondTabBar->count(), 3);
+    QCOMPARE(secondTabBar->currentIndex(), 2);
+}
+
+void TestDisplayUi::new_tab_menu_action_targets_focused_window_when_native_menu_uses_last_window_action()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+
+    settings->sessionLayoutJson.clear();
+    settings->windowState.clear();
+    settings->windowGeometry.clear();
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->statusBarVisible = true;
+    settings->windowPositionSave = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow firstWindow;
+    firstWindow.resize(800, 500);
+    firstWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&firstWindow));
+
+    MainWindow secondWindow;
+    secondWindow.resize(800, 500);
+    secondWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&secondWindow));
+
+    ResultDisplay* firstDisplay = firstWindow.findChild<ResultDisplay*>();
+    ResultDisplay* secondDisplay = secondWindow.findChild<ResultDisplay*>();
+    QVERIFY(firstDisplay != nullptr);
+    QVERIFY(secondDisplay != nullptr);
+    Editor* firstEditor = editorForDisplay(firstDisplay);
+    Editor* secondEditor = editorForDisplay(secondDisplay);
+    QVERIFY(firstEditor != nullptr);
+    QVERIFY(secondEditor != nullptr);
+    QTabBar* firstTabBar = tabBarForDisplay(firstDisplay);
+    QTabBar* secondTabBar = tabBarForDisplay(secondDisplay);
+    QVERIFY(firstTabBar != nullptr);
+    QVERIFY(secondTabBar != nullptr);
+    QCOMPARE(firstTabBar->count(), 1);
+    QCOMPARE(secondTabBar->count(), 1);
+
+    QTest::mouseClick(secondDisplay->viewport(), Qt::LeftButton, Qt::NoModifier,
+                      secondDisplay->viewport()->rect().center());
+    QCoreApplication::processEvents();
+
+    QEvent secondWindowDeactivate(QEvent::WindowDeactivate);
+    QCoreApplication::sendEvent(&secondWindow, &secondWindowDeactivate);
+    QEvent firstWindowActivate(QEvent::WindowActivate);
+    QCoreApplication::sendEvent(&firstWindow, &firstWindowActivate);
+    QCoreApplication::processEvents();
+
+    QVERIFY(QMetaObject::invokeMethod(&firstWindow, "showNewSessionDialog", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+
+    QTRY_COMPARE(firstTabBar->count(), 2);
+    QCOMPARE(secondTabBar->count(), 1);
+
+    firstWindow.raise();
+    firstWindow.activateWindow();
+    firstEditor->setFocus(Qt::OtherFocusReason);
+    QTRY_VERIFY(([firstEditor]() {
+        QWidget* focused = QApplication::focusWidget();
+        return focused == firstEditor
+            || (focused != nullptr && focused->parentWidget() == firstEditor);
+    }()));
+
+    QMenu* secondSessionMenu = menuWithTitle(secondWindow.menuBar(), QStringLiteral("&Session"));
+    QVERIFY(secondSessionMenu != nullptr);
+    QAction* secondWindowNewTabAction =
+        directMenuActionWithText(secondSessionMenu, QStringLiteral("New &Tab"));
+    QVERIFY(secondWindowNewTabAction != nullptr);
+    secondWindowNewTabAction->trigger();
+    QCoreApplication::processEvents();
+
+    QTRY_COMPARE(firstTabBar->count(), 3);
+    QCOMPARE(secondTabBar->count(), 1);
+}
+
+void TestDisplayUi::new_session_window_menu_action_copies_layout_with_single_fresh_session()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+
+    settings->sessionLayoutJson.clear();
+    settings->windowState.clear();
+    settings->windowGeometry.clear();
+    settings->constantsDockVisible = true;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadMode = Settings::KeypadModeBasicWide;
+    settings->keypadVisible = true;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = true;
+    settings->statusBarVisible = true;
+    settings->windowPositionSave = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.resize(1000, 700);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    ResultDisplay* sourceDisplay = window.findChild<ResultDisplay*>();
+    QVERIFY(sourceDisplay != nullptr);
+    QVERIFY(sourceDisplay->session() != nullptr);
+    const QString sourceSessionName = sourceDisplay->session()->name();
+    Editor* sourceEditor = editorForDisplay(sourceDisplay);
+    QVERIFY(sourceEditor != nullptr);
+    sourceEditor->setText(QStringLiteral("2+2"));
+    QVERIFY(QMetaObject::invokeMethod(&window, "evaluateEditorExpression", Qt::DirectConnection));
+    QCOMPARE(sourceDisplay->session()->historySize(), 1);
+
+    QVERIFY(QMetaObject::invokeMethod(&window, "splitActivePaneRight", Qt::DirectConnection));
+    QCoreApplication::processEvents();
+    QTRY_COMPARE(window.findChildren<ResultDisplay*>().size(), 2);
+
+    QMenu* sessionMenu = menuWithTitle(window.menuBar(), QStringLiteral("&Session"));
+    QVERIFY(sessionMenu != nullptr);
+    QAction* newWindowAction =
+        directMenuActionWithText(sessionMenu, QStringLiteral("New &Window"));
+    QVERIFY(newWindowAction != nullptr);
+    QVERIFY(directMenuActionWithText(sessionMenu, QStringLiteral("New &Window with New Session")) == nullptr);
+
+    const QList<MainWindow*> windowsBefore = topLevelMainWindows();
+    QPointer<MainWindow> createdWindow;
+    newWindowAction->trigger();
+    QTRY_VERIFY(([&]() {
+        for (MainWindow* candidate : topLevelMainWindows()) {
+            if (!windowsBefore.contains(candidate) && candidate->isVisible()) {
+                createdWindow = candidate;
+                return true;
+            }
+        }
+        return false;
+    }()));
+
+    QTest::qWait(300);
+    QCoreApplication::processEvents();
+
+    const QList<ResultDisplay*> createdDisplays = createdWindow->findChildren<ResultDisplay*>();
+    QCOMPARE(createdDisplays.size(), 1);
+    QDockWidget* constantsDock =
+        createdWindow->findChild<QDockWidget*>(QStringLiteral("ConstantsDock"));
+    QVERIFY(constantsDock != nullptr);
+    QVERIFY(constantsDock->isVisible());
+    QDockWidget* bitfieldDock =
+        createdWindow->findChild<QDockWidget*>(QStringLiteral("BitfieldDock"));
+    QVERIFY(bitfieldDock != nullptr);
+    QVERIFY(bitfieldDock->isVisible());
+    QStatusBar* statusBar =
+        createdWindow->findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly);
+    QVERIFY(statusBar != nullptr);
+    QVERIFY(statusBar->isVisible());
+    QVERIFY(createdWindow->findChild<Keypad*>() != nullptr);
+
+    ResultDisplay* createdDisplay = createdDisplays.constFirst();
+    const Session* session = createdDisplay->session();
+    QVERIFY(session != nullptr);
+    QCOMPARE(session->historySize(), 0);
+    QVERIFY(session->name() != sourceSessionName);
+
+    QTabBar* createdTabBar = tabBarForDisplay(createdDisplay);
+    QVERIFY(createdTabBar != nullptr);
+    QCOMPARE(createdTabBar->count(), 1);
+    QCOMPARE(createdTabBar->tabText(0), session->name());
+
+    createdWindow->close();
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    QTRY_VERIFY(createdWindow == nullptr);
 }
 
 void TestDisplayUi::session_open_menu_action_uses_open_dialog()

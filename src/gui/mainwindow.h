@@ -58,7 +58,7 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow();
+    explicit MainWindow(bool restorePreviousSession = true);
     ~MainWindow();
     void persistSessionAndSettingsForShutdown();
 
@@ -106,6 +106,7 @@ private slots:
     void handleEditorTextChange();
     void handleEditorEscapePressed();
     void showNewSessionDialog();
+    void showNewSessionWindow();
     void showOpenSessionDialog();
     void showDuplicateSessionDialog();
     void showRenameSessionDialog();
@@ -318,6 +319,8 @@ private:
     void cycleFocusRegion(int direction);
     void splitActivePane(Qt::Orientation orientation, bool insertAfter);
     Session* createUntitledSession(bool activateCreatedSession = true);
+    QString firstAvailableUntitledSessionNameAcrossWindows(const MainWindow* ignoredWindow = nullptr) const;
+    void copyWindowLayoutFrom(const MainWindow* source);
     QList<ResultDisplay*> splitPaneDisplays() const;
     QList<Editor*> splitPaneEditors() const;
     QStringList paneSessionNames(ResultDisplay* display) const;
@@ -381,6 +384,8 @@ private:
 
     struct {
         QAction* sessionOpen;
+        QAction* sessionNewTab;
+        QAction* sessionNewWindow;
         QAction* sessionOpenSessionsFolder;
         QAction* sessionImport;
         QAction* sessionImportUserDefinitions;
@@ -623,6 +628,7 @@ private:
     VersionCheck* m_versionCheck;
     int m_pendingHistoryEditIndex;
     bool m_shutdownStateSaved;
+    bool m_restorePreviousSessionOnStartup;
     QTimer* m_deferredSessionSaveTimer;
     bool m_sessionSavePending;
     bool m_bulkEvaluationInProgress;
