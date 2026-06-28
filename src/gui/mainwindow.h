@@ -232,6 +232,7 @@ private slots:
     void showKeypadContextMenu(const QPoint&);
     void showResultFormatContextMenu(const QPoint&);
     void showSessionImportDialog();
+    void openSessionsFolder();
     void wrapSelection();
     void startHistoryEntryEdit(int index);
     void editHistoryEntryContext(int index);
@@ -380,6 +381,7 @@ private:
 
     struct {
         QAction* sessionOpen;
+        QAction* sessionOpenSessionsFolder;
         QAction* sessionImport;
         QAction* sessionImportUserDefinitions;
         QAction* sessionExportJson;

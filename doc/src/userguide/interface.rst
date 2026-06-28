@@ -155,6 +155,8 @@ Import/Export
 -------------
 
 SpeedCrunch automatically stores your sessions and lets you restore them with :menuselection:`Session --> Open`.
+Use :menuselection:`Session --> Open Sessions Folder` to open the folder where SpeedCrunch stores these session files
+when you want to back them up or clean them up manually.
 You can also export the current session as JSON (:menuselection:`Session --> Export --> JSON`) and later import it
 with :menuselection:`Session --> Import`. The data is stored in a SpeedCrunch-specific file format. [#f1]_ While the
 session files are human-readable, they are designed for use by SpeedCrunch. If you want to export your calculations

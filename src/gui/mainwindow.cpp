@@ -3150,6 +3150,7 @@ void MainWindow::createActions()
     m_actions.sessionImport = new QAction(this);
     m_actions.sessionImportUserDefinitions = new QAction(this);
     m_actions.sessionOpen = new QAction(this);
+    m_actions.sessionOpenSessionsFolder = new QAction(this);
     m_actions.sessionQuit = new QAction(this);
     m_actions.editClearExpression = new QAction(this);
     m_actions.editClearHistory = new QAction(this);
@@ -3508,6 +3509,7 @@ void MainWindow::setActionsText()
     m_actions.sessionImport->setText(MainWindow::tr("&Import..."));
     m_actions.sessionImportUserDefinitions->setText(MainWindow::tr("User &Definitions..."));
     m_actions.sessionOpen->setText(MainWindow::tr("&Open..."));
+    m_actions.sessionOpenSessionsFolder->setText(MainWindow::tr("Open Sessions &Folder"));
     m_actions.sessionQuit->setText(MainWindow::tr("&Quit"));
 
     m_actions.editClearExpression->setText(MainWindow::tr("Clear E&xpression"));
@@ -3767,6 +3769,7 @@ void MainWindow::createMenus()
     m_menus.sessionExport->addAction(m_actions.sessionExportJson);
     m_menus.sessionExport->addAction(m_actions.sessionExportPlainText);
     m_menus.sessionExport->addAction(m_actions.sessionExportHtml);
+    m_menus.session->addAction(m_actions.sessionOpenSessionsFolder);
     m_menus.session->addSeparator();
     m_menus.session->addAction(m_actions.settingsBehaviorHistorySizeLimit);
     m_menus.session->addSeparator();
@@ -6720,6 +6723,7 @@ void MainWindow::createFixedConnections()
     connect(m_actions.sessionExportPlainText, SIGNAL(triggered()), SLOT(exportPlainText()));
     connect(m_actions.sessionImport, SIGNAL(triggered()), SLOT(showSessionImportDialog()));
     connect(m_actions.sessionOpen, SIGNAL(triggered()), SLOT(showOpenSessionDialog()));
+    connect(m_actions.sessionOpenSessionsFolder, SIGNAL(triggered()), SLOT(openSessionsFolder()));
     connect(m_actions.sessionQuit, &QAction::triggered, qApp, &QCoreApplication::quit);
 
     connect(m_actions.editClearExpression, SIGNAL(triggered()), SLOT(clearEditorAndBitfield()));
@@ -9234,6 +9238,23 @@ void MainWindow::showSessionImportDialog()
     }
 
     openImportedSession(importedSession.release());
+}
+
+void MainWindow::openSessionsFolder()
+{
+    if (!ensureSessionsPath()) {
+        QMessageBox::critical(this,
+                              tr("Open Sessions Folder"),
+                              tr("Could not create the sessions folder: %1").arg(sessionsPath()));
+        return;
+    }
+
+    const QUrl sessionsFolderUrl = QUrl::fromLocalFile(sessionsPath());
+    if (!QDesktopServices::openUrl(sessionsFolderUrl)) {
+        QMessageBox::critical(this,
+                              tr("Open Sessions Folder"),
+                              tr("Could not open the sessions folder: %1").arg(sessionsPath()));
+    }
 }
 
 void MainWindow::importUserDefinitionsFromText(const QString& text, bool overwriteExisting,

@@ -27,6 +27,7 @@
 #include <QClipboard>
 #include <QComboBox>
 #include <QCursor>
+#include <QDesktopServices>
 #include <QDialog>
 #include <QDockWidget>
 #include <QDir>
@@ -588,6 +589,9 @@ bool focusIsWithin(QWidget* target)
 class TestDisplayUi : public QObject {
     Q_OBJECT
 
+public slots:
+    void captureOpenedUrl(const QUrl& url) { m_capturedUrl = url; }
+
 private slots:
     void color_scheme_roles_exclude_obsolete_scrollbar();
     void color_scheme_reads_optional_display_name();
@@ -630,12 +634,16 @@ private slots:
     void session_tab_navigation_shortcuts_switch_tabs();
     void new_shortcut_creates_session_in_active_pane();
     void session_open_menu_action_uses_open_dialog();
+    void session_open_sessions_folder_menu_action_opens_session_storage();
     void session_import_dialog_opens_valid_json_as_new_tab();
     void session_import_rejects_invalid_json_without_new_tab();
     void session_export_menu_offers_json_without_save_action();
     void restore_closed_tab_shortcut_restores_last_closed_session_tab();
     void session_tabs_reorder_with_horizontal_drag();
     void closing_and_reopening_docks_keeps_attached_widgets();
+
+private:
+    QUrl m_capturedUrl;
 };
 
 void TestDisplayUi::color_scheme_roles_exclude_obsolete_scrollbar()
@@ -4579,6 +4587,53 @@ void TestDisplayUi::session_open_menu_action_uses_open_dialog()
     });
     openAction->trigger();
     QVERIFY(menuActionOpenedDialog);
+}
+
+void TestDisplayUi::session_open_sessions_folder_menu_action_opens_session_storage()
+{
+    MainWindowStateGuard guard;
+    Settings* settings = guard.settings;
+
+    settings->sessionLayoutJson.clear();
+    settings->windowState.clear();
+    settings->windowGeometry.clear();
+    settings->constantsDockVisible = false;
+    settings->functionsDockVisible = false;
+    settings->historyDockVisible = false;
+    settings->keypadVisible = false;
+    settings->formulaBookDockVisible = false;
+    settings->variablesDockVisible = false;
+    settings->userFunctionsDockVisible = false;
+    settings->userUnitsDockVisible = false;
+    settings->bitfieldVisible = false;
+    settings->hasNumberFormatStyleSetting = true;
+
+    MainWindow window;
+    window.resize(900, 500);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+    QMenu* sessionMenu = menuWithTitle(window.menuBar(), QStringLiteral("&Session"));
+    QVERIFY(sessionMenu != nullptr);
+    QAction* openSessionsFolderAction =
+        directMenuActionWithText(sessionMenu, QStringLiteral("Open Sessions &Folder"));
+    QVERIFY(openSessionsFolderAction != nullptr);
+
+    m_capturedUrl = QUrl();
+    QDesktopServices::setUrlHandler(QStringLiteral("file"), this, "captureOpenedUrl");
+    auto urlHandlerCleanup = qScopeGuard([]() {
+        QDesktopServices::unsetUrlHandler(QStringLiteral("file"));
+    });
+
+    openSessionsFolderAction->trigger();
+
+    QTRY_VERIFY(m_capturedUrl.isValid());
+    QCOMPARE(m_capturedUrl.scheme(), QStringLiteral("file"));
+
+    const QString expectedPath =
+        QDir(Settings::getDataPath()).filePath(QStringLiteral("sessions"));
+    QCOMPARE(QDir::cleanPath(m_capturedUrl.toLocalFile()), QDir::cleanPath(expectedPath));
+    QVERIFY(QDir(expectedPath).exists());
 }
 
 void TestDisplayUi::session_import_dialog_opens_valid_json_as_new_tab()
