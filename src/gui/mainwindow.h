@@ -609,9 +609,11 @@ private:
         QWidget* resultFormatSection;
         QLabel* resultFormatLabel;
         QPushButton* resultFormat;
+        QLabel* resultPrecisionSeparator;
         QWidget* resultPrecisionSection;
         QLabel* resultPrecisionLabel;
         QPushButton* resultPrecision;
+        QLabel* angleUnitSeparator;
     } m_status;
 
     Constants* m_constants;

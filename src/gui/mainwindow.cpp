@@ -917,6 +917,37 @@ ThemeSurfaceColors themeSurfaceForShadeIndex(const GeneratedThemeSurfaces& surfa
     };
 }
 
+void applyThemeSurfaceToStatusBar(QStatusBar* bar, const GeneratedThemeSurfaces& surfaces)
+{
+    if (bar == nullptr)
+        return;
+
+    const ThemeSurfaceColors surface =
+        themeSurfaceForShadeIndex(surfaces, UiConfig::StatusBarBackgroundShade);
+    bar->setPalette(paletteForThemeSurface(bar->palette(), surface));
+    bar->setAutoFillBackground(true);
+    bar->setAttribute(Qt::WA_StyledBackground, true);
+    bar->setStyleSheet(QStringLiteral(
+        "QStatusBar { background-color: %1; color: %2; }"
+        "QStatusBar::item { border: none; }"
+        "QStatusBar QLabel { background: transparent; color: %2; }"
+        "QStatusBar QPushButton {"
+        " background: transparent; color: %2; border: none;"
+        " margin: 0px; padding: 0px 4px;"
+        "}"
+        "QStatusBar QPushButton:hover {"
+        " background: transparent; color: %2;"
+        "}"
+        "QStatusBar QPushButton:pressed {"
+        " background: transparent; color: %2;"
+        "}")
+                           .arg(surface.background.name(),
+                                surface.foreground.name()));
+
+    for (QWidget* child : bar->findChildren<QWidget*>())
+        child->setPalette(paletteForThemeSurface(child->palette(), surface));
+}
+
 ThemeScrollBarColors scrollBarColorsForSurfaceIndex(const GeneratedThemeSurfaces& surfaces, int surfaceIndex)
 {
     const auto colorAt = [&surfaces](int index) {
@@ -3429,13 +3460,14 @@ void MainWindow::updateStatusBarSectionVisibility()
 
     struct Section {
         QWidget* widget;
+        QWidget* separatorBefore;
         bool enabled;
     };
 
     const Section sections[] = {
-        { m_status.resultFormatSection, true },
-        { m_status.resultPrecisionSection, true },
-        { m_status.angleUnitSection, true }
+        { m_status.resultFormatSection, nullptr, true },
+        { m_status.resultPrecisionSection, m_status.resultPrecisionSeparator, true },
+        { m_status.angleUnitSection, m_status.angleUnitSeparator, true }
     };
 
     int usedWidth = 0;
@@ -3443,16 +3475,28 @@ void MainWindow::updateStatusBarSectionVisibility()
     for (const Section& section : sections) {
         if (!section.enabled) {
             section.widget->setVisible(false);
+            if (section.separatorBefore != nullptr)
+                section.separatorBefore->setVisible(false);
             continue;
         }
 
         const int sectionWidth = section.widget->sizeHint().width();
-        const int gap = hasVisibleSection ? spacing : 0;
+        const int separatorWidth =
+            hasVisibleSection && section.separatorBefore != nullptr
+                ? section.separatorBefore->sizeHint().width()
+                : 0;
+        const int gap = hasVisibleSection
+            ? spacing + (section.separatorBefore != nullptr ? separatorWidth + spacing : 0)
+            : 0;
         if (usedWidth + gap + sectionWidth <= availableWidth) {
+            if (section.separatorBefore != nullptr)
+                section.separatorBefore->setVisible(hasVisibleSection);
             section.widget->setVisible(true);
             usedWidth += gap + sectionWidth;
             hasVisibleSection = true;
         } else {
+            if (section.separatorBefore != nullptr)
+                section.separatorBefore->setVisible(false);
             section.widget->setVisible(false);
         }
     }
@@ -4001,6 +4045,7 @@ void MainWindow::createStatusBar()
 {
     QStatusBar* bar = statusBar();
     if (m_status.angleUnitSection != nullptr) {
+        applyThemeSurfaceToStatusBar(bar, generatedSurfaceColors(m_settings));
         bar->show();
         setStatusBarText();
         updateStatusBarSectionVisibility();
@@ -4014,6 +4059,8 @@ void MainWindow::createStatusBar()
     m_status.angleUnitLabel = new QLabel(m_status.angleUnitSection);
     m_status.resultFormatLabel = new QLabel(m_status.resultFormatSection);
     m_status.resultPrecisionLabel = new QLabel(m_status.resultPrecisionSection);
+    m_status.resultPrecisionSeparator = new QLabel(QStringLiteral("|"), bar);
+    m_status.angleUnitSeparator = new QLabel(QStringLiteral("|"), bar);
 
     m_status.angleUnit = new QPushButton(bar);
     m_status.resultFormat = new QPushButton(bar);
@@ -4044,12 +4091,18 @@ void MainWindow::createStatusBar()
     m_status.angleUnitLabel->setFont(boldFont);
     m_status.resultFormatLabel->setFont(boldFont);
     m_status.resultPrecisionLabel->setFont(boldFont);
+    m_status.resultPrecisionSeparator->setContentsMargins(2, 0, 2, 0);
+    m_status.angleUnitSeparator->setContentsMargins(2, 0, 2, 0);
     m_status.angleUnitLabel->setCursor(Qt::PointingHandCursor);
     m_status.resultFormatLabel->setCursor(Qt::PointingHandCursor);
     m_status.resultPrecisionLabel->setCursor(Qt::PointingHandCursor);
     m_status.angleUnitLabel->installEventFilter(this);
     m_status.resultFormatLabel->installEventFilter(this);
     m_status.resultPrecisionLabel->installEventFilter(this);
+
+    m_status.angleUnit->setCursor(Qt::PointingHandCursor);
+    m_status.resultFormat->setCursor(Qt::PointingHandCursor);
+    m_status.resultPrecision->setCursor(Qt::PointingHandCursor);
 
     m_status.angleUnit->setFocusPolicy(Qt::NoFocus);
     m_status.resultFormat->setFocusPolicy(Qt::NoFocus);
@@ -4081,8 +4134,11 @@ void MainWindow::createStatusBar()
     });
 
     bar->addWidget(m_status.resultFormatSection);
+    bar->addWidget(m_status.resultPrecisionSeparator);
     bar->addWidget(m_status.resultPrecisionSection);
+    bar->addWidget(m_status.angleUnitSeparator);
     bar->addWidget(m_status.angleUnitSection);
+    applyThemeSurfaceToStatusBar(bar, generatedSurfaceColors(m_settings));
 
     for (const QPointer<MainWindow>& ptr : allMainWindows()) {
         if (MainWindow* window = ptr.data())
@@ -6122,11 +6178,8 @@ void MainWindow::applyThemeSurfacePalette()
     if (m_widgets.root)
         applyThemeBackgroundRoleToWidget(m_widgets.root, surface.background);
     applyKeypadThemeSurfacePalette();
-    if (QStatusBar* bar = findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly)) {
-        const ThemeSurfaceColors statusBarSurface =
-            themeSurfaceForShadeIndex(surfaces, UiConfig::StatusBarBackgroundShade);
-        bar->setPalette(paletteForThemeSurface(bar->palette(), statusBarSurface));
-    }
+    applyThemeSurfaceToStatusBar(findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly),
+                                 surfaces);
     for (QDockWidget* dock : m_allDocks) {
         if (dock == nullptr)
             continue;
@@ -7900,9 +7953,11 @@ MainWindow::MainWindow(bool restorePreviousSession)
     m_status.resultFormat = 0;
     m_status.resultFormatSection = 0;
     m_status.resultFormatLabel = 0;
+    m_status.resultPrecisionSeparator = 0;
     m_status.resultPrecision = 0;
     m_status.resultPrecisionSection = 0;
     m_status.resultPrecisionLabel = 0;
+    m_status.angleUnitSeparator = 0;
 
     m_copyWidget = 0;
     m_pendingHistoryEditIndex = -1;
@@ -10759,11 +10814,17 @@ void MainWindow::deleteStatusBar()
     m_status.resultFormat = 0;
     m_status.resultFormatSection = 0;
     m_status.resultFormatLabel = 0;
+    if (m_status.resultPrecisionSeparator)
+        m_status.resultPrecisionSeparator->deleteLater();
+    m_status.resultPrecisionSeparator = 0;
     if (m_status.resultPrecisionSection)
         m_status.resultPrecisionSection->deleteLater();
     m_status.resultPrecision = 0;
     m_status.resultPrecisionSection = 0;
     m_status.resultPrecisionLabel = 0;
+    if (m_status.angleUnitSeparator)
+        m_status.angleUnitSeparator->deleteLater();
+    m_status.angleUnitSeparator = 0;
 
     if (existingStatusBar != nullptr)
         setStatusBar(0);

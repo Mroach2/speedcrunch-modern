@@ -1873,6 +1873,8 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
             foregrounds.at(UiConfig::BitfieldButtonHoverFillShade);
         const QColor expectedBitfieldButtonPressedForeground =
             foregrounds.at(UiConfig::BitfieldButtonPressedFillShade);
+        const QColor expectedStatusBarForeground =
+            foregrounds.at(UiConfig::StatusBarBackgroundShade);
 
         MainWindow window;
         window.show();
@@ -1901,6 +1903,23 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         QVERIFY(bit != nullptr);
         QVERIFY(statusBar != nullptr);
         QCOMPARE(statusBar->findChildren<QPushButton*>().size(), 3);
+        int pipeSeparators = 0;
+        for (QLabel* label : statusBar->findChildren<QLabel*>()) {
+            if (label->text() == QStringLiteral("|"))
+                ++pipeSeparators;
+        }
+        QCOMPARE(pipeSeparators, 2);
+        for (QPushButton* button : statusBar->findChildren<QPushButton*>()) {
+            QCOMPARE(button->cursor().shape(), Qt::PointingHandCursor);
+            const QImage buttonImage = button->grab().toImage();
+            QVERIFY(!buttonImage.isNull());
+            QVERIFY2(firstPixelMatchingColor(buttonImage,
+                                             buttonImage.rect(),
+                                             expectedStatusBarForeground,
+                                             64) != QPoint(-1, -1),
+                     qPrintable(QStringLiteral("status button %1 has no %2 text pixel")
+                                    .arg(button->text(), expectedStatusBarForeground.name())));
+        }
         QVERIFY(QMetaObject::invokeMethod(&window,
                                           "setStatusBarVisible",
                                           Qt::DirectConnection,
@@ -2105,6 +2124,13 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
             expectedBitfieldButtonPressedForeground.name()));
         QCOMPARE(statusBar->palette().color(QPalette::Window).name(),
                  expectedStatusBarSurface.name());
+        QCOMPARE(statusBar->palette().color(QPalette::WindowText).name(),
+                 expectedStatusBarForeground.name());
+        QVERIFY(statusBar->styleSheet().contains(expectedStatusBarSurface.name()));
+        QVERIFY(statusBar->styleSheet().contains(expectedStatusBarForeground.name()));
+        QVERIFY(statusBar->styleSheet().contains(QStringLiteral("QStatusBar QPushButton")));
+        QVERIFY(statusBar->styleSheet().contains(
+            QStringLiteral("padding: 0px 4px")));
     };
 
     verifyTheme(QStringLiteral("#300a24"), ThemePolarity::Dark);
@@ -2135,6 +2161,8 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         changedKeypad ? keypadButtonWithText(changedKeypad, QStringLiteral("+")) : nullptr;
     QPushButton* changedEvaluateButton =
         changedKeypad ? keypadButtonWithText(changedKeypad, QStringLiteral("=")) : nullptr;
+    QStatusBar* changedStatusBar =
+        changedWindow.findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly);
     QVERIFY(changedDisplay != nullptr);
     QVERIFY(changedEditor != nullptr);
     QVERIFY(changedBitfield != nullptr);
@@ -2143,6 +2171,7 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
     QVERIFY(changedDigitButton != nullptr);
     QVERIFY(changedOperatorButton != nullptr);
     QVERIFY(changedEvaluateButton != nullptr);
+    QVERIFY(changedStatusBar != nullptr);
     QCOMPARE(changedWindow.palette().color(QPalette::Window).name(),
              changedShades.at(UiConfig::WindowBackgroundShade).name());
     QCOMPARE(changedDisplay->palette().color(QPalette::Base).name(),
@@ -2157,6 +2186,10 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
              changedShades.at(UiConfig::KeypadButtonShade).name());
     QVERIFY(changedKeypadButton->styleSheet().contains(
         changedShades.at(UiConfig::KeypadButtonShade).name()));
+    QCOMPARE(changedStatusBar->palette().color(QPalette::Window).name(),
+             changedShades.at(UiConfig::StatusBarBackgroundShade).name());
+    QVERIFY(changedStatusBar->styleSheet().contains(
+        changedShades.at(UiConfig::StatusBarBackgroundShade).name()));
     const QColor changedDigitSurface = keypadPrimaryHueFillForTest(
         changedPrimary,
         changedShades.at(UiConfig::KeypadButtonShade),
@@ -2228,6 +2261,36 @@ void TestDisplayUi::main_window_uses_generated_theme_surface_for_chrome_and_edit
         generateOklchShades(QColor(QStringLiteral("#e5eee8")), 6, ThemePolarity::Light)
             .at(UiConfig::KeypadButtonShade)
             .name()));
+
+    QVERIFY(QMetaObject::invokeMethod(&changedWindow,
+                                      "setStatusBarVisible",
+                                      Qt::DirectConnection,
+                                      Q_ARG(bool, false)));
+    QCoreApplication::processEvents();
+    QVERIFY(QMetaObject::invokeMethod(&changedWindow,
+                                      "setStatusBarVisible",
+                                      Qt::DirectConnection,
+                                      Q_ARG(bool, true)));
+    QCoreApplication::processEvents();
+
+    QStatusBar* recreatedStatusBar =
+        changedWindow.findChild<QStatusBar*>(QString(), Qt::FindDirectChildrenOnly);
+    QVERIFY(recreatedStatusBar != nullptr);
+    QCOMPARE(recreatedStatusBar->palette().color(QPalette::Window).name(),
+             changedShades.at(UiConfig::StatusBarBackgroundShade).name());
+    QVERIFY(recreatedStatusBar->styleSheet().contains(
+        changedShades.at(UiConfig::StatusBarBackgroundShade).name()));
+    QVERIFY(recreatedStatusBar->styleSheet().contains(QStringLiteral("QStatusBar QPushButton")));
+    QCOMPARE(recreatedStatusBar->findChildren<QPushButton*>().size(), 3);
+    int recreatedPipeSeparators = 0;
+    for (QLabel* label : recreatedStatusBar->findChildren<QLabel*>()) {
+        if (label->text() == QStringLiteral("|"))
+            ++recreatedPipeSeparators;
+    }
+    QCOMPARE(recreatedPipeSeparators, 2);
+    for (QPushButton* button : recreatedStatusBar->findChildren<QPushButton*>())
+        QCOMPARE(button->cursor().shape(), Qt::PointingHandCursor);
+
     const QImage changedDisplayImage = changedDisplay->viewport()->grab().toImage();
     QVERIFY(!changedDisplayImage.isNull());
     QCOMPARE(changedDisplayImage.pixelColor(changedDisplayImage.width() / 2,
