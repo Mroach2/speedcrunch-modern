@@ -4,8 +4,10 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-2.0+</project_license>
   <update_contact>speedcrunch@googlegroups.com</update_contact>
-  <content_rating type="oars-1.0"/>
-
+  <content_rating type="oars-1.1"/>
+  <developer id="org.speedcrunch">
+    <name>The SpeedCrunch Developers</name>
+  </developer>
   
   <name>SpeedCrunch</name>
   <name xml:lang="ar">SpeedCrunch</name>
