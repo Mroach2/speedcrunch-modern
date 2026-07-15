@@ -3873,8 +3873,15 @@ void Editor::rehighlight()
         : color;
     const QString colorName = color.name();
     const QString primaryColorName = primaryColor.name();
+    // Soften the outline: full-strength primary reads as a glow against the
+    // dark surface. Blend it toward the surrounding surface in code rather
+    // than with border alpha — Qt double-paints translucent stylesheet
+    // borders where the corner arcs meet the edges, leaving brighter dots.
+    const QColor outlineColor((primaryColor.red() + outerColor.red()) / 2,
+                              (primaryColor.green() + outerColor.green()) / 2,
+                              (primaryColor.blue() + outerColor.blue()) / 2);
     const QString borderColorName = m_usePrimaryOutline
-        ? primaryColorName
+        ? outlineColor.name()
         : QStringLiteral("transparent");
     QPalette pal = palette();
     for (const QPalette::ColorGroup group : {QPalette::Active,
