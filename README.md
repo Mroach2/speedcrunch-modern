@@ -1,14 +1,44 @@
-# SpeedCrunch
-SpeedCrunch is a high-precision scientific calculator.
-Current stable version: 1.0.
-It features a syntax-highlighted scrollable display and is designed to be fully used via keyboard. Some distinctive
-features are auto-completion of functions and variables, a formula book, and quick
-insertion of constants from various fields of knowledge. It is available for Windows, macOS,
-and Linux in a number of languages.
+# SpeedCrunch — unofficial up-to-date builds
 
-![capture.png](https://bitbucket.org/repo/dR7BnG/images/3654665019-capture.png)
+Native **macOS (Apple Silicon)** and **Windows (x64)** builds of [SpeedCrunch](https://speedcrunch.org), the fast, keyboard-driven, high-precision scientific calculator. The source here is the actively maintained [official repository](https://bitbucket.org/heldercorreia/speedcrunch) with two small additions, listed below.
 
-## Building
+**[⬇ Download the latest release](../../releases/latest)**
+
+## Why this exists
+
+One morning in 2026 I opened my MacBook to a notice that Rosetta 2 is being retired — and with it, the ten-year-old Intel build of SpeedCrunch I'd been running every day. I work in construction, and my team and I live in this calculator: earthwork volumes, tonnage conversions, quick engineering math. Losing it wasn't an option, and there were no current binaries to download anywhere.
+
+So, in the spirit of full honesty: I didn't port anything. I asked Claude (Anthropic's Claude Fable 5, via Claude Code) to figure it out. It confirmed the official source builds cleanly with Qt 6, produced a native Apple Silicon app, and set up the automated Windows and macOS builds published here. My contribution was loving this calculator enough to ask.
+
+## Credit where credit is due
+
+SpeedCrunch is the work of many people over more than two decades, and all credit for the calculator itself belongs to them:
+
+- **Ariya Hidayat** — original author
+- **Helder Correia** — main author, maintainer, and logo
+- **Wolf Lammen** — math engine
+- **Felix Krull, Hadrien Theveneau, Pol Welter, Teyut** — core developers
+- …and the many contributors and translators thanked in the app's About box (Help → About)
+
+Thank you, all of you. This program is a small masterpiece of focused software — it starts instantly, does exactly what it should, and gets out of your way. If you find these builds useful, the people above are who to thank.
+
+## Downloads
+
+Each [release](../../releases) includes:
+
+- **macOS (Apple Silicon)** — `SpeedCrunch-macos-arm64.zip`. The app is not notarized, so the first launch needs right-click → Open (or `xattr -d com.apple.quarantine SpeedCrunch.app`).
+- **Windows (x64)** — `SpeedCrunch-windows-x64-portable.zip`. Unzip anywhere and run `SpeedCrunch.exe`; no installer, nothing touches the registry. SmartScreen may warn because the binaries are unsigned — "More info → Run anyway".
+- **Linux** — no binaries here; most distributions already package SpeedCrunch, and building from source (below) is straightforward.
+
+## What's different from the official source
+
+1. A GitHub Actions workflow that produces the release builds.
+2. One cosmetic tweak: the input-bar outline is slightly softened.
+
+Everything else is the official source, unmodified. Bugs in the calculator itself belong in the [upstream issue tracker](https://bitbucket.org/heldercorreia/speedcrunch/issues); problems with these *builds* belong [here](../../issues).
+
+## Building from source
+
 To build SpeedCrunch, you need:
 
 - A C++17-capable compiler
@@ -50,7 +80,7 @@ Building the HTML manual is normally not necessary because a prebuilt copy is in
 with the SpeedCrunch source. For more information, see the [manual's README](doc/src/README.md).
 
 ## Contributing
-- Report bugs or request features in the
+- Report bugs or request features in the upstream
   [issue tracker](https://bitbucket.org/heldercorreia/speedcrunch/issues).
 - Add or improve a [translation](https://www.transifex.com/projects/p/speedcrunch/).
 - Send a message to the [forum](https://groups.google.com/group/speedcrunch).
@@ -71,4 +101,3 @@ You should have received a copy of the GNU General Public License along
 with this program; see the file COPYING.  If not, write to the Free
 Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 MA 02110-1301, USA.
-
