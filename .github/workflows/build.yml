@@ -29,14 +29,14 @@ jobs:
         run: Compress-Archive -Path stage/* -DestinationPath SpeedCrunch-windows-x64-portable.zip
 
       - name: Build installer
-        run: iscc pkg\winsetup.iss
+        run: iscc /O. pkg\winsetup.iss
 
       - uses: actions/upload-artifact@v4
         with:
           name: windows-x64
           path: |
             SpeedCrunch-windows-x64-portable.zip
-            pkg/SpeedCrunch-windows-x64-setup.exe
+            SpeedCrunch-windows-x64-setup.exe
 
   macos:
     runs-on: macos-latest
