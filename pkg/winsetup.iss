@@ -1,5 +1,8 @@
 #define APPTITLE "SpeedCrunch"
-#define SPEEDCRUNCHEXE "..\src\release\" + APPTITLE + ".exe"
+; Staged install tree produced by `cmake --install build --prefix stage`
+; (SpeedCrunch.exe plus the deployed Qt runtime).
+#define STAGEDIR "..\stage"
+#define SPEEDCRUNCHEXE STAGEDIR + "\" + APPTITLE + ".exe"
 #define NUMERICVERSION GetFileVersion(SPEEDCRUNCHEXE)
 #define VERSION "1.0" ; GetFileVersionString(SPEEDCRUNCHEXE)
 #define URL "http://speedcrunch.org"
@@ -14,12 +17,12 @@ AppSupportURL={#URL}
 AppUpdatesURL={#URL}
 AppVerName={#APPTITLE} {#VERSION}
 Compression=lzma/ultra
-DefaultDirName={pf}\{#APPTITLE}
+DefaultDirName={autopf}\{#APPTITLE}
 DefaultGroupName={#APPTITLE}
 DisableProgramGroupPage=true
 LicenseFile=COPYING.rtf
 InternalCompressLevel=ultra
-OutputBaseFilename={#APPTITLE}-{#VERSION}
+OutputBaseFilename={#APPTITLE}-windows-x64-setup
 OutputDir=.
 ShowLanguageDialog=no
 SolidCompression=yes
@@ -59,7 +62,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: {#SPEEDCRUNCHEXE}; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#STAGEDIR}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
 
 [Icons]
 Name: "{group}\{#APPTITLE}"; Filename: "{app}\{#APPTITLE}.exe"

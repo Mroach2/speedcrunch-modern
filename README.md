@@ -27,13 +27,16 @@ Thank you, all of you. This program is a small masterpiece of focused software �
 Each [release](../../releases) includes:
 
 - **macOS (Apple Silicon)** — `SpeedCrunch-macos-arm64.zip`. The app is not notarized, so the first launch needs right-click → Open (or `xattr -d com.apple.quarantine SpeedCrunch.app`).
-- **Windows (x64)** — `SpeedCrunch-windows-x64-portable.zip`. Unzip anywhere and run `SpeedCrunch.exe`; no installer, nothing touches the registry. SmartScreen may warn because the binaries are unsigned — "More info → Run anyway".
+- **Windows (x64) installer** — `SpeedCrunch-windows-x64-setup.exe`. Standard installer with Start-menu entry and uninstaller.
+- **Windows (x64) portable** — `SpeedCrunch-windows-x64-portable.zip`. Unzip anywhere and run `SpeedCrunch.exe`; nothing touches the registry. Either way, SmartScreen may warn because the binaries are unsigned — "More info → Run anyway".
 - **Linux** — no binaries here; most distributions already package SpeedCrunch, and building from source (below) is straightforward.
 
 ## What's different from the official source
 
 1. A GitHub Actions workflow that produces the release builds.
 2. One cosmetic tweak: the input-bar outline is slightly softened.
+3. A `NOMINMAX` define so the Windows build compiles under MSVC.
+4. The Inno Setup installer script updated to package the Qt 6 runtime.
 
 Everything else is the official source, unmodified. Bugs in the calculator itself belong in the [upstream issue tracker](https://bitbucket.org/heldercorreia/speedcrunch/issues); problems with these *builds* belong [here](../../issues).
 
