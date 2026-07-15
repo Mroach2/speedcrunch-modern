@@ -47,6 +47,11 @@ set(CMAKE_MACOSX_RPATH ON)
 
 ADD_DEFINITIONS("-DSPEEDCRUNCH_VERSION=\"${speedcrunch_VERSION}\"")
 ADD_DEFINITIONS(-DQT_USE_QSTRINGBUILDER)
+if(WIN32)
+    # Keep windows.h from defining min/max macros, which break
+    # std::numeric_limits<int>::max() under MSVC.
+    ADD_DEFINITIONS(-DNOMINMAX)
+endif()
 
 include(SourceFiles.cmake)
 
