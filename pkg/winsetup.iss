@@ -31,8 +31,6 @@ VersionInfoCopyright=Copyright (C) {#COPYRIGHT}
 VersionInfoDescription=Keyboard-oriented high-precision scientific calculator
 VersionInfoTextVersion={#VERSION}
 VersionInfoVersion={#NUMERICVERSION}
-WizardImageFile=compiler:WizModernImage-IS.bmp
-WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
