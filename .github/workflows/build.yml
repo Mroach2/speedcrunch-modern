@@ -72,3 +72,5 @@ jobs:
           files: |
             windows-x64/*.zip
             macos-arm64/*.zip
+
+# Registered v1.0-build1
